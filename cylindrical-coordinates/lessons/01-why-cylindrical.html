@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why Cylindrical Coordinates? · Cylindrical Coordinates</title>
+<meta name="description" content="Rotating arms, cranes, radar and orbits: motions measured from a fixed point or axis are described most simply by r, θ and z.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/polar-motion.js"></script>
+<style>
+  /* ---- Lesson 1 page styles. Colors come only from module.css variables. ---- */
+
+  /* Gallery of mechanisms: 3 columns on desktop, 2 on tablets, 1 on phones */
+  .hw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 1.4rem 0; }
+  .hw-grid .card { display: flex; flex-direction: column; padding: 12px 14px 14px; }
+  .hw-grid .card h3 { margin: 0 0 3px; font-size: 0.98rem; }
+  .hw-grid .card p { margin: 0; font-size: 0.86rem; line-height: 1.45; }
+  .hw-icon { display: block; width: 100%; max-width: 170px; height: auto; margin: 0 auto 8px; overflow: visible; }
+  .hw-icon .o { fill: var(--bg-sunken); stroke: var(--ink-muted); stroke-width: 1.5; stroke-linejoin: round; }
+  .hw-icon .f { fill: var(--bg-elev); stroke: var(--ink-muted); stroke-width: 1.5; stroke-linejoin: round; }
+  .hw-icon .b { fill: var(--line-strong); stroke: var(--ink-muted); stroke-width: 1.2; }
+  .hw-icon .l { fill: none; stroke: var(--ink-muted); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .hw-icon .d { fill: none; stroke: var(--ink-faint); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .hw-icon .ax { fill: none; stroke: var(--c-z); stroke-width: 1.3; stroke-dasharray: 10 3 2 3; }
+  .hw-icon .th { fill: none; stroke: var(--c-t); stroke-width: 1.8; stroke-linecap: round; }
+  .hw-icon .thf { fill: var(--c-t); stroke: none; }
+  .hw-icon .rr { fill: none; stroke: var(--c-r); stroke-width: 2.2; stroke-linecap: round; }
+  .hw-icon .rrf { fill: var(--c-r); stroke: none; }
+  .hw-icon .zz { fill: none; stroke: var(--c-z); stroke-width: 1.8; stroke-linecap: round; }
+  .hw-icon .zzf { fill: var(--c-z); stroke: none; }
+  .hw-icon .pt { fill: var(--ink); stroke: none; }
+  .hw-icon .txt { fill: var(--ink-muted); font: italic 13px KaTeX_Math, "Times New Roman", serif; }
+
+  /* Comparison of the three coordinate systems */
+  .compare .card { padding: 14px 16px; }
+  .compare .card h3 { margin-bottom: 8px; }
+  .compare .card p { color: var(--ink-muted); }
+  table.data.crane-table thead th:last-child { white-space: normal; }
+
+  /* Module roadmap: a numbered path */
+  .rm-stage { margin: 1.3rem 0 0.5rem; color: var(--ink-faint); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .roadmap { list-style: none; margin: 0; padding: 0; }
+  .roadmap > li { position: relative; margin: 0; padding: 2px 0 14px 48px; min-height: 44px; }
+  .roadmap > li::before { content: ""; position: absolute; left: 16px; top: 34px; bottom: 2px; width: 2px; border-radius: 2px; background: var(--line); }
+  .roadmap > li:last-child::before { display: none; }
+  .rm-num { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--line-strong); border-radius: 50%; background: var(--bg-elev); color: var(--ink-muted); font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .roadmap > li.is-current .rm-num { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .roadmap > li.is-done .rm-num { border-color: var(--c-good); color: var(--c-good); }
+  .rm-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+  .rm-title { font-weight: 650; }
+  .rm-meta { color: var(--ink-faint); font-size: 0.8rem; white-space: nowrap; }
+  .rm-sum { margin: 1px 0 0; color: var(--ink-muted); font-size: 0.92em; line-height: 1.5; }
+
+  @media print {
+    .roadmap > li { break-inside: avoid; page-break-inside: avoid; }
+    .rm-stage { break-after: avoid; page-break-after: avoid; }
+  }
+</style>
+</head>
+<body data-page="l01" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 1 · 20 min</p>
+    <h1>Why Cylindrical Coordinates?</h1>
+    <p class="lede">A crane slews and runs its trolley out, a collar slides along a spinning rod, a radar dish follows an aircraft. Each of these motions is measured from a fixed point or axis, so the natural description is a distance \(\colR{r}\), an angle \(\colT{\theta}\) and, in space, a height \(\colZ{z}\).</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Recognize motions that are driven or measured from a fixed point or axis: rotating arms, cranes, cams, radar tracking and orbits.</li>
+      <li>Describe what \(\colR{r}\), \(\colT{\theta}\) and \(\colZ{z}\) measure, using a tower crane as the example.</li>
+      <li>Compare rectangular, path and cylindrical descriptions of motion, and choose the one that suits a problem.</li>
+      <li>Explain why a particle can accelerate even when every joint of the machine moving it runs at a constant rate.</li>
+    </ul>
+  </section>
+
+  <section id="mechanisms">
+    <h2>Motion measured from a point or an axis</h2>
+    <p>In particle dynamics you have already described curvilinear motion with rectangular components (\(x\), \(y\)) and with path components (tangential and normal). A third description is best whenever the motion is <em>driven</em> or <em>measured</em> from a fixed point \(O\) or a fixed axis: you give the particle's distance \(r\) from \(O\) (or from the axis) and the angle \(\theta\) of the line from \(O\) to the particle. In a plane these are <strong>polar coordinates</strong>; add the height \(z\) along the axis and they become <strong>cylindrical coordinates</strong>.</p>
+
+    <div class="hw-grid">
+      <div class="card">
+        <svg class="hw-icon" viewBox="0 0 170 110" role="img" aria-label="A rod spinning about a pivot, with a collar sliding along it at distance r from the pivot.">
+          <line class="d" x1="30" y1="82" x2="160" y2="82"/>
+          <line class="l" x1="30" y1="82" x2="152" y2="19" style="stroke-width: 4"/>
+          <rect class="f" x="88" y="40.5" width="22" height="12" transform="rotate(-27.3 99 46.5)"/>
+          <line class="rr" x1="33" y1="89" x2="101" y2="53.5"/>
+          <path class="th" d="M58 82 A28 28 0 0 0 54.9 69.2"/>
+          <circle class="f" cx="30" cy="82" r="5.5"/>
+          <path class="th" d="M150 40 A22 22 0 0 1 135 52"/>
+          <path class="thf" d="M131 51 l7 -5 l1 8 z"/>
+          <text class="txt" x="58" y="96">r</text>
+          <text class="txt" x="64" y="76">θ</text>
+        </svg>
+        <h3>Collar on a rotating rod</h3>
+        <p>The rod sets \(\theta\); the collar slides along it, changing \(r\). Governors, centrifuges and the slotted arms of mechanisms work this way.</p>
+      </div>
+      <div class="card">
+        <svg class="hw-icon" viewBox="0 0 170 110" role="img" aria-label="A cylindrical robot: a base, a vertical column, and an arm that rises along the column and telescopes outward while the column turns.">
+          <rect class="o" x="22" y="92" width="44" height="10" rx="2"/>
+          <rect class="b" x="38" y="12" width="12" height="80"/>
+          <rect class="f" x="34" y="40" width="20" height="14" rx="2"/>
+          <rect class="b" x="54" y="43" width="74" height="8"/>
+          <path class="l" d="M128 51 v10 m-6 0 h12 m-12 0 v6 m12 -6 v6"/>
+          <ellipse class="th" cx="44" cy="22" rx="20" ry="5"/>
+          <path class="thf" d="M24.5 25 l3 -6 l4 5 z"/>
+          <line class="rr" x1="44" y1="60" x2="122" y2="60"/>
+          <path class="rrf" d="M126 60 l-7 -4 v8 z"/>
+          <line class="zz" x1="76" y1="100" x2="76" y2="58"/>
+          <path class="zzf" d="M76 54 l-4 7 h8 z"/>
+          <text class="txt" x="96" y="74">r</text>
+          <text class="txt" x="81" y="84">z</text>
+          <text class="txt" x="68" y="17">θ</text>
+        </svg>
+        <h3>Cylindrical robot</h3>
+        <p>Its three joints are a turning base (\(\theta\)), a lifting carriage (\(z\)) and a telescoping arm (\(r\)). Tower cranes work the same way.</p>
+      </div>
+      <div class="card">
+        <svg class="hw-icon" viewBox="0 0 170 110" role="img" aria-label="A radar antenna on the ground measures the distance r and the angle theta to an aircraft.">
+          <line class="d" x1="20" y1="96" x2="160" y2="96"/>
+          <path class="f" d="M14 96 l8 -14 l8 14 z"/>
+          <path class="o" d="M10 78 q12 -4 24 6 q-12 6 -24 -6 z"/>
+          <line class="rr" x1="22" y1="82" x2="128" y2="28"/>
+          <path class="l" d="M121 30 l16 -6 l6 -9 l3 1 l-3 10 l12 2 l1 3 l-13 2 l-4 9 l-3 0 l2 -9 z"/>
+          <path class="th" d="M52 82 A30 30 0 0 0 48.8 68.4"/>
+          <line class="d" x1="22" y1="82" x2="66" y2="82"/>
+          <text class="txt" x="78" y="62">r</text>
+          <text class="txt" x="56" y="78">θ</text>
+        </svg>
+        <h3>Radar tracking</h3>
+        <p>A radar measures the range \(r\) to an aircraft and the angle \(\theta\) of its line of sight, and how fast each one changes. Those are polar coordinates and their rates.</p>
+      </div>
+      <div class="card">
+        <svg class="hw-icon" viewBox="0 0 170 110" role="img" aria-label="A pin pushed along a fixed spiral groove by a slotted arm that turns about the center of the spiral.">
+          <path class="l" style="stroke-width: 6; stroke: var(--line-strong)" d="M63.2 57.6 L63.5 57.2 L63.8 56.8 L64.0 56.3 L64.1 55.8 L64.0 55.2 L63.9 54.6 L63.6 54.0 L63.2 53.4 L62.7 52.8 L62.1 52.3 L61.4 51.9 L60.6 51.6 L59.7 51.4 L58.7 51.3 L57.7 51.4 L56.7 51.6 L55.6 52.0 L54.6 52.6 L53.6 53.3 L52.7 54.2 L51.9 55.2 L51.2 56.3 L50.6 57.6 L50.2 59.0 L50.0 60.5 L50.0 62.1 L50.2 63.7 L50.6 65.3 L51.2 66.9 L52.0 68.5 L53.1 69.9 L54.3 71.3 L55.8 72.5 L57.5 73.6 L59.3 74.4 L61.3 75.1 L63.4 75.5 L65.5 75.6 L67.8 75.5 L70.0 75.1 L72.2 74.4 L74.4 73.4 L76.4 72.1 L78.4 70.5 L80.1 68.7 L81.7 66.6 L83.0 64.3 L84.0 61.9 L84.8 59.2 L85.2 56.4 L85.3 53.6 L85.0 50.7 L84.4 47.8 L83.4 45.0 L82.0 42.3 L80.3 39.7 L78.2 37.3 L75.8 35.1 L73.2 33.2 L70.3 31.6 L67.1 30.4 L63.8 29.5 L60.4 29.1 L56.9 29.1 L53.3 29.5 L49.8 30.3 L46.3 31.6 L43.0 33.3 L39.9 35.5 L37.0 38.0 L34.4 40.9 L32.2 44.1 L30.3 47.7 L28.9 51.5 L27.9 55.4 L27.4 59.6 L27.4 63.8 L27.9 68.0 L28.9 72.2 L30.5 76.3 L32.5 80.2 L35.1 83.8 L38.1 87.2 L41.5 90.2 L45.4 92.8 L49.5 95.0 L53.9 96.7 L58.6 97.8 L63.4 98.4 L68.3 98.3 L73.2 97.7 L78.0 96.5 L82.7 94.7 L87.2 92.3 L91.5 89.3 L95.3 85.9 L98.8 81.9 L101.8 77.5 L104.3 72.8 L106.2 67.7 L107.4 62.4 L108.1 56.9 L108.0 51.3 L107.3 45.8 L106.0 40.3 L103.9 34.9 L101.2 29.8 L97.9 25.0"/>
+          <line class="d" x1="62" y1="58" x2="102" y2="58"/>
+          <line class="l" x1="62" y1="58" x2="125.5" y2="29.6" style="stroke-width: 4"/>
+          <line class="rr" x1="64.0" y1="62.6" x2="107.4" y2="43.2"/>
+          <path class="th" d="M86.0 58.0 A24 24 0 0 0 83.9 48.2"/>
+          <circle class="f" cx="62" cy="58" r="4"/>
+          <circle class="pt" cx="105.4" cy="38.6" r="4.5"/>
+          <text class="txt" x="86.7" y="64.3">r</text>
+          <text class="txt" x="89" y="55">θ</text>
+        </svg>
+        <h3>Slotted arm and cam groove</h3>
+        <p>The groove fixes the path, \(r = f(\theta)\); the turning arm fixes \(\theta(t)\). Cams, indexing mechanisms and spiral feeders are built on this idea.</p>
+      </div>
+      <div class="card">
+        <svg class="hw-icon" viewBox="0 0 170 110" role="img" aria-label="A satellite on an elliptical orbit around the Earth, with r measured from the Earth's center.">
+          <ellipse class="d" cx="92" cy="56" rx="66" ry="40"/>
+          <circle class="o" cx="62" cy="56" r="10"/>
+          <circle class="pt" cx="126" cy="21.7" r="4.5"/>
+          <line class="rr" x1="62" y1="56" x2="122" y2="24"/>
+          <line class="d" x1="62" y1="56" x2="110" y2="56"/>
+          <path class="th" d="M90 56 A28 28 0 0 0 86.6 42.7"/>
+          <text class="txt" x="92" y="34">r</text>
+          <text class="txt" x="94" y="52">θ</text>
+        </svg>
+        <h3>Orbits</h3>
+        <p>Gravity always pulls toward the planet's center, so it has a radial component only. In \(r\) and \(\theta\) that single fact explains how orbits speed up near the planet (Lesson 8).</p>
+      </div>
+      <div class="card">
+        <svg class="hw-icon" viewBox="0 0 170 110" role="img" aria-label="A spiral slide: a helical chute around a vertical pole, with a rider going round and down.">
+          <rect class="b" x="81" y="6" width="8" height="98"/>
+          <path class="l" style="stroke-width: 6; stroke: var(--line-strong)" d="M85 18 C140 22 140 40 85 42 C30 44 30 62 85 66 C140 70 140 88 85 92"/>
+          <circle class="pt" cx="126.5" cy="34" r="4.5"/>
+          <line class="rr" x1="85" y1="34" x2="121" y2="34"/>
+          <line class="zz" x1="140" y1="100" x2="140" y2="40"/>
+          <path class="zzf" d="M140 36 l-4 7 h8 z"/>
+          <text class="txt" x="101" y="29">r</text>
+          <text class="txt" x="146" y="70">z</text>
+        </svg>
+        <h3>Spiral slides and ramps</h3>
+        <p>A helix keeps \(r\) fixed while \(\theta\) grows and \(z\) falls steadily. Parking-garage ramps and spiral chutes are helices too.</p>
+      </div>
+    </div>
+
+    <p>In every case one or two of the three numbers stay constant or change in a simple way, while \(x\) and \(y\) change in a complicated way. That is the reason to use cylindrical coordinates: they turn the description of the motion, and later the equations of motion, into something simple.</p>
+  </section>
+
+  <section id="tower-crane">
+    <h2>A tower crane works in \((r, \theta, z)\)</h2>
+    <p>A tower crane has three motions, and each one changes exactly one cylindrical coordinate. Put the origin at the foot of the mast, with the \(z\)-axis up the mast and the \(x\)-axis along a fixed reference direction on the site, so \(\theta = 0\) means the jib points along \(+x\). The <strong>slew</strong> motor turns the jib through the angle \(\colT{\theta}\). The <strong>trolley</strong> runs along the jib to the radius \(\colR{r}\). The <strong>hoist</strong> winds the rope to put the hook at the height \(\colZ{z}\). The hook is the point \((\colR{r},\ \colT{\theta},\ \colZ{z})\).</p>
+
+    <figure class="figure wide" aria-labelledby="fig11-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig11-stage"></div>
+        <div class="viz-controls" id="fig11-controls"></div>
+      </div>
+      <figcaption id="fig11-cap"><strong>Figure 1.1</strong> A tower crane with a 40 m jib (schematic; the hook is drawn oversize). The orange trolley sets <span class="c-r">\(r\)</span>, the violet slewing ring turns the jib through <span class="c-t">\(\theta\)</span>, and the blue hook block carries the hook \(P\) at height <span class="c-z">\(z\)</span>. The construction lines under the hook show all three. Turn on <em>Trace path</em>, then move one slider at a time: each control alone moves the hook along a radial line, a horizontal circle or a vertical line.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table class="data crane-table">
+        <caption>One control, one coordinate</caption>
+        <thead>
+          <tr><th scope="col">Control</th><th scope="col">Changes</th><th scope="col">Hook path when only this control moves</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Trolley</th><td class="c-r">\(r\) only</td><td>A horizontal line straight out from the mast</td></tr>
+          <tr><th scope="row">Slew</th><td class="c-t">\(\theta\) only</td><td>A horizontal circle around the mast</td></tr>
+          <tr><th scope="row">Hoist</th><td class="c-z">\(z\) only</td><td>A vertical line</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The Cartesian readout in Figure 1.1 uses \(x = r\cos\theta\) and \(y = r\sin\theta\), which <a href="02-position.html">Lesson 2</a> develops. Watch it while you slew: \(x\) and \(y\) both change, even though only one motor is running.</p>
+
+    <div class="example">
+      <p class="example-title">Example 1.1 — Slewing a load</p>
+      <p>A tower crane holds a pallet of bricks at a trolley radius of \(30\ \text{m}\), \(12\ \text{m}\) above the ground, with the jib at <span class="nowrap">\(\theta = \tfrac{\pi}{6}\ (30^\circ)\).</span> The operator slews at a steady rate to <span class="nowrap">\(\theta = \tfrac{2\pi}{3}\ (120^\circ)\)</span> in \(25\ \text{s}\), without moving the trolley or the hoist.</p>
+      <p>(a) Write the start and end positions in cylindrical and in Cartesian coordinates. (b) How far does the load travel? (c) What are the slew rate \(\dot\theta\) and the speed of the load?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>(a)</strong> In cylindrical coordinates (lengths in m) only \(\theta\) changes:</p>
+          \[ \text{start } \left(30,\ \tfrac{\pi}{6},\ 12\right) \ \to\ \text{end } \left(30,\ \tfrac{2\pi}{3},\ 12\right) \]
+          <p>In Cartesian coordinates, use \(x = r\cos\theta\) and \(y = r\sin\theta\):</p>
+          \[ \begin{aligned}
+            \text{start } &(30\cos\tfrac{\pi}{6},\ 30\sin\tfrac{\pi}{6},\ 12) = (15\sqrt{3},\ 15,\ 12) \approx (25.98,\ 15,\ 12) \\
+            \text{end } &(30\cos\tfrac{2\pi}{3},\ 30\sin\tfrac{2\pi}{3},\ 12) = (-15,\ 15\sqrt{3},\ 12) \approx (-15,\ 25.98,\ 12)
+          \end{aligned} \]
+          <p>\(x\) falls by about \(40.98\ \text{m}\) while \(y\) rises by about \(10.98\ \text{m}\): two coordinates change for a move that one motor makes.</p>
+          <p><strong>(b)</strong> The load moves along a horizontal circle of radius \(30\ \text{m}\) through \(\Delta\theta = \tfrac{2\pi}{3} - \tfrac{\pi}{6} = \tfrac{\pi}{2}\). With the angle in radians, the arc length is</p>
+          \[ s = r\,\Delta\theta = 30 \cdot \tfrac{\pi}{2} = 15\pi \approx 47.12\ \text{m} \]
+          <p><strong>(c)</strong> The slew rate is the angle turned per second, and the speed is the distance per second:</p>
+          \[ \begin{aligned}
+            \dot\theta &= \frac{\Delta\theta}{\Delta t} = \frac{\pi/2}{25} = \frac{\pi}{50} \approx 0.06283\ \text{rad/s} \\
+            v &= \frac{s}{\Delta t} = \frac{15\pi}{25} \approx 1.885\ \text{m/s}
+          \end{aligned} \]
+          <p>Notice that \(v = r\dot\theta = 30 \times 0.06283 \approx 1.885\ \text{m/s}\). The speed of going round is the radius times the angular rate. <a href="04-velocity.html">Lesson 4</a> shows that \(r\dot\theta\) is one of the two velocity components in polar coordinates, and why a second one, \(\dot r\), appears when the trolley moves too.</p>
+          <p class="btn-row"><button type="button" class="btn small" id="ex11-play">Play this slew in Figure 1.1</button></p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="three-descriptions">
+    <h2>Three ways to describe the same motion</h2>
+    <p>Each coordinate system has its own unit vectors, and the choice of system decides how simple the analysis is. This module uses the notation of Hibbeler's <em>Engineering Mechanics: Dynamics</em>: \(\ihat\) and \(\jhat\) for rectangular, \(\mathbf{u}_t\) and \(\mathbf{u}_n\) for path, and \(\er\), \(\et\) and \(\ez\) for cylindrical coordinates.</p>
+    <div class="grid-cards compare">
+      <div class="card">
+        <h3>Rectangular \((x, y)\)</h3>
+        <p>Fixed directions \(\ihat\) and \(\jhat\) that never turn. Best when the forces act in fixed directions, as for a projectile under gravity.</p>
+      </div>
+      <div class="card">
+        <h3>Path \((t, n)\)</h3>
+        <p>\(\mathbf{u}_t\) along the path and \(\mathbf{u}_n\) toward its center of curvature. Best when the path is known and you care about speed along it, as for a car on a curve.</p>
+      </div>
+      <div class="card card-r">
+        <h3>Polar and cylindrical \((r, \theta, z)\)</h3>
+        <p>\(\er\) away from the axis, \(\et\) around it, \(\ez\) along it. Best when the motion is driven or measured from a fixed point or axis, as for a rotating arm or a radar.</p>
+      </div>
+    </div>
+    <p>All three describe the same velocity and acceleration vectors; only the components differ. The skill is to pick the system in which the given information and the forces look simplest.</p>
+    <aside class="callout note">
+      <p class="callout-title">Notation in other textbooks</p>
+      <p>Beer &amp; Johnston (<em>Vector Mechanics for Engineers: Dynamics</em>) and Meriam &amp; Kraige (<em>Engineering Mechanics: Dynamics</em>) write the polar unit vectors as \(\mathbf{e}_r\) and \(\mathbf{e}_\theta\), and call the \(\theta\) components <em>transverse</em> components. The physics is identical. In Hibbeler the topic is in Sections 12.8 (kinematics) and 13.6 (kinetics); in Meriam &amp; Kraige, Articles 2/6, 2/7 and 3/5; in Beer &amp; Johnston, the sections on radial and transverse components in the kinematics and kinetics chapters.</p>
+    </aside>
+  </section>
+
+  <section id="turning">
+    <h2>Steady joints, yet the particle accelerates</h2>
+    <p>Here is the surprise that drives the rest of the module. In Figure 1.2 a rod spins at a constant rate and a collar slides out along it at a constant speed. Neither motion changes its rate, yet the collar accelerates, and its acceleration is not even along the rod.</p>
+
+    <figure class="figure wide" aria-labelledby="fig12-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig12-stage"></div>
+        <div class="viz-controls" id="fig12-controls"></div>
+      </div>
+      <figcaption id="fig12-cap"><strong>Figure 1.2</strong> Top view of a rod (gray) spinning about \(O\) at a constant \(\dot\theta = 1\ \text{rad/s}\), with a collar \(P\) sliding out along it at a constant \(\dot r = 0.15\ \text{m/s}\). Press <em>Play</em> or drag \(P\) along its path. The green arrow is the velocity \(\vvec\) and the red arrow the acceleration \(\avec\). Their orange and violet components point along and across the rod. The acceleration has a part toward \(O\) and a part across the rod, although both rates are constant.</figcaption>
+    </figure>
+
+    <p>The reason is that the directions "along the rod" and "across the rod" turn with the rod. In the language of the next lessons, the unit vectors \(\er\) and \(\et\) change direction as \(\theta\) changes, and every change of a vector, including a change of direction, is an acceleration. <a href="03-unit-vectors.html">Lesson 3</a> shows exactly how fast they turn, and <a href="05-acceleration.html">Lesson 5</a> names the two parts you see here: the <em>centripetal</em> acceleration toward \(O\) and the <em>Coriolis</em> acceleration across the rod.</p>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection</p>
+      <p>Because the collar accelerates, the rod must push it: by Newton's second law the rod exerts a force across the rod, and a spring or the collar's own inertia acts along it. The motor that spins the rod feels the sideways push as a torque, even at a constant speed. Robot controllers, centrifuge designs and crane slew drives all account for these forces, and Lessons 7 and 8 show how to calculate them.</p>
+    </aside>
+  </section>
+
+  <section id="roadmap">
+    <h2>Module roadmap</h2>
+    <p>The module follows the order of a first-year dynamics course: describe the position, then the velocity and acceleration (kinematics), then relate them to the forces (kinetics). Each lesson takes 20 to 40 minutes, including the examples and checks.</p>
+
+    <p class="rm-stage">Describing position</p>
+    <ol class="roadmap">
+      <li class="is-current" data-id="l01"><span class="rm-num" aria-hidden="true">1</span>
+        <div class="rm-head"><span class="rm-title"><span class="visually-hidden">Lesson 1: </span>Why Cylindrical Coordinates?</span><span class="rm-meta">20 min · you are here</span></div>
+        <p class="rm-sum">Motion measured from a point or an axis, and why \((r, \theta, z)\) fits it.</p></li>
+      <li data-id="l02"><span class="rm-num" aria-hidden="true">2</span>
+        <div class="rm-head"><a class="rm-title" href="02-position.html"><span class="visually-hidden">Lesson 2: </span>Position in Polar and Cylindrical Coordinates</a><span class="rm-meta">30 min</span></div>
+        <p class="rm-sum">\((r, \theta)\) and \((r, \theta, z)\), converting to and from \(x\), \(y\), and motion given as \(r(t)\), \(\theta(t)\), \(z(t)\).</p></li>
+    </ol>
+
+    <p class="rm-stage">Kinematics: velocity and acceleration</p>
+    <ol class="roadmap" start="3">
+      <li data-id="l03"><span class="rm-num" aria-hidden="true">3</span>
+        <div class="rm-head"><a class="rm-title" href="03-unit-vectors.html"><span class="visually-hidden">Lesson 3: </span>Unit Vectors That Turn</a><span class="rm-meta">30 min</span></div>
+        <p class="rm-sum">\(\er\), \(\et\), \(\ez\), their time derivatives, and radial and transverse components of a vector.</p></li>
+      <li data-id="l04"><span class="rm-num" aria-hidden="true">4</span>
+        <div class="rm-head"><a class="rm-title" href="04-velocity.html"><span class="visually-hidden">Lesson 4: </span>Velocity</a><span class="rm-meta">30 min</span></div>
+        <p class="rm-sum">\(\vvec = \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez\): robot arms, radar tracking and speed.</p></li>
+      <li data-id="l05"><span class="rm-num" aria-hidden="true">5</span>
+        <div class="rm-head"><a class="rm-title" href="05-acceleration.html"><span class="visually-hidden">Lesson 5: </span>Acceleration</a><span class="rm-meta">35 min</span></div>
+        <p class="rm-sum">The centripetal and Coriolis terms, and motions given as functions of time.</p></li>
+      <li data-id="l06"><span class="rm-num" aria-hidden="true">6</span>
+        <div class="rm-head"><a class="rm-title" href="06-paths-r-theta.html"><span class="visually-hidden">Lesson 6: </span>Paths Given as \(r = f(\theta)\)</a><span class="rm-meta">35 min</span></div>
+        <p class="rm-sum">Spirals, cams and circles: the chain rule for \(\dot r\) and \(\ddot r\), and the tangent angle \(\psi\).</p></li>
+    </ol>
+
+    <p class="rm-stage">Kinetics: forces and motion</p>
+    <ol class="roadmap" start="7">
+      <li data-id="l07"><span class="rm-num" aria-hidden="true">7</span>
+        <div class="rm-head"><a class="rm-title" href="07-equations-of-motion.html"><span class="visually-hidden">Lesson 7: </span>Equations of Motion</a><span class="rm-meta">40 min</span></div>
+        <p class="rm-sum">\(\sum F_r = m a_r\), \(\sum F_\theta = m a_\theta\), \(\sum F_z = m a_z\), with free-body diagrams.</p></li>
+      <li data-id="l08"><span class="rm-num" aria-hidden="true">8</span>
+        <div class="rm-head"><a class="rm-title" href="08-applications.html"><span class="visually-hidden">Lesson 8: </span>Kinetics Applications</a><span class="rm-meta">40 min</span></div>
+        <p class="rm-sum">Particles pushed along curved guides, and central-force motion such as orbits.</p></li>
+    </ol>
+
+    <p>After the lessons, test yourself in the <a href="../practice/practice-lab.html">Practice Lab</a>, the <a href="../practice/quiz.html">Self-Check Quiz</a> and the <a href="../practice/worksheet.html">Printable Worksheet</a>. Experiment freely in the <a href="../tools/explorer.html">Motion Explorer</a>, and keep the <a href="../reference/cheat-sheet.html">Formula Sheet</a> and <a href="../reference/glossary.html">Glossary</a> open while you work.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Before you start</p>
+      <p>You will need derivatives with the product and chain rules, vectors and their components, and Newton's second law \(\sum\Fvec = m\avec\). Angles are always in radians in the formulas of this module, and angular rates in rad/s.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Polar coordinates \((r, \theta)\) give a particle's distance from a fixed point \(O\) and the angle of the line from \(O\) to the particle. Cylindrical coordinates add the height \(z\) along a fixed axis.</li>
+      <li>They suit motion that is driven or measured from a point or axis: rotating arms, cranes, cams and slotted guides, radar tracking and orbits.</li>
+      <li>A tower crane's trolley, slew and hoist each change exactly one of \(r\), \(\theta\) and \(z\).</li>
+      <li>The unit vectors \(\er\) and \(\et\) turn with the particle. That is why a collar on a steadily spinning rod accelerates even when both rates are constant.</li>
+      <li>Next, <a href="02-position.html">Lesson 2</a> sets up the position: polar and cylindrical coordinates, conversions, and motion given as functions of time.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 1.1: tower crane whose joints are (r, θ, z) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  var stage = document.getElementById('fig11-stage');
+  var panel = document.getElementById('fig11-controls');
+
+  // Crane dimensions in meters (schematic). The mast is centered on the z-axis.
+  var R_MIN = 3, R_MAX = 38, Z_MAX = 24;          // trolley radius and hook height ranges
+  var MAST_TOP = 28, JIB_Z = 29.2, JIB_TOP = 30.8, JIB_LEN = 40, CJIB_LEN = 12, APEX = 36.5;
+  var TROLLEY_Z = 28.55;                          // underside of the trolley (rope anchor)
+  var BLOCK_TOP = 3.2;                            // hook point P to the top of the hook block (drawn oversize)
+
+  var state = { r: 24, theta: 2 * PI / 3, z: 10 };
+
+  // Beside the controls (a wide, tall stage) the scene can be framed a little tighter; otherwise pull back a
+  // little so the x and y labels clear the stage edges and the "Drag to rotate" hint on phones. The azimuth
+  // (60°) keeps the jib readable at the lesson's angles: π/6, π/2, 2π/3 and π are all 30° or more away
+  // from the view direction and from its opposite.
+  var sideBySide = getComputedStyle(stage.parentNode).gridTemplateColumns.trim().split(/\s+/).length > 1;
+  var wideStage = sideBySide && stage.clientWidth >= 480;
+  var v = CYL3D.create(stage, {
+    extent: 40, zRange: [0, 36],
+    camera: wideStage ? { azimuth: 60, elevation: 24, zoom: 1.05, target: [0, 0, 10] } : { azimuth: 60, elevation: 24, zoom: 0.95, target: [0, 0, 14] },
+    ariaLabel: 'Schematic tower crane on x, y and z axes, with lengths in meters. The lattice mast stands on the z-axis. ' +
+      'The jib turns about the mast through the slew angle theta; an orange trolley runs along the jib to radius r; ' +
+      'a rope drops from the trolley to a blue hook block and the hook point P at height z. Construction lines show ' +
+      'r on the ground, the violet theta arc from the positive x-axis, and the blue rise z up to P. Use the sliders to move the hook.'
+  });
+  var T = v.THREE;
+
+  // ---- materials: colors from CYL.colors(), re-applied when the theme changes
+  var paints = [];
+  function mat(key, mixKey, t) {
+    var m = new T.MeshStandardMaterial({ roughness: 0.6, metalness: 0.05 });
+    paints.push({ m: m, key: key, mixKey: mixKey || null, t: t || 0 });
+    return m;
+  }
+  function paintAll() {
+    var c = CYL.colors();
+    paints.forEach(function (e) {
+      e.m.color.set(c[e.key]);
+      if (e.mixKey) e.m.color.lerp(new T.Color(c[e.mixKey]), e.t);
+    });
+    v.render();
+  }
+  function box(parent, sx, sy, sz, cx, cy, cz, m) {
+    var mesh = new T.Mesh(new T.BoxGeometry(sx, sy, sz), m);
+    mesh.position.set(cx, cy, cz);
+    parent.add(mesh);
+    return mesh;
+  }
+  function L3(a, b, k) { return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; }
+  // Warren-truss lacing between two parallel chords A and B (each [start, end]), as one polyline + break.
+  function zig(out, A, B, n) {
+    for (var i = 0; i <= n; i++) out.push(L3((i % 2 ? B : A)[0], (i % 2 ? B : A)[1], i / n));
+    out.push(null);
+  }
+  function seg(out, a, b) { out.push(a, b, null); }
+
+  var M_STRUCT = mat('surface', 'ink', 0.12);
+  var M_LIGHT = mat('surface', 'bgElev', 0.45);
+  var M_HEAVY = mat('surface', 'ink', 0.45);
+  var M_BASE = mat('surface', 'vizBg', 0.6);
+  var M_R = mat('r'), M_T = mat('t'), M_Z = mat('z');
+
+  // ---- fixed parts: footing, mast, slewing ring
+  var fixed = v.group();
+  box(fixed, 7, 7, 0.8, 0, 0, -0.42, M_BASE);
+  var mastChords = [], mastLace = [];
+  var C = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+  C.forEach(function (p) { seg(mastChords, [p[0], p[1], 0], [p[0], p[1], MAST_TOP]); });
+  for (var f = 0; f < 4; f++) {
+    var a = C[f], b = C[(f + 1) % 4];
+    zig(mastLace, [[a[0], a[1], 0], [a[0], a[1], MAST_TOP]], [[b[0], b[1], 0], [b[0], b[1], MAST_TOP]], 14);
+  }
+  v.line(mastChords, { color: 'surface', width: 2.4, parent: fixed });
+  v.line(mastLace, { color: 'surface', width: 1.1, parent: fixed });
+  var ringGeo = new T.CylinderGeometry(1.7, 1.7, JIB_Z - MAST_TOP, 40);
+  ringGeo.rotateX(PI / 2);
+  var ring = new T.Mesh(ringGeo, M_T);
+  ring.position.set(0, 0, (MAST_TOP + JIB_Z) / 2);
+  fixed.add(ring);
+  v.label([-2.6, 2.6, 17], 'mast', { tex: false, className: 'small', parent: fixed });
+
+  // ---- slewing parts (rotate about z by θ): jib, counter-jib, tower head, cab, counterweight
+  var slew = v.group();
+  var jibChords = [], jibLace = [];
+  var B1 = [[1, 0.8, JIB_Z], [JIB_LEN, 0.8, JIB_Z]], B2 = [[1, -0.8, JIB_Z], [JIB_LEN, -0.8, JIB_Z]], TC = [[1, 0, JIB_TOP], [JIB_LEN, 0, JIB_TOP]];
+  [B1, B2, TC].forEach(function (c) { seg(jibChords, c[0], c[1]); });
+  zig(jibLace, B1, TC, 20); zig(jibLace, B2, TC, 20); zig(jibLace, B1, B2, 20);
+  jibChords.push(B1[1], B2[1], TC[1], B1[1], null);             // closed frame at the jib tip
+  var CB1 = [[-1, 1, JIB_Z], [-CJIB_LEN, 1, JIB_Z]], CB2 = [[-1, -1, JIB_Z], [-CJIB_LEN, -1, JIB_Z]];
+  var RAIL = JIB_Z + 1;
+  [CB1, CB2].forEach(function (c) { seg(jibChords, c[0], c[1]); });
+  seg(jibChords, [-1, 1, RAIL], [-CJIB_LEN, 1, RAIL]); seg(jibChords, [-1, -1, RAIL], [-CJIB_LEN, -1, RAIL]);
+  seg(jibChords, CB1[1], CB2[1]);
+  for (var px = -1; px >= -CJIB_LEN - 1e-9; px -= (CJIB_LEN - 1) / 5) {
+    seg(jibLace, [px, 1, JIB_Z], [px, 1, RAIL]); seg(jibLace, [px, -1, JIB_Z], [px, -1, RAIL]);
+  }
+  zig(jibLace, CB1, CB2, 6);
+  [[0.9, 0.9], [-0.9, 0.9], [-0.9, -0.9], [0.9, -0.9]].forEach(function (p) { seg(jibChords, [p[0], p[1], JIB_Z], [0, 0, APEX]); });
+  var pendants = [];
+  seg(pendants, [0, 0, APEX], [24, 0, JIB_TOP]);
+  seg(pendants, [0, 0, APEX], [-CJIB_LEN, 1, RAIL]);
+  seg(pendants, [0, 0, APEX], [-CJIB_LEN, -1, RAIL]);
+  v.line(jibChords, { color: 'surface', width: 2.4, parent: slew });
+  v.line(jibLace, { color: 'surface', width: 1.1, parent: slew });
+  v.line(pendants, { color: 'muted', width: 1.3, parent: slew });
+  box(slew, 2.0, 1.8, 2.0, 2.4, 2.1, JIB_Z - 1.0, M_LIGHT);                  // operator's cab
+  box(slew, 2.2, 2.4, 3.0, -10.7, 0, JIB_Z - 1.5, M_HEAVY);                 // counterweight
+  box(slew, 1.8, 1.4, 1.0, -5.5, 0, JIB_Z + 0.5, M_STRUCT);                 // hoist winch
+  v.label([33, 0, JIB_TOP + 1.6], 'jib', { tex: false, className: 'small', parent: slew });
+
+  var trolley = v.group(slew);
+  box(trolley, 2.6, 2.0, 0.65, 0, 0, TROLLEY_Z + 0.325, M_R);
+
+  var hook = v.group(slew);
+  box(hook, 1.4, 1.0, 1.8, 0, 0, BLOCK_TOP - 0.9, M_Z);
+  var hookPts = [[0, 0, BLOCK_TOP - 1.8]], HR = 0.6;
+  for (var k = 0; k <= 36; k++) {                                          // C-shaped hook, lowest point at P
+    var phi = PI / 2 - k / 36 * (5 * PI / 4 + PI / 2);
+    hookPts.push([HR * Math.cos(phi), 0, HR + HR * Math.sin(phi)]);
+  }
+  v.line(hookPts, { color: 'ink', width: 2.6, parent: hook });
+  var rope = v.line([], { color: 'muted', width: 1.4, parent: slew });
+
+  // ---- the hook point P with its cylindrical construction, and an optional traced path
+  var P = v.cylPoint({ r: state.r, theta: state.theta, z: state.z, label: 'P', size: 0.55 });
+  var trail = [], trailLine = v.line([], { color: 'accent', width: 2.5 });
+
+  paintAll();
+  CYL.theme.onChange(paintAll);
+
+  // ---- controls
+  function set(key) { return function (x) { endPlay(); state[key] = x; schedule(); }; }
+  var sR = CYL.slider({ label: '\\(r\\) trolley radius', min: R_MIN, max: R_MAX, step: 0.5, value: state.r, color: 'r', unit: 'm', onInput: set('r') });
+  var sT = CYL.angleSlider({ label: '\\(\\theta\\) slew angle', min: 0, max: 71 * PI / 36, snap: PI / 36, value: state.theta, onInput: set('theta') });
+  var sZ = CYL.slider({ label: '\\(z\\) hook height', min: 0, max: Z_MAX, step: 0.5, value: state.z, color: 'z', unit: 'm', onInput: set('z') });
+  var roCyl = CYL.readout('Cylindrical \\((r, \\theta, z)\\)');
+  var roCart = CYL.readout('Cartesian \\((x, y, z)\\)');
+  var tCon = CYL.toggle({ label: 'Construction', value: true, onChange: function (on) { P.setVisible({ construction: on }); } });
+  var tLeg = CYL.toggle({ label: '\\(x, y\\) legs', value: false, onChange: function (on) { P.setVisible({ cartesian: on }); } });
+  var tTrace = CYL.toggle({ label: 'Trace path', value: false, onChange: function (on) { clearTrail(); trailLine.visible = on; v.render(); } });
+  var clearBtn = CYL.button('Clear path', function () { clearTrail(); }, { small: true });
+
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Crane controls' }));
+  [sR, sT, sZ].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roCyl.el, roCart.el]));
+  panel.appendChild(CYL.el('p', { class: 'small muted', html: 'Lengths in m, \\(\\theta\\) in rad.' }));
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Show' }));
+  panel.appendChild(CYL.el('div', { class: 'chip-row' }, [tCon.el, tLeg.el, tTrace.el]));
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [clearBtn]));
+  CYL.renderMath(panel);
+
+  function hookXYZ() { var c = CYL.math.toCart(state.r, state.theta, state.z); return [c.x, c.y, c.z]; }
+  // The trace follows the crane's joints, not a straight chord: between two updates r, θ and z each change
+  // linearly (a slider jump, Home/End or a fast drag can be one update), so a slew traces an arc of the circle.
+  var prev = { r: state.r, theta: state.theta, z: state.z };
+  function clearTrail() { trail = [hookXYZ()]; prev = { r: state.r, theta: state.theta, z: state.z }; trailLine.setPoints(trail); }
+  function addTrail(p) {
+    var q = trail[trail.length - 1];
+    if (q && Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) < 0.15) return;
+    trail.push(p);
+    if (trail.length > 1200) trail.shift();
+  }
+  function traceTo() {
+    var dr = state.r - prev.r, dth = state.theta - prev.theta, dz = state.z - prev.z;
+    var n = Math.max(1, Math.ceil(Math.max(Math.abs(dth) / (2 * PI / 180), Math.abs(dr) / 0.5, Math.abs(dz) / 0.5)));
+    for (var k = 1; k <= n; k++) {
+      var c = CYL.math.toCart(prev.r + dr * k / n, prev.theta + dth * k / n, prev.z + dz * k / n);
+      addTrail([c.x, c.y, c.z]);
+    }
+    trailLine.setPoints(trail);
+  }
+
+  function tfrac(tex) { return tex.replace(/\\frac/g, '\\tfrac'); }
+  function update() {
+    var r = state.r, th = state.theta, z = state.z;
+    slew.rotation.z = th;
+    trolley.position.x = r;
+    hook.position.set(r, 0, z);
+    rope.setPoints([[r - 0.3, 0, TROLLEY_Z], [r - 0.3, 0, z + BLOCK_TOP], null, [r + 0.3, 0, TROLLEY_Z], [r + 0.3, 0, z + BLOCK_TOP]]);
+    P.set({ r: r, theta: th, z: z });
+    var p = hookXYZ();
+    roCyl.set('(' + CYL.fmtTex(r) + ',\\ ' + tfrac(CYL.angleTex(th, { deg: false })) + ',\\ ' + CYL.fmtTex(z) + ')', { tex: true });
+    roCart.set('(' + CYL.fmtTex(p[0], 4) + ',\\ ' + CYL.fmtTex(p[1], 4) + ',\\ ' + CYL.fmtTex(z) + ')', { tex: true });
+    if (tTrace.get()) traceTo();
+    prev = { r: r, theta: th, z: z };
+    v.render();
+  }
+  var schedule = CYL.throttleRAF(update);
+  trailLine.visible = false;
+  update();
+
+  // ---- Example 1.1 replay: (30, π/6, 12) slewed to θ = 2π/3 with the path traced
+  var stopPlay = null;
+  function endPlay() { if (stopPlay) { stopPlay(); stopPlay = null; } }
+  function syncSliders() { sR.set(state.r, true); sT.set(state.theta, true); sZ.set(state.z, true); }
+  var TH0 = PI / 6, TH1 = 2 * PI / 3;
+  var playBtn = document.getElementById('ex11-play');
+  if (playBtn) playBtn.addEventListener('click', function () {
+    endPlay();
+    state.r = 30; state.theta = TH0; state.z = 12;
+    syncSliders();
+    if (tTrace.get()) clearTrail(); else tTrace.set(true);     // turning the trace on clears it at the start point
+    update();
+    var reduced = CYL.prefersReducedMotion();
+    try { stage.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); } catch (e) { stage.scrollIntoView(); }
+    if (reduced) { state.theta = TH1; syncSliders(); update(); return; }
+    var HOLD = 0.7, DUR = 2.6;                                  // s: let the scroll settle, then slew
+    stopPlay = v.animate(function (dt, t) {
+      var k = Math.min(1, Math.max(0, (t - HOLD) / DUR)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      state.theta = k >= 1 ? TH1 : TH0 + (TH1 - TH0) * e;
+      sT.set(state.theta, true);
+      update();
+      if (k >= 1) { stopPlay = null; return false; }
+    });
+  });
+});
+
+/* ---------- Figure 1.2: a collar sliding out along a steadily spinning rod (teaser for Lessons 3 to 5) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var RD = 0.15, W = 1, R0 = 0.3, T1 = 5;   // r from 0.3 m to 1.05 m
+  POLAR.figure({
+    stage: document.getElementById('fig12-stage'), controls: document.getElementById('fig12-controls'),
+    motion: {
+      r: function (t) { return R0 + RD * t; }, rd: function () { return RD; }, rdd: function () { return 0; },
+      th: function (t) { return W * t; }, thd: function () { return W; }, thdd: function () { return 0; }
+    },
+    t0: 0, t1: T1, t: 1.5, speed: 1, loop: true,
+    xRange: [-1.5, 1.5], yRange: [-1.5, 1.5], polarStep: { r: 0.25, thetaDeg: 30 },
+    arm: { length: 1.2, width: 8 },
+    vScale: 1, aScale: 1,
+    show: { comps: 'rt', trace: true, radial: false },
+    toggles: ['v', 'a', 'comps'],
+    readouts: ['t', 'r', 'th', 'v', 'a'],
+    aria: 'Top view of a rod pivoted at the origin O and spinning counter-clockwise at a constant rate. A collar P slides outward along the rod at a constant speed, tracing a spiral. A green velocity arrow and a red acceleration arrow are drawn at P, with their components along and across the rod. The acceleration points mostly toward O and partly across the rod, in the direction of rotation.'
+  });
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l01-q1',
+    type: 'mc',
+    prompt: 'A collar slides along a straight rod that spins in a horizontal plane about a vertical axis through one end of the rod. Which description of the collar\'s motion is the most natural?',
+    choices: [
+      { html: 'Polar coordinates: \\(r\\) measured along the rod from the axis, and \\(\\theta\\) the angle of the rod', correct: true,
+        feedback: 'The rod\'s rotation is \\(\\theta(t)\\) and the sliding is \\(r(t)\\): each piece of the machine controls one coordinate.' },
+      { html: 'Rectangular coordinates \\(x\\) and \\(y\\)', feedback: 'Both \\(x = r\\cos\\theta\\) and \\(y = r\\sin\\theta\\) change in a complicated way even when the rod and the collar move at steady rates.' },
+      { html: 'Path coordinates \\(t\\) and \\(n\\)', feedback: 'The path is a spiral that depends on how fast the collar slides; you usually do not know it in advance, so its radius of curvature is hard to find.' },
+      { html: 'None of them works for this motion', feedback: 'All three systems can describe it; the question is which one makes it simple.' }
+    ],
+    hints: ['What does the motor control, and what does the sliding control?'],
+    explain: 'Choose the system whose coordinates match what the machine controls or what you measure.',
+    solution: '<p>The rod turns through the angle \\(\\theta\\), and the collar\'s distance from the axis along the rod is \\(r\\). So the motion is simply \\(r(t)\\) and \\(\\theta(t)\\): polar coordinates.</p>'
+  });
+
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l01-q2',
+    type: 'fields',
+    prompt: 'A crane holds a load at a trolley radius of \\(25\\ \\text{m}\\) and slews through \\(60^\\circ\\) at a steady rate in \\(20\\ \\text{s}\\), with the trolley and hoist fixed. How far does the load travel, and what is its speed?',
+    fields: [
+      { name: 's', label: '\\(s =\\)', answer: 25 * Math.PI / 3, unit: 'm', answerTex: '\\tfrac{25\\pi}{3} \\approx 26.18' },
+      { name: 'v', label: '\\(v =\\)', answer: 25 * Math.PI / 3 / 20, unit: 'm/s', answerTex: '\\tfrac{5\\pi}{12} \\approx 1.309' }
+    ],
+    hints: ['The load moves on a circle of radius \\(25\\ \\text{m}\\). Convert \\(60^\\circ\\) to radians before using \\(s = r\\,\\Delta\\theta\\).',
+      'At a steady rate, the speed is the distance divided by the time.'],
+    explain: 'Arc length \\(s = r\\,\\Delta\\theta\\) needs \\(\\Delta\\theta\\) in radians; the speed is also \\(r\\dot\\theta\\).',
+    solution: '\\[ \\begin{aligned} \\Delta\\theta &= 60^\\circ = \\tfrac{\\pi}{3}\\ \\text{rad} \\\\ s &= r\\,\\Delta\\theta = 25 \\cdot \\tfrac{\\pi}{3} \\approx 26.18\\ \\text{m} \\\\ v &= \\frac{s}{\\Delta t} = \\frac{26.18}{20} \\approx 1.309\\ \\text{m/s} \\end{aligned} \\]' +
+      '<p>Check: \\(\\dot\\theta = (\\pi/3)/20 \\approx 0.05236\\ \\text{rad/s}\\) and \\(r\\dot\\theta = 25 \\times 0.05236 \\approx 1.309\\ \\text{m/s}\\).</p>'
+  });
+
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l01-q3',
+    type: 'multi',
+    prompt: 'Which of these motions are most naturally described with polar or cylindrical coordinates? Select all that apply.',
+    choices: [
+      { html: 'An aircraft tracked by a radar that measures its range and the angle of its line of sight', correct: true },
+      { html: 'The gripper of a robot whose arm turns, rises and telescopes', correct: true },
+      { html: 'A satellite on an elliptical orbit around the Earth', correct: true },
+      { html: 'A ball thrown across a level field', feedback: 'Gravity acts in a fixed direction, so rectangular components (\\(x\\), \\(y\\)) are simplest.' },
+      { html: 'A car going round a highway curve whose radius is known', feedback: 'The path and its radius of curvature are known, so path coordinates (\\(t\\), \\(n\\)) are simplest.' }
+    ],
+    hints: ['Look for a fixed point or axis from which the motion is driven or measured.'],
+    explain: 'Radar, the robot and the orbit are each measured or driven from a fixed point or axis; the projectile and the car are not.',
+    solution: '<p>The radar measures \\(r\\) and \\(\\theta\\) directly; the robot\'s joints are \\(\\theta\\), \\(z\\) and \\(r\\); gravity on a satellite points at the Earth\'s center, a fixed point. The projectile is simplest in \\(x\\) and \\(y\\) (gravity is vertical), and the car on a known curve in \\(t\\) and \\(n\\).</p>'
+  });
+});
+
+/* ---------- Roadmap: mark completed lessons ---------- */
+CYL.ready(function () {
+  'use strict';
+  function mark() {
+    document.querySelectorAll('.roadmap > li[data-id]').forEach(function (li) {
+      var done = CYL.progress.isComplete(li.getAttribute('data-id'));
+      li.classList.toggle('is-done', done && !li.classList.contains('is-current'));
+      var num = li.querySelector('.rm-num');
+      if (num) num.textContent = done ? '✓' : String(num.getAttribute('data-n') || num.textContent);
+      // The ✓ and its color are visual only (aria-hidden): give screen readers the status as text in the title.
+      var title = li.querySelector('.rm-title'), st = title && title.querySelector('.rm-status');
+      if (title && done && !st) title.appendChild(CYL.el('span', { class: 'visually-hidden rm-status', text: ' (completed)' }));
+      if (st && !done) st.parentNode.removeChild(st);
+    });
+  }
+  document.querySelectorAll('.roadmap .rm-num').forEach(function (n) { n.setAttribute('data-n', n.textContent); });
+  mark();
+  CYL.progress.onChange(mark);
+});
+</script>
+</body>
+</html>

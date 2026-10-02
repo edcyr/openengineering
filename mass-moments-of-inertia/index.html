@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module Home · Mass Moments of Inertia</title>
+<meta name="description" content="An interactive, offline module on mass moments of inertia, products of inertia and the inertia tensor for second-year rigid-body dynamics: eight short lessons with 3D figures, worked examples, instant-feedback questions, practice and a self-check quiz.">
+<link rel="stylesheet" href="assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="assets/css/module.css">
+<script src="assets/vendor/katex/katex.min.js"></script>
+<script src="assets/vendor/katex/auto-render.min.js"></script>
+<script src="assets/vendor/three/three.bundle.min.js"></script>
+<script src="assets/js/cyl-core.js"></script>
+<script src="assets/js/cyl-3d.js"></script>
+<script src="assets/js/inertia.js"></script>
+<style>
+  /* ---------- Home page only (module.css holds the shared design system) ---------- */
+
+  /* Section headings: the h2 sits inside a <header>, so the shell builds no "On this page" list here */
+  .home-sec-head { margin: 0 0 1.1rem; }
+  .home-sec-head h2 { margin: 0 0 4px; }
+  .home-sec-head p { margin: 0; color: var(--ink-muted); }
+  .home-sec-head .home-prereq { margin: 0 0 10px; }
+  .home-prereq strong { color: var(--ink); }
+
+  /* ---------- Hero ---------- */
+  .home-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px 40px;
+    align-items: center;
+    margin-bottom: 0;
+    padding: 4px 0 34px;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-hero::before {
+    /* faint engineering-paper grid, as on the lesson headers */
+    content: "";
+    position: absolute;
+    z-index: -1;
+    /* never wider than the page gutter (16 px on phones), or the page would scroll sideways */
+    inset: -26px calc(-1 * min(20px, var(--gutter))) 0;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(120% 95% at 0% 0%, #000 25%, transparent 72%);
+    mask-image: radial-gradient(120% 95% at 0% 0%, #000 25%, transparent 72%);
+    pointer-events: none;
+  }
+  @container cylmain (min-width: 800px) {
+    .home-hero { grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr); }
+  }
+  .home-hero .eyebrow { margin-bottom: 10px; }
+  /* Eyebrow separator: each phrase after the first carries its "·" in its left margin. The row is
+     shifted left by that margin and clipped back, so a phrase that wraps to a new line (narrow
+     columns) loses its dot instead of leaving one dangling at the end of the line above. */
+  .home-hero .eyebrow {
+    --sep: 22px;
+    gap: 4px 0;
+    margin-left: calc(-1 * var(--sep));
+    -webkit-clip-path: inset(0 0 0 var(--sep));
+    clip-path: inset(0 0 0 var(--sep));
+  }
+  .home-hero .eyebrow > span { position: relative; margin-left: var(--sep); }
+  .home-hero .eyebrow > span + span::before {
+    content: "·";
+    content: "·" / "";
+    position: absolute;
+    left: calc(-1 * var(--sep));
+    width: var(--sep);
+    text-align: center;
+  }
+  .home-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(2.05rem, 1.35rem + 2.6vw, 2.95rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  .home-hero .lede { margin: 0 0 22px; }
+  .home-cta { gap: 10px; }
+  .home-cta .btn { min-height: 44px; padding: 10px 18px; font-size: 0.95rem; }
+  .home-cta .btn svg { width: 1.05em; height: 1.05em; }
+  .home-cta .btn:not(.primary) svg { display: none; }  /* the arrow marks the main next step only */
+  .home-next { margin: 12px 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.5; }
+  .home-next strong { color: var(--ink); }
+  .home-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+  }
+  .home-facts li { display: inline-flex; align-items: center; gap: 7px; margin: 0; }
+  .home-facts li::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .home-facts li.is-offline::before { background: var(--c-good); }
+  .home-facts strong { color: var(--ink); font-weight: 650; }
+
+  /* Hero figure */
+  .home-fig {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+    box-shadow: var(--shadow);
+  }
+  .home-stage { position: relative; }
+  .home-stage .cyl3d { height: 400px; }
+  @media (max-width: 559.98px) { .home-stage .cyl3d { height: 320px; } }
+  .home-stage .cyl3d.cyl3d-unavailable { height: auto; }
+  .home-stage .cyl3d-fallback { min-height: 400px; }
+  @media (max-width: 559.98px) { .home-stage .cyl3d-fallback { min-height: 320px; } }
+  .home-spin {
+    /* Play / Pause over the plot, top-left, as on the Cylindrical Coordinates home page */
+    -webkit-appearance: none;
+    appearance: none;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--viz-ui-bg);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .home-spin:hover { border-color: var(--accent); color: var(--accent); }
+  .home-spin svg { width: 12px; height: 12px; flex: none; }
+  .home-fig-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    padding: 12px 14px 4px;
+    border-top: 1px solid var(--line);
+  }
+  .home-fig-bar .viz-title {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .home-fig figcaption {
+    margin: 0;
+    padding: 6px 14px 13px;
+    color: var(--ink-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  /* ---------- Learning outcomes ---------- */
+  .home-outcomes-box { margin: 0; }
+  .home-outcomes-box ul { margin-bottom: 6px; }
+  .home-outcomes-box li { margin-bottom: 10px; }
+  .home-where { color: var(--ink-faint); font-size: 0.86em; white-space: nowrap; }
+  .home-where a { color: inherit; }
+  .home-where a:hover { color: var(--accent); }
+
+  /* ---------- How to use ---------- */
+  .home-path { list-style: none; margin: 0 0 1rem; padding: 0; counter-reset: homestep; }
+  .home-path > li { position: relative; margin: 0; padding: 3px 0 20px 46px; counter-increment: homestep; }
+  .home-path > li::before {
+    content: counter(homestep);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .home-path > li::after {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 36px;
+    bottom: 5px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--line);
+  }
+  .home-path > li:last-child { padding-bottom: 4px; }
+  .home-path > li:last-child::after { display: none; }
+  .home-path-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0; }
+  .home-path-head strong { font-weight: 700; }
+  .home-path-time { color: var(--ink-faint); font-size: 0.84rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .home-path p { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.95em; }
+  .home-total {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0 0 1.8rem;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+    font-size: 0.95em;
+  }
+  .home-total strong { font-size: 1.05em; }
+  .home-total span { color: var(--ink-muted); }
+
+  .home-tips-title { margin: 0 0 12px; font-size: 1.05em; }
+  .home-tips { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .home-tips > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;                              /* a short card in a tall row keeps its text under its title */
+    gap: 2px 12px;
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .home-tips p { margin: 0; color: var(--ink-muted); font-size: 0.92em; }
+  .home-tips strong { display: block; color: var(--ink); font-size: 1rem; }
+
+  /* mask icons (color from background-color) */
+  .home-icon {
+    grid-row: 1 / span 2;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--accent-soft);
+    position: relative;
+  }
+  .home-icon::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    background: var(--accent);
+    -webkit-mask: var(--icon) center / contain no-repeat;
+    mask: var(--icon) center / contain no-repeat;
+  }
+  .ic-pencil { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l1.1-4.2L15.8 5.1a2.1 2.1 0 0 1 3 3L8.1 18.9 4 20z'/%3E%3Cpath d='M14.2 6.7l3 3'/%3E%3C/svg%3E"); }
+  .ic-check { --icon: var(--i-check-circle); }
+  .ic-repeat { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12a8 8 0 0 1-14.2 5'/%3E%3Cpath d='M4 12a8 8 0 0 1 14.2-5'/%3E%3Cpath d='M18.6 3v4.2h-4.2'/%3E%3Cpath d='M5.4 21v-4.2h4.2'/%3E%3C/svg%3E"); }
+  .ic-quiz { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='4' width='14' height='17' rx='2'/%3E%3Cpath d='M9 4V2.8h6V4'/%3E%3Cpath d='M8.6 11.4l2.1 2.1 4.4-4.4'/%3E%3Cpath d='M8.6 17h6.8'/%3E%3C/svg%3E"); }
+  .ic-flag { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V3.5'/%3E%3Cpath d='M5 4h12l-2.6 4.5L17 13H5'/%3E%3C/svg%3E"); }
+  .ic-print { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 9V3h10v6'/%3E%3Crect x='3' y='9' width='18' height='8' rx='2'/%3E%3Cpath d='M7 14h10v7H7z'/%3E%3C/svg%3E"); }
+  .ic-sheet { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 2.8h8.6L19 7.2v14H6z'/%3E%3Cpath d='M14.2 3v4.6H19'/%3E%3Cpath d='M9 12h7M9 16h7'/%3E%3C/svg%3E"); }
+  .ic-cube { --icon: var(--i-cube); }
+  .ic-book { --icon: var(--i-book); }
+
+  /* ---------- Lesson and resource cards ---------- */
+  .home-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin: 10px 0 0;
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+  }
+  .home-progress strong { color: var(--ink); }
+  .home-progress-bar {
+    flex: 0 1 180px;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--track);
+  }
+  .home-progress-fill { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--c-good); }
+
+  .home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .home-cards > li { display: flex; margin: 0; min-width: 0; }
+  a.card.home-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 3px 14px;
+    width: 100%;
+    padding: 14px 16px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .home-card > :not(.home-num):not(.home-icon) { grid-column: 2; }
+  .home-num {
+    grid-row: 1 / span 3;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--bg-sunken);
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  a.home-card:hover .home-num { border-color: var(--accent); color: var(--accent); }
+  .home-card.is-complete .home-num {
+    border-color: color-mix(in srgb, var(--c-good) 40%, transparent);
+    background: var(--c-good-soft);
+    color: var(--c-good);
+  }
+  .home-card .home-icon { grid-row: 1 / span 3; }
+  .home-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .home-card .card-title { margin: 0; font-size: 1.02rem; line-height: 1.35; }
+  .home-card-sum { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.5; }
+  .home-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--c-good);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .home-done::before {
+    content: "";
+    width: 13px;
+    height: 13px;
+    background: currentColor;
+    -webkit-mask: var(--i-check) center / contain no-repeat;
+    mask: var(--i-check) center / contain no-repeat;
+  }
+  .home-card:not(.is-complete) .home-done { display: none; }
+  .home-instructor { margin: 1.2rem 0 0; color: var(--ink-muted); font-size: 0.95em; }
+
+  /* ---------- Requirements ---------- */
+  .home-req {
+    padding: 18px 20px 12px;
+    border: 1px solid color-mix(in srgb, var(--c-good) 35%, transparent);
+    border-radius: var(--radius);
+    background: var(--c-good-soft);
+  }
+  .home-req-lead { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.08em; font-weight: 700; }
+  .home-req-lead::before {
+    content: "";
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    background: var(--c-good);
+    -webkit-mask: var(--i-check-circle) center / contain no-repeat;
+    mask: var(--i-check-circle) center / contain no-repeat;
+  }
+  .home-req ul { margin: 0 0 8px; padding-left: 1.3em; }
+  .home-req li { margin: 0 0 6px; }
+  .home-req p { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.95em; }
+  .home-req .home-req-lead { color: var(--ink); font-size: 1.08em; }
+
+  .home-noscript {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--c-warn);
+    border-radius: var(--radius);
+    background: var(--c-warn-soft);
+  }
+
+  @media print {
+    .home-fig, .home-cta, .home-next { display: none !important; }
+    .home-hero { grid-template-columns: minmax(0, 1fr) !important; }
+  }
+</style>
+</head>
+<body data-page="home" data-root=".">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page home">
+
+  <noscript>
+    <div class="home-noscript">
+      <p><strong>This module needs JavaScript.</strong> Turn JavaScript on in your browser settings, then reload this page. See README.txt in the module folder for help.</p>
+    </div>
+  </noscript>
+
+  <!-- ================= Hero ================= -->
+  <header class="home-hero wide" aria-labelledby="home-title">
+    <div class="home-hero-text">
+      <p class="eyebrow"><span>Interactive module</span> <span>Rigid-body dynamics</span></p>
+      <h1 id="home-title">Mass Moments of Inertia</h1>
+      <p class="lede">How hard is it to spin a flywheel, balance a crankshaft or point a satellite? The answer is in how a body's mass is spread around its axes. This module, written for second-year mechanical and aerospace engineering students, takes you from the moment of inertia of a single particle to the inertia tensor, angular momentum and principal axes, in eight lessons with 3D figures and questions that check your work.</p>
+      <div class="btn-row home-cta">
+        <!-- A returning student (any lesson complete) gets "Continue" as the primary button; see refresh() -->
+        <a class="btn primary" id="home-continue" href="lessons/01-why-inertia.html" aria-describedby="home-next" hidden>Continue where you left off<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+        <a class="btn primary" id="home-start" href="lessons/01-why-inertia.html"><span id="home-start-label">Start Lesson 1</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+      </div>
+      <p class="home-next" id="home-next" aria-live="polite" hidden></p>
+      <ul class="home-facts" aria-label="Module at a glance">
+        <li><span><strong>8</strong> lessons</span></li>
+        <li><span>about <strong>4½ h</strong> of lessons</span></li>
+        <li class="is-offline"><span>Works offline</span></li>
+      </ul>
+    </div>
+
+    <figure class="home-fig" aria-labelledby="home-fig-cap">
+      <div class="home-stage" id="home-stage"></div>
+      <div class="home-fig-bar" id="home-fig-bar">
+        <p class="viz-title">Show</p>
+      </div>
+      <figcaption id="home-fig-cap">A small satellite spins about the vertical axis through its center of mass. The green \(\wvec\) points along the spin axis, but the red angular momentum \(\Hvec_G = \Imat_G\wvec\) leans away from it and turns with the body, because the spin axis is not a principal axis. Show the principal axes and the inertia ellipsoid to see why.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ================= Learning outcomes ================= -->
+  <section id="outcomes" aria-labelledby="outcomes-h">
+    <header class="home-sec-head">
+      <h2 id="outcomes-h">Learning outcomes</h2>
+      <p>By the end of the module you can:</p>
+    </header>
+    <div class="objectives home-outcomes-box">
+      <ul>
+        <li>Explain what the mass moment of inertia measures, compute it for particles, and use the radius of gyration. <span class="home-where">(<a href="lessons/01-why-inertia.html">Lesson 1</a>)</span></li>
+        <li>Derive moments of inertia of standard bodies by integration, and use a table of standard results. <span class="home-where">(<a href="lessons/02-integration.html">Lesson 2</a>)</span></li>
+        <li>Apply the parallel-axis theorem, and find moments of inertia of composite bodies, holes included. <span class="home-where">(<a href="lessons/03-parallel-axis.html">Lessons 3–4</a>)</span></li>
+        <li>Compute products of inertia, use symmetry to show that they vanish, and transfer them to parallel axes. <span class="home-where">(<a href="lessons/05-products-of-inertia.html">Lesson 5</a>)</span></li>
+        <li>Assemble the inertia tensor and use it to find angular momentum \(\Hvec = \Imat\wvec\) and kinetic energy \(T = \tfrac12\wvec^\mathsf{T}\Imat\wvec\). <span class="home-where">(<a href="lessons/06-inertia-tensor.html">Lesson 6</a>)</span></li>
+        <li>Find the moment of inertia about any axis, and transform the tensor to rotated axes. <span class="home-where">(<a href="lessons/07-any-axis.html">Lesson 7</a>)</span></li>
+        <li>Find principal axes and principal moments with the plane formulas, Mohr's circle or an eigen-solver, and relate them to balancing and spin stability. <span class="home-where">(<a href="lessons/08-principal-axes.html">Lesson 8</a>)</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= How to use ================= -->
+  <section id="how-to-use" aria-labelledby="how-h">
+    <header class="home-sec-head">
+      <h2 id="how-h">How to use this module</h2>
+      <p class="home-prereq"><strong>Before you start:</strong> you should be comfortable with 3D vectors (the dot and cross products), single-variable integrals and simple double integrals, centers of mass, and plane rigid-body kinetics (\(\sum M = I\alpha\)). Matrix multiplication is used from Lesson 6 on, and eigenvalues in Lesson 8.</p>
+      <p>Work through the lessons in order. The times allow for working the examples on paper and doing the checks. A suggested plan in four sittings:</p>
+    </header>
+
+    <ol class="home-path" role="list">
+      <li>
+        <p class="home-path-head"><strong>Lessons 1–2</strong><span class="home-path-time">60 min</span></p>
+        <p>What inertia measures, particles and the radius of gyration, and integration for standard bodies.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 3–4</strong><span class="home-path-time">65 min</span></p>
+        <p>The parallel-axis theorem and composite bodies.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 5–6</strong><span class="home-path-time">70 min</span></p>
+        <p>Products of inertia, the inertia tensor, angular momentum and kinetic energy.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 7–8, Practice Lab and Self-Check Quiz</strong><span class="home-path-time">135 min</span></p>
+        <p>Any axis and rotated axes, principal axes, about 30 min of practice, then the 35-minute quiz.</p>
+      </li>
+    </ol>
+    <p class="home-total"><strong>About 5½ h in total:</strong><span><span class="nowrap">265 min of lessons,</span> <span class="nowrap">30 min of practice,</span> <span class="nowrap">35 min for the quiz</span></span></p>
+
+    <h3 class="home-tips-title">Get the most out of it</h3>
+    <ul class="home-tips" role="list">
+      <li><span class="home-icon ic-pencil" aria-hidden="true"></span><strong>Keep pencil and paper handy</strong><p>Try each worked example yourself before you open its solution, and set out composite bodies in a table.</p></li>
+      <li><span class="home-icon ic-check" aria-hidden="true"></span><strong>Do the checks</strong><p>Every lesson has “Check your understanding” questions with hints and full solutions. You can type answers like <code>2/5*3*0.1^2</code> or <code>sqrt(0.29)</code>.</p></li>
+      <li><span class="home-icon ic-repeat" aria-hidden="true"></span><strong>Practice until it is routine</strong><p>The <a href="practice/practice-lab.html">Practice Lab</a> generates unlimited problems, each with a worked solution.</p></li>
+      <li><span class="home-icon ic-quiz" aria-hidden="true"></span><strong>Test yourself at the end</strong><p>The <a href="practice/quiz.html">Self-Check Quiz</a> gives a score, solutions and a results page you can print or save as a PDF.</p></li>
+      <li><span class="home-icon ic-flag" aria-hidden="true"></span><strong>Track your progress</strong><p>Tick “Mark this lesson complete” at the end of each lesson. A ✓ appears here and in Contents; it is saved in this browser only.</p></li>
+      <li><span class="home-icon ic-sheet" aria-hidden="true"></span><strong>Keep the formulas close</strong><p>Print the <a href="reference/cheat-sheet.html">Formula Sheet</a>, with its table of standard bodies, and look up terms in the <a href="reference/glossary.html">Glossary</a>.</p></li>
+    </ul>
+  </section>
+
+  <!-- ================= Lessons ================= -->
+  <section id="lessons" aria-labelledby="lessons-h">
+    <header class="home-sec-head">
+      <h2 id="lessons-h">Lessons</h2>
+      <p>Each lesson has interactive figures, worked examples and questions with instant feedback.</p>
+      <p class="home-progress" id="home-progress" hidden>
+        <span id="home-progress-text"></span>
+        <span class="home-progress-bar" aria-hidden="true"><span class="home-progress-fill" id="home-progress-fill"></span></span>
+      </p>
+    </header>
+    <ul class="home-cards" id="home-lesson-list" role="list"></ul>
+  </section>
+
+  <!-- ================= Practice, tools, reference ================= -->
+  <section id="practice-tools" aria-labelledby="pt-h">
+    <header class="home-sec-head">
+      <h2 id="pt-h">Practice, tools and reference</h2>
+      <p>Use these alongside the lessons, or on their own when you revise.</p>
+    </header>
+    <ul class="home-cards" id="home-resource-list" role="list"></ul>
+  </section>
+
+  <!-- ================= Requirements ================= -->
+  <section id="requirements" aria-labelledby="req-h">
+    <header class="home-sec-head">
+      <h2 id="req-h">Requirements</h2>
+    </header>
+    <div class="home-req">
+      <p class="home-req-lead">Any modern browser. Works offline.</p>
+      <ul>
+        <li>A current version of Chrome, Edge, Firefox or Safari, with JavaScript on. A laptop or desktop screen works best; the pages also fit tablets and phones.</li>
+        <li>The 3D figures need WebGL, which every current browser has. If it is turned off, the figures show a short message and the rest of the page still works.</li>
+        <li>No internet connection, installation or account. Everything is inside this folder.</li>
+        <li>Your progress is saved in this browser on this device. Private or incognito windows do not keep it.</li>
+      </ul>
+      <p>Something not working? Read <a href="README.txt">README.txt</a> in the module folder for how to open the module and fix common problems.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- Hero figure: a spinning satellite, ω, H_G = [I_G]ω, principal axes and the inertia ellipsoid ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI, SPEED = 0.8;                        // rad/s of spin in the picture
+  var stage = document.getElementById('home-stage');
+  var bar = document.getElementById('home-fig-bar');
+  var coarse = false;
+  try { coarse = window.matchMedia('(pointer: coarse)').matches; } catch (e) { coarse = false; }
+
+  // A bus, two solar panels and a boom with a tip mass (SI units). The boom makes the spin axis non-principal.
+  var b = [0.3, 0.2, 0.9], n = Math.sqrt(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]), L = 0.8, base = [0.15, 0.1, 0.25];
+  b = b.map(function (x) { return x / n; });
+  var parts = [
+    { type: 'box', m: 60, d: { a: 0.5, b: 0.4, c: 0.5 }, center: [0, 0, 0], color: 'surface', opacity: 0.8 },
+    { type: 'plate', m: 8, d: { a: 0.35, b: 1.0 }, center: [0, 0.8, 0], color: 'z', opacity: 0.55 },
+    { type: 'plate', m: 8, d: { a: 0.35, b: 1.0 }, center: [0, -0.8, 0], color: 'z', opacity: 0.55 },
+    { type: 'rod', m: 3, d: { l: L }, center: base.map(function (x, i) { return x + b[i] * L / 2; }), axis: b, color: 'accent', opacity: 1 },
+    { type: 'sphere', m: 6, d: { r: 0.07 }, center: base.map(function (x, i) { return x + b[i] * L; }), color: 'accent', opacity: 1 }
+  ];
+  var A = INERT.assemble(parts), G = A.G;
+  parts.forEach(function (p) { p.center = [p.center[0] - G[0], p.center[1] - G[1], p.center[2] - G[2]]; });   // G at the origin
+  var IG = A.IG, E = INERT.eig(IG);
+
+  var st = { th: 0, arrows: true, axes: true, ell: false };
+  function describe() {
+    return 'A small satellite, a box with two solar panels and a tilted boom with a tip mass, spinning about the vertical axis through its center of mass. ' +
+      (st.arrows ? 'A green arrow along the spin axis is the angular velocity; a red arrow, tilted about 12 degrees from it, is the angular momentum, which turns with the body. ' : '') +
+      (st.axes ? 'Three colored lines through the center of mass are the principal axes. ' : '') +
+      (st.ell ? 'A translucent inertia ellipsoid is drawn around the center of mass. ' : '');
+  }
+  var v = CYL3D.create(stage, {
+    extent: 1.25, zRange: [-0.7, 1.2], grid: 'none', axes: false,
+    camera: { azimuth: 32, elevation: 18, zoom: 1.3 },
+    controls: !coarse,                                 // touch screens: the page scrolls over the figure
+    ui: ['iso', 'top', 'reset'],
+    ariaLabel: describe()
+  });
+
+  var body = v.group();
+  parts.forEach(function (p) { INERT.draw(v, p, { parent: body, color: p.color, opacity: p.opacity, rodRadius: 0.018, thin: 0.02 }); });
+  var COLS = ['bad', 'warn', 'good'], axesGrp = v.group(body);
+  E.vectors.forEach(function (u, i) {
+    var s = 1.05;
+    v.line([[-s * u[0], -s * u[1], -s * u[2]], [s * u[0], s * u[1], s * u[2]]], { color: COLS[i], width: 2, dashed: true, parent: axesGrp });
+  });
+  var smax = 0.75, V = E.vectors;
+  var ell = v.solid({ shape: 'ellipsoid', center: [0, 0, 0], parent: body, color: 'surface', opacity: 0.18, rings: true, segments: 64,
+    size: E.values.map(function (x) { return smax * Math.sqrt(E.values[2] / x); }),
+    rotation: [[V[0][0], V[1][0], V[2][0]], [V[0][1], V[1][1], V[2][1]], [V[0][2], V[1][2], V[2][2]]] });
+  ell.visible = st.ell;
+  var arrows = v.group();
+  v.line([[0, 0, -0.75], [0, 0, 0.75]], { color: 'muted', width: 1.2, dashed: true, parent: arrows });
+  v.arrow([0, 0, 0.3], [0, 0, 1.1], { color: 'good', label: '\\wvec', width: 0.022, headLength: 0.11, headRadius: 0.045, parent: arrows });
+  var hArrow = v.arrow([0, 0, 0], [0, 0, 1], { color: 'bad', label: '\\Hvec_G', width: 0.022, headLength: 0.11, headRadius: 0.045, parent: arrows });
+  var cone = v.curve(function () { return [0, 0, 0]; }, 0, 2 * PI, { color: 'bad', width: 1.2, dashed: true, segments: 96, parent: arrows });
+  var LH = 1.05;
+  (function () {                                       // the cone that H sweeps (fixed: it depends only on the tilt)
+    var h = INERT.H(IG, [0, 0, 1]), hn = Math.sqrt(h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
+    var rr = LH * Math.sqrt(h[0] * h[0] + h[1] * h[1]) / hn, zz = LH * h[2] / hn;
+    cone.setFn(function (t) { return [rr * Math.cos(t), rr * Math.sin(t), zz]; }, 0, 2 * PI);
+  })();
+  function update() {
+    body.rotation.z = st.th;
+    var c = Math.cos(st.th), s = Math.sin(st.th);
+    var h = INERT.H(INERT.rotate(IG, [[c, -s, 0], [s, c, 0], [0, 0, 1]]), [0, 0, 1]);
+    var hn = Math.sqrt(h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
+    hArrow.set([0, 0, 0], [LH * h[0] / hn, LH * h[1] / hn, LH * h[2] / hn]);
+    v.render();
+  }
+  update();
+
+  function chip(key, label, color) {
+    return CYL.toggle({ label: label, color: color, value: st[key], onChange: function (on) {
+      st[key] = on;
+      if (key === 'arrows') arrows.visible = on;
+      else if (key === 'axes') axesGrp.visible = on;
+      else ell.visible = on;
+      v.setAriaLabel(describe()); v.render();
+    } });
+  }
+  bar.appendChild(CYL.el('div', { class: 'chip-row' }, [
+    chip('arrows', '\\(\\wvec\\) and \\(\\Hvec_G\\)', 'bad').el,
+    chip('axes', 'Principal axes', 'good').el,
+    chip('ell', 'Inertia ellipsoid').el
+  ]));
+  CYL.renderMath(bar);
+
+  if (v.isFallback) {                                  // no WebGL: the library shows a friendly message
+    bar.hidden = true;
+    return;
+  }
+
+  // Spin the satellite (v.animate pauses by itself off-screen and in hidden tabs).
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><rect x="5" y="4" width="5" height="16" rx="1.2"/><rect x="14" y="4" width="5" height="16" rx="1.2"/></svg>';
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
+  var spinBtn = CYL.el('button', { type: 'button', class: 'home-spin' });
+  stage.appendChild(spinBtn);
+  var stopSpin = null;
+  function syncSpinBtn() {
+    var on = !!stopSpin;
+    spinBtn.innerHTML = (on ? ICON_PAUSE : ICON_PLAY) + '<span>' + (on ? 'Pause' : 'Spin') + '</span>';
+    spinBtn.setAttribute('aria-label', on ? 'Pause the spin' : 'Spin the satellite');
+  }
+  function startSpin() {
+    if (stopSpin) return;
+    stopSpin = v.animate(function (dt) { st.th = (st.th + SPEED * dt) % (2 * PI); update(); });
+    syncSpinBtn();
+  }
+  function pauseSpin() {
+    if (!stopSpin) return;
+    stopSpin();
+    stopSpin = null;
+    syncSpinBtn();
+  }
+  spinBtn.addEventListener('click', function () { if (stopSpin) pauseSpin(); else startSpin(); });
+  if (CYL.prefersReducedMotion()) syncSpinBtn();       // reduced motion: static until the student presses Spin
+  else startSpin();
+});
+
+/* ---------- Lesson and resource cards (from CYL.PAGES), progress, "Continue" ---------- */
+CYL.ready(function () {
+  'use strict';
+  var SUMMARY = {
+    l01: 'Why some bodies are harder to spin than others: \\(I = \\sum m r^2\\), the radius of gyration, and \\(\\sum M = I\\alpha\\).',
+    l02: 'From sums to integrals: rods, disks, cylinders, spheres and cones, and the table of standard bodies.',
+    l03: 'Move a moment of inertia to a parallel axis with \\(I = \\bar I + md^2\\), and avoid the classic shortcut error.',
+    l04: 'Build flywheels, pendulums and brackets from simple parts, and subtract the holes.',
+    l05: 'The products \\(I_{xy}, I_{yz}, I_{zx}\\): what their signs mean, symmetry, and the parallel-axis theorem for products.',
+    l06: 'Six numbers in a matrix: \\(\\Hvec = \\Imat\\wvec\\), why \\(\\Hvec\\) leans away from \\(\\wvec\\), bearing moments and kinetic energy.',
+    l07: 'The moment of inertia about any axis, \\(\\uvec^\\mathsf{T}\\Imat\\uvec\\), and the tensor in rotated axes.',
+    l08: 'Axes with no products: the plane formulas, Mohr\'s circle, eigenvalues, balancing and spin stability.'
+  };
+  var RESOURCES = {
+    practice: { icon: 'ic-repeat', meta: 'Practice', text: 'Unlimited randomized problems in seven topics, each with hints, a worked solution and a 3D view of the body.' },
+    quiz: { icon: 'ic-quiz', meta: 'Practice', text: '15 questions on Lessons 1–8, with a score, full solutions and printable results.' },
+    worksheet: { icon: 'ic-print', meta: 'Practice', text: '12 paper problems from basic to challenging, with space for your working and answers to check.' },
+    explorer: { icon: 'ic-cube', meta: 'Tool', text: 'A 3D sandbox: build a body from standard parts and see its center of mass, inertia tensor, principal axes and \\(\\Hvec\\) live.' },
+    cheatsheet: { icon: 'ic-sheet', meta: 'Reference', text: 'Every formula in the module and the table of standard bodies, on two printable pages.' },
+    glossary: { icon: 'ic-book', meta: 'Reference', text: 'Short definitions of the terms and symbols in the module, with links to the lessons.' }
+  };
+
+  var lessons = CYL.PAGES.filter(function (p) { return p.group === 'lessons'; });
+  var lessonList = document.getElementById('home-lesson-list');
+  var resList = document.getElementById('home-resource-list');
+  var cards = {};                                     // id → card <a>
+
+  function doneTag() {
+    return CYL.el('span', { class: 'home-done' }, ['Completed']);
+  }
+  function mins(m) { return m ? m + ' min' : null; }
+
+  lessons.forEach(function (p) {
+    var meta = CYL.el('span', { class: 'home-card-meta' }, [
+      CYL.el('span', { text: 'Lesson ' + p.num + (p.minutes ? ' · ' + mins(p.minutes) : '') }),
+      p.tag ? CYL.el('span', { class: 'tag extension', text: p.tag }) : null,
+      doneTag()
+    ]);
+    var a = CYL.el('a', { class: 'card home-card', href: CYL.url(p.href) }, [
+      CYL.el('span', { class: 'home-num', 'aria-hidden': 'true', text: String(p.num) }),
+      meta,
+      CYL.el('h3', { class: 'card-title', text: p.title }),
+      CYL.el('p', { class: 'home-card-sum', html: SUMMARY[p.id] || '' })
+    ]);
+    cards[p.id] = a;
+    lessonList.appendChild(CYL.el('li', null, a));
+  });
+
+  CYL.PAGES.forEach(function (p) {
+    var r = RESOURCES[p.id];
+    if (!r) return;
+    var a = CYL.el('a', { class: 'card home-card', href: CYL.url(p.href) }, [
+      CYL.el('span', { class: 'home-icon ' + r.icon, 'aria-hidden': 'true' }),
+      CYL.el('span', { class: 'home-card-meta' }, [
+        CYL.el('span', { text: r.meta + (p.minutes ? ' · ' + mins(p.minutes) : '') }),
+        p.group === 'practice' ? doneTag() : null      // only lessons and practice pages can be marked complete
+      ]),
+      CYL.el('h3', { class: 'card-title', text: p.title }),
+      CYL.el('p', { class: 'home-card-sum', html: r.text })
+    ]);
+    cards[p.id] = a;
+    resList.appendChild(CYL.el('li', null, a));
+  });
+  CYL.renderMath(lessonList);
+  CYL.renderMath(resList);
+
+  // Progress: ✓ on cards, "n of 8 lessons complete", and the Continue button.
+  var contBtn = document.getElementById('home-continue');
+  var startBtn = document.getElementById('home-start');
+  var startLabel = document.getElementById('home-start-label');
+  var nextNote = document.getElementById('home-next');
+  var progBox = document.getElementById('home-progress');
+  var progText = document.getElementById('home-progress-text');
+  var progFill = document.getElementById('home-progress-fill');
+  var byId = {};
+  CYL.PAGES.forEach(function (p) { byId[p.id] = p; });
+
+  function refresh() {
+    var all = CYL.progress.all();
+    Object.keys(cards).forEach(function (id) { cards[id].classList.toggle('is-complete', !!all[id]); });
+
+    var done = lessons.filter(function (p) { return all[p.id]; }).length;
+    var summary = done + ' of ' + lessons.length + ' lessons complete';
+    progBox.hidden = done === 0;
+    progText.innerHTML = '<strong>' + done + ' of ' + lessons.length + '</strong> lessons complete';
+    progFill.style.width = (done / lessons.length * 100) + '%';
+
+    if (done === 0) {                                // nothing finished yet: only the primary "Start Lesson 1"
+      contBtn.hidden = true;
+      nextNote.hidden = true;
+      startBtn.hidden = false;
+      startBtn.classList.add('primary');
+      startLabel.textContent = 'Start Lesson 1';
+      return;
+    }
+    var next = null;
+    for (var i = 0; i < lessons.length; i++) if (!all[lessons[i].id]) { next = lessons[i]; break; }
+    var label;
+    if (next) {
+      label = 'Lesson ' + next.num + ' · ' + next.title;
+    } else {                                         // every lesson done: move on to the quiz, then the Practice Lab
+      next = all.quiz ? byId.practice : byId.quiz;
+      label = next.title;
+    }
+    // Returning student: "Continue" is the primary step; Lesson 1 stays reachable as a secondary
+    // button unless Continue already leads there.
+    contBtn.href = CYL.url(next.href);
+    contBtn.hidden = false;
+    startBtn.classList.remove('primary');
+    startLabel.textContent = 'Review Lesson 1';
+    startBtn.hidden = next.id === 'l01';
+    nextNote.textContent = '';
+    nextNote.appendChild(document.createTextNode('Next up: '));
+    nextNote.appendChild(CYL.el('strong', { text: label }));
+    // a title can end in its own punctuation
+    nextNote.appendChild(document.createTextNode((/[?.!]$/.test(label) ? ' ' : '. ') + summary + '.'));
+    nextNote.hidden = false;
+  }
+  refresh();
+  CYL.progress.onChange(refresh);
+});
+</script>
+</body>
+</html>

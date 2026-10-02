@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equations of Motion · Cylindrical Coordinates</title>
+<meta name="description" content="Newton's second law in cylindrical components: ΣF_r = m(r̈ − rθ̇²), ΣF_θ = m(rθ̈ + 2ṙθ̇), ΣF_z = m z̈. Free-body and kinetic diagrams, rotating rods, springs, cords and a spiral slide.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/polar-motion.js"></script>
+<style>
+  /* Figure 7.1: free-body and kinetic diagrams (static SVG). Colors come only from module.css variables. */
+  .fbd { display: block; width: 100%; max-width: 680px; height: auto; margin: 0 auto; overflow: visible; }
+  .fbd .bar { fill: var(--line-strong); stroke: var(--ink-muted); stroke-width: 1.2; }
+  .fbd .ghost { fill: none; stroke: var(--line-strong); stroke-width: 10; stroke-linecap: round; opacity: 0.55; }
+  .fbd .col { fill: var(--bg-elev); stroke: var(--ink); stroke-width: 1.6; }
+  .fbd .ref { fill: none; stroke: var(--ink-faint); stroke-width: 1.2; stroke-dasharray: 5 4; }
+  .fbd .fr { stroke: var(--c-r); } .fbd .frf { fill: var(--c-r); }
+  .fbd .ft { stroke: var(--c-t); } .fbd .ftf { fill: var(--c-t); }
+  .fbd .fw { stroke: var(--ink); } .fbd .fwf { fill: var(--ink); }
+  .fbd .ka { stroke: var(--c-bad); } .fbd .kaf { fill: var(--c-bad); }
+  .fbd .arr { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+  .fbd .thin { fill: none; stroke-width: 1.6; stroke-linecap: round; }
+  .fbd .arc { fill: none; stroke: var(--c-t); stroke-width: 1.6; }
+  .fbd text { fill: var(--ink); font: italic 16px KaTeX_Math, "Times New Roman", serif; }
+  .fbd text.up { font-style: normal; font-family: KaTeX_Main, "Times New Roman", serif; }
+  .fbd text.bold { font: 700 16px KaTeX_Main, "Times New Roman", serif; font-style: normal; }
+  .fbd text.cap { fill: var(--ink-muted); font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+  .fbd text.eq { font: 28px KaTeX_Main, "Times New Roman", serif; fill: var(--ink-muted); }
+  .fbd text.c-r { fill: var(--c-r); } .fbd text.c-t { fill: var(--c-t); } .fbd text.c-bad { fill: var(--c-bad); }
+  .fbd-wrap { padding: 16px 12px 8px; background: var(--viz-bg); border: 1px solid var(--line); border-radius: var(--radius); }
+  .mf-warn { margin: 0; color: var(--c-warn); font-size: 0.86rem; font-weight: 600; }
+  .mf-warn[hidden] { display: none; }
+</style>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 40 min</p>
+    <h1>Equations of Motion</h1>
+    <p class="lede">Newton's second law \(\sum\Fvec = m\avec\), written along \(\er\), \(\et\) and \(\ez\), becomes three scalar equations. They link the forces on a particle to the acceleration terms of Lesson 5, so you can find the force a rod, a cord or a slide must supply, or the motion that given forces produce.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Write the equations of motion \(\sum F_r = m(\ddot r - r\dot\theta^2)\), \(\sum F_\theta = m(r\ddot\theta + 2\dot r\dot\theta)\) and \(\sum F_z = m\ddot z\).</li>
+      <li>Draw a free-body diagram and a kinetic diagram with every force resolved along \(\er\), \(\et\) and \(\ez\).</li>
+      <li>Resolve the forces that appear in these problems: weight, smooth rods and slots, springs, cords and friction.</li>
+      <li>Solve for unknown forces on particles carried by rotating arms, held by cords or sliding down helical paths.</li>
+    </ul>
+  </section>
+
+  <section id="newton">
+    <h2>Newton's second law in cylindrical components</h2>
+    <p>Write the resultant force on the particle and its acceleration in the same unit vectors, \(\sum\Fvec = \sum F_r\,\er + \sum F_\theta\,\et + \sum F_z\,\ez\), and set \(\sum\Fvec = m\avec\) component by component:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Equations of motion in cylindrical coordinates</p>
+      \[ \begin{aligned}
+        \textstyle\sum F_r &= m a_r = m\left(\ddot r - r\dot\theta^2\right) \\
+        \textstyle\sum F_\theta &= m a_\theta = m\left(r\ddot\theta + 2\dot r\dot\theta\right) \\
+        \textstyle\sum F_z &= m a_z = m\ddot z
+      \end{aligned} \]
+      <p>Three equations, so a problem can have at most three unknowns: forces, or acceleration terms such as \(\ddot r\) and \(\ddot\theta\).</p>
+    </div>
+    <p>The left sides are the components of the <em>forces</em> along the unit vectors at the particle's current position. The right sides come from the kinematics: everything you learned in Lessons 4 to 6. Hibbeler calls this Section 13.6; in Beer &amp; Johnston and in Meriam &amp; Kraige the same equations are called the equations of motion in radial and transverse components.</p>
+  </section>
+
+  <section id="diagrams">
+    <h2>Free-body and kinetic diagrams</h2>
+    <p>Draw the particle with the unit vectors \(\er\) and \(\et\) at its current position. On the <strong>free-body diagram</strong> show every force acting on it; on the <strong>kinetic diagram</strong> show \(m a_r\) along \(\er\) and \(m a_\theta\) along \(\et\) (and \(m a_z\) along \(\ez\)). The two diagrams are equivalent: their components along each unit vector are equal.</p>
+
+    <figure class="figure" aria-labelledby="fig71-cap">
+      <div class="fbd-wrap">
+        <svg class="fbd" viewBox="0 0 680 290" role="img" aria-labelledby="fig71-cap">
+          <text class="cap" x="20" y="22">Free-body diagram</text>
+          <text class="cap" x="400" y="22">Kinetic diagram</text>
+          <!-- left: arm in a vertical plane at θ = 30°, collar at P -->
+          <line class="ref" x1="40" y1="250" x2="150" y2="250"/>
+          <path class="ghost" d="M40 250 L292 104.5"/>
+          <path class="arc" d="M85 250 A45 45 0 0 0 79 227.5"/>
+          <text x="92" y="243">θ</text>
+          <circle class="col" cx="40" cy="250" r="4"/>
+          <text class="up" x="22" y="272">O</text>
+          <g transform="rotate(-30 196 160)"><rect class="col" x="180" y="151" width="32" height="18" rx="3"/></g>
+          <!-- T toward O (−u_r) -->
+          <line class="arr fr" x1="181" y1="168.7" x2="133" y2="196.4"/>
+          <path class="frf" d="M126.1 200.4 l9.7 -0.6 l-4 -6.9 z"/>
+          <text class="c-r" x="128" y="222">T</text>
+          <!-- N along u_θ -->
+          <line class="arr ft" x1="187.5" y1="145.4" x2="160" y2="97.8"/>
+          <path class="ftf" d="M156 90.9 l0.6 9.7 l6.9 -4 z"/>
+          <text class="c-t" x="138" y="96">N</text>
+          <!-- W down -->
+          <line class="arr fw" x1="196" y1="170" x2="196" y2="232"/>
+          <path class="fwf" d="M196 240 l-4.5 -9 h9 z"/>
+          <text x="204" y="236">W</text><text class="up" x="222" y="236">=</text><text x="236" y="236">mg</text>
+          <!-- unit vectors legend at P -->
+          <line class="thin fr" x1="250" y1="160" x2="284.6" y2="140"/>
+          <path class="frf" d="M290.8 136.4 l-9.4 2.4 l4 6.9 z"/>
+          <text class="bold c-r" x="292" y="152">u</text><text class="c-r" x="302" y="157" style="font-size: 12px">r</text>
+          <line class="thin ft" x1="250" y1="160" x2="230" y2="125.4"/>
+          <path class="ftf" d="M226.4 119.2 l2.4 9.4 l6.9 -4 z"/>
+          <text class="bold c-t" x="210" y="120">u</text><text class="c-t" x="220" y="125" style="font-size: 12px">θ</text>
+          <!-- equals -->
+          <text class="eq" x="350" y="168">=</text>
+          <!-- right: same collar, kinetic diagram -->
+          <path class="ghost" d="M420 250 L672 104.5" style="opacity: 0.3"/>
+          <g transform="rotate(-30 576 160)"><rect class="col" x="560" y="151" width="32" height="18" rx="3"/></g>
+          <line class="arr ka" x1="594" y1="149.6" x2="642" y2="121.9"/>
+          <path class="kaf" d="M648.9 117.9 l-9.7 0.6 l4 6.9 z"/>
+          <text class="c-bad" x="626" y="108">m</text><text class="c-bad" x="642" y="108">a</text><text class="c-bad" x="651" y="113" style="font-size: 12px">r</text>
+          <line class="arr ka" x1="567" y1="144.4" x2="540" y2="97.8"/>
+          <path class="kaf" d="M536 90.9 l0.6 9.7 l6.9 -4 z"/>
+          <text class="c-bad" x="500" y="94">m</text><text class="c-bad" x="516" y="94">a</text><text class="c-bad" x="525" y="99" style="font-size: 12px">θ</text>
+        </svg>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> A collar on a smooth arm that turns in a vertical plane, held by a cord pulled through \(O\). Free-body diagram: the cord tension \(T\) acts toward \(O\) (along \(-\er\)), the smooth arm pushes perpendicular to itself with \(N\) (along \(\et\)), and the weight \(W = mg\) acts straight down. Kinetic diagram: \(m a_r\) along \(\er\) and \(m a_\theta\) along \(\et\), drawn in the positive directions; the signs come out of the calculation.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Forces you will meet, resolved along \(\er\), \(\et\), \(\ez\)</caption>
+        <thead>
+          <tr><th scope="col">Force</th><th scope="col">Components</th><th scope="col">Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Weight, motion in a horizontal plane</th><td>\(-mg\,\ez\)</td><td>Balanced by a vertical support force when \(z\) is constant.</td></tr>
+          <tr><th scope="row">Weight, motion in a vertical plane</th><td>\(-mg\sin\theta\,\er - mg\cos\theta\,\et\)</td><td>With \(\theta\) measured from the horizontal \(x\)-axis and \(y\) up (Example 3.1).</td></tr>
+          <tr><th scope="row">Smooth rod or slot that turns with the arm</th><td>\(N\,\et\) (plus a vertical part)</td><td>A smooth rod cannot push along itself: no \(\er\) component.</td></tr>
+          <tr><th scope="row">Spring along the arm, attached at \(O\)</th><td>\(-k(r - r_0)\,\er\)</td><td>\(r_0\) is the unstretched length; a stretched spring pulls toward \(O\).</td></tr>
+          <tr><th scope="row">Cord pulled through \(O\)</th><td>\(-T\,\er\)</td><td>A cord can only pull: \(T \ge 0\).</td></tr>
+          <tr><th scope="row">Smooth fixed guide \(r = f(\theta)\)</th><td>perpendicular to the path</td><td>Its direction comes from the tangent angle \(\psi\): <a href="08-applications.html">Lesson 8</a>.</td></tr>
+          <tr><th scope="row">Kinetic friction</th><td>\(\mu_k N\), opposite to the sliding velocity</td><td>Along the path, against the motion relative to the surface.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Procedure for analysis</p>
+      <ol>
+        <li><strong>Coordinates.</strong> Put \(O\) at the pivot or the center of the motion, and choose the direction of positive \(\theta\).</li>
+        <li><strong>Diagrams.</strong> Draw the free-body and kinetic diagrams at the instant of interest, with \(\er\) and \(\et\) at the particle.</li>
+        <li><strong>Kinematics.</strong> Find \(r, \dot r, \ddot r\) and \(\dot\theta, \ddot\theta\) (and \(\ddot z\)), from functions of time (Lesson 5) or from a path \(r = f(\theta)\) (Lesson 6). Then \(a_r\), \(a_\theta\), \(a_z\).</li>
+        <li><strong>Equations of motion.</strong> Sum the force components along \(\er\), \(\et\), \(\ez\) and set them equal to \(m a_r\), \(m a_\theta\), \(m a_z\).</li>
+        <li><strong>Solve and check.</strong> A negative answer means the force points opposite to the direction you assumed. A cord with \(T \lt 0\) or a contact force pulling the particle means the assumed motion cannot happen.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="examples">
+    <h2>Worked examples</h2>
+
+    <div class="example">
+      <p class="example-title">Example 7.1 — A collar on a spinning rod</p>
+      <p>A \(0.5\ \text{kg}\) collar slides freely on a smooth rod that a motor turns in a horizontal plane at a constant \(\dot\theta = 4\ \text{rad/s}\). At the instant when \(r = 0.6\ \text{m}\), the collar is sliding outward at \(\dot r = 0.8\ \text{m/s}\). Find (a) \(\ddot r\), and (b) the force the rod exerts on the collar.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Forces.</strong> The rod is smooth, so it pushes only perpendicular to itself: a horizontal force \(N_\theta\,\et\) and a vertical force \(N_z\,\ez\). The weight is \(-mg\,\ez\). Nothing acts along the rod, so \(\sum F_r = 0\).</p>
+          <p><strong>Kinematics.</strong> \(\dot\theta = 4\ \text{rad/s}\) and \(\ddot\theta = 0\); \(\ddot r\) is unknown; \(z\) is constant.</p>
+          <p><strong>(a) Radial equation:</strong></p>
+          \[ \textstyle\sum F_r = m(\ddot r - r\dot\theta^2): \quad 0 = 0.5\left(\ddot r - (0.6)(4)^2\right) \quad\Rightarrow\quad \ddot r = 9.6\ \text{m/s}^2 \]
+          <p>With no force along the rod, nothing supplies the centripetal acceleration, so the collar accelerates outward along the rod: \(\ddot r = r\dot\theta^2\).</p>
+          <p><strong>(b) Transverse and vertical equations:</strong></p>
+          \[ \begin{aligned}
+            \textstyle\sum F_\theta &= m(r\ddot\theta + 2\dot r\dot\theta): & N_\theta &= 0.5\left(0 + 2(0.8)(4)\right) = 3.2\ \text{N} \\
+            \textstyle\sum F_z &= m\ddot z: & N_z - (0.5)(9.81) &= 0 \quad\Rightarrow\quad N_z = 4.905\ \text{N}
+          \end{aligned} \]
+          <p>The rod pushes the collar forward (in the direction of rotation) with \(3.2\ \text{N}\), entirely because of the Coriolis term, and holds it up with \(4.905\ \text{N}\). The total force from the rod is \(\sqrt{3.2^2 + 4.905^2} \approx 5.857\ \text{N}\).</p>
+        </div>
+      </details>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig72-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig72-stage"></div>
+        <div class="viz-controls" id="fig72-controls"></div>
+        <div class="mf-readouts" id="fig72-readouts" aria-live="off"></div>
+      </div>
+      <figcaption id="fig72-cap"><strong>Figure 7.2</strong> A \(0.5\ \text{kg}\) collar on a smooth rod that a motor spins at a constant rate \(\omega\) in a horizontal plane, seen from above. A spring of stiffness \(k\) and unstretched length \(0.5\ \text{m}\) joins it to the hub. The motion is computed from the equations of motion: the spring force (orange) is the only radial force, and the rod's push \(N\) (violet) is the only transverse one. Raise \(\omega\) above \(\sqrt{k/m}\) and the spring can no longer hold the collar: it slides to the end of the rod.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 7.2 — An arm turning in a vertical plane</p>
+      <p>The \(0.5\ \text{kg}\) collar of Figure 7.1 rides on a smooth arm that turns in a vertical plane at a constant \(\dot\theta = 3\ \text{rad/s}\). A cord through \(O\) pulls it in at a constant \(0.5\ \text{m/s}\). Find the cord tension \(T\) and the force \(N\) of the arm on the collar at the instant when \(\theta = 30^\circ\) and \(r = 0.8\ \text{m}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Kinematics.</strong> \(\dot r = -0.5\ \text{m/s}\) and \(\ddot r = 0\) (pulled in at a constant rate); \(\dot\theta = 3\ \text{rad/s}\) and \(\ddot\theta = 0\).</p>
+          \[ \begin{aligned}
+            a_r &= \ddot r - r\dot\theta^2 = 0 - (0.8)(3)^2 = -7.2\ \text{m/s}^2 \\
+            a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0 + 2(-0.5)(3) = -3.0\ \text{m/s}^2
+          \end{aligned} \]
+          <p><strong>Forces</strong> (Figure 7.1): the cord \(-T\,\er\), the arm \(N\,\et\), and the weight \(-mg\sin\theta\,\er - mg\cos\theta\,\et\) with \(mg = 4.905\ \text{N}\).</p>
+          \[ \begin{aligned}
+            \textstyle\sum F_r = m a_r: &\quad -T - 4.905\sin 30^\circ = 0.5(-7.2) &&\Rightarrow\quad T = 3.6 - 2.453 = 1.148\ \text{N} \\
+            \textstyle\sum F_\theta = m a_\theta: &\quad N - 4.905\cos 30^\circ = 0.5(-3.0) &&\Rightarrow\quad N = -1.5 + 4.248 = 2.748\ \text{N}
+          \end{aligned} \]
+          <p>Both are positive, so the cord pulls toward \(O\) and the arm pushes in the \(+\et\) direction, as assumed. Note that \(m a_\theta \lt 0\): the Coriolis term asks for a backward push, but the arm must also hold the collar up against \(mg\cos\theta\). <strong>Check the cord:</strong> at the top (\(\theta = 90^\circ\)) the radial equation would give \(T = m r\dot\theta^2 - mg = 3.6 - 4.905 \lt 0\). A cord cannot push, so at this speed it would go slack near the top. Figure 7.3 shows where.</p>
+        </div>
+      </details>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig73-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig73-stage"></div>
+        <div class="viz-controls" id="fig73-controls"></div>
+      </div>
+      <figcaption id="fig73-cap"><strong>Figure 7.3</strong> The arm of Example 7.2 in its vertical plane, here with the collar held at a fixed radius (\(\dot r = 0\)) while the arm turns at a constant \(\dot\theta\). The forces on the collar are drawn at \(P\): the weight (ink), the cord tension \(T\) (orange, toward \(O\)) and the arm's push \(N\) (violet). Then \(T = m r\dot\theta^2 - mg\sin\theta\) and \(N = mg\cos\theta\). Slow the arm or shorten \(r\) until \(T\) turns negative near the top: there the cord would go slack.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 7.3 — The force from a spiral slide</p>
+      <p>A \(25\ \text{kg}\) child rides the spiral slide of Example 5.2: \(r = 2\ \text{m}\), \(\dot\theta = 0.8\ \text{rad/s}\) and \(\dot z = -0.5\ \text{m/s}\), all constant. Find the total force the chute exerts on the child.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>From Example 5.2, \(\avec = -1.28\,\er\ \text{m/s}^2\). Let \(\mathbf{F}_c\) be the total chute force (normal force plus friction). The other force is the weight \(-mg\,\ez\).</p>
+          \[ \begin{aligned}
+            \textstyle\sum F_r &= m a_r: & F_{c,r} &= (25)(-1.28) = -32\ \text{N} \\
+            \textstyle\sum F_\theta &= m a_\theta: & F_{c,\theta} &= 0 \\
+            \textstyle\sum F_z &= m a_z: & F_{c,z} - (25)(9.81) &= 0 \quad\Rightarrow\quad F_{c,z} = 245.25\ \text{N}
+          \end{aligned} \]
+          <p>So \(\mathbf{F}_c = (-32\,\er + 245.25\,\ez)\ \text{N}\), with magnitude \(\approx 247.3\ \text{N}\): the chute holds the child up and pushes inward with \(32\ \text{N}\), from the outer wall.</p>
+          <p><strong>Going further.</strong> The child moves at constant speed, so the friction along the chute must balance the part of the weight along the path. The path direction is \(\mathbf{u}_t = (1.6\,\et - 0.5\,\ez)/1.676\), so the weight's component along it is \(mg(0.5/1.676) \approx 73.15\ \text{N}\), and friction is \(73.15\ \text{N}\) back up the chute. The rest of \(\mathbf{F}_c\) is the normal force, about \(236.3\ \text{N}\), so the friction coefficient is \(\mu_k \approx 73.15/236.3 \approx 0.31\).</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection: centrifugal clutches and governors</p>
+      <p>Figure 7.2 is the working principle of a centrifugal clutch: spring-loaded shoes on a spinning hub stay put at low speed and fly outward to engage the drum once \(m r\omega^2\) beats the spring. Steam-engine governors and the speed limiters of elevators and wind turbines use the same balance between a spring and the centripetal requirement \(m r\dot\theta^2\).</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\sum F_r = m(\ddot r - r\dot\theta^2)\), \(\sum F_\theta = m(r\ddot\theta + 2\dot r\dot\theta)\), \(\sum F_z = m\ddot z\).</li>
+      <li>Resolve every force along \(\er\), \(\et\), \(\ez\) at the particle's current position: in a vertical plane the weight has both \(r\) and \(\theta\) components.</li>
+      <li>A smooth rod pushes only perpendicular to itself; a spring or a cord along the rod acts only along \(\er\).</li>
+      <li>With no radial force, a collar on a spinning rod slides outward with \(\ddot r = r\dot\theta^2\), and the rod must push it sideways with \(2m\dot r\dot\theta\).</li>
+      <li>Next, <a href="08-applications.html">Lesson 8</a> handles particles pushed along curved guides and motion under a central force.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 7.2: collar on a spinning rod, held by a spring (simulated from the equations of motion) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var M = 0.5, R0 = 0.5, RMAX = 2, TMAX = 10, DT = 0.002;
+  var st = { w: 2.5, k: 8 };
+  var sim = null;
+  // r̈ = rω² − (k/m)(r − r0), θ = ωt; RK4 from r = r0 at rest relative to the rod. Stops at the end of the rod.
+  function simulate() {
+    var w = st.w, km = st.k / M;
+    function acc(r) { return r * w * w - km * (r - R0); }
+    var r = R0, v = 0, t = 0, R = [r], V = [v], stopped = '';
+    while (t < TMAX - 1e-12) {
+      var k1r = v, k1v = acc(r);
+      var k2r = v + 0.5 * DT * k1v, k2v = acc(r + 0.5 * DT * k1r);
+      var k3r = v + 0.5 * DT * k2v, k3v = acc(r + 0.5 * DT * k2r);
+      var k4r = v + DT * k3v, k4v = acc(r + DT * k3r);
+      r += DT / 6 * (k1r + 2 * k2r + 2 * k3r + k4r);
+      v += DT / 6 * (k1v + 2 * k2v + 2 * k3v + k4v);
+      t += DT;
+      R.push(r); V.push(v);
+      if (r >= RMAX) { stopped = 'the collar reaches the end of the rod'; break; }
+    }
+    var T = (R.length - 1) * DT;
+    function at(arr, tt) {
+      var x = Math.max(0, Math.min(T, tt)) / DT, i = Math.min(arr.length - 2, Math.floor(x)), f = x - i;
+      return arr[i] + (arr[i + 1] - arr[i]) * f;
+    }
+    return {
+      T: T, stopped: stopped,
+      m: {
+        r: function (tt) { return at(R, tt); }, rd: function (tt) { return at(V, tt); }, rdd: function (tt) { return acc(at(R, tt)); },
+        th: function (tt) { return w * tt; }, thd: function () { return w; }, thdd: function () { return 0; }
+      }
+    };
+  }
+  var panel = document.getElementById('fig72-controls');
+  var sW = CYL.slider({ label: 'Rod speed \\(\\omega\\)', min: 1, max: 5, step: 0.1, value: st.w, color: 't', unit: 'rad/s', onInput: function (v) { st.w = v; rebuild(); } });
+  var sK = CYL.slider({ label: 'Spring stiffness \\(k\\)', min: 2, max: 20, step: 0.5, value: st.k, color: 'r', unit: 'N/m', onInput: function (v) { st.k = v; rebuild(); } });
+  var info = CYL.el('div', { class: 'mf-desc' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Rod and spring' }));
+  panel.appendChild(sW.el);
+  panel.appendChild(sK.el);
+  panel.appendChild(info);
+  sim = simulate();
+  var FS = 0.04;                       // m of arrow per N (set in rebuild)
+  var fSpring = null, fRod = null;
+  var fig = POLAR.figure({
+    stage: document.getElementById('fig72-stage'), controls: panel, readoutsEl: document.getElementById('fig72-readouts'),
+    motion: sim.m, t0: 0, t1: sim.T, t: 0, speed: 1, loop: false, mass: M,
+    xRange: [-2.2, 2.2], yRange: [-2.2, 2.2], polarStep: { r: 0.5, thetaDeg: 30 },
+    arm: { length: RMAX, width: 7 },
+    show: { v: false, a: false, comps: 'rt', trace: true, radial: false },
+    toggles: ['v', 'a', 'trace'],
+    readouts: ['t', 'r', 'rd', 'rdd', 'ar', 'at', 'Fr', 'Ft'],
+    onUpdate: function (s, f) {
+      if (!fSpring) {
+        fSpring = f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3, arrow: true, label: 'F_s', labelAt: 1, labelSide: 'right' });
+        fRod = f.overlay.line([0, 0], [0, 0], { color: 't', width: 3, arrow: true, label: 'N', labelAt: 1, labelSide: 'left' });
+      }
+      var Fs = -st.k * (s.r - R0), N = M * s.at, P = [s.x, s.y];
+      fSpring.set(P, [P[0] + FS * Fs * s.ur[0], P[1] + FS * Fs * s.ur[1]]);
+      fRod.set(P, [P[0] + FS * N * s.ut[0], P[1] + FS * N * s.ut[1]]);
+      fSpring.setVisible(Math.abs(Fs) * FS > 0.02);
+      fRod.setVisible(Math.abs(N) * FS > 0.02);
+    },
+    aria: 'Top view of a rod spinning about the origin at a constant rate, with a collar joined to the hub by a spring. The collar moves out and in along the rod as it turns, tracing a looping path. An orange arrow at the collar is the spring force along the rod; a violet arrow is the push of the rod across it.'
+  });
+  function rebuild() {
+    sim = simulate();
+    var maxF = 0;
+    for (var i = 0; i <= 200; i++) {
+      var s = POLAR.state(sim.m, sim.T * i / 200);
+      maxF = Math.max(maxF, Math.abs(st.k * (s.r - R0)), Math.abs(M * s.at));
+    }
+    FS = maxF > 1e-9 ? 0.7 / maxF : 0.04;
+    var wc = Math.sqrt(st.k / M);
+    var html = '<p>Critical speed \\(\\sqrt{k/m} = ' + CYL.fmtTex(wc, 3) + '\\ \\text{rad/s}\\).</p>';
+    if (st.w < wc - 1e-9) {
+      var req = st.k * R0 / (st.k - M * st.w * st.w), rmax = 2 * req - R0;
+      html += '<p>Below it, the spring force equals \\(m r\\omega^2\\) at \\(r = ' + CYL.fmtTex(req, 3) + '\\ \\text{m}\\). Released at rest at \\(r = 0.5\\ \\text{m}\\), the collar oscillates about that radius, out to \\(' + CYL.fmtTex(rmax, 3) + '\\ \\text{m}\\)' +
+        (rmax >= RMAX ? ', so it reaches the end of the \\(2\\ \\text{m}\\) rod.</p>' : '.</p>');
+    } else html += '<p class="mf-stop">At or above it, the spring cannot supply \\(m r\\omega^2\\), and the collar slides out to the end of the rod.</p>';
+    html += '<p>Force arrows: ' + CYL.fmtTex(1 / FS, 2) + ' N per grid unit.</p>';
+    info.innerHTML = html;
+    CYL.renderMath(info);
+    fig.setMotion(sim.m, 0, sim.T, 0);
+  }
+  rebuild();
+});
+
+/* ---------- Figure 7.3: forces on a collar held at a fixed radius on an arm turning in a vertical plane ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI, M = 0.5, G = 9.81;
+  var st = { r: 0.8, w: 3 };
+  var FS = 0.12;                           // m of arrow per N
+  var panel = document.getElementById('fig73-controls');
+  var sR = CYL.slider({ label: 'Radius \\(r\\)', min: 0.3, max: 1.2, step: 0.05, value: st.r, color: 'r', unit: 'm', onInput: function (v) { st.r = v; rebuild(); } });
+  var sW = CYL.slider({ label: 'Arm rate \\(\\dot\\theta\\)', min: 1, max: 6, step: 0.1, value: st.w, color: 't', unit: 'rad/s', onInput: function (v) { st.w = v; rebuild(); } });
+  var roT = CYL.readout('\\(T = m r\\dot\\theta^2 - mg\\sin\\theta\\)', { color: 'r' });
+  var roN = CYL.readout('\\(N = mg\\cos\\theta\\)', { color: 't' });
+  var roMin = CYL.readout('Cord taut all round if \\(\\dot\\theta \\ge \\sqrt{g/r}\\)');
+  var warn = CYL.el('p', { class: 'mf-warn', text: 'T < 0 here: the cord cannot push, so it goes slack.' });
+  warn.hidden = true;
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Arm in a vertical plane' }));
+  panel.appendChild(sR.el);
+  panel.appendChild(sW.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roT.el, roN.el, roMin.el]));
+  panel.appendChild(warn);
+  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Force arrows: 1 m on the grid is ' + CYL.fmt(1 / FS, 3) + ' N. Mass 0.5 kg.' }));
+  function motion() {
+    var r = st.r, w = st.w;
+    return { r: function () { return r; }, rd: function () { return 0; }, rdd: function () { return 0; },
+      th: function (t) { return w * t; }, thd: function () { return w; }, thdd: function () { return 0; } };
+  }
+  var arrows = null;
+  var fig = POLAR.figure({
+    stage: document.getElementById('fig73-stage'), controls: panel,
+    motion: motion(), t0: 0, t1: 2 * PI / st.w, t: PI / 6 / st.w, speed: 1, loop: true,
+    xRange: [-1.5, 1.5], yRange: [-1.5, 1.5], grid: 'cartesian', gridStep: 0.5, axisLabels: ['x', 'y\\ (\\text{up})'],
+    arm: { length: 1.4, width: 7 },
+    show: { v: false, a: false, comps: 'none', trace: false, radial: false, path: true },
+    toggles: [], readouts: ['th'], scaleNote: false,
+    onUpdate: function (s, f) {
+      if (!arrows) {
+        arrows = {
+          W: f.overlay.line([0, 0], [0, 0], { color: 'ink', width: 3, arrow: true, label: 'W', labelAt: 1, labelSide: 'right' }),
+          T: f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3, arrow: true, label: 'T', labelAt: 1, labelSide: 'left' }),
+          N: f.overlay.line([0, 0], [0, 0], { color: 't', width: 3, arrow: true, label: 'N', labelAt: 1, labelSide: 'left' })
+        };
+      }
+      var P = [s.x, s.y], W = M * G;
+      var T = M * st.r * st.w * st.w - W * Math.sin(s.th), N = W * Math.cos(s.th);
+      arrows.W.set(P, [P[0], P[1] - FS * W]);
+      arrows.T.set(P, [P[0] - FS * T * s.ur[0], P[1] - FS * T * s.ur[1]]);   // −T u_r: toward O when T > 0
+      arrows.N.set(P, [P[0] + FS * N * s.ut[0], P[1] + FS * N * s.ut[1]]);
+      arrows.T.setVisible(Math.abs(T) * FS > 0.02);
+      arrows.N.setVisible(Math.abs(N) * FS > 0.02);
+      roT.set(CYL.fmt(T, 4) + ' N');
+      roN.set(CYL.fmt(N, 4) + ' N');
+      warn.hidden = T >= 0;
+    },
+    aria: 'A vertical plane with y up. An arm pivoted at the origin O turns at a constant rate and carries a collar P at a fixed radius on a circular path. At P, arrows show the weight (down), the cord tension toward O and the push of the arm perpendicular to it.'
+  });
+  function rebuild() {
+    roMin.set('\\(\\dot\\theta \\ge ' + CYL.fmtTex(Math.sqrt(G / st.r), 3) + '\\ \\text{rad/s}\\)');
+    var u = fig.t() * fig.state().thd / (2 * PI);
+    fig.setMotion(motion(), 0, 2 * PI / st.w, (u - Math.floor(u)) * 2 * PI / st.w);
+  }
+  rebuild();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'fields',
+    prompt: 'A \\(0.2\\ \\text{kg}\\) collar slides on a smooth rod turned in a horizontal plane at a constant \\(\\dot\\theta = 5\\ \\text{rad/s}\\). At the instant when \\(r = 0.3\\ \\text{m}\\) and \\(\\dot r = 0.6\\ \\text{m/s}\\), find \\(\\ddot r\\) and the horizontal force \\(N\\) of the rod on the collar.',
+    fields: [
+      { name: 'rdd', label: '\\(\\ddot r =\\)', answer: 7.5, unit: 'm/s²' },
+      { name: 'N', label: '\\(N =\\)', answer: 1.2, unit: 'N' }
+    ],
+    hints: ['The rod is smooth and nothing else acts along it, so \\(\\sum F_r = 0\\).', '\\(N = m(r\\ddot\\theta + 2\\dot r\\dot\\theta)\\) with \\(\\ddot\\theta = 0\\).'],
+    explain: '\\(0 = m(\\ddot r - r\\dot\\theta^2)\\) gives \\(\\ddot r\\); the transverse equation gives \\(N\\).',
+    solution: '\\[ \\begin{aligned} 0 &= m(\\ddot r - r\\dot\\theta^2) \\quad\\Rightarrow\\quad \\ddot r = (0.3)(5)^2 = 7.5\\ \\text{m/s}^2 \\\\ N &= m(2\\dot r\\dot\\theta) = (0.2)(2)(0.6)(5) = 1.2\\ \\text{N} \\end{aligned} \\]'
+  });
+
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'mc',
+    prompt: 'A collar slides on a smooth straight rod that turns about a vertical axis through one end. Which statement about the force of the rod on the collar is correct?',
+    choices: [
+      { html: 'It has no component along the rod: it is perpendicular to the rod.', correct: true, feedback: 'A smooth contact can only push normal to the surface. Along the rod, \\(\\sum F_r = 0\\) unless a spring or cord acts.' },
+      { html: 'It points along the rod, toward the axis, and supplies the centripetal force.', feedback: 'A smooth rod cannot push along itself. That is why the collar slides outward (\\(\\ddot r = r\\dot\\theta^2\\)).' },
+      { html: 'It is zero when the rod turns at a constant rate.', feedback: 'With \\(\\dot r \\ne 0\\), \\(\\sum F_\\theta = 2m\\dot r\\dot\\theta \\ne 0\\), and the rod also supports the weight.' },
+      { html: 'It always equals \\(m r\\dot\\theta^2\\).', feedback: 'That is the size of the centripetal requirement, which the smooth rod cannot provide.' }
+    ],
+    hints: ['Which way can a smooth surface push?'],
+    explain: 'Smooth contact forces are normal to the surface, so a smooth rod exerts only \\(\\et\\) and \\(\\ez\\) components.',
+    solution: '<p>Without friction the rod can only push perpendicular to itself: \\(N_\\theta\\,\\et + N_z\\,\\ez\\). Its \\(\\er\\) component is zero, so the radial equation reads \\(0 = m(\\ddot r - r\\dot\\theta^2)\\) when no spring or cord acts.</p>'
+  });
+
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'fields',
+    prompt: 'An arm drives a \\(2\\ \\text{kg}\\) particle round a horizontal circle of radius \\(0.5\\ \\text{m}\\). At one instant \\(\\dot\\theta = 4\\ \\text{rad/s}\\) and \\(\\ddot\\theta = 2\\ \\text{rad/s}^2\\). Find the radial and transverse components of the resultant force on the particle.',
+    fields: [
+      { name: 'Fr', label: '\\(\\sum F_r =\\)', answer: -16, unit: 'N' },
+      { name: 'Ft', label: '\\(\\sum F_\\theta =\\)', answer: 2, unit: 'N' }
+    ],
+    hints: ['The radius is constant: \\(\\dot r = \\ddot r = 0\\).', '\\(\\sum F_r = m(-r\\dot\\theta^2)\\) and \\(\\sum F_\\theta = m(r\\ddot\\theta)\\).'],
+    explain: 'On a circle only the centripetal and angular-acceleration terms remain.',
+    solution: '\\[ \\textstyle\\sum F_r = m(\\ddot r - r\\dot\\theta^2) = 2(0 - 0.5 \\cdot 16) = -16\\ \\text{N}, \\qquad \\sum F_\\theta = m(r\\ddot\\theta + 2\\dot r\\dot\\theta) = 2(0.5 \\cdot 2 + 0) = 2\\ \\text{N} \\]' +
+      '<p>The resultant force points mostly toward the center (\\(16\\ \\text{N}\\)), with a small forward part that speeds the particle up.</p>'
+  });
+});
+</script>
+</body>
+</html>

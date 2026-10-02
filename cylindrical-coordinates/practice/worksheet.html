@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Cylindrical Coordinates</title>
+<meta name="description" content="Twelve problems to print and work by hand: positions, unit vectors, velocity, acceleration, guided paths, equations of motion and central forces, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from positions and unit vectors to the forces on a pin pushed along a spiral groove. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Cylindrical Coordinates · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Unless a problem says otherwise: angles in radians in every formula (rates in rad/s), \(0 \le \theta < 2\pi\) for positions, \(g = 9.81\ \text{m/s}^2\), exact values first where they exist and then decimals to 4 significant figures, and units on every answer. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A is positions, unit vectors and velocity, Part B is acceleration and guided paths, and Part C is kinetics: equations of motion, guides and central forces. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>Unless a problem says otherwise: \(\theta\) is measured counter-clockwise from the \(+x\) axis, in radians in every formula (so rates are in rad/s); positions use \(r \ge 0\) and \(0 \le \theta < 2\pi\); \(g = 9.81\ \text{m/s}^2\); the unit vectors are \(\er\), \(\et\), \(\ez\). Give exact values where they exist, then decimals to 4 significant figures, with units on every answer. The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Position, unit vectors and velocity</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 2–4</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Acceleration and guided paths</h2>
+    <p class="ws-part-sub">Problems 5–8 · Intermediate to challenge · Lessons 5–6</p>
+    <div class="ws-list" data-from="5" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Kinetics</h2>
+    <p class="ws-part-sub">Problems 9–12 · Intermediate to challenge · Lessons 7–8</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+<template id="ws-fig-units"><svg class="ws-svg" viewBox="0 0 260 230" role="img" aria-label="The x and y axes with a point P at angle theta = 60 degrees on a circle about the origin O. At P, the unit vector u_r points away from O and u_theta points perpendicular to it, in the direction of increasing theta.">
+<line x1="25" y1="180" x2="240.1" y2="180" class="s-axis"/><path d="M245 180 L238 183 L238 177Z" class="f-axis"/><line x1="70" y1="215" x2="70" y2="24.9" class="s-axis"/><path d="M70 20 L73 27 L67 27Z" class="f-axis"/><text x="243" y="196" class="m" text-anchor="end">x</text><text x="62" y="30" class="m" text-anchor="end">y</text><path d="M184.9 174.3 L184.5 169.3 L183.9 164.4 L183.2 159.5 L182.2 154.7 L181 149.9 L179.6 145.1 L178 140.4 L176.2 135.8 L174.2 131.3 L172 126.9 L169.6 122.5 L167.1 118.3 L164.3 114.2 L161.4 110.2 L158.3 106.3 L155.1 102.6 L151.6 99 L148.1 95.6 L144.4 92.3 L140.5 89.2 L136.6 86.2 L132.5 83.5 L128.3 80.9 L124 78.4 L119.5 76.2 L115 74.2 L110.4 72.3 L105.8 70.7 L101 69.3 L96.2 68 L91.4 67 L86.5 66.2 L81.6 65.6 L76.7 65.2 L71.7 65 L66.8 65 L61.8 65.3 L56.9 65.7 L52 66.4 L47.2 67.3" class="s-faint dash"/><line x1="70" y1="180" x2="127.5" y2="80.4" class="s-thin dash"/><path d="M100 180 L99.8 176.9 L99.3 173.8 L98.5 170.7 L97.4 167.8 L96 165 L94.3 162.4 L92.3 159.9 L90.1 157.7 L87.6 155.7 L85 154" class="s-t"/><path d="M85 154 L92.6 154.9 L89.6 160.1Z" class="f-t"/><text x="112" y="162" class="m t-t" text-anchor="middle">θ</text><line x1="127.5" y1="80.4" x2="152.2" y2="37.6" class="s-r"/><path d="M155 32.8 L153.9 41.4 L148.1 38Z" class="f-r"/><line x1="127.5" y1="80.4" x2="84.7" y2="55.7" class="s-t"/><path d="M79.9 52.9 L88.5 54 L85.1 59.9Z" class="f-t"/><circle cx="127.5" cy="80.4" r="4.5" class="f-ink"/><text x="161" y="36.8" class="m" text-anchor="start"><tspan class="mb t-r">u</tspan><tspan class="sub t-r" dy="4">r</tspan></text><text x="75.9" y="48.9" class="m" text-anchor="end"><tspan class="mb t-t">u</tspan><tspan class="sub t-t" dy="4">θ</tspan></text><text x="137.5" y="94.4" class="m" text-anchor="start">P</text><text x="62" y="196" class="m" text-anchor="middle">O</text>
+</svg></template>
+<template id="ws-fig-radar"><svg class="ws-svg" viewBox="0 0 260 232" role="img" aria-label="A radar at the origin O on the x-axis tracks an aircraft at range r along a line making the angle theta with the positive x-axis. The aircraft flies along a straight dashed path with velocity v.">
+<line x1="2.5" y1="196" x2="237.6" y2="196" class="s-axis"/><path d="M242.5 196 L235.5 199 L235.5 193Z" class="f-axis"/><line x1="130" y1="208" x2="130" y2="28.4" class="s-axis"/><path d="M130 23.5 L133 30.5 L127 30.5Z" class="f-axis"/><text x="240.5" y="212" class="m" text-anchor="end">x</text><text x="122" y="33.5" class="m" text-anchor="end">y</text><line x1="2.5" y1="54.8" x2="235" y2="117.1" class="s-faint dash"/><line x1="130" y1="196" x2="72.9" y2="73.6" class="s-r"/><path d="M156 196 L155.8 192.9 L155.3 189.9 L154.4 187 L153.2 184.2 L151.6 181.5 L149.7 179.1 L147.6 176.9 L145.2 174.9 L142.7 173.3 L139.9 172 L137 171 L134 170.3 L130.9 170 L127.9 170.1 L124.8 170.5 L121.9 171.3 L119 172.4" class="s-t"/><path d="M119 172.4 L124.1 166.8 L126.6 172.2Z" class="f-t"/><text x="154" y="163" class="m t-t" text-anchor="middle">θ</text><line x1="72.9" y1="73.6" x2="116.8" y2="85.4" class="s-acc"/><path d="M122.2 86.8 L113.6 88.1 L115.4 81.5Z" class="f-acc"/><circle cx="72.9" cy="73.6" r="4.5" class="f-ink"/><text x="62.9" y="65.6" class="lbl" text-anchor="end">aircraft</text><text x="126.2" y="80.8" class="m" text-anchor="start"><tspan class="mb t-acc">v</tspan></text><text x="93.5" y="134.8" class="m t-r" text-anchor="end">r</text><path d="M130 198 l-9 -3 l2 -9 l7 5 l7 -5 l2 9 z" class="s-ink f-part"/><text x="139" y="205.8" class="lbl" text-anchor="start">radar O</text>
+</svg></template>
+<template id="ws-fig-cardioid"><svg class="ws-svg" viewBox="0 0 260 236" role="img" aria-label="A cardioid-shaped groove around the pivot O, drawn wide and gray, and a slotted arm pivoted at O pointing straight up at theta = 90 degrees. The pin P sits where the arm crosses the groove. A curved arrow shows the arm turning counter-clockwise.">
+<line x1="56.6" y1="128" x2="240.5" y2="128" class="s-axis"/><path d="M245.4 128 L238.4 131 L238.4 125Z" class="f-axis"/><line x1="95" y1="227.2" x2="95" y2="20.9" class="s-axis"/><path d="M95 16 L98 23 L92 23Z" class="f-axis"/><text x="243.4" y="144" class="m" text-anchor="end">x</text><text x="87" y="26" class="m" text-anchor="end">y</text><path d="M95 128 L95 128 L94.8 128 L94.6 128.1 L94.2 128.1 L93.8 128.2 L93.3 128.4 L92.7 128.7 L92 129 L91.3 129.4 L90.5 129.9 L89.7 130.5 L88.8 131.2 L87.9 132 L87 132.9 L86 134 L85.1 135.2 L84.2 136.5 L83.3 138 L82.5 139.5 L81.7 141.3 L81 143.1 L80.4 145.1 L79.9 147.1 L79.5 149.3 L79.2 151.6 L79 154.1 L79 156.6 L79.1 159.1 L79.4 161.8 L79.9 164.5 L80.5 167.3 L81.3 170.1 L82.3 172.9 L83.5 175.7 L85 178.5 L86.6 181.3 L88.4 184.1 L90.4 186.8 L92.6 189.4 L95 192 L97.6 194.5 L100.4 196.8 L103.4 199 L106.6 201.1 L109.9 203 L113.4 204.8 L117.1 206.3 L120.9 207.7 L124.8 208.8 L128.9 209.8 L133 210.5 L137.2 210.9 L141.6 211.1 L145.9 211.1 L150.3 210.8 L154.7 210.2 L159.2 209.4 L163.6 208.3 L167.9 206.9 L172.3 205.3 L176.5 203.3 L180.7 201.2 L184.7 198.7 L188.7 196.1 L192.5 193.1 L196.1 190 L199.6 186.6 L202.8 182.9 L205.9 179.1 L208.8 175.1 L211.4 170.9 L213.8 166.6 L215.9 162.1 L217.7 157.5 L219.3 152.7 L220.6 147.9 L221.7 143 L222.4 138 L222.9 133 L223 128 L222.9 123 L222.4 118 L221.7 113 L220.6 108.1 L219.3 103.3 L217.7 98.5 L215.9 93.9 L213.8 89.4 L211.4 85.1 L208.8 80.9 L205.9 76.9 L202.8 73.1 L199.6 69.4 L196.1 66 L192.5 62.9 L188.7 59.9 L184.7 57.3 L180.7 54.8 L176.5 52.7 L172.3 50.7 L167.9 49.1 L163.6 47.7 L159.2 46.6 L154.7 45.8 L150.3 45.2 L145.9 44.9 L141.6 44.9 L137.2 45.1 L133 45.5 L128.9 46.2 L124.8 47.2 L120.9 48.3 L117.1 49.7 L113.4 51.2 L109.9 53 L106.6 54.9 L103.4 57 L100.4 59.2 L97.6 61.5 L95 64 L92.6 66.6 L90.4 69.2 L88.4 71.9 L86.6 74.7 L85 77.5 L83.5 80.3 L82.3 83.1 L81.3 85.9 L80.5 88.7 L79.9 91.5 L79.4 94.2 L79.1 96.9 L79 99.4 L79 101.9 L79.2 104.4 L79.5 106.7 L79.9 108.9 L80.4 110.9 L81 112.9 L81.7 114.7 L82.5 116.5 L83.3 118 L84.2 119.5 L85.1 120.8 L86 122 L87 123.1 L87.9 124 L88.8 124.8 L89.7 125.5 L90.5 126.1 L91.3 126.6 L92 127 L92.7 127.3 L93.3 127.6 L93.8 127.8 L94.2 127.9 L94.6 127.9 L94.8 128 L95 128 L95 128" class="s-ink" style="stroke: var(--line-strong); stroke-width: 7; opacity: 0.6"/><line x1="95" y1="128" x2="95" y2="28.8" class="s-ink" style="stroke-width: 4.5; stroke: var(--ink-muted)"/><circle cx="95" cy="64" r="5" class="f-ink"/><path d="M121 128 L120.8 124.9 L120.2 121.8 L119.3 118.8 L118 115.9 L116.4 113.2 L114.5 110.8 L112.2 108.5 L109.8 106.6 L107.1 105 L104.2 103.7 L101.2 102.8 L98.1 102.2 L95 102" class="s-t"/><path d="M95 102 L102 99 L102 105Z" class="f-t"/><text x="115.5" y="108.8" class="m t-t" text-anchor="middle">θ</text><text x="102.7" y="56.3" class="m" text-anchor="start">P</text><text x="89.9" y="139.5" class="m" text-anchor="end">O</text><path d="M84.1 85.4 L81 86.3 L77.9 87.5 L74.9 88.9 L72 90.5 L69.3 92.3 L66.7 94.3 L64.2 96.6 L61.9 99" class="s-t"/><path d="M61.9 99 L64.3 91.7 L68.8 95.7Z" class="f-t"/><text x="55.3" y="103.7" class="m t-t" text-anchor="end"><tspan>θ</tspan><tspan dx="-5" dy="-9">˙</tspan></text><text x="175" y="201.6" class="lbl" text-anchor="middle">groove</text>
+</svg></template>
+<template id="ws-fig-circle"><svg class="ws-svg" viewBox="0 0 260 230" role="img" aria-label="A circular slot of diameter d = 0.4 m that passes through the pivot O, with its center on the positive x-axis. A slotted arm pivoted at O at 45 degrees to the x-axis crosses the slot at the pin P.">
+<line x1="18" y1="120" x2="237.1" y2="120" class="s-axis"/><path d="M242 120 L235 123 L235 117Z" class="f-axis"/><line x1="46" y1="216" x2="46" y2="24.9" class="s-axis"/><path d="M46 20 L49 27 L43 27Z" class="f-axis"/><text x="240" y="136" class="m" text-anchor="end">x</text><text x="38" y="30" class="m" text-anchor="end">y</text><path d="M206 120 L205.9 115.8 L205.6 111.6 L205 107.5 L204.3 103.4 L203.3 99.3 L202.1 95.3 L200.7 91.3 L199.1 87.5 L197.3 83.7 L195.3 80 L193.1 76.4 L190.7 73 L188.2 69.7 L185.5 66.5 L182.6 63.4 L179.5 60.5 L176.3 57.8 L173 55.3 L169.6 52.9 L166 50.7 L162.3 48.7 L158.5 46.9 L154.7 45.3 L150.7 43.9 L146.7 42.7 L142.6 41.7 L138.5 41 L134.4 40.4 L130.2 40.1 L126 40 L121.8 40.1 L117.6 40.4 L113.5 41 L109.4 41.7 L105.3 42.7 L101.3 43.9 L97.3 45.3 L93.5 46.9 L89.7 48.7 L86 50.7 L82.4 52.9 L79 55.3 L75.7 57.8 L72.5 60.5 L69.4 63.4 L66.5 66.5 L63.8 69.7 L61.3 73 L58.9 76.4 L56.7 80 L54.7 83.7 L52.9 87.5 L51.3 91.3 L49.9 95.3 L48.7 99.3 L47.7 103.4 L47 107.5 L46.4 111.6 L46.1 115.8 L46 120 L46.1 124.2 L46.4 128.4 L47 132.5 L47.7 136.6 L48.7 140.7 L49.9 144.7 L51.3 148.7 L52.9 152.5 L54.7 156.3 L56.7 160 L58.9 163.6 L61.3 167 L63.8 170.3 L66.5 173.5 L69.4 176.6 L72.5 179.5 L75.7 182.2 L79 184.7 L82.4 187.1 L86 189.3 L89.7 191.3 L93.5 193.1 L97.3 194.7 L101.3 196.1 L105.3 197.3 L109.4 198.3 L113.5 199 L117.6 199.6 L121.8 199.9 L126 200 L130.2 199.9 L134.4 199.6 L138.5 199 L142.6 198.3 L146.7 197.3 L150.7 196.1 L154.7 194.7 L158.5 193.1 L162.3 191.3 L166 189.3 L169.6 187.1 L173 184.7 L176.3 182.2 L179.5 179.5 L182.6 176.6 L185.5 173.5 L188.2 170.3 L190.7 167 L193.1 163.6 L195.3 160 L197.3 156.3 L199.1 152.5 L200.7 148.7 L202.1 144.7 L203.3 140.7 L204.3 136.6 L205 132.5 L205.6 128.4 L205.9 124.2 L206 120" class="s-ink" style="stroke: var(--line-strong); stroke-width: 7; opacity: 0.6"/><line x1="46" y1="120" x2="156.3" y2="9.7" class="s-ink" style="stroke-width: 4.5; stroke: var(--ink-muted)"/><circle cx="126" cy="40" r="5" class="f-ink"/><path d="M76 120 L75.9 117.1 L75.4 114.1 L74.7 111.3 L73.7 108.5 L72.5 105.9 L70.9 103.3 L69.2 101 L67.2 98.8" class="s-t"/><path d="M67.2 98.8 L74.3 101.6 L70 105.9Z" class="f-t"/><text x="84.4" y="108" class="m t-t" text-anchor="middle">θ</text><text x="136" y="44" class="m" text-anchor="start">P</text><text x="41.2" y="136" class="m" text-anchor="end">O</text><line x1="46" y1="196" x2="206" y2="196" class="s-thin"/><text x="126" y="209.6" class="lbl" text-anchor="middle">d = 0.4 m</text>
+</svg></template>
+<template id="ws-fig-rod"><svg class="ws-svg" viewBox="0 0 260 224" role="img" aria-label="Top view of a smooth rod pivoted at the origin O, at the angle theta from the x-axis and turning counter-clockwise at the rate theta dot. A collar on the rod slides outward at the rate r dot.">
+<line x1="23.2" y1="178" x2="254.6" y2="178" class="s-axis"/><path d="M259.5 178 L252.5 181 L252.5 175Z" class="f-axis"/><line x1="60" y1="214.8" x2="60" y2="25.4" class="s-axis"/><path d="M60 20.5 L63 27.5 L57 27.5Z" class="f-axis"/><text x="257.5" y="194" class="m" text-anchor="end">x</text><text x="52" y="30.5" class="m" text-anchor="end">y</text><line x1="60" y1="178" x2="215.8" y2="80.6" class="s-ink" style="stroke-width: 5; stroke: var(--ink-muted)"/><rect x="129.6" y="117.1" width="30" height="16" rx="3" class="s-ink f-face" transform="rotate(-32 144.6 125.1)"/><path d="M90 178 L89.9 175.9 L89.7 173.8 L89.3 171.8 L88.8 169.7 L88.2 167.7 L87.4 165.8 L86.5 163.9 L85.4 162.1" class="s-t"/><path d="M85.4 162.1 L91.7 166.4 L86.6 169.6Z" class="f-t"/><text x="104.1" y="167.5" class="m t-t" text-anchor="middle">θ</text><path d="M90.7 138.6 L88.2 136.7 L85.5 135 L82.7 133.5 L79.8 132.1 L76.9 130.9 L73.8 130 L70.8 129.2 L67.6 128.6 L64.5 128.2 L61.3 128 L58.1 128" class="s-t"/><path d="M58.1 128 L65 124.8 L65.2 130.8Z" class="f-t"/><text x="65.2" y="112.9" class="m t-t" text-anchor="middle"><tspan>θ</tspan><tspan dx="-5" dy="-9">˙</tspan></text><text x="148.6" y="109.1" class="lbl" text-anchor="middle">collar</text><line x1="166.9" y1="111.2" x2="193.3" y2="94.7" class="s-r"/><path d="M198 91.8 L193 98.9 L189.4 93.1Z" class="f-r"/><text x="201.8" y="106.6" class="m t-r" text-anchor="start"><tspan>r</tspan><tspan dx="-4" dy="-8">˙</tspan></text><text x="53.7" y="199" class="m" text-anchor="end">O</text>
+</svg></template>
+<template id="ws-fig-vertical"><svg class="ws-svg" viewBox="0 0 260 236" role="img" aria-label="A vertical plane with x horizontal and y up. A smooth arm pivoted at O makes the angle theta with the horizontal and turns counter-clockwise. A collar on the arm is held by a cord that runs along the arm to O and down through the pivot, where it is pulled. Gravity acts downward.">
+<line x1="14.5" y1="150" x2="251.8" y2="150" class="s-axis"/><path d="M256.8 150 L249.8 153 L249.8 147Z" class="f-axis"/><line x1="100" y1="221.2" x2="100" y2="45.7" class="s-axis"/><path d="M100 40.8 L103 47.8 L97 47.8Z" class="f-axis"/><text x="254.8" y="166" class="m" text-anchor="end">x</text><text x="92" y="50.8" class="m" text-anchor="end">y (up)</text><line x1="100" y1="150" x2="223.4" y2="78.8" class="s-ink" style="stroke-width: 5; stroke: var(--ink-muted)"/><rect x="167.3" y="94.5" width="30" height="16" rx="3" class="s-ink f-face" transform="rotate(-30 182.3 102.5)"/><line x1="105.7" y1="146.7" x2="171.6" y2="108.7" class="s-r thin"/><line x1="100" y1="150" x2="100" y2="208.9" class="s-r thin"/><line x1="100" y1="197.5" x2="100" y2="213.5" class="s-r"/><path d="M100 218.4 L97 211.4 L103 211.4Z" class="f-r"/><text x="107.6" y="207" class="lbl" text-anchor="start">cord pulled</text><path d="M134 150 L133.9 147.8 L133.7 145.6 L133.3 143.4 L132.8 141.2 L132.2 139.1 L131.4 137 L130.5 135 L129.4 133" class="s-t"/><path d="M129.4 133 L135.5 137.6 L130.3 140.6Z" class="f-t"/><text x="145.6" y="140.5" class="m t-t" text-anchor="middle">θ</text><path d="M138.1 108.9 L135.8 106.9 L133.4 105 L130.9 103.3 L128.3 101.7 L125.7 100.2 L122.9 98.9 L120.1 97.7 L117.3 96.7 L114.4 95.9 L111.4 95.2 L108.4 94.6 L105.4 94.3" class="s-t"/><path d="M105.4 94.3 L112.7 92 L112.1 97.9Z" class="f-t"/><text x="111.4" y="87.3" class="m t-t" text-anchor="middle"><tspan>θ</tspan><tspan dx="-5" dy="-9">˙</tspan></text><circle cx="100" cy="150" r="4" class="f-bg s-ink"/><text x="92.4" y="140.5" class="m" text-anchor="end">O</text><line x1="182.3" y1="113.9" x2="182.3" y2="143.2" class="s-ink"/><path d="M182.3 148.1 L179.3 141.1 L185.3 141.1Z" class="f-ink"/><text x="188.3" y="146.1" class="m" text-anchor="start">g</text>
+</svg></template>
+<template id="ws-fig-spiral"><svg class="ws-svg" viewBox="0 0 260 228" role="img" aria-label="A spiral groove r = b theta winding out from the pivot O, drawn wide and gray, and a slotted arm pivoted at O pointing straight down, at theta = 3 pi over 2. The pin P sits where the arm crosses the groove.">
+<line x1="13" y1="104" x2="238.1" y2="104" class="s-axis"/><path d="M243 104 L236 107 L236 101Z" class="f-axis"/><line x1="128" y1="219" x2="128" y2="13.9" class="s-axis"/><path d="M128 9 L131 16 L125 16Z" class="f-axis"/><text x="241" y="120" class="m" text-anchor="end">x</text><text x="120" y="19" class="m" text-anchor="end">y</text><path d="M129.6 103.8 L129.9 103.6 L130.3 103.5 L130.6 103.3 L130.9 103.1 L131.2 102.9 L131.5 102.7 L131.8 102.4 L132.1 102.1 L132.4 101.8 L132.6 101.5 L132.8 101.1 L133 100.7 L133.2 100.4 L133.4 100 L133.5 99.5 L133.7 99.1 L133.8 98.7 L133.8 98.2 L133.9 97.7 L133.9 97.2 L133.9 96.8 L133.8 96.3 L133.8 95.8 L133.7 95.3 L133.6 94.7 L133.4 94.2 L133.2 93.7 L133 93.2 L132.8 92.7 L132.5 92.2 L132.2 91.7 L131.9 91.2 L131.5 90.7 L131.2 90.2 L130.7 89.8 L130.3 89.3 L129.8 88.9 L129.3 88.4 L128.8 88 L128.2 87.7 L127.6 87.3 L127 86.9 L126.4 86.6 L125.8 86.3 L125.1 86 L124.4 85.8 L123.6 85.6 L122.9 85.4 L122.1 85.2 L121.4 85.1 L120.6 85 L119.8 84.9 L118.9 84.9 L118.1 84.9 L117.3 84.9 L116.4 85 L115.5 85.1 L114.7 85.3 L113.8 85.5 L112.9 85.7 L112 86 L111.2 86.3 L110.3 86.6 L109.4 87 L108.5 87.4 L107.7 87.9 L106.8 88.4 L106 88.9 L105.2 89.5 L104.3 90.1 L103.5 90.8 L102.8 91.5 L102 92.3 L101.3 93 L100.5 93.9 L99.9 94.7 L99.2 95.6 L98.6 96.5 L98 97.5 L97.4 98.5 L96.8 99.5 L96.3 100.6 L95.9 101.7 L95.4 102.8 L95 103.9 L94.7 105.1 L94.4 106.3 L94.1 107.5 L93.9 108.7 L93.7 110 L93.6 111.3 L93.5 112.6 L93.5 113.9 L93.5 115.2 L93.6 116.5 L93.7 117.9 L93.9 119.2 L94.1 120.6 L94.4 121.9 L94.7 123.3 L95.1 124.7 L95.5 126 L96 127.4 L96.6 128.7 L97.2 130 L97.8 131.3 L98.5 132.6 L99.3 133.9 L100.1 135.2 L101 136.4 L101.9 137.6 L102.9 138.8 L104 140 L105 141.1 L106.2 142.3 L107.4 143.3 L108.6 144.4 L109.9 145.4 L111.2 146.3 L112.6 147.2 L114 148.1 L115.5 148.9 L117 149.7 L118.5 150.4 L120.1 151.1 L121.7 151.7 L123.3 152.2 L125 152.7 L126.7 153.2 L128.5 153.6 L130.2 153.9 L132 154.2 L133.8 154.4 L135.6 154.5 L137.5 154.5 L139.3 154.5 L141.2 154.5 L143 154.3 L144.9 154.1 L146.8 153.8 L148.7 153.5 L150.6 153.1 L152.4 152.6 L154.3 152 L156.2 151.4 L158 150.7 L159.9 149.9 L161.7 149 L163.5 148.1 L165.2 147.1 L167 146 L168.7 144.9 L170.4 143.7 L172 142.4 L173.6 141.1 L175.2 139.7 L176.7 138.2 L178.2 136.7 L179.7 135.1 L181 133.4 L182.4 131.7 L183.6 129.9 L184.9 128.1 L186 126.2 L187.1 124.3 L188.1 122.3 L189.1 120.3 L190 118.2 L190.8 116.1 L191.6 113.9 L192.3 111.7 L192.9 109.5 L193.4 107.2 L193.8 104.9 L194.2 102.6 L194.5 100.3 L194.7 97.9 L194.8 95.5 L194.8 93.1 L194.7 90.7 L194.6 88.3 L194.3 85.9 L194 83.4 L193.6 81 L193.1 78.6 L192.5 76.1 L191.8 73.7 L191 71.3 L190.2 69 L189.2 66.6 L188.2 64.3 L187 62 L185.8 59.7 L184.5 57.5 L183.1 55.3 L181.6 53.1 L180.1 51 L178.4 48.9 L176.7 46.9 L174.9 44.9" class="s-ink" style="stroke: var(--line-strong); stroke-width: 7; opacity: 0.6"/><line x1="128" y1="104" x2="128" y2="216" class="s-ink" style="stroke-width: 4.5; stroke: var(--ink-muted)"/><circle cx="128" cy="153.5" r="5" class="f-ink"/><path d="M152 104 L151.8 101 L151.2 98 L150.3 95.1 L149 92.3 L147.3 89.7 L145.3 87.4 L143.1 85.3 L140.6 83.6 L137.9 82.1 L135 81.1 L132.1 80.3 L129 80 L126 80.1 L122.9 80.5 L120 81.4 L117.2 82.6 L114.6 84.1 L112.1 86 L110 88.1 L108.1 90.6 L106.6 93.2 L105.4 96 L104.5 98.9 L104.1 102 L104 105 L104.3 108.1 L105.1 111 L106.1 113.9 L107.6 116.6 L109.3 119.1 L111.4 121.3 L113.7 123.3 L116.3 125 L119.1 126.3 L122 127.2 L125 127.8 L128 128" class="s-t"/><path d="M128 128 L121 131 L121 125Z" class="f-t"/><text x="158" y="82" class="m t-t" text-anchor="middle">θ</text><text x="137" y="157.5" class="m" text-anchor="start">P</text><text x="122" y="92" class="m" text-anchor="end">O</text>
+</svg></template>
+<template id="ws-fig-puck"><svg class="ws-svg" viewBox="0 0 260 216" role="img" aria-label="A puck on a horizontal frictionless table, moving on a circle around a hole O. A cord runs from the puck to the hole and down through it, where it is pulled. The puck velocity is tangent to the circle.">
+<path d="M20 88 L200 88 L240 132 L60 132 Z" class="s-ink f-part"/><ellipse cx="130" cy="110" rx="62" ry="16" class="s-faint dash"/><ellipse cx="130" cy="110" rx="4" ry="1.8" class="f-ink"/><line x1="130" y1="110" x2="186" y2="104" class="s-r thin"/><line x1="130" y1="111" x2="130" y2="196" class="s-r thin"/><line x1="130" y1="182" x2="130" y2="201.1" class="s-r"/><path d="M130 206 L127 199 L133 199Z" class="f-r"/><ellipse cx="190" cy="103" rx="11" ry="5" class="s-ink f-face"/><line x1="190" y1="97" x2="172.2" y2="86.5" class="s-acc"/><path d="M168 84 L175.6 85 L172.5 90.1Z" class="f-acc"/><text x="172" y="78" class="m" text-anchor="end"><tspan class="mb t-acc">v</tspan></text><text x="150" y="124" class="m t-r" text-anchor="middle">r</text><text x="136" y="196" class="lbl" text-anchor="start">pulled</text><text x="122" y="100" class="m" text-anchor="end">O</text><text x="202" y="98" class="lbl" text-anchor="start">puck</text>
+</svg></template>
+<template id="ws-fig-robot"><svg class="ws-svg" viewBox="0 0 258 222" role="img" aria-label="Top view of a cylindrical robot. The vertical column stands at the origin (it is the z-axis, pointing out of the page). A horizontal arm of length r points at angle theta from the positive x-axis and ends in a gripper. Arrows show the arm rotating counter-clockwise and extending outward.">
+<line x1="38" y1="176" x2="236" y2="176" class="s-axis"/><path d="M238 176 L230 179.4 L230 172.6Z" class="f-axis"/><line x1="58" y1="196" x2="58" y2="28" class="s-axis"/><path d="M58 26 L61.4 34 L54.6 34Z" class="f-axis"/><text x="236" y="192" class="m" text-anchor="end">x</text><text x="50" y="38" class="m" text-anchor="end">y</text><path d="M70.2 175.9 L161.4 110.8 L153.2 99.4 L62.1 164.5Z" class="s-ink f-face"/><path d="M164.3 114.9 L150.3 95.3 M164.3 114.9 L175.7 106.7 M150.3 95.3 L161.7 87.2" class="s-ink"/><circle cx="58" cy="176" r="15" class="s-ink f-part"/><circle cx="58" cy="176" r="3" class="f-ink"/><line x1="74.9" y1="191" x2="170.9" y2="122.4" class="s-r"/><path d="M70.8 193.9 L74 188.1 L77.3 192.7Z" class="f-r"/><path d="M175 119.5 L171.7 125.3 L168.4 120.7Z" class="f-r"/><text x="129.8" y="170.5" class="m t-r halo" text-anchor="middle">r</text><line x1="173.6" y1="93.5" x2="192.3" y2="80.1" class="s-acc"/><path d="M198 76.1 L193.6 83.6 L189.4 77.8Z" class="f-acc"/><text x="196.9" y="68.6" class="lbl" text-anchor="end">extends</text><path d="M90 176 A32 32 0 0 0 86.6 161.7" class="s-t"/><path d="M84 157.4 L89.8 160.7 L85.3 163.9Z" class="f-t"/><text x="94.2" y="169.4" class="m t-t halo" text-anchor="start">θ</text><path d="M122.9 140.5 A74 74 0 0 0 98.7 114.2" class="s-acc"/><path d="M93.5 111.1 L101.2 111.6 L98.1 117.3Z" class="f-acc"/><text x="91.5" y="101.1" class="lbl halo" text-anchor="middle">rotates</text><text x="78" y="210" class="lbl" text-anchor="start">column = z-axis (out of page)</text>
+</svg></template>
+<template id="ws-tile"><svg class="ws-svg tile" viewBox="0 0 160 104" role="img" aria-label="Blank x, y, z axes for a sketch.">
+<text x="6" y="14" class="cap" text-anchor="start">(a)</text><line x1="70" y1="64" x2="70" y2="10" class="s-axis"/><path d="M70 6 L73 13 L67 13Z" class="f-axis"/><line x1="70" y1="64" x2="150" y2="64" class="s-axis"/><path d="M154 64 L147 67 L147 61Z" class="f-axis"/><line x1="70" y1="64" x2="24" y2="94" class="s-axis"/><path d="M20 96.6 L24.2 90.3 L27.5 95.3Z" class="f-axis"/><text x="77" y="14" class="m" text-anchor="start">z</text><text x="152" y="57" class="m" text-anchor="end">y</text><text x="16" y="96" class="m" text-anchor="end">x</text><line x1="70" y1="64" x2="70" y2="100" class="s-faint dash"/><line x1="70" y1="64" x2="20" y2="64" class="s-faint dash"/><line x1="70" y1="64" x2="100" y2="44" class="s-faint dash"/>
+</svg></template>
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers (arrays are [x,y,z] or [r,θ,z]; θ in radians)
+       units, figure: {tpl, label, caption, wide} | null, sketch: n tiles | 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var PI = Math.PI, S2 = Math.SQRT2, S3 = Math.sqrt(3);
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Positions: polar, cylindrical and rectangular', level: 1, lessons: ['l02'], units: 'm, km',
+      statementHTML: String.raw`<p>Convert each position. Give exact values where they exist, then decimals.</p>`,
+      parts: [
+        part('a', String.raw`A radar reports a ship at \(r = 12\ \text{km}\), \(\theta = 150^\circ\). Find \((x, y)\).`,
+          String.raw`\((x, y) = (-6\sqrt{3},\ 6) \approx (-10.39,\ 6)\ \text{km}\)`, [-6 * S3, 6]),
+        part('b', String.raw`A particle is at \((x, y) = (-5,\ -12)\ \text{m}\). Find \((r, \theta)\) with \(0 \le \theta < 2\pi\).`,
+          String.raw`\(r = 13\ \text{m}\), \(\theta = \pi + \arctan\tfrac{12}{5} \approx 4.318\ \text{rad}\ (247.4^\circ)\)`, [13, PI + Math.atan(12 / 5)]),
+        part('c', String.raw`Convert \((r, \theta, z) = (2\ \text{m},\ \tfrac{5\pi}{4},\ 1.5\ \text{m})\) to \((x, y, z)\).`,
+          String.raw`\((x, y, z) = (-\sqrt{2},\ -\sqrt{2},\ 1.5) \approx (-1.414,\ -1.414,\ 1.5)\ \text{m}\)`, [-S2, -S2, 1.5]),
+        part('d', String.raw`Convert \((x, y, z) = (0,\ -4,\ 2)\ \text{m}\) to \((r, \theta, z)\).`,
+          String.raw`\((r, \theta, z) = (4\ \text{m},\ \tfrac{3\pi}{2},\ 2\ \text{m})\), with \(\tfrac{3\pi}{2} \approx 4.712\ (270^\circ)\)`, [4, 3 * PI / 2, 2])
+      ],
+      figure: null, sketch: 0, space: 44, cols: 2 }),
+
+    prob({ n: 2, title: 'Unit vectors and components', level: 1, lessons: ['l03'], units: 'N, m/s',
+      statementHTML: String.raw`<p>A particle is at the position angle \(\theta = 60^\circ\) (Figure W.1).</p>`,
+      parts: [
+        part('a', String.raw`Write \(\er\) and \(\et\) in terms of \(\ihat\) and \(\jhat\).`,
+          String.raw`\(\er = \tfrac12\,\ihat + \tfrac{\sqrt{3}}{2}\,\jhat\), \(\et = -\tfrac{\sqrt{3}}{2}\,\ihat + \tfrac12\,\jhat\)`, { er: [0.5, S3 / 2], et: [-S3 / 2, 0.5] }),
+        part('b', String.raw`A force \(\Fvec = (50\,\ihat + 20\,\jhat)\ \text{N}\) acts on the particle. Find \(F_r\) and \(F_\theta\).`,
+          String.raw`\(F_r = 25 + 10\sqrt{3} \approx 42.32\ \text{N}\), \(F_\theta = 10 - 25\sqrt{3} \approx -33.30\ \text{N}\)`, { Fr: 25 + 10 * S3, Ft: 10 - 25 * S3 }),
+        part('c', String.raw`Its velocity is \(\vvec = (3\,\er - 4\,\et)\ \text{m/s}\). Find \(v_x\) and \(v_y\), and check the speed.`,
+          String.raw`\(v_x = \tfrac32 + 2\sqrt{3} \approx 4.964\ \text{m/s}\), \(v_y = \tfrac{3\sqrt{3}}{2} - 2 \approx 0.5981\ \text{m/s}\); speed \(5\ \text{m/s}\) either way`, { vx: 1.5 + 2 * S3, vy: 1.5 * S3 - 2 }),
+        part('d', String.raw`If \(\dot\theta = 0.5\ \text{rad/s}\) at this instant, what are \(d\er/dt\) and \(d\et/dt\)?`,
+          String.raw`\(d\er/dt = 0.5\,\et\) and \(d\et/dt = -0.5\,\er\) (per second)`, { derdt: 0.5, detdt: -0.5 })
+      ],
+      figure: { tpl: 'ws-fig-units', label: 'Figure W.1', caption: 'The unit vectors \\(\\er\\) and \\(\\et\\) at \\(P\\), with \\(\\theta = 60^\\circ\\).' },
+      sketch: 0, space: 46 }),
+
+    prob({ n: 3, title: 'Velocity of a robot gripper', level: 1, lessons: ['l04'], units: 'm, s',
+      statementHTML: String.raw`<p>A cylindrical robot rotates about its vertical column, telescopes its arm and slides the arm up the column (Figure W.2). At one instant:</p>
+        <ul class="ws-given" aria-label="Given values">
+          <li>\(r = 1.2\ \text{m}\)</li><li>\(\dot r = -0.3\ \text{m/s}\)</li>
+          <li>\(\dot\theta = 1.5\ \text{rad/s}\)</li><li>\(\dot z = 0.4\ \text{m/s}\)</li>
+        </ul>`,
+      parts: [
+        part('a', String.raw`Find \(v_r\), \(v_\theta\) and \(v_z\).`,
+          String.raw`\(\vvec = -0.3\,\er + 1.8\,\et + 0.4\,\ez\ \text{m/s}\)`, { vr: -0.3, vt: 1.8, vz: 0.4 }),
+        part('b', String.raw`Find the speed of the gripper.`,
+          String.raw`\(v = \sqrt{3.49} \approx 1.868\ \text{m/s}\)`, Math.sqrt(3.49)),
+        part('c', String.raw`At what angle above the horizontal is the gripper moving?`,
+          String.raw`\(\tan^{-1}\!\big(0.4/\sqrt{3.33}\big) \approx 12.36^\circ\)`, 12.36)
+      ],
+      figure: { tpl: 'ws-fig-robot', label: 'Figure W.2', caption: 'Top view of the robot. The column is the \\(z\\)-axis; the arm makes angle \\(\\theta\\) with the \\(+x\\) axis.' },
+      sketch: 0, space: 40 }),
+
+    prob({ n: 4, title: 'Radar tracking', level: 2, lessons: ['l04'], units: 'm, s',
+      statementHTML: String.raw`<p>A radar at \(O\) tracks aircraft in level flight (Figure W.3).</p>`,
+      parts: [
+        part('a', String.raw`One aircraft is at \(r = 6\ \text{km}\), with the range decreasing at \(180\ \text{m/s}\) and the line of sight turning at \(\dot\theta = 0.025\ \text{rad/s}\). Find \(v_r\), \(v_\theta\) and its speed.`,
+          String.raw`\(v_r = -180\ \text{m/s}\), \(v_\theta = 150\ \text{m/s}\), \(v \approx 234.3\ \text{m/s}\)`, { vr: -180, vt: 150, v: Math.sqrt(54900) }),
+        part('b', String.raw`For that aircraft, what angle does its velocity make with the line from the aircraft toward the radar?`,
+          String.raw`\(\tan^{-1}(150/180) \approx 39.81^\circ\)`, 39.81),
+        part('c', String.raw`A second aircraft flies with the constant velocity \(\vvec = -200\,\ihat\ \text{m/s}\). When it is at \(r = 5\ \text{km}\), \(\theta = 30^\circ\), find the rates \(\dot r\) and \(\dot\theta\) the radar measures.`,
+          String.raw`\(\dot r = -100\sqrt{3} \approx -173.2\ \text{m/s}\), \(\dot\theta = 100/5000 = 0.02\ \text{rad/s}\)`, { rd: -100 * S3, thd: 0.02 })
+      ],
+      figure: { tpl: 'ws-fig-radar', label: 'Figure W.3', caption: 'The radar at \\(O\\) and an aircraft at range \\(r\\) and angle \\(\\theta\\).' },
+      sketch: 0, space: 48 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'All five acceleration terms', level: 2, lessons: ['l05'], units: 'm, s',
+      statementHTML: String.raw`<p>The robot of Problem 3, at a different instant:</p>
+        <ul class="ws-given" aria-label="Given values">
+          <li class="ws-given-wide">\(r = 0.8\ \text{m}\)</li>
+          <li>\(\dot r = 0.4\ \text{m/s}\)</li><li>\(\ddot r = -0.2\ \text{m/s}^2\)</li>
+          <li>\(\dot\theta = 1.5\ \text{rad/s}\)</li><li>\(\ddot\theta = 0.5\ \text{rad/s}^2\)</li>
+          <li>\(\dot z = 0.1\ \text{m/s}\)</li><li>\(\ddot z = 0\)</li>
+        </ul>`,
+      parts: [
+        part('a', String.raw`Find \(\vvec\) and the speed.`,
+          String.raw`\(\vvec = 0.4\,\er + 1.2\,\et + 0.1\,\ez\ \text{m/s}\), \(v = \sqrt{1.61} \approx 1.269\ \text{m/s}\)`, { vr: 0.4, vt: 1.2, vz: 0.1, speed: Math.sqrt(1.61) }),
+        part('b', String.raw`Find \(a_r\), \(a_\theta\), \(a_z\) and \(|\avec|\).`,
+          String.raw`\(\avec = -2.0\,\er + 1.6\,\et\ \text{m/s}^2\), \(|\avec| = \sqrt{6.56} \approx 2.561\ \text{m/s}^2\)`, { ar: -2.0, at: 1.6, az: 0, magnitude: Math.sqrt(6.56) }),
+        part('c', String.raw`Give the values of the centripetal, Coriolis and angular-acceleration terms.`,
+          String.raw`Centripetal \(-r\dot\theta^2 = -1.8\ \text{m/s}^2\); Coriolis \(2\dot r\dot\theta = 1.2\ \text{m/s}^2\); angular acceleration \(r\ddot\theta = 0.4\ \text{m/s}^2\)`, { centripetal: -1.8, coriolis: 1.2, angular: 0.4 })
+      ],
+      figure: null, sketch: 0, space: 50 }),
+
+    prob({ n: 6, title: 'Motion given as functions of time', level: 2, lessons: ['l05'], units: 'm, s',
+      statementHTML: String.raw`<p>A collar slides along a rod that turns in a horizontal plane, with \(r = (0.5 + 0.2t^2)\ \text{m}\) and \(\theta = 0.3t^2\ \text{rad}\), where \(t\) is in seconds. At \(t = 2\ \text{s}\):</p>`,
+      parts: [
+        part('a', String.raw`Find \(r\), \(\dot r\), \(\ddot r\), \(\dot\theta\) and \(\ddot\theta\).`,
+          String.raw`\(r = 1.3\ \text{m}\), \(\dot r = 0.8\ \text{m/s}\), \(\ddot r = 0.4\ \text{m/s}^2\), \(\dot\theta = 1.2\ \text{rad/s}\), \(\ddot\theta = 0.6\ \text{rad/s}^2\)`, { r: 1.3, rd: 0.8, rdd: 0.4, thd: 1.2, thdd: 0.6 }),
+        part('b', String.raw`Find \(v_r\), \(v_\theta\) and the speed.`,
+          String.raw`\(v_r = 0.8\ \text{m/s}\), \(v_\theta = 1.56\ \text{m/s}\), \(v \approx 1.753\ \text{m/s}\)`, { vr: 0.8, vt: 1.56, v: Math.sqrt(3.0736) }),
+        part('c', String.raw`Find \(a_r\), \(a_\theta\) and \(|\avec|\).`,
+          String.raw`\(a_r = -1.472\ \text{m/s}^2\), \(a_\theta = 2.7\ \text{m/s}^2\), \(|\avec| \approx 3.075\ \text{m/s}^2\)`, { ar: -1.472, at: 2.7, magnitude: Math.sqrt(9.456784) })
+      ],
+      figure: null, sketch: 0, space: 50 }),
+
+    prob({ n: 7, title: 'A follower on a cardioid cam', level: 2, lessons: ['l06'], units: 'm, s',
+      statementHTML: String.raw`<p>A pin moves in the groove \(r = 0.15(1 + \cos\theta)\ \text{m}\), pushed by a slotted arm that turns at a constant \(\dot\theta = 6\ \text{rad/s}\) (Figure W.4). At \(\theta = 90^\circ\):</p>`,
+      parts: [
+        part('a', String.raw`Find \(\dot r\) and \(\ddot r\).`,
+          String.raw`\(\dot r = -0.9\ \text{m/s}\), \(\ddot r = 0\)`, { rd: -0.9, rdd: 0 }),
+        part('b', String.raw`Find \(v_r\), \(v_\theta\) and the speed.`,
+          String.raw`\(v_r = -0.9\ \text{m/s}\), \(v_\theta = 0.9\ \text{m/s}\), \(v = 0.9\sqrt{2} \approx 1.273\ \text{m/s}\)`, { vr: -0.9, vt: 0.9, v: 0.9 * S2 }),
+        part('c', String.raw`Find \(a_r\), \(a_\theta\) and \(|\avec|\).`,
+          String.raw`\(a_r = -5.4\ \text{m/s}^2\), \(a_\theta = -10.8\ \text{m/s}^2\), \(|\avec| \approx 12.07\ \text{m/s}^2\)`, { ar: -5.4, at: -10.8, magnitude: Math.sqrt(145.8) }),
+        part('d', String.raw`Find the tangent angle \(\psi\).`,
+          String.raw`\(\tan\psi = 0.15/(-0.15) = -1\), so \(\psi = -45^\circ\)`, -45)
+      ],
+      figure: { tpl: 'ws-fig-cardioid', label: 'Figure W.4', caption: 'The cardioid groove and the slotted arm at \\(\\theta = 90^\\circ\\).' },
+      sketch: 0, space: 54 }),
+
+    prob({ n: 8, title: 'An arm that slows down, on a circular slot', level: 3, lessons: ['l06'], units: 'm, s',
+      statementHTML: String.raw`<p>A pin moves in a fixed circular slot \(r = 0.4\cos\theta\ \text{m}\) that passes through the pivot \(O\) of a slotted arm (Figure W.5). At \(\theta = 45^\circ\) the arm turns at \(\dot\theta = 3\ \text{rad/s}\) and is slowing down at \(\ddot\theta = -2\ \text{rad/s}^2\).</p>`,
+      parts: [
+        part('a', String.raw`Find \(\dot r\) and \(\ddot r\).`,
+          String.raw`\(\dot r = -0.6\sqrt{2} \approx -0.8485\ \text{m/s}\), \(\ddot r = -1.4\sqrt{2} \approx -1.980\ \text{m/s}^2\)`, { rd: -0.6 * S2, rdd: -1.4 * S2 }),
+        part('b', String.raw`Find \(v_r\), \(v_\theta\) and the speed.`,
+          String.raw`\(v_r \approx -0.8485\ \text{m/s}\), \(v_\theta \approx 0.8485\ \text{m/s}\), \(v = 1.2\ \text{m/s}\)`, { vr: -0.6 * S2, vt: 0.6 * S2, v: 1.2 }),
+        part('c', String.raw`Find \(a_r\), \(a_\theta\) and \(|\avec|\).`,
+          String.raw`\(a_r = -3.2\sqrt{2} \approx -4.525\ \text{m/s}^2\), \(a_\theta = -4\sqrt{2} \approx -5.657\ \text{m/s}^2\), \(|\avec| \approx 7.244\ \text{m/s}^2\)`, { ar: -3.2 * S2, at: -4 * S2, magnitude: Math.sqrt(52.48) }),
+        part('d', String.raw`Check \(v\) and \(|\avec|\) with path coordinates: the slot is a circle of radius \(0.2\ \text{m}\), and the pin turns about its center at twice the arm's rate.`,
+          String.raw`\(v = (0.2)(6) = 1.2\ \text{m/s}\); \(a_n = (0.2)(6)^2 = 7.2\), \(a_t = (0.2)(-4) = -0.8\ \text{m/s}^2\); \(|\avec| = \sqrt{7.2^2 + 0.8^2} \approx 7.244\ \text{m/s}^2\). They agree.`, { v: 1.2, an: 7.2, at: -0.8 })
+      ],
+      figure: { tpl: 'ws-fig-circle', label: 'Figure W.5', caption: 'The circular slot through \\(O\\) and the arm at \\(\\theta = 45^\\circ\\).' },
+      sketch: 0, space: 60 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'A collar on a spinning rod', level: 2, lessons: ['l07'], units: 'N, m, s',
+      statementHTML: String.raw`<p>A \(0.8\ \text{kg}\) collar slides on a smooth rod that a motor turns in a horizontal plane at a constant \(\dot\theta = 3\ \text{rad/s}\) (Figure W.6). At the instant when \(r = 0.5\ \text{m}\), the collar slides outward at \(\dot r = 1.2\ \text{m/s}\). Use \(g = 9.81\ \text{m/s}^2\).</p>`,
+      parts: [
+        part('a', String.raw`Find \(\ddot r\).`,
+          String.raw`\(\ddot r = r\dot\theta^2 = 4.5\ \text{m/s}^2\) (no force acts along the smooth rod)`, 4.5),
+        part('b', String.raw`Find the horizontal force \(N_\theta\) of the rod on the collar.`,
+          String.raw`\(N_\theta = 2m\dot r\dot\theta = 5.76\ \text{N}\), in the direction of rotation`, 5.76),
+        part('c', String.raw`Find the vertical force of the rod and the magnitude of the total rod force.`,
+          String.raw`\(N_z = mg = 7.848\ \text{N}\); total \(\sqrt{5.76^2 + 7.848^2} \approx 9.735\ \text{N}\)`, { Nz: 7.848, total: Math.hypot(5.76, 0.8 * 9.81) }),
+        part('d', String.raw`A spring of stiffness \(60\ \text{N/m}\) and unstretched length \(0.3\ \text{m}\) is now added between the collar and the pivot. Find \(\ddot r\) at the same instant.`,
+          String.raw`\(-k(r - r_0) = m(\ddot r - r\dot\theta^2)\) gives \(\ddot r = 4.5 - 15 = -10.5\ \text{m/s}^2\)`, -10.5)
+      ],
+      figure: { tpl: 'ws-fig-rod', label: 'Figure W.6', caption: 'Top view of the rod and the collar.' },
+      sketch: 0, space: 54 }),
+
+    prob({ n: 10, title: 'An arm in a vertical plane', level: 2, lessons: ['l07'], units: 'N, m, s',
+      statementHTML: String.raw`<p>A \(0.4\ \text{kg}\) collar rides on a smooth arm that turns in a vertical plane at a constant \(\dot\theta = 4\ \text{rad/s}\) (Figure W.7; \(\theta\) from the horizontal, \(y\) up). A cord through the pivot \(O\) pulls the collar in at a steady \(0.6\ \text{m/s}\). At the instant when \(\theta = 30^\circ\) and \(r = 0.5\ \text{m}\), with \(g = 9.81\ \text{m/s}^2\):</p>`,
+      parts: [
+        part('a', String.raw`Find \(a_r\) and \(a_\theta\).`,
+          String.raw`\(a_r = -8\ \text{m/s}^2\), \(a_\theta = -4.8\ \text{m/s}^2\)`, { ar: -8, at: -4.8 }),
+        part('b', String.raw`Find the cord tension \(T\).`,
+          String.raw`\(T = m r\dot\theta^2 - mg\sin\theta = 3.2 - 1.962 = 1.238\ \text{N}\)`, 1.238),
+        part('c', String.raw`Find the force \(N\) of the arm on the collar (positive along \(+\et\)).`,
+          String.raw`\(N = m a_\theta + mg\cos\theta \approx -1.92 + 3.398 = 1.478\ \text{N}\)`, 1.4783),
+        part('d', String.raw`If the collar were held at \(r = 0.5\ \text{m}\) with the same \(\dot\theta\), at what angle \(\theta\) between \(0\) and \(90^\circ\) would the cord go slack?`,
+          String.raw`\(T = 0\) when \(\sin\theta = \tfrac{r\dot\theta^2}{g} = \tfrac{8}{9.81}\), so \(\theta \approx 54.64^\circ\)`, 54.64)
+      ],
+      figure: { tpl: 'ws-fig-vertical', label: 'Figure W.7', caption: 'The arm in its vertical plane, with the cord pulled through \\(O\\).' },
+      sketch: 0, space: 56 }),
+
+    prob({ n: 11, title: 'Groove and arm forces on a pin', level: 3, lessons: ['l06', 'l08'], units: 'N, m, s',
+      statementHTML: String.raw`<p>A \(0.3\ \text{kg}\) pin moves in a smooth spiral groove \(r = 0.08\theta\ \text{m}\) in a horizontal plane, pushed by a smooth slotted arm that turns at a constant \(\dot\theta = 4\ \text{rad/s}\) (Figure W.8). At \(\theta = \tfrac{3\pi}{2}\):</p>`,
+      parts: [
+        part('a', String.raw`Find \(r\), \(\dot r\), \(a_r\) and \(a_\theta\).`,
+          String.raw`\(r = 0.12\pi \approx 0.3770\ \text{m}\), \(\dot r = 0.32\ \text{m/s}\), \(a_r \approx -6.032\ \text{m/s}^2\), \(a_\theta = 2.56\ \text{m/s}^2\)`, { r: 0.12 * PI, rd: 0.32, ar: -0.12 * PI * 16, at: 2.56 }),
+        part('b', String.raw`Find the tangent angle \(\psi\).`,
+          String.raw`\(\tan\psi = \tfrac{3\pi}{2} \approx 4.712\), so \(\psi \approx 78.02^\circ\)`, 78.02),
+        part('c', String.raw`Find the force \(N\) of the groove and the force \(F\) of the arm on the pin.`,
+          String.raw`\(N = -m a_r/\sin\psi \approx 1.850\ \text{N}\); \(F = m a_\theta - N\cos\psi \approx 0.768 - 0.384 = 0.384\ \text{N}\)`, { N: 0.3 * 0.12 * PI * 16 / Math.sin(Math.atan(1.5 * PI)), F: 0.384 })
+      ],
+      figure: { tpl: 'ws-fig-spiral', label: 'Figure W.8', caption: 'The spiral groove and the arm at \\(\\theta = \\tfrac{3\\pi}{2}\\).' },
+      sketch: 0, space: 54 }),
+
+    prob({ n: 12, title: 'Pulling a puck in', level: 3, lessons: ['l08'], units: 'N, J, m, s',
+      statementHTML: String.raw`<p>A \(0.25\ \text{kg}\) puck on a frictionless table moves on a circle of radius \(1.2\ \text{m}\) at \(\dot\theta = 1\ \text{rad/s}\), held by a cord through a hole at the center (Figure W.9). The cord is then pulled down at a steady \(0.15\ \text{m/s}\) until \(r = 0.6\ \text{m}\).</p>`,
+      parts: [
+        part('a', String.raw`Find \(\dot\theta\) and \(v_\theta\) at \(r = 0.6\ \text{m}\).`,
+          String.raw`\(r^2\dot\theta = 1.44\ \text{m}^2/\text{s}\) is constant, so \(\dot\theta = 4\ \text{rad/s}\) and \(v_\theta = 2.4\ \text{m/s}\)`, { thd: 4, vt: 2.4 }),
+        part('b', String.raw`Find the speed of the puck at \(r = 0.6\ \text{m}\).`,
+          String.raw`\(v = \sqrt{2.4^2 + 0.15^2} \approx 2.405\ \text{m/s}\)`, Math.sqrt(5.7825)),
+        part('c', String.raw`Find the cord tension at \(r = 0.6\ \text{m}\), and compare it with the tension at the start.`,
+          String.raw`\(T = m r\dot\theta^2 = 2.4\ \text{N}\), eight times the starting \(0.3\ \text{N}\)`, { T: 2.4, T1: 0.3 }),
+        part('d', String.raw`How much has the kinetic energy increased since the start of the circular motion? Where did that energy come from?`,
+          String.raw`From \(0.18\ \text{J}\) to \(0.7228\ \text{J}\): an increase of \(\approx 0.5428\ \text{J}\), the work done by the hand pulling the cord`, 0.5428)
+      ],
+      figure: { tpl: 'ws-fig-puck', label: 'Figure W.9', caption: 'The puck on the table and the cord through the hole \\(O\\).' },
+      sketch: 0, space: 50 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'theta counter-clockwise from +x, in radians in every formula (rates in rad/s); positions with r >= 0 and 0 <= theta < 2pi; g = 9.81 m/s^2; exact values first, then 4 significant figures; SI units.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {
+    l01: ['01-why-cylindrical.html', 'Lesson 1'], l02: ['02-position.html', 'Lesson 2'],
+    l03: ['03-unit-vectors.html', 'Lesson 3'], l04: ['04-velocity.html', 'Lesson 4'],
+    l05: ['05-acceleration.html', 'Lesson 5'], l06: ['06-paths-r-theta.html', 'Lesson 6'],
+    l07: ['07-equations-of-motion.html', 'Lesson 7'], l08: ['08-applications.html', 'Lesson 8']
+  };
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

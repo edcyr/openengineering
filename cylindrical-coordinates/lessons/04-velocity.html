@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Velocity · Cylindrical Coordinates</title>
+<meta name="description" content="Velocity in polar and cylindrical coordinates: v = ṙ u_r + rθ̇ u_θ + ż u_z. Radial and transverse components, speed and direction, robot arms and radar tracking.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/polar-motion.js"></script>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 30 min</p>
+    <h1>Velocity</h1>
+    <p class="lede">Differentiate the position \(\rvec = r\,\er + z\,\ez\) and the turning unit vector adds a second term. A particle moves out from the axis at the rate \(\dot r\) and round it at \(r\dot\theta\): those are the radial and transverse components of its velocity.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Derive \(\vvec = \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez\) from the position vector.</li>
+      <li>Explain what the radial component \(v_r = \dot r\) and the transverse component \(v_\theta = r\dot\theta\) measure.</li>
+      <li>Find the speed and the direction of the velocity from its components.</li>
+      <li>Find \(\dot r\) and \(\dot\theta\) from a known velocity, as a radar or a tracking camera does.</li>
+    </ul>
+  </section>
+
+  <section id="derivation">
+    <h2>Differentiating the position</h2>
+    <p>The velocity is the time derivative of the position vector. Use the product rule on \(r\,\er\), because both the length \(r\) and the direction \(\er\) change, and use \(d\er/dt = \dot\theta\,\et\) from <a href="03-unit-vectors.html">Lesson 3</a>. The unit vector \(\ez\) is constant.</p>
+    \[ \begin{aligned}
+      \vvec = \frac{d\rvec}{dt} &= \frac{d}{dt}\left(r\,\er\right) + \frac{d}{dt}\left(z\,\ez\right) \\
+        &= \dot r\,\er + r\,\frac{d\er}{dt} + \dot z\,\ez \\
+        &= \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez
+    \end{aligned} \]
+
+    <div class="key-formula">
+      <p class="key-formula-title">Velocity in cylindrical coordinates</p>
+      \[ \vvec = \dot r\,\colR{\er} + r\dot\theta\,\colT{\et} + \dot z\,\colZ{\ez} \]
+      \[ v_r = \dot r, \qquad v_\theta = r\dot\theta, \qquad v_z = \dot z, \qquad v = |\vvec| = \sqrt{\dot r^2 + (r\dot\theta)^2 + \dot z^2} \]
+      <p>For motion in a plane, drop the \(z\) term: \(\vvec = \dot r\,\er + r\dot\theta\,\et\).</p>
+    </div>
+
+    <ul>
+      <li>\(v_r = \dot r\), the <strong>radial component</strong>, is how fast the distance from the axis grows: an arm telescoping in or out, a collar sliding along a rod, a cord being reeled in. It is negative when \(r\) decreases.</li>
+      <li>\(v_\theta = r\dot\theta\), the <strong>transverse component</strong>, is the speed of going round. \(\dot\theta\) is the angular velocity of the line \(OP\) (in rad/s), and the same turning rate carries a point farther out faster: this is the familiar \(v = \omega r\).</li>
+      <li>\(v_z = \dot z\) is the climbing speed, exactly as in rectangular coordinates.</li>
+    </ul>
+    <p>The three components are perpendicular, so the speed follows from Pythagoras. The velocity is always tangent to the path; its components describe how that tangent direction splits into "out", "round" and "up".</p>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: \(v_\theta = \dot\theta\)</p>
+      <p>The transverse component is \(r\dot\theta\), not \(\dot\theta\). Check the units: \(\dot\theta\) is in rad/s, and a velocity must be in m/s. The radian is dimensionless, so \(r\dot\theta\) in m × rad/s is in m/s.</p>
+    </aside>
+  </section>
+
+  <section id="figure">
+    <h2>See the two components</h2>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+        <div class="mf-readouts" id="fig41-readouts" aria-live="off"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> Choose a motion and press <em>Play</em>, or drag \(P\) along its path. The green arrow is the velocity \(\vvec\), always tangent to the path. Its components \(v_r\,\er\) (dashed orange, along \(OP\)) and \(v_\theta\,\et\) (dashed violet, across \(OP\)) are drawn tip to tail and add up to \(\vvec\). In <em>Cyclist on a straight road</em>, \(\vvec\) never changes, yet \(v_r\) and \(v_\theta\) do, because \(\er\) and \(\et\) turn as the cyclist passes.</figcaption>
+    </figure>
+  </section>
+
+  <section id="direction">
+    <h2>Speed and direction</h2>
+    <p>In the \(r\)–\(\theta\) plane the velocity makes an angle \(\psi\) with the radial line \(OP\) (measured from \(\er\) toward \(\et\)), where</p>
+    \[ \tan\psi = \frac{v_\theta}{v_r} = \frac{r\dot\theta}{\dot r} \]
+    <p>A purely radial motion (\(\dot\theta = 0\)) has \(\psi = 0\); motion on a circle about \(O\) (\(\dot r = 0\)) has \(\psi = 90^\circ\). <a href="06-paths-r-theta.html">Lesson 6</a> shows that \(\psi\) depends only on the shape of the path. If the motion is in space, the angle of \(\vvec\) above the horizontal is \(\tan^{-1}\!\big(v_z/\sqrt{v_r^2 + v_\theta^2}\big)\).</p>
+
+    <div class="example">
+      <p class="example-title">Example 4.1 — A robot arm that extends while it slews</p>
+      <p>A cylindrical robot rotates its arm at a constant <span class="nowrap">\(\dot\theta = 2\ \text{rad/s}\),</span> extends it at <span class="nowrap">\(\dot r = 0.5\ \text{m/s}\)</span> and raises it at <span class="nowrap">\(\dot z = 0.3\ \text{m/s}\).</span> Find the velocity of the gripper and its speed at the instant when <span class="nowrap">\(r = 1\ \text{m}\).</span></p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \begin{aligned}
+            v_r &= \dot r = 0.5\ \text{m/s} \\
+            v_\theta &= r\dot\theta = (1)(2) = 2\ \text{m/s} \\
+            v_z &= \dot z = 0.3\ \text{m/s}
+          \end{aligned} \]
+          \[ \vvec = (0.5\,\er + 2\,\et + 0.3\,\ez)\ \text{m/s}, \qquad v = \sqrt{0.5^2 + 2^2 + 0.3^2} = \sqrt{4.34} \approx 2.083\ \text{m/s} \]
+          <p>Most of the speed comes from swinging round. In the horizontal plane the velocity makes \(\psi = \tan^{-1}(2/0.5) \approx 75.96^\circ\) with the arm, and it climbs at \(\tan^{-1}\!\big(0.3/\sqrt{0.5^2 + 2^2}\big) \approx 8.27^\circ\) above the horizontal. Figure 4.2 shows this instant.</p>
+        </div>
+      </details>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> The robot of Example 4.1 in space: \(r = (0.5 + 0.5t)\ \text{m}\), \(\theta = 2t\ \text{rad}\), \(z = (1.5 + 0.3t)\ \text{m}\). The green arrow is \(\vvec\); the thin arrows are its components along \(\er\), \(\et\) and \(\ez\), drawn tip to tail. Press <em>Play</em>, or <em>Jump to Example 4.1</em> to see the instant \(t = 1\ \text{s}\). Drag the view to rotate it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="tracking">
+    <h2>Tracking: from velocity to \(\dot r\) and \(\dot\theta\)</h2>
+    <p>A radar or a tracking camera at \(O\) measures \(r\), \(\theta\) and their rates. The relations work both ways: given \(\dot r\) and \(\dot\theta\) you get the velocity, and given the velocity you get the rates the tracker must follow, \(\dot r = v_r\) and \(\dot\theta = v_\theta/r\).</p>
+
+    <div class="example">
+      <p class="example-title">Example 4.2 — Radar tracking an aircraft</p>
+      <p>A radar measures an aircraft at a range \(r = 8\ \text{km}\), with the range decreasing at \(150\ \text{m/s}\) and the line of sight turning at \(\dot\theta = 0.02\ \text{rad/s}\) (assume level flight, so the motion is in a plane). Find the aircraft's speed and the angle between its velocity and the line from the aircraft toward the radar.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Work in meters: \(r = 8000\ \text{m}\), \(\dot r = -150\ \text{m/s}\) (the range decreases).</p>
+          \[ \begin{aligned}
+            v_r &= \dot r = -150\ \text{m/s} \\
+            v_\theta &= r\dot\theta = (8000)(0.02) = 160\ \text{m/s} \\
+            v &= \sqrt{(-150)^2 + 160^2} \approx 219.3\ \text{m/s}
+          \end{aligned} \]
+          <p>The line toward the radar is \(-\er\). The velocity has \(150\ \text{m/s}\) along \(-\er\) and \(160\ \text{m/s}\) along \(\et\), so it makes \(\tan^{-1}(160/150) \approx 46.85^\circ\) with that line, turned toward \(\et\). The aircraft is not flying straight at the radar, which is why the line of sight turns.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 4.3 — Following a cyclist</p>
+      <p>A camera at \(O\) films a cyclist riding at a constant \(5\ \text{m/s}\) along a straight road. Take the road as the line \(y = 10\ \text{m}\), traveled in the \(+x\) direction. How fast is the distance to the camera changing, and how fast must the camera turn, when the cyclist is at \(x = 10\ \text{m}\)? How fast must it turn as the cyclist passes closest?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>At \((10, 10)\ \text{m}\): \(r = \sqrt{200} \approx 14.14\ \text{m}\) and \(\theta = 45^\circ\). The velocity is \(\vvec = 5\,\ihat\ \text{m/s}\). Resolve it along \(\er\) and \(\et\) (Lesson 3):</p>
+          \[ \begin{aligned}
+            v_r &= v_x\cos\theta + v_y\sin\theta = 5\cos 45^\circ \approx 3.536\ \text{m/s} \\
+            v_\theta &= -v_x\sin\theta + v_y\cos\theta = -5\sin 45^\circ \approx -3.536\ \text{m/s}
+          \end{aligned} \]
+          <p>So the distance grows at \(\dot r = 3.536\ \text{m/s}\), and the camera turns at</p>
+          \[ \dot\theta = \frac{v_\theta}{r} = \frac{-3.536}{14.14} = -0.25\ \text{rad/s} \]
+          <p>(clockwise, since \(\theta\) decreases as the cyclist rides on). At the closest point, \((0, 10)\ \text{m}\), the velocity is all transverse: \(v_\theta = -5\ \text{m/s}\) at \(r = 10\ \text{m}\), so \(\dot\theta = -0.5\ \text{rad/s}\), the fastest turn. In Figure 4.1, choose <em>Cyclist on a straight road</em> to watch \(v_r\) and \(v_\theta\) trade off while \(\vvec\) stays constant.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection</p>
+      <p>Air-traffic radars, antenna trackers and sports cameras all measure \(r\) and \(\theta\) and estimate \(\dot r\) and \(\dot\theta\). From them, \(v_r = \dot r\) and \(v_\theta = r\dot\theta\) give the target's speed and heading. Doppler radar measures \(\dot r\) directly from the frequency shift of the echo.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\vvec = \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez\). The \(r\dot\theta\) term comes from differentiating the turning unit vector \(\er\).</li>
+      <li>\(v_r = \dot r\) measures moving out from the axis, \(v_\theta = r\dot\theta\) going round it, and \(v_z = \dot z\) climbing.</li>
+      <li>\(v = \sqrt{\dot r^2 + (r\dot\theta)^2 + \dot z^2}\), and in the plane \(\tan\psi = v_\theta/v_r\) gives the direction relative to the radial line.</li>
+      <li>A constant velocity can still have changing \(v_r\) and \(v_\theta\), because the unit vectors turn.</li>
+      <li>Next, <a href="05-acceleration.html">Lesson 5</a> differentiates \(\vvec\) to get the acceleration, with its centripetal and Coriolis terms.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 4.1: velocity components in the plane, several motions ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  function line(y0, V, x0) {   // straight line y = y0 traveled at speed V from x = x0, in polar form
+    return {
+      r: function (t) { var x = x0 + V * t; return Math.hypot(x, y0); },
+      th: function (t) { return Math.atan2(y0, x0 + V * t); }
+    };
+  }
+  var MOTIONS = {
+    rod: {
+      label: 'Collar on a spinning rod', t1: 5, range: 1.6, step: 0.25,
+      desc: '\\(r = 0.3 + 0.15t\\ \\text{m}\\) and \\(\\theta = t\\ \\text{rad}\\): \\(v_r = 0.15\\ \\text{m/s}\\) stays fixed while \\(v_\\theta = r\\) grows.',
+      m: { r: function (t) { return 0.3 + 0.15 * t; }, rd: function () { return 0.15; }, th: function (t) { return t; }, thd: function () { return 1; } }
+    },
+    turntable: {
+      label: 'Point on a turntable', t1: 2 * PI / 1.2, range: 1.6, step: 0.25,
+      desc: '\\(r = 1\\ \\text{m}\\) and \\(\\dot\\theta = 1.2\\ \\text{rad/s}\\): \\(v_r = 0\\) and \\(v_\\theta = 1.2\\ \\text{m/s}\\), all the time.',
+      m: { r: function () { return 1; }, rd: function () { return 0; }, th: function (t) { return 1.2 * t; }, thd: function () { return 1.2; } }
+    },
+    robot: {
+      label: 'Robot gripper, seen from above', t1: 3, range: 2.3, step: 0.5,
+      desc: '\\(r = 0.5 + 0.5t\\ \\text{m}\\) and \\(\\theta = 2t\\ \\text{rad}\\) (Example 4.1 at \\(t = 1\\ \\text{s}\\)).',
+      m: { r: function (t) { return 0.5 + 0.5 * t; }, rd: function () { return 0.5; }, th: function (t) { return 2 * t; }, thd: function () { return 2; } }
+    },
+    cyclist: {
+      label: 'Cyclist on a straight road', t1: 8, range: 22, step: 5,
+      desc: 'Along \\(y = 10\\ \\text{m}\\) at \\(5\\ \\text{m/s}\\), from \\(x = -20\\ \\text{m}\\) (Example 4.3 at \\(t = 6\\ \\text{s}\\)).',
+      m: line(10, 5, -20)
+    }
+  };
+  var panel = document.getElementById('fig41-controls');
+  var sel = CYL.select({
+    label: 'Motion', value: 'rod',
+    options: Object.keys(MOTIONS).map(function (k) { return { value: k, label: MOTIONS[k].label }; }),
+    onChange: function (k) { choose(k); }
+  });
+  var desc = CYL.el('div', { class: 'mf-desc' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Choose a motion' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(desc);
+  var fig = POLAR.figure({
+    stage: document.getElementById('fig41-stage'), controls: panel, readoutsEl: document.getElementById('fig41-readouts'),
+    motion: MOTIONS.rod.m, t0: 0, t1: MOTIONS.rod.t1, t: 1.5, speed: 1, loop: true,
+    xRange: [-1.6, 1.6], yRange: [-1.6, 1.6], polarStep: { r: 0.25, thetaDeg: 30 },
+    show: { v: true, a: false, comps: 'rt', trace: true, radial: true, frame: false },
+    toggles: ['comps', 'frame', 'radial'],
+    readouts: ['t', 'r', 'th', 'rd', 'thd', 'vr', 'vt', 'v'],
+    aria: 'Top view of a particle P moving in the plane with the chosen motion. An orange segment joins the origin O to P. A green velocity arrow at P is tangent to the path; dashed orange and violet arrows show its radial component along OP and its transverse component across OP, adding up to the velocity.'
+  });
+  function choose(k) {
+    var M = MOTIONS[k];
+    desc.innerHTML = '<p>' + M.desc + '</p>';
+    CYL.renderMath(desc);
+    fig.setRange([-M.range, M.range], [-M.range, M.range]);
+    fig.plane.setOptions({ polarStep: { r: M.step, thetaDeg: 30 } });
+    fig.setMotion(M.m, 0, M.t1, k === 'robot' ? 1 : k === 'cyclist' ? 6 : 1.5);
+  }
+  choose('rod');
+});
+
+/* ---------- Figure 4.2: velocity of the robot gripper in space (3D) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var panel = document.getElementById('fig42-controls');
+  var fig = POLAR.figure3d({
+    stage: document.getElementById('fig42-stage'), controls: panel,
+    motion: {
+      r: function (t) { return 0.5 + 0.5 * t; }, rd: function () { return 0.5; }, rdd: function () { return 0; },
+      th: function (t) { return 2 * t; }, thd: function () { return 2; }, thdd: function () { return 0; },
+      z: function (t) { return 1.5 + 0.3 * t; }, zd: function () { return 0.3; }, zdd: function () { return 0; }
+    },
+    t0: 0, t1: 3, t: 1, speed: 0.5,
+    camera: { azimuth: 58, elevation: 36, zoom: 1.5, target: [0.15, 0.2, 1.3] },
+    show: { v: true, a: false, vc: true, ac: false },
+    toggles: ['path', 'vc'],
+    readouts: ['t', 'r', 'th', 'z', 'vr', 'vt', 'vz', 'v'],
+    decorate: function (v) { return POLAR.robotArm(v); },
+    aria: 'Animated 3D view of a cylindrical robot on a vertical column. Its arm slews round, extends and rises, and the gripper P spirals outward and upward. A green arrow at P is the velocity, tangent to the path, with thin orange, violet and blue arrows for its components along u_r, u_theta and u_z.'
+  });
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [CYL.button('<span>Jump to Example 4.1 (\\(t = 1\\ \\text{s}\\))</span>', function () { fig.setT(1); }, { small: true })]));
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'fields',
+    prompt: 'A cylindrical robot <strong>retracts</strong> its arm while it slews and lifts. At one instant ' +
+      '<span class="nowrap">\\(r = 1.5\\ \\text{m}\\),</span> <span class="nowrap">\\(\\dot r = -0.4\\ \\text{m/s}\\),</span> <span class="nowrap">\\(\\dot\\theta = 1.2\\ \\text{rad/s}\\)</span> and <span class="nowrap">\\(\\dot z = 0.25\\ \\text{m/s}\\).</span> ' +
+      'Find the velocity components of the gripper and its speed.',
+    fields: [
+      { name: 'vr', label: '\\(v_r =\\)', answer: -0.4, unit: 'm/s' },
+      { name: 'vt', label: '\\(v_\\theta =\\)', answer: 1.8, unit: 'm/s' },
+      { name: 'vz', label: '\\(v_z =\\)', answer: 0.25, unit: 'm/s' },
+      { name: 'v', label: '\\(v =\\)', answer: Math.sqrt(3.4625), unit: 'm/s', answerTex: '\\sqrt{3.4625} \\approx 1.861' }
+    ],
+    hints: [
+      'Use \\(\\vvec = \\dot r\\,\\er + r\\dot\\theta\\,\\et + \\dot z\\,\\ez\\).',
+      'Retracting means \\(\\dot r\\) is negative, so \\(v_r\\) is negative. The \\(\\et\\) component needs the factor \\(r\\): \\(v_\\theta = (1.5)(1.2)\\).'
+    ],
+    explain: 'Each velocity component is one term of \\(\\vvec = \\dot r\\,\\er + r\\dot\\theta\\,\\et + \\dot z\\,\\ez\\); only the \\(\\et\\) component multiplies a rate by \\(r\\).',
+    solution: '\\[ \\begin{aligned} v_r &= \\dot r = -0.4\\ \\text{m/s} \\\\ v_\\theta &= r\\dot\\theta = (1.5)(1.2) = 1.8\\ \\text{m/s} \\\\ v_z &= \\dot z = 0.25\\ \\text{m/s} \\end{aligned} \\]' +
+      '\\[ v = \\sqrt{(-0.4)^2 + 1.8^2 + 0.25^2} = \\sqrt{3.4625} \\approx 1.861\\ \\text{m/s} \\]'
+  });
+
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'mc',
+    prompt: 'A car drives round a circular track centered on \\(O\\) at a constant speed. With polar coordinates centered on \\(O\\), which velocity components are nonzero?',
+    choices: [
+      { html: 'Only \\(v_\\theta\\)', correct: true, feedback: 'On a circle about \\(O\\), \\(r\\) is constant, so \\(v_r = \\dot r = 0\\) and the whole velocity is \\(r\\dot\\theta\\,\\et\\).' },
+      { html: 'Only \\(v_r\\)', feedback: '\\(v_r = \\dot r\\), and \\(r\\) does not change on a circle centered on \\(O\\).' },
+      { html: 'Both \\(v_r\\) and \\(v_\\theta\\)', feedback: 'That is true for a circle that does not pass round \\(O\\) as its center. Here \\(r\\) is constant.' },
+      { html: 'Neither, because the speed is constant', feedback: 'Constant speed means \\(|\\vvec|\\) is constant, not \\(\\vvec = \\mathbf{0}\\).' }
+    ],
+    hints: ['Which of \\(r\\) and \\(\\theta\\) changes on a circle centered on \\(O\\)?'],
+    explain: 'With \\(r\\) constant, \\(\\dot r = 0\\) and only \\(r\\dot\\theta\\) survives.',
+    solution: '<p>\\(r\\) is the radius of the track, a constant, so \\(v_r = \\dot r = 0\\). \\(\\theta\\) increases steadily, so \\(v_\\theta = r\\dot\\theta \\ne 0\\). The velocity is tangent to the circle, which is exactly the \\(\\et\\) direction.</p>'
+  });
+
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'numeric',
+    prompt: 'A radar measures an aircraft in level flight at \\(r = 5\\ \\text{km}\\), with \\(\\dot r = 120\\ \\text{m/s}\\) and \\(\\dot\\theta = 0.03\\ \\text{rad/s}\\). What is the aircraft\'s speed?',
+    label: '\\(v =\\)', answer: Math.sqrt(36900), unit: 'm/s', answerTex: '\\sqrt{36\\,900} \\approx 192.1',
+    hints: ['Convert \\(r\\) to meters first.', '\\(v_\\theta = r\\dot\\theta = (5000)(0.03)\\).'],
+    explain: '\\(v = \\sqrt{\\dot r^2 + (r\\dot\\theta)^2}\\) with \\(r\\) in meters.',
+    solution: '\\[ \\begin{aligned} v_r &= 120\\ \\text{m/s}, \\qquad v_\\theta = (5000)(0.03) = 150\\ \\text{m/s} \\\\ v &= \\sqrt{120^2 + 150^2} = \\sqrt{36\\,900} \\approx 192.1\\ \\text{m/s} \\end{aligned} \\]'
+  });
+});
+</script>
+</body>
+</html>

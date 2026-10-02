@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Check Quiz · Cylindrical Coordinates</title>
+<meta name="description" content="Fifteen fixed questions on Lessons 2–8: positions, unit vectors, velocity, acceleration, paths r = f(θ), equations of motion and central forces, with a score, worked solutions and a printable results sheet.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<style>
+  /* ---- Page-specific styles (design tokens only) ---- */
+  .quiz-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0;
+    list-style: none;
+  }
+  .quiz-facts > li {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .quiz-fact-value { display: block; font-size: 1.3rem; font-weight: 750; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .quiz-fact-label { display: block; margin-top: 2px; font-size: 0.84rem; color: var(--ink-muted); }
+
+  .quiz-rules { margin: 0; padding-left: 1.2em; }
+  .quiz-rules > li { margin: 0 0 0.45em; }
+  .quiz-rules > li:last-child { margin-bottom: 0; }
+  .quiz-subhead { margin: 0 0 8px; font-size: 1.02rem; font-weight: 700; }
+  .quiz-type-table { margin: 0; }
+  .quiz-type-table td code { white-space: nowrap; }
+
+  .quiz-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+  }
+  .quiz-toolbar-label { font-size: 0.84rem; font-weight: 650; color: var(--ink-muted); }
+  .quiz-host .q-set { margin-top: 0; }
+  .quiz-host .q-solution-body .quiz-review-link { margin-top: 0.6em; font-size: 0.9em; color: var(--ink-muted); }
+
+  .quiz-breakdown { margin: 18px 0 22px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .quiz-breakdown-title { margin: 0 0 4px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .quiz-breakdown-summary { margin: 0 0 10px; color: var(--ink-muted); font-size: 0.92rem; }
+  .quiz-breakdown .table-wrap { margin: 0; }
+  .quiz-breakdown td, .quiz-breakdown th { vertical-align: top; }
+  .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 7px 12px; }
+  /* table.data in module.css sets tbody th to 650: match its specificity so the muted titles stay regular weight */
+  .quiz-breakdown table.data tbody th { font-weight: 400; }
+  .quiz-breakdown table.data tbody th a { font-weight: 650; }
+  .quiz-breakdown .quiz-lesson-title { color: var(--ink-muted); }
+  .quiz-breakdown .quiz-score-cell { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Phones: the long lesson titles would wrap to 3–5 lines each; "Lesson N" (a link) is enough there */
+  @media (max-width: 560px) {
+    .quiz-breakdown .quiz-lesson-title { display: none; }
+    .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 6px 10px; }
+  }
+
+  .quiz-next { margin: 0; padding-left: 1.2em; }
+  .quiz-next > li { margin: 0 0 0.45em; }
+
+  @media print {
+    .quiz-toolbar { display: none !important; }
+    /* Printing before submitting gives every question on paper, whichever layout is on screen */
+    .quiz-host[data-state="open"] .q-set .q-card[hidden] { display: block !important; }
+    .quiz-host[data-state="open"] .q-set-dots,
+    .quiz-host[data-state="open"] .q-set-progress,
+    .quiz-host[data-state="open"] .q-set-confirm { display: none !important; }
+  }
+</style>
+</head>
+<body data-page="quiz" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 35 min</p>
+    <h1>Self-Check Quiz</h1>
+    <p class="lede">Fifteen questions on the core skills of Lessons 2–8: positions, unit vectors, velocity and acceleration, guided paths, equations of motion and central forces. Submit to see your score and a worked solution for every question.</p>
+  </header>
+
+  <section id="before">
+    <h2>Before you start</h2>
+
+    <ul class="quiz-facts" aria-label="Quiz at a glance">
+      <li><span class="quiz-fact-value">15</span><span class="quiz-fact-label">questions</span></li>
+      <li><span class="quiz-fact-value">≈ 35 min</span><span class="quiz-fact-label">estimated time</span></li>
+      <li><span class="quiz-fact-value">L2–L8</span><span class="quiz-fact-label">lessons covered</span></li>
+      <li><span class="quiz-fact-value">Instant</span><span class="quiz-fact-label">score and solutions</span></li>
+    </ul>
+
+    <div class="two-col">
+      <div>
+        <p class="quiz-subhead">How it works</p>
+        <ul class="quiz-rules">
+          <li>Work on your own with a calculator and scrap paper. Try it without notes first: that shows you what you really know.</li>
+          <li>Nothing is marked until you press <strong>Submit quiz</strong>. Until then you can move between questions and change any answer.</li>
+          <li>Each question is either right or wrong. When a question has several boxes, every box must be right.</li>
+          <li>After you submit, you see your score, a review of every question with a worked solution, and a results sheet you can print or save as a PDF.</li>
+          <li id="quiz-last-rule">Use \(g = 9.81\ \text{m/s}^2\) where gravity is needed. Angles in the formulas are in radians, and rates in rad/s.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="quiz-subhead">Typing answers</p>
+        <div class="table-wrap quiz-type-table">
+          <table class="data">
+            <caption class="visually-hidden">How to type common answers</caption>
+            <thead><tr><th scope="col">To enter</th><th scope="col">Type</th></tr></thead>
+            <tbody>
+              <tr><td>\(3\pi/4\)</td><td><code>3pi/4</code> or <code>3π/4</code></td></tr>
+              <tr><td>\(\sqrt{2}\)</td><td><code>sqrt(2)</code> or <code>√2</code></td></tr>
+              <tr><td>\(2\sqrt{3}\)</td><td><code>2sqrt(3)</code></td></tr>
+              <tr><td>\(135^\circ\)</td><td><code>135°</code> or <code>135 deg</code></td></tr>
+              <tr><td>\(-0.75\)</td><td><code>-0.75</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Each box shows how it read your entry (for example <span class="nowrap">= 2.356 rad (135°)</span>), so you can check it before you submit. Type only the number; the unit is shown next to the box.</p>
+      </div>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">How close is close enough?</p>
+      <p><strong>Angles</strong> are accepted within \(0.01\) rad (about \(0.6^\circ\)) of the exact value, and any equivalent angle \(\theta + 2\pi k\) counts. Give \(\theta\) with <span class="nowrap">\(0 \le \theta < 2\pi\)</span> when you can. An angle typed without <code>°</code> is read in radians.</p>
+      <p><strong>Other numbers</strong> are accepted within \(1\%\) of the exact value, so three or four significant figures are plenty. Exact forms such as <code>7pi/4</code> or <code>4+3sqrt(2)</code> are always safe.</p>
+    </aside>
+  </section>
+
+  <section id="quiz">
+    <h2>The quiz</h2>
+    <div class="quiz-toolbar" id="quiz-toolbar" hidden>
+      <span class="quiz-toolbar-label" id="quiz-layout-label">Show</span>
+      <div class="chip-row" role="group" aria-labelledby="quiz-layout-label">
+        <button type="button" class="chip" data-layout="paged" aria-pressed="true">One at a time</button>
+        <button type="button" class="chip" data-layout="all" aria-pressed="false">All on one page</button>
+      </div>
+    </div>
+    <div class="quiz-host" id="quiz-host"></div>
+    <noscript><p class="callout warning">This quiz needs JavaScript. Turn it on in your browser settings and reload the page.</p></noscript>
+  </section>
+
+  <section id="after">
+    <h2>After the quiz</h2>
+    <p>Use your results to decide what to do next. After you submit, the <strong>Results by lesson</strong> table under your score links straight to the lessons behind any questions you missed.</p>
+    <ul class="quiz-next">
+      <li>Missed a question? Read its worked solution, then revisit the lesson it points to.</li>
+      <li>Want more practice? The <a href="practice-lab.html">Practice Lab</a> generates unlimited problems on every skill in this quiz (positions, unit vectors, velocity, acceleration, paths, equations of motion and central forces), each with hints and a full solution.</li>
+      <li>Prefer pen and paper? Try the <a href="worksheet.html">Printable Worksheet</a>.</li>
+      <li>Keep the <a href="../reference/cheat-sheet.html">Formula Sheet</a> next to you while you review.</li>
+      <li>Then press <strong>Retake quiz</strong> and aim for 15 out of 15.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ==========================================================================================
+   Self-Check Quiz: the 15 fixed questions.
+   Keep ids, order and choices stable
+   Question order is fixed, and every mc/multi question sets shuffle:false, so its choices appear on screen
+   exactly in the order listed here.
+   Standard CYLQuiz question fields (short = the title printed in the Question column of the results
+   sheet; keep it in step with the answer key's question titles) plus custom fields that CYLQuiz ignores:
+     lesson       registry id of the lesson the question tests ('l02' … 'l08')
+     finalAnswer  the expected final answer (HTML with TeX), stated explicitly for the answer key
+     choices[].aria  plain-text wording of a choice for screen readers (the page sets it as the
+                  radio/checkbox aria-label, because browsers take little or no text from KaTeX output)
+   The numbers deliberately differ from every worked example and lesson check, so no answer can be
+   recalled from the lessons.
+   ========================================================================================== */
+window.CYL_QUIZ_QUESTIONS = (function () {
+  'use strict';
+  var T = String.raw;
+  var PI = Math.PI, S2 = Math.SQRT2, G = 9.81;
+  // "Review: Lesson N · Title" link, with the title taken from the page registry.
+  function review(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return '<p class="quiz-review-link">Review: <a href="' + CYL.url(p.href) + '">Lesson ' + p.num + ' · ' + p.title + '</a></p>';
+  }
+  // Field answers in the review line "F_r = …, F_θ = …": \nobreak keeps each value on the line of its own
+  // label, and \allowbreak at the start of the next label is where the line may wrap.
+  function nb(tex) { return '\\nobreak{' + tex + '}'; }
+  var AB = '\\allowbreak ';
+  // Q14: smooth spiral groove r = 0.25θ, arm at a constant 1.5 rad/s, at θ = π, m = 0.6 kg
+  var q14 = (function () {
+    var m = 0.6, b = 0.25, w = 1.5, th = PI, r = b * th, rd = b * w, ar = -r * w * w, at = 2 * rd * w, psi = Math.atan(r / b);
+    var N = -m * ar / Math.sin(psi);
+    return { N: N, F: m * at - N * Math.cos(psi) };
+  })();
+
+  return [
+    /* ---------- Q1 · Lesson 2 · polar coordinates, second-quadrant arctan trap ---------- */
+    {
+      id: 'quiz-q01', lesson: 'l02', type: 'fields',
+      short: 'Polar coordinates in quadrant II',
+      prompt: T`A radar at the origin \(O\) locates a ship at \((x, y) = (-7,\ 24)\ \text{km}\). Find its polar coordinates \((r, \theta)\), with \(r \ge 0\) and \(0 \le \theta < 2\pi\).`,
+      fields: [
+        { name: 'r', label: T`\(\colR{r} =\)`, answer: 25, unit: 'km', answerTex: nb(T`25\ \text{km}`) },
+        { name: 'theta', label: T`\(${AB}\colT{\theta} =\)`, ariaLabel: 'θ', answer: PI - Math.atan(24 / 7), angle: true,
+          answerTex: nb(T`\pi - \arctan\tfrac{24}{7} \approx 1.855\ (106.3^\circ)`) }
+      ],
+      finalAnswer: T`\(r = 25\ \text{km}\), \(\theta = \pi - \arctan\tfrac{24}{7} \approx 1.855\) rad (106.3°)`,
+      explain: T`<p>The point is in the second quadrant (\(x < 0\), \(y > 0\)), so \(\theta\) lies between \(\tfrac{\pi}{2}\) and \(\pi\). A calculator's \(\arctan(y/x) \approx -1.287\) \((-73.7^\circ)\) points into the fourth quadrant instead.</p>`,
+      solution: T`<p>Radius:</p>
+\[ r = \sqrt{x^2 + y^2} = \sqrt{(-7)^2 + 24^2} = \sqrt{625} = 25\ \text{km} \]
+<p>Angle: \(x < 0\) and \(y > 0\), so the ship is in the second quadrant. Find the reference angle, then place it in that quadrant:</p>
+\[ \begin{aligned}
+\theta_{\text{ref}} &= \arctan\frac{|y|}{|x|} = \arctan\frac{24}{7} \approx 1.287\ (73.74^\circ) \\
+\theta &= \pi - \theta_{\text{ref}} \approx 1.855\ (106.3^\circ)
+\end{aligned} \]
+<p>The trap: \(\arctan(y/x) = \arctan\!\left(-\tfrac{24}{7}\right) \approx -1.287\) points into the fourth quadrant, the opposite direction. \(\atantwo(24,\ -7) \approx 1.855\) gets the quadrant right.</p>
+<p>Check: \(25\cos(1.855) \approx -7.00\) and \(25\sin(1.855) \approx 24.00\).</p>` + review('l02')
+    },
+
+    /* ---------- Q2 · Lesson 2 · Cartesian → cylindrical, third-quadrant arctan trap ---------- */
+    {
+      id: 'quiz-q02', lesson: 'l02', type: 'point', system: 'cyl', unit: 'm',
+      short: 'A gripper target (Cartesian → cylindrical, quadrant III)',
+      prompt: T`A camera finds a part at \((x, y, z) = (-0.5,\ -1.2,\ 2.0)\ \text{m}\), measured from the base of a cylindrical robot whose rotating column is the \(z\)-axis. Which joint values \((r, \theta, z)\) put the gripper on the part? Use \(0 \le \theta < 2\pi\).`,
+      answerPoint: [1.3, PI + Math.atan(2.4), 2.0],
+      answerTex: T`(r,\ \theta,\ z) \approx {(1.3\ \text{m},\ 4.318\ (247.4^\circ),\ 2.0\ \text{m})}`,
+      finalAnswer: T`\((r, \theta, z) \approx (1.3\ \text{m},\ 4.318,\ 2.0\ \text{m})\), with \(\theta = \pi + \arctan\tfrac{12}{5} \approx 4.318\) rad (247.4°)`,
+      explain: T`<p>Both \(x\) and \(y\) are negative, so the point is in the third quadrant: \(\pi < \theta < \tfrac{3\pi}{2}\). \(\arctan(y/x) = \arctan 2.4 \approx 1.176\) is the first-quadrant angle, off by exactly \(\pi\).</p>`,
+      solution: T`<p>Radius (distance from the column):</p>
+\[ r = \sqrt{(-0.5)^2 + (-1.2)^2} = \sqrt{0.25 + 1.44} = \sqrt{1.69} = 1.3\ \text{m} \]
+<p>Angle: \(x < 0\) and \(y < 0\), so the part is in the third quadrant:</p>
+\[ \begin{aligned}
+\theta_{\text{ref}} &= \arctan\frac{|y|}{|x|} = \arctan\frac{1.2}{0.5} \approx 1.176\ (67.38^\circ) \\
+\theta &= \pi + \theta_{\text{ref}} \approx 4.318\ (247.4^\circ)
+\end{aligned} \]
+<p>\(z = 2.0\) m carries over unchanged, so \((r, \theta, z) \approx (1.3\ \text{m},\ 4.318,\ 2.0\ \text{m})\).</p>
+<p>Check: \(1.3\cos(4.318) \approx -0.50\) and \(1.3\sin(4.318) \approx -1.20\).</p>` + review('l02')
+    },
+
+    /* ---------- Q3 · Lesson 3 · the derivative of u_θ ---------- */
+    {
+      id: 'quiz-q03', lesson: 'l03', type: 'mc',
+      short: T`The time derivative of \(\et\)`,
+      prompt: T`A particle moves so that its angle changes at the rate \(\dot\theta\). What is \(d\et/dt\)?`,
+      shuffle: false,
+      choices: [
+        { html: T`\(\mathbf{0}\), because \(\et\) is a unit vector`, aria: 'zero, because u theta is a unit vector',
+          feedback: T`Its length is fixed, but its direction turns whenever \(\theta\) changes.` },
+        { html: T`\(\dot\theta\,\er\)`, aria: 'theta dot times u r',
+          feedback: T`Check the sign at \(\theta = 0\): there \(\et = \jhat\), and as \(\theta\) grows it turns toward \(-\ihat = -\er\).` },
+        { html: T`\(-\dot\theta\,\er\)`, aria: 'minus theta dot times u r', correct: true,
+          feedback: T`Differentiating \(-\sin\theta\,\ihat + \cos\theta\,\jhat\) gives \(-\dot\theta(\cos\theta\,\ihat + \sin\theta\,\jhat) = -\dot\theta\,\er\).` },
+        { html: T`\(\dot\theta\,\et\)`, aria: 'theta dot times u theta',
+          feedback: T`A unit vector cannot change along itself (its length would change). The change is perpendicular to \(\et\).` }
+      ],
+      finalAnswer: T`C: \(d\et/dt = -\dot\theta\,\er\)`,
+      explain: T`<p>Write \(\et = -\sin\theta\,\ihat + \cos\theta\,\jhat\) and differentiate with the chain rule.</p>`,
+      solution: T`\[ \frac{d\et}{dt} = \frac{d}{dt}\left(-\sin\theta\,\ihat + \cos\theta\,\jhat\right) = \left(-\cos\theta\,\ihat - \sin\theta\,\jhat\right)\dot\theta = -\dot\theta\,\er \]
+<p>Geometrically: as the particle moves round, the tip of \(\et\) slides round the unit circle toward \(-\er\). This term is what produces the centripetal acceleration \(-r\dot\theta^2\,\er\).</p>` + review('l03')
+    },
+
+    /* ---------- Q4 · Lesson 3 · radial and transverse components of a force ---------- */
+    {
+      id: 'quiz-q04', lesson: 'l03', type: 'fields',
+      short: 'Radial and transverse components of a force',
+      prompt: T`A force \(\Fvec = (40\,\ihat - 30\,\jhat)\ \text{N}\) acts on a particle at the position angle \(\theta = 135^\circ\). Find its radial and transverse components.`,
+      fields: [
+        { name: 'Fr', label: T`\(F_r =\)`, answer: -35 * S2, unit: 'N', answerTex: nb(T`-35\sqrt{2} \approx -49.50\ \text{N}`) },
+        { name: 'Ft', label: T`\(${AB}F_\theta =\)`, ariaLabel: 'F θ', answer: -5 * S2, unit: 'N', answerTex: nb(T`-5\sqrt{2} \approx -7.071\ \text{N}`) }
+      ],
+      finalAnswer: T`\(F_r = -35\sqrt{2} \approx -49.50\ \text{N}\), \(F_\theta = -5\sqrt{2} \approx -7.071\ \text{N}\)`,
+      explain: T`<p>\(F_r = F_x\cos\theta + F_y\sin\theta\) and \(F_\theta = -F_x\sin\theta + F_y\cos\theta\), with \(\cos 135^\circ = -\tfrac{\sqrt{2}}{2}\) and \(\sin 135^\circ = \tfrac{\sqrt{2}}{2}\).</p>`,
+      solution: T`\[ \begin{aligned}
+F_r &= F_x\cos\theta + F_y\sin\theta = 40\left(-\tfrac{\sqrt{2}}{2}\right) + (-30)\left(\tfrac{\sqrt{2}}{2}\right) = -35\sqrt{2} \approx -49.50\ \text{N} \\
+F_\theta &= -F_x\sin\theta + F_y\cos\theta = -40\left(\tfrac{\sqrt{2}}{2}\right) + (-30)\left(-\tfrac{\sqrt{2}}{2}\right) = -5\sqrt{2} \approx -7.071\ \text{N}
+\end{aligned} \]
+<p>The force points almost straight back toward the axis (\(F_r \lt 0\)) and slightly clockwise (\(F_\theta \lt 0\)). Check: \(\sqrt{49.50^2 + 7.071^2} = 50\ \text{N} = \sqrt{40^2 + 30^2}\).</p>` + review('l03')
+    },
+
+    /* ---------- Q5 · Lesson 4 · velocity of a camera crane ---------- */
+    {
+      id: 'quiz-q05', lesson: 'l04', type: 'fields',
+      short: 'Velocity of a camera crane',
+      prompt: T`A film crew's camera crane slews about its vertical post at \(\dot\theta = 0.5\ \text{rad/s}\) while its telescoping arm <strong>retracts</strong> at \(0.8\ \text{m/s}\) and the camera rises at \(0.3\ \text{m/s}\). At the instant when the camera is \(r = 4\ \text{m}\) from the post, find \(v_r\), \(v_\theta\) and the camera's speed.`,
+      fields: [
+        { name: 'vr', label: T`\(v_r =\)`, answer: -0.8, unit: 'm/s', answerTex: nb(T`-0.8\ \text{m/s}`) },
+        { name: 'vt', label: T`\(${AB}v_\theta =\)`, ariaLabel: 'v θ', answer: 2, unit: 'm/s', answerTex: nb(T`2\ \text{m/s}`) },
+        { name: 'v', label: T`\(${AB}v =\)`, ariaLabel: 'speed v', answer: Math.sqrt(4.73), unit: 'm/s', answerTex: nb(T`\sqrt{4.73} \approx 2.175\ \text{m/s}`) }
+      ],
+      finalAnswer: T`\(v_r = -0.8\ \text{m/s}\), \(v_\theta = 2\ \text{m/s}\), \(v = \sqrt{4.73} \approx 2.175\ \text{m/s}\)`,
+      explain: T`<p>\(v_r = \dot r\) (negative: the arm retracts), \(v_\theta = r\dot\theta\), \(v_z = \dot z\), and the speed combines all three.</p>`,
+      solution: T`\[ \begin{aligned}
+v_r &= \dot r = -0.8\ \text{m/s} \\
+v_\theta &= r\dot\theta = (4)(0.5) = 2\ \text{m/s} \\
+v_z &= \dot z = 0.3\ \text{m/s} \\
+v &= \sqrt{(-0.8)^2 + 2^2 + 0.3^2} = \sqrt{4.73} \approx 2.175\ \text{m/s}
+\end{aligned} \]
+<p>Most of the speed comes from swinging round; the climb adds only a little, because it enters squared.</p>` + review('l04')
+    },
+
+    /* ---------- Q6 · Lesson 4 · constant velocity, changing components ---------- */
+    {
+      id: 'quiz-q06', lesson: 'l04', type: 'mc',
+      short: 'A straight line at constant speed, seen from a radar',
+      prompt: T`An aircraft flies past a radar in a straight, level line at constant speed. Which statement about its velocity components \(v_r\) and \(v_\theta\), measured from the radar, is true?`,
+      shuffle: false,
+      choices: [
+        { html: T`Both stay constant, because the velocity is constant.`, aria: 'Both stay constant, because the velocity is constant.',
+          feedback: T`The vector \(\vvec\) is constant, but the unit vectors \(\er\) and \(\et\) turn as the aircraft passes, so its components along them change.` },
+        { html: T`Both change, even though \(\vvec\) is constant.`, aria: 'Both change, even though v is constant.', correct: true,
+          feedback: T`The components are measured along \(\er\) and \(\et\), which turn with the line of sight.` },
+        { html: T`\(v_\theta\) is zero, because the path is straight.`, aria: 'v theta is zero, because the path is straight.',
+          feedback: T`\(v_\theta = 0\) only for motion straight toward or away from the radar. A line that passes beside the radar has \(v_\theta \ne 0\).` },
+        { html: T`\(v_r\) is constant and only \(v_\theta\) changes.`, aria: 'v r is constant and only v theta changes.',
+          feedback: T`\(v_r\) changes too: it is negative while the aircraft approaches, zero at the closest point and positive as it flies away.` }
+      ],
+      finalAnswer: T`B: both change, because \(\er\) and \(\et\) turn as the aircraft passes`,
+      explain: T`<p>Components depend on the axes they are measured along; here the axes \(\er\), \(\et\) turn with the line of sight.</p>`,
+      solution: T`<p>The velocity vector is constant, but \(v_r = \vvec\cdot\er\) and \(v_\theta = \vvec\cdot\et\) are measured along unit vectors that turn as the line of sight turns. Far away and approaching, \(v_r \approx -v\) and \(v_\theta \approx 0\); at the closest point \(v_r = 0\) and \(|v_\theta| = v\); flying away, \(v_r\) becomes positive. Only \(v_r^2 + v_\theta^2 = v^2\) stays fixed.</p>` + review('l04')
+    },
+
+    /* ---------- Q7 · Lesson 5 · acceleration of a slewing, extending turntable ladder ---------- */
+    {
+      id: 'quiz-q07', lesson: 'l05', type: 'fields',
+      short: 'Acceleration of a turntable ladder',
+      prompt: T`A fire-truck turntable ladder slews about the vertical \(z\)-axis at a constant <span class="nowrap">\(\dot\theta = 0.2\ \text{rad/s}\)</span> while it extends at a fixed elevation angle, so its rescue cage moves outward at a constant <span class="nowrap">\(\dot r = 0.4\ \text{m/s}\)</span> and upward at a constant <span class="nowrap">\(\dot z = 0.3\ \text{m/s}\).</span> At the instant when the cage is <span class="nowrap">\(r = 12\ \text{m}\)</span> from the axis, find its acceleration components \(a_r\), \(a_\theta\) and \(a_z\).`,
+      fields: [
+        { name: 'ar', label: T`\(a_r =\)`, answer: -0.48, unit: 'm/s²', answerTex: nb(T`-0.48\ \text{m/s}^2`) },
+        { name: 'at', label: T`\(${AB}a_\theta =\)`, ariaLabel: 'a θ', answer: 0.16, unit: 'm/s²', answerTex: nb(T`0.16\ \text{m/s}^2`) },
+        { name: 'az', label: T`\(${AB}a_z =\)`, ariaLabel: 'a z', answer: 0, unit: 'm/s²', answerTex: nb(T`0\ \text{m/s}^2`) }
+      ],
+      finalAnswer: T`\(a_r = -0.48\ \text{m/s}^2\), \(a_\theta = 0.16\ \text{m/s}^2\), \(a_z = 0\), so \(\avec = -0.48\,\er + 0.16\,\et\ \text{m/s}^2\)`,
+      explain: T`<p>With \(\ddot r = \ddot\theta = \ddot z = 0\), only the centripetal term \(-r\dot\theta^2\) and the Coriolis term \(2\dot r\dot\theta\) survive.</p>`,
+      solution: T`<p>Every rate is constant, so \(\ddot r = \ddot\theta = \ddot z = 0\):</p>
+\[ \begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = 0 - 12\,(0.2)^2 = -0.48\ \text{m/s}^2 \\
+a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0 + 2\,(0.4)(0.2) = 0.16\ \text{m/s}^2 \\
+a_z &= \ddot z = 0
+\end{aligned} \]
+<p>The \(-0.48\) is the centripetal acceleration, toward the axis; the \(0.16\) is the Coriolis acceleration, which appears because the cage moves outward while the ladder slews. The steady climb adds no acceleration.</p>` + review('l05')
+    },
+
+    /* ---------- Q8 · Lesson 5 · which acceleration terms survive ---------- */
+    {
+      id: 'quiz-q08', lesson: 'l05', type: 'multi',
+      short: 'Which acceleration terms are nonzero?',
+      prompt: T`A bead slides outward at a <strong>constant speed</strong> along a straight rod, while the rod turns at a <strong>constant rate</strong> in a horizontal plane about one end. Which acceleration terms are nonzero? Select all that apply.`,
+      shuffle: false,
+      choices: [
+        { html: T`\(\ddot r\)`, aria: 'r double dot',
+          feedback: T`The bead slides at a constant speed along the rod, so \(\dot r\) is constant and \(\ddot r = 0\).` },
+        { html: T`The centripetal term \(-r\dot\theta^2\)`, aria: 'the centripetal term, minus r theta dot squared', correct: true },
+        { html: T`The angular-acceleration term \(r\ddot\theta\)`, aria: 'the angular acceleration term, r theta double dot',
+          feedback: T`The rod turns at a constant rate, so \(\ddot\theta = 0\).` },
+        { html: T`The Coriolis term \(2\dot r\dot\theta\)`, aria: 'the Coriolis term, 2 r dot theta dot', correct: true },
+        { html: T`\(\ddot z\)`, aria: 'z double dot',
+          feedback: T`The motion stays in a horizontal plane, so \(z\) is constant.` }
+      ],
+      finalAnswer: T`B and D: the centripetal term \(-r\dot\theta^2\) and the Coriolis term \(2\dot r\dot\theta\)`,
+      explain: T`<p>A term is zero exactly when one of its factors is zero. Constant rates kill \(\ddot r\) and \(\ddot\theta\), but not \(-r\dot\theta^2\) or \(2\dot r\dot\theta\).</p>`,
+      solution: T`<p>With \(\ddot r = \ddot\theta = \ddot z = 0\),</p>
+\[ \avec = -r\dot\theta^2\,\er + 2\dot r\dot\theta\,\et \]
+<p>The bead accelerates toward the pivot (centripetal) and sideways in the direction of rotation (Coriolis), although nothing about the motion "speeds up". The rod must push it sideways to supply the Coriolis part.</p>` + review('l05')
+    },
+
+    /* ---------- Q9 · Lesson 5 · motion given as functions of time ---------- */
+    {
+      id: 'quiz-q09', lesson: 'l05', type: 'fields',
+      short: 'Acceleration from r(t) and θ(t)',
+      prompt: T`A collar slides along a rotating rod so that \(r = (0.4 + 0.3t^2)\ \text{m}\), while the rod turns with \(\theta = 1.5t\ \text{rad}\) (\(t\) in seconds). Find \(a_r\) and \(a_\theta\) at \(t = 1\ \text{s}\).`,
+      fields: [
+        { name: 'ar', label: T`\(a_r =\)`, answer: -0.975, unit: 'm/s²', answerTex: nb(T`-0.975\ \text{m/s}^2`) },
+        { name: 'at', label: T`\(${AB}a_\theta =\)`, ariaLabel: 'a θ', answer: 1.8, unit: 'm/s²', answerTex: nb(T`1.8\ \text{m/s}^2`) }
+      ],
+      finalAnswer: T`\(a_r = -0.975\ \text{m/s}^2\), \(a_\theta = 1.8\ \text{m/s}^2\)`,
+      explain: T`<p>Differentiate twice, evaluate at \(t = 1\ \text{s}\), then substitute: \(r = 0.7\), \(\dot r = 0.6\), \(\ddot r = 0.6\), \(\dot\theta = 1.5\), \(\ddot\theta = 0\).</p>`,
+      solution: T`<p>At \(t = 1\ \text{s}\):</p>
+\[ \begin{aligned}
+r &= 0.4 + 0.3(1)^2 = 0.7\ \text{m}, & \dot r &= 0.6t = 0.6\ \text{m/s}, & \ddot r &= 0.6\ \text{m/s}^2 \\
+\dot\theta &= 1.5\ \text{rad/s}, & \ddot\theta &= 0
+\end{aligned} \]
+\[ \begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = 0.6 - (0.7)(1.5)^2 = 0.6 - 1.575 = -0.975\ \text{m/s}^2 \\
+a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0 + 2(0.6)(1.5) = 1.8\ \text{m/s}^2
+\end{aligned} \]
+<p>Although the collar speeds up along the rod (\(\ddot r \gt 0\)), the centripetal term wins and \(a_r\) is negative.</p>` + review('l05')
+    },
+
+    /* ---------- Q10 · Lesson 6 · a pin on a spiral path ---------- */
+    {
+      id: 'quiz-q10', lesson: 'l06', type: 'fields',
+      short: 'Acceleration on a spiral path',
+      prompt: T`A pin moves in a fixed spiral slot \(r = 0.12\theta\ \text{m}\) (\(\theta\) in radians), pushed by an arm turning at a constant \(\dot\theta = 2.5\ \text{rad/s}\). Find \(a_r\) and \(a_\theta\) when \(\theta = \pi\).`,
+      fields: [
+        { name: 'ar', label: T`\(a_r =\)`, answer: -0.12 * PI * 6.25, unit: 'm/s²', answerTex: nb(T`-0.75\pi \approx -2.356\ \text{m/s}^2`) },
+        { name: 'at', label: T`\(${AB}a_\theta =\)`, ariaLabel: 'a θ', answer: 1.5, unit: 'm/s²', answerTex: nb(T`1.5\ \text{m/s}^2`) }
+      ],
+      finalAnswer: T`\(a_r = -0.75\pi \approx -2.356\ \text{m/s}^2\), \(a_\theta = 1.5\ \text{m/s}^2\)`,
+      explain: T`<p>Chain rule: \(\dot r = (dr/d\theta)\dot\theta = 0.12(2.5) = 0.3\ \text{m/s}\) and \(\ddot r = (d^2r/d\theta^2)\dot\theta^2 + (dr/d\theta)\ddot\theta = 0\).</p>`,
+      solution: T`<p>At \(\theta = \pi\): \(r = 0.12\pi \approx 0.3770\ \text{m}\), \(dr/d\theta = 0.12\ \text{m/rad}\), \(d^2r/d\theta^2 = 0\). So</p>
+\[ \dot r = (0.12)(2.5) = 0.3\ \text{m/s}, \qquad \ddot r = 0 + 0 = 0 \]
+\[ \begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = 0 - (0.3770)(2.5)^2 \approx -2.356\ \text{m/s}^2 \\
+a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0 + 2(0.3)(2.5) = 1.5\ \text{m/s}^2
+\end{aligned} \]
+<p>All of \(a_\theta\) is Coriolis: the pin moves outward while it turns.</p>` + review('l06')
+    },
+
+    /* ---------- Q11 · Lesson 6 · the tangent angle ψ ---------- */
+    {
+      id: 'quiz-q11', lesson: 'l06', type: 'numeric',
+      short: T`The tangent angle \(\psi\) on a cardioid`,
+      prompt: T`For the cardioid \(r = 0.4(1 + \cos\theta)\ \text{m}\), find the tangent angle \(\psi\) between the extended radial line and the tangent at \(\theta = 120^\circ\). Give it between \(-90^\circ\) and \(90^\circ\) (in degrees with °, or in radians).`,
+      label: T`\(\psi =\)`, answer: -PI / 6, angle: true, answerTex: T`-30^\circ`,
+      finalAnswer: T`\(\psi = -30^\circ\)`,
+      explain: T`<p>\(\tan\psi = r/(dr/d\theta)\) with \(r = 0.2\ \text{m}\) and \(dr/d\theta = -0.4\sin 120^\circ \approx -0.3464\ \text{m/rad}\).</p>`,
+      solution: T`\[ \begin{aligned}
+r &= 0.4(1 + \cos 120^\circ) = 0.4(1 - 0.5) = 0.2\ \text{m} \\
+\frac{dr}{d\theta} &= -0.4\sin 120^\circ \approx -0.3464\ \text{m/rad} \\
+\tan\psi &= \frac{r}{dr/d\theta} = \frac{0.2}{-0.3464} \approx -0.5774 \quad\Rightarrow\quad \psi = -30^\circ
+\end{aligned} \]
+<p>The tangent is turned \(30^\circ\) clockwise from the extended radial line. The angle depends only on the shape: no \(\dot\theta\) is needed.</p>` + review('l06')
+    },
+
+    /* ---------- Q12 · Lesson 7 · a spring-loaded collar on a spinning rod ---------- */
+    {
+      id: 'quiz-q12', lesson: 'l07', type: 'fields',
+      short: 'A spring-loaded collar on a spinning rod',
+      prompt: T`A \(0.5\ \text{kg}\) collar slides on a smooth rod that turns in a horizontal plane at a constant \(\dot\theta = 4\ \text{rad/s}\). A spring of stiffness \(30\ \text{N/m}\) and unstretched length \(0.2\ \text{m}\) joins it to the pivot. At the instant when \(r = 0.4\ \text{m}\) and \(\dot r = 0.5\ \text{m/s}\), find \(\ddot r\) and the horizontal force \(N\) of the rod on the collar.`,
+      fields: [
+        { name: 'rdd', label: T`\(\ddot r =\)`, answer: -5.6, unit: 'm/s²', answerTex: nb(T`-5.6\ \text{m/s}^2`) },
+        { name: 'N', label: T`\(${AB}N =\)`, ariaLabel: 'N', answer: 2, unit: 'N', answerTex: nb(T`2\ \text{N}`) }
+      ],
+      finalAnswer: T`\(\ddot r = -5.6\ \text{m/s}^2\) (the collar decelerates outward), \(N = 2\ \text{N}\) in the direction of rotation`,
+      explain: T`<p>Along the rod only the spring acts: \(-k(r - r_0) = m(\ddot r - r\dot\theta^2)\). Across it, \(N = m(r\ddot\theta + 2\dot r\dot\theta)\).</p>`,
+      solution: T`<p>Spring force: \(F_s = -k(r - r_0) = -30(0.4 - 0.2) = -6\ \text{N}\) (toward the pivot).</p>
+\[ \begin{aligned}
+\textstyle\sum F_r &= m(\ddot r - r\dot\theta^2): & -6 &= 0.5\left(\ddot r - (0.4)(4)^2\right) &&\Rightarrow\quad \ddot r = -12 + 6.4 = -5.6\ \text{m/s}^2 \\
+\textstyle\sum F_\theta &= m(r\ddot\theta + 2\dot r\dot\theta): & N &= 0.5\left(0 + 2(0.5)(4)\right) &&\Rightarrow\quad N = 2\ \text{N}
+\end{aligned} \]
+<p>The spring pulls harder than the centripetal requirement \(m r\dot\theta^2 = 3.2\ \text{N}\), so the collar's outward motion is slowing down. The rod pushes it forward with the Coriolis force \(2m\dot r\dot\theta\).</p>` + review('l07')
+    },
+
+    /* ---------- Q13 · Lesson 7 · an arm in a vertical plane ---------- */
+    {
+      id: 'quiz-q13', lesson: 'l07', type: 'fields',
+      short: 'Cord tension on an arm in a vertical plane',
+      prompt: T`A \(0.3\ \text{kg}\) collar rides on a smooth arm that turns in a vertical plane at a constant \(\dot\theta = 5\ \text{rad/s}\) (\(\theta\) from the horizontal \(x\)-axis, \(y\) up). A cord through the pivot holds it at a fixed \(r = 0.6\ \text{m}\). Find the cord tension \(T\) and the force \(N\) of the arm on the collar (positive along \(+\et\)) when \(\theta = 210^\circ\). Use \(g = 9.81\ \text{m/s}^2\).`,
+      fields: [
+        { name: 'T', label: T`\(T =\)`, answer: 0.3 * 0.6 * 25 - 0.3 * G * Math.sin(7 * PI / 6), unit: 'N', answerTex: nb(T`4.5 + 1.4715 \approx 5.972\ \text{N}`) },
+        { name: 'N', label: T`\(${AB}N =\)`, ariaLabel: 'N', answer: 0.3 * G * Math.cos(7 * PI / 6), unit: 'N', answerTex: nb(T`\approx -2.549\ \text{N}`) }
+      ],
+      finalAnswer: T`\(T = m r\dot\theta^2 - mg\sin\theta \approx 5.972\ \text{N}\), \(N = mg\cos\theta \approx -2.549\ \text{N}\)`,
+      explain: T`<p>With \(\dot r = \ddot r = \ddot\theta = 0\): \(a_r = -r\dot\theta^2\) and \(a_\theta = 0\). The weight has components \(-mg\sin\theta\) along \(\er\) and \(-mg\cos\theta\) along \(\et\).</p>`,
+      solution: T`<p>\(mg = 2.943\ \text{N}\), \(\sin 210^\circ = -0.5\), \(\cos 210^\circ \approx -0.8660\), and \(a_r = -(0.6)(5)^2 = -15\ \text{m/s}^2\), \(a_\theta = 0\).</p>
+\[ \begin{aligned}
+\textstyle\sum F_r = m a_r: &\quad -T - mg\sin\theta = m a_r &&\Rightarrow\quad T = (0.3)(15) - 2.943(-0.5) = 4.5 + 1.472 \approx 5.972\ \text{N} \\
+\textstyle\sum F_\theta = m a_\theta: &\quad N - mg\cos\theta = 0 &&\Rightarrow\quad N = 2.943(-0.8660) \approx -2.549\ \text{N}
+\end{aligned} \]
+<p>Below the pivot the weight pulls the collar outward, so the cord must pull harder. \(N \lt 0\): the arm pushes in the \(-\et\) direction, holding the collar up against gravity.</p>` + review('l07')
+    },
+
+    /* ---------- Q14 · Lesson 8 · a pin in a spiral groove ---------- */
+    {
+      id: 'quiz-q14', lesson: 'l08', type: 'fields',
+      short: 'Groove and arm forces on a pin',
+      prompt: T`A \(0.6\ \text{kg}\) pin moves in a smooth spiral groove \(r = 0.25\theta\ \text{m}\) in a horizontal plane, pushed by a smooth slotted arm turning at a constant \(1.5\ \text{rad/s}\). At \(\theta = \pi\), find the force \(N\) of the groove and the force \(F\) of the arm on the pin.`,
+      fields: [
+        { name: 'N', label: T`\(N =\)`, answer: q14.N, unit: 'N', answerTex: nb(T`\approx 1.113\ \text{N}`) },
+        { name: 'F', label: T`\(${AB}F =\)`, ariaLabel: 'F', answer: q14.F, unit: 'N', answerTex: nb(T`\approx 0.3375\ \text{N}`) }
+      ],
+      finalAnswer: T`\(N \approx 1.113\ \text{N}\) (groove, perpendicular to the path), \(F \approx 0.3375\ \text{N}\) (arm, along \(+\et\))`,
+      explain: T`<p>\(\tan\psi = r/(dr/d\theta) = \pi\), so \(\psi \approx 72.34^\circ\). Then \(N = -m a_r/\sin\psi\) and \(F = m a_\theta - N\cos\psi\).</p>`,
+      solution: T`<p>Kinematics at \(\theta = \pi\): \(r = 0.25\pi \approx 0.7854\ \text{m}\), \(\dot r = (0.25)(1.5) = 0.375\ \text{m/s}\), \(\ddot r = 0\).</p>
+\[ \begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = -(0.7854)(1.5)^2 \approx -1.767\ \text{m/s}^2, \qquad a_\theta = 2\dot r\dot\theta = 2(0.375)(1.5) = 1.125\ \text{m/s}^2 \\
+\tan\psi &= \frac{r}{dr/d\theta} = \frac{0.25\pi}{0.25} = \pi \quad\Rightarrow\quad \psi \approx 72.34^\circ \\
+N &= -\frac{m a_r}{\sin\psi} = \frac{(0.6)(1.767)}{0.9529} \approx 1.113\ \text{N} \\
+F &= m a_\theta - N\cos\psi = (0.6)(1.125) - (1.113)(0.3033) \approx 0.675 - 0.3375 = 0.3375\ \text{N}
+\end{aligned} \]
+<p>The groove supplies the inward force (its outer wall pushes), and the arm supplies the rest of the forward force needed for the Coriolis acceleration.</p>` + review('l08')
+    },
+
+    /* ---------- Q15 · Lesson 8 · central force: pulling a puck in ---------- */
+    {
+      id: 'quiz-q15', lesson: 'l08', type: 'fields',
+      short: 'Pulling a puck in through a hole',
+      prompt: T`A \(0.4\ \text{kg}\) puck on a frictionless table moves on a circle of radius \(0.9\ \text{m}\) at \(1.5\ \text{rad/s}\), held by a cord through a hole at the center. The cord is pulled down at a steady rate until \(r = 0.45\ \text{m}\). At that radius, find \(\dot\theta\) and the cord tension \(T\).`,
+      fields: [
+        { name: 'thd', label: T`\(\dot\theta =\)`, answer: 6, unit: 'rad/s', answerTex: nb(T`6\ \text{rad/s}`) },
+        { name: 'T', label: T`\(${AB}T =\)`, ariaLabel: 'T', answer: 6.48, unit: 'N', answerTex: nb(T`6.48\ \text{N}`) }
+      ],
+      finalAnswer: T`\(\dot\theta = 6\ \text{rad/s}\), \(T = 6.48\ \text{N}\)`,
+      explain: T`<p>The cord force is central, so \(r^2\dot\theta\) is constant. With a steady pull, \(\ddot r = 0\) and \(T = m r\dot\theta^2\).</p>`,
+      solution: T`\[ \begin{aligned}
+h &= r_1^2\dot\theta_1 = (0.9)^2(1.5) = 1.215\ \text{m}^2/\text{s} \\
+\dot\theta_2 &= \frac{h}{r_2^2} = \frac{1.215}{(0.45)^2} = 6\ \text{rad/s} \\
+T &= -m(\ddot r - r\dot\theta^2) = (0.4)(0.45)(6)^2 = 6.48\ \text{N}
+\end{aligned} \]
+<p>Halving the radius quadrupled the turning rate, and the tension went up eightfold (from \(0.81\ \text{N}\)), because \(T = m h^2/r^3\).</p>` + review('l08')
+    }
+  ];
+})();
+</script>
+
+<script>
+/* ---------- The quiz: CYLQuiz.set in quiz mode, with a paged / all-on-one-page layout switch ---------- */
+CYL.ready(function () {
+  'use strict';
+  var QUESTIONS = window.CYL_QUIZ_QUESTIONS;
+  var host = document.getElementById('quiz-host');
+  var toolbar = document.getElementById('quiz-toolbar');
+  var chips = Array.prototype.slice.call(toolbar.querySelectorAll('[data-layout]'));
+  var lastRule = document.getElementById('quiz-last-rule');
+  var LAYOUT_KEY = 'quiz:selfcheck:layout';
+  var STORAGE_KEY = 'selfcheck-v2';       // bump if the questions ever change (saved answers are keyed by it)
+
+  // Rules list: add a line about saving (only when the browser really keeps it across reloads).
+  if (CYL.store.available()) {
+    lastRule.parentNode.insertBefore(CYL.el('li', {
+      text: 'Your answers are saved in this browser as you go, so reloading the page does not lose them.'
+    }), lastRule);
+  }
+
+  var layout = CYL.store.get(LAYOUT_KEY, 'paged') === 'all' ? 'all' : 'paged';
+  var set = null;
+
+  function build() {
+    var responses = null;
+    if (set) {
+      responses = set.questions.map(function (q) { return q.getResponse(); });
+      set.el.parentNode.removeChild(set.el);
+    }
+    set = CYLQuiz.set(host, QUESTIONS, {
+      mode: 'quiz',
+      layout: layout,
+      storageKey: STORAGE_KEY,
+      intro: 'Answer in any order and change answers freely: nothing is marked until you press <strong>Submit quiz</strong>.',
+      onComplete: function () { refresh(); }
+    });
+    // The previous layout's answers win over the (possibly 250 ms old) saved copy.
+    if (responses) set.questions.forEach(function (q, i) { q.setResponse(responses[i]); });
+    var retake = set.retake;
+    set.retake = function () { var r = retake.apply(set, arguments); refresh(); return r; };
+    refresh();
+  }
+
+  // The layout switch only matters before submitting (the review always lists every question).
+  function refresh() {
+    var done = set.isSubmitted();
+    toolbar.hidden = done;
+    host.setAttribute('data-state', done ? 'submitted' : 'open');   // print CSS: before submitting, print every question
+    var intro = set.el.querySelector('.q-set-intro');           // "nothing is marked until…" no longer applies
+    if (intro) intro.hidden = done;
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-layout') === layout ? 'true' : 'false'); });
+    labelChoices();
+    if (done) renderBreakdown();
+  }
+
+  /* Accessible names for the radio buttons and checkboxes. CYLQuiz names each one from its <label>, but
+     browsers take little or no text from KaTeX output (Chrome gives "" for \(5\ \text{m}\)), so every choice
+     spec carries a plain-text 'aria' string. After submitting, the review tag ("Correct answer", "Your
+     answer") is added to the name, as it is to the visible label. */
+  var SPEC_BY_ID = {};
+  QUESTIONS.forEach(function (q) { SPEC_BY_ID[q.id] = q; });
+  function labelChoices() {
+    Array.prototype.forEach.call(set.el.querySelectorAll('.q-card'), function (card) {
+      var spec = SPEC_BY_ID[card.getAttribute('data-qid')];
+      if (!spec || !spec.choices) return;
+      Array.prototype.forEach.call(card.querySelectorAll('.q-choice'), function (lab) {
+        var input = lab.querySelector('input');
+        var c = input && spec.choices[+input.value];
+        if (!c || !c.aria) return;
+        var tag = lab.querySelector('.q-choice-tag');
+        input.setAttribute('aria-label', c.aria + (tag ? ' (' + tag.textContent + ')' : ''));
+      });
+    });
+  }
+
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      var want = c.getAttribute('data-layout');
+      if (want === layout || set.isSubmitted()) return;
+      layout = want;
+      CYL.store.set(LAYOUT_KEY, layout);
+      build();
+      c.focus();
+    });
+  });
+
+  /* Results by lesson: a small table added to the score summary after submitting. */
+  function lessonInfo(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return p ? { num: p.num, title: p.title, href: CYL.url(p.href) } : { num: '', title: id, href: '#' };
+  }
+  function renderBreakdown() {
+    var results = set.el.querySelector('.q-set-results');
+    if (!results) return;
+    var old = results.querySelector('.quiz-breakdown');
+    if (old) old.parentNode.removeChild(old);
+
+    var sc = set.score();
+    var groups = [], byId = {};
+    sc.results.forEach(function (r) {
+      var id = QUESTIONS[r.index].lesson;
+      if (!byId[id]) { byId[id] = { id: id, nums: [], correct: 0 }; groups.push(byId[id]); }
+      byId[id].nums.push(r.position + 1);
+      if (r.correct) byId[id].correct += 1;
+    });
+
+    var tbody = CYL.el('tbody');
+    var toReview = [];
+    groups.forEach(function (g) {
+      var info = lessonInfo(g.id);
+      var all = g.correct === g.nums.length;
+      if (!all) toReview.push('<a href="' + info.href + '">Lesson ' + info.num + '</a>');
+      tbody.appendChild(CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'row', html: '<a href="' + info.href + '">Lesson ' + info.num + '</a>' +
+          ' <span class="quiz-lesson-title">· ' + info.title + '</span>' }),
+        CYL.el('td', { text: g.nums.join(', ') }),
+        CYL.el('td', { class: 'quiz-score-cell ' + (all ? 'c-good' : 'c-bad'),
+          text: (all ? '✓ ' : '✗ ') + g.correct + ' of ' + g.nums.length })
+      ]));
+    });
+
+    var table = CYL.el('table', { class: 'data' }, [
+      CYL.el('caption', { class: 'visually-hidden', text: 'Quiz results grouped by lesson' }),
+      CYL.el('thead', {}, [CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'col', text: 'Lesson' }),
+        CYL.el('th', { scope: 'col', text: 'Questions' }),
+        CYL.el('th', { scope: 'col', text: 'Correct' })
+      ])]),
+      tbody
+    ]);
+    var summary = toReview.length
+      ? 'Revisit ' + (toReview.length === 1 ? toReview[0] : toReview.slice(0, -1).join(', ') + ' and ' + toReview[toReview.length - 1]) +
+        ', then open the worked solutions below.'
+      : 'Every lesson is fully correct. Well done.';
+    var box = CYL.el('div', { class: 'quiz-breakdown' }, [
+      CYL.el('p', { class: 'quiz-breakdown-title', text: 'Results by lesson' }),
+      CYL.el('p', { class: 'quiz-breakdown-summary', html: summary }),
+      CYL.el('div', { class: 'table-wrap' }, [table])
+    ]);
+    // Above the name / print row, so the "Show only questions I missed" chip stays next to the cards it filters.
+    var namebox = results.querySelector('.q-set-namebox');
+    results.insertBefore(box, namebox || results.querySelector('.q-set-review-note') || null);
+  }
+
+  build();
+  toolbar.hidden = set.isSubmitted();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Principal Axes and Principal Moments · Mass Moments of Inertia</title>
+<meta name="description" content="Principal axes of inertia: the plane formulas and Mohr's circle for inertia, the 3D eigenvalue problem and how to solve it with software, the inertia ellipsoid, symmetry shortcuts, rotor balancing and spin stability.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/inertia.js"></script>
+<style>
+  /* ---- Lesson 8 page styles (tokens from module.css only) ---- */
+  .l08-code { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 0 0 1em; }
+  .l08-code pre { margin: 0; }
+  .l08-code .code-title { margin: 0 0 4px; color: var(--ink-muted); font-size: 0.82rem; font-weight: 650; }
+</style>
+</head>
+<body data-page="l08" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 8 · 40 min</p>
+    <h1>Principal Axes and Principal Moments</h1>
+    <p class="lede">Through every point of every body there are three perpendicular axes about which all the products of inertia vanish. About these principal axes the inertia tensor is diagonal, a body spinning about one of them needs no bearing moment, and the equations of rigid-body motion take their simplest form.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Find the principal axes and principal moments of a plane body, with the formulas and with Mohr's circle.</li>
+      <li>Set up the 3D eigenvalue problem for \(\Imat\) and solve it by hand or with software.</li>
+      <li>Identify principal axes from symmetry without calculation.</li>
+      <li>Explain dynamic balancing and the stability of spin about the principal axes.</li>
+    </ul>
+  </section>
+
+  <section id="definition">
+    <h2>What makes an axis principal</h2>
+    <p>An axis through \(O\) with unit vector \(\uvec\) is a <dfn>principal axis</dfn> if spinning the body about it gives an angular momentum along the same axis:</p>
+    \[ \Imat_O\,\uvec = I\,\uvec. \]
+    <p>In a frame made of three principal axes, every product of inertia is zero and</p>
+    \[ \Imat = \begin{bmatrix} I_1 & 0 & 0 \\ 0 & I_2 & 0 \\ 0 & 0 & I_3 \end{bmatrix}, \qquad I_1 \ge I_2 \ge I_3. \]
+    <p>The <dfn>principal moments of inertia</dfn> \(I_1\) and \(I_3\) are the largest and smallest moments of inertia about <em>any</em> axis through \(O\). Because \(\Imat\) is real and symmetric, three perpendicular principal axes always exist, at every point of every body.</p>
+  </section>
+
+  <section id="plane">
+    <h2>Principal axes of a plane body</h2>
+    <p>When \(z\) is already principal (\(I_{xz} = I_{yz} = 0\), as for a thin plate in the \(xy\)-plane or a body symmetric about that plane), the other two principal axes lie in the \(xy\)-plane. Setting \(I_{x'y'} = 0\) in the plane transformation of Lesson 7 gives the angle:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Principal axes in the plane</p>
+      \[ \tan 2\theta_p = \frac{2I_{xy}}{I_{yy} - I_{xx}} \]
+      \[ I_{\max,\min} = \frac{I_{xx} + I_{yy}}{2} \pm \sqrt{\left(\frac{I_{xx} - I_{yy}}{2}\right)^2 + I_{xy}^2} \]
+      <p>The two solutions for \(\theta_p\) are \(90^\circ\) apart. To tell which axis carries \(I_{\max}\), put one \(\theta_p\) back into the formula for \(I_{x'x'}\).</p>
+    </div>
+
+    <h3>Mohr's circle for inertia</h3>
+    <p>Lesson 7 showed that \(I_{x'x'}\) and \(I_{x'y'}\) are a centre plus a rotating vector in \(2\theta\). Plot the point \(X' = (I_{x'x'},\ I_{x'y'})\): as the axes turn through \(\theta\), it moves around a circle through \(2\theta\) in the same direction.</p>
+    <ul>
+      <li>Centre \(C = \left(\tfrac{I_{xx} + I_{yy}}{2},\ 0\right)\); radius \(R = \sqrt{\left(\tfrac{I_{xx} - I_{yy}}{2}\right)^2 + I_{xy}^2}\).</li>
+      <li>Start at \(X = (I_{xx},\ I_{xy})\); the point \(Y = (I_{yy},\ -I_{xy})\) is diametrically opposite.</li>
+      <li>The circle meets the horizontal axis at \(I_{\max} = C + R\) and \(I_{\min} = C - R\), where the product is zero.</li>
+    </ul>
+
+    <figure class="figure wide" aria-labelledby="fig81-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig81-stage"></div>
+        <div class="viz-controls" id="fig81-controls"></div>
+      </div>
+      <figcaption id="fig81-cap"><strong>Figure 8.1</strong> Mohr's circle for the L-plate of Example 7.3. Turn the axes with the slider, or drag the point \(\colX{X'}\) around the circle: it moves through \(2\theta\) while the axes \(\colX{x'}\), \(\colY{y'}\) on the plate turn through \(\theta\). Where the circle crosses the horizontal axis, the product is zero and \(x'\) is a principal axis (dashed on the plate). Moments in units of \(0.01\ \text{kg·m}^2\).</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 8.1 — Principal axes of the L-plate</p>
+      <p>For the L-plate of Example 7.3 (\(I_{xx} = 0.020\), \(I_{yy} = 0.044\), \(I_{xy} = 0.012\ \text{kg·m}^2\) about the corner \(O\)), find the principal axes and principal moments about \(O\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \tan 2\theta_p = \frac{2(0.012)}{0.044 - 0.020} = 1 \quad\Rightarrow\quad \theta_p = 22.5^\circ \ \text{or}\ 112.5^\circ \]
+          \[ I_{\max,\min} = 0.032 \pm \sqrt{(-0.012)^2 + 0.012^2} = 0.032 \pm 0.01697 = 0.04897,\ 0.01503\ \text{kg·m}^2 \]
+          <p>At \(\theta = 22.5^\circ\): \(I_{x'x'} = 0.032 + (-0.012)(0.7071) - 0.012(0.7071) = 0.01503\), so the axis at \(22.5^\circ\) from \(x\) carries \(I_{\min}\) and the axis at \(112.5^\circ\) carries \(I_{\max}\). The minimum axis runs roughly along the long leg: most of the mass lies close to it. \(z\) is the third principal axis, with \(I_{zz} = 0.064\ \text{kg·m}^2 = I_{\max} + I_{\min}\) for a thin plate.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="eigen">
+    <h2>Principal axes in three dimensions</h2>
+    <p>In general all three products are nonzero, and the condition \(\Imat\uvec = I\uvec\) is an <dfn>eigenvalue problem</dfn>:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">The principal-axis eigenproblem</p>
+      \[ \begin{bmatrix} I_{xx} - I & -I_{xy} & -I_{xz} \\ -I_{xy} & I_{yy} - I & -I_{yz} \\ -I_{xz} & -I_{yz} & I_{zz} - I \end{bmatrix} \begin{Bmatrix} u_x \\ u_y \\ u_z \end{Bmatrix} = \begin{Bmatrix} 0 \\ 0 \\ 0 \end{Bmatrix} \]
+      <p>A nonzero \(\uvec\) exists only if the determinant vanishes. Expanded, that is a cubic whose three real roots are the principal moments:</p>
+      \[ I^3 - J_1 I^2 + J_2 I - J_3 = 0 \]
+      <p>where \(J_1 = I_{xx} + I_{yy} + I_{zz}\) (the trace), \(J_2\) is the sum of the three \(2\times2\) principal minors of \(\Imat\), and \(J_3 = \det\Imat\). The three \(J\) values are the same in every frame.</p>
+    </div>
+
+    <p>For each root, substitute it back and solve two of the three equations for the ratios \(u_x : u_y : u_z\), then normalise. The three axes are perpendicular to each other.</p>
+
+    <div class="example">
+      <p class="example-title">Example 8.2 — Solving the cubic</p>
+      <p>About \(O\), a body has \(I_{xx} = 0.4\), \(I_{yy} = 0.6\), \(I_{zz} = 0.8\), \(I_{xy} = 0.1\), \(I_{yz} = 0\), \(I_{zx} = 0.2\ \text{kg·m}^2\). Find the principal moments and the axis of the largest one.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \Imat_O = \begin{bmatrix} 0.4 & -0.1 & -0.2 \\ -0.1 & 0.6 & 0 \\ -0.2 & 0 & 0.8 \end{bmatrix} \]
+          <p>The invariants:</p>
+          \[ J_1 = 1.8, \quad J_2 = (0.24 - 0.01) + (0.48 - 0) + (0.32 - 0.04) = 0.99, \quad J_3 = \det\Imat_O = 0.160 \]
+          \[ I^3 - 1.8\,I^2 + 0.99\,I - 0.160 = 0 \quad\Rightarrow\quad I_1 = 0.8882, \quad I_2 = 0.6223, \quad I_3 = 0.2895\ \text{kg·m}^2 \]
+          <p>(Solve the cubic numerically, or with a calculator's polynomial solver. Check: the roots add to \(J_1 = 1.8\) and multiply to \(J_3 = 0.160\).)</p>
+          <p><strong>Axis of \(I_1\).</strong> The second and third rows of \((\Imat - I_1\mathbf{1})\uvec = \mathbf{0}\):</p>
+          \[ -0.1\,u_x + (0.6 - 0.8882)\,u_y = 0 \ \Rightarrow\ u_y = -0.3470\,u_x, \qquad -0.2\,u_x + (0.8 - 0.8882)\,u_z = 0 \ \Rightarrow\ u_z = -2.268\,u_x \]
+          <p>Normalising \((1,\ -0.3470,\ -2.268)\): \(\uvec_1 = \pm(0.3996,\ -0.1387,\ -0.9061)\).</p>
+        </div>
+      </details>
+    </div>
+
+    <h3>Letting software do it</h3>
+    <p>In practice, principal axes come from a numerical eigen-solver. Use the routine for <em>symmetric</em> matrices: it returns real values and perpendicular unit vectors.</p>
+    <div class="l08-code">
+      <div>
+        <p class="code-title">Python (NumPy)</p>
+<pre><code>import numpy as np
+I = np.array([[ 0.4, -0.1, -0.2],
+              [-0.1,  0.6,  0.0],
+              [-0.2,  0.0,  0.8]])
+vals, vecs = np.linalg.eigh(I)   # ascending order
+print(vals)        # principal moments
+print(vecs[:, -1]) # axis of the largest</code></pre>
+      </div>
+      <div>
+        <p class="code-title">MATLAB</p>
+<pre><code>I = [ 0.4 -0.1 -0.2;
+     -0.1  0.6  0.0;
+     -0.2  0.0  0.8];
+[V, L] = eig(I);   % columns of V are the axes
+diag(L)            % principal moments, ascending
+V(:, end)          % axis of the largest</code></pre>
+      </div>
+    </div>
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: entering the products with the wrong sign</p>
+      <p>Software needs the tensor, with \(-I_{xy}\) off the diagonal, not a table of products. With the wrong signs the principal moments come out the same (the invariants don't change sign), but the axes are mirrored and wrong.</p>
+    </aside>
+
+    <figure class="figure wide" aria-labelledby="fig82-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig82-stage"></div>
+        <div class="viz-controls" id="fig82-controls"></div>
+      </div>
+      <figcaption id="fig82-cap"><strong>Figure 8.2</strong> Principal axes about \(O\) or about the center of mass \(G\), and the <dfn>inertia ellipsoid</dfn>: along any axis, its radius is proportional to \(1/\sqrt{I}\) for that axis, so it is longest along the minimum axis. Its three symmetry axes are the principal axes. Compare the axes about \(O\) and about \(G\): moving the point changes the directions as well as the values.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 8.3 — The bent rod about its center of mass</p>
+      <p>Find the principal moments and axes of the bent rod of Example 5.2 about its center of mass.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>From Example 5.2, \(m = 1.8\ \text{kg}\) and \(G = (0.3111,\ 0.1167,\ 0.0222)\ \text{m}\). The parallel-axis theorem in matrix form (Lesson 6) moves the tensor from \(O\) to \(G\):</p>
+          \[ \Imat_G = \Imat_O - m\begin{bmatrix} \bar y^2 + \bar z^2 & -\bar x\bar y & -\bar x\bar z \\ -\bar x\bar y & \bar z^2 + \bar x^2 & -\bar y\bar z \\ -\bar x\bar z & -\bar y\bar z & \bar x^2 + \bar y^2 \end{bmatrix} = \begin{bmatrix} 0.03394 & -0.01867 & -0.00356 \\ -0.01867 & 0.03289 & -0.00733 \\ -0.00356 & -0.00733 & 0.05794 \end{bmatrix}\ \text{kg·m}^2 \]
+          <p>A symmetric eigen-solver gives</p>
+          \[ I_1 = 0.06009, \quad I_2 = 0.05130, \quad I_3 = 0.01339\ \text{kg·m}^2 \]
+          \[ \uvec_1 = (0.104,\ -0.325,\ 0.940), \quad \uvec_2 = (0.727,\ -0.620,\ -0.295), \quad \uvec_3 = (0.678,\ 0.714,\ 0.172) \]
+          <p>The minimum axis \(\uvec_3\) runs roughly from \(O\) toward \(B\), the direction along which most of the rod lies. Select the bent rod in Figure 8.2 to see these axes.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="symmetry">
+    <h2>Principal axes from symmetry</h2>
+    <p>Lesson 5 showed that a plane of symmetry makes two products vanish. That is enough to spot principal axes without any calculation:</p>
+    <ul>
+      <li>An <strong>axis of symmetry</strong> is a principal axis at every one of its points (a shaft, a cylinder, a cone).</li>
+      <li>The <strong>normal to a plane of symmetry</strong> is a principal axis at every point of that plane.</li>
+      <li>For a <strong>body of revolution</strong>, every axis perpendicular to the symmetry axis, through a point on it, is principal: two of the principal moments are equal.</li>
+      <li>If all three principal moments are equal (a sphere, a cube about \(G\)), <em>every</em> axis is principal.</li>
+    </ul>
+  </section>
+
+  <section id="engineering">
+    <h2>Why principal axes matter</h2>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Static and dynamic balance</p>
+      <p>A rotor is <dfn>statically balanced</dfn> when \(G\) lies on the shaft: it stays put at any angle when the shaft is horizontal. It is <dfn>dynamically balanced</dfn> when, in addition, the shaft is a principal axis, so \(I_{xz} = I_{yz} = 0\) and \(\Hvec\) stays along the shaft (Lesson 6). Balancing machines measure the bearing reactions of a spinning rotor and tell the technician where to add or remove mass in two planes, which fixes both conditions.</p>
+    </aside>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Spin stability: the intermediate axis</p>
+      <p>A rigid body spinning freely about the axis of \(I_1\) or \(I_3\) keeps spinning about it; about the intermediate axis \(I_2\) the slightest disturbance grows, and the body flips over and over. You can see this by tossing a book or a phone about each of its three axes. A body that is not perfectly rigid slowly loses energy through flexing, and a spin about the <em>minimum</em> axis then drifts toward the maximum axis. The first American satellite, Explorer 1 (1958), was spun about its long, minimum axis; energy dissipated in its flexible wire antennas turned the spin into a tumble about its maximum axis. Spin-stabilised spacecraft since then are designed to spin about their axis of maximum moment of inertia.</p>
+    </aside>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Aircraft: the product \(I_{xz}\)</p>
+      <p>An aircraft's plane of symmetry makes \(y\) a principal axis, but its body \(x\)-axis (along the fuselage) is usually tilted a few degrees from the principal axis in that plane, leaving a nonzero \(I_{xz}\). That product couples roll and yaw: a rolling moment also produces yaw acceleration. Flight-dynamics texts either keep \(I_{xz}\) in the equations or rotate to principal axes using the plane formulas of this lesson.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Principal axes satisfy \(\Imat\uvec = I\uvec\); in principal axes the tensor is diagonal and \(\Hvec = I_1\omega_1\,\uvec_1 + I_2\omega_2\,\uvec_2 + I_3\omega_3\,\uvec_3\).</li>
+      <li>In the plane: \(\tan 2\theta_p = 2I_{xy}/(I_{yy} - I_{xx})\) and \(I_{\max,\min} = C \pm R\), the ends of Mohr's circle.</li>
+      <li>In 3D: the principal moments are the roots of \(\det(\Imat - I\mathbf{1}) = 0\); in practice, use a symmetric eigen-solver.</li>
+      <li>Axes of symmetry and normals to planes of symmetry are principal axes.</li>
+      <li>Dynamic balance means the shaft is a principal axis through \(G\); free spin is stable about the maximum and minimum axes, not the intermediate one.</li>
+      <li>Practise in the <a href="../practice/practice-lab.html">Practice Lab</a>, build your own bodies in the <a href="../tools/explorer.html">Inertia Explorer</a>, and test yourself with the <a href="../practice/quiz.html">Self-Check Quiz</a>.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 8.1: Mohr's circle for inertia, linked to the rotating axes on the L-plate ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180, U = 100;                             // plot units: 0.01 kg·m²
+  var IXX = 0.02, IYY = 0.044, IXY = 0.012;
+  var CX = (IXX + IYY) / 2, B = (IXX - IYY) / 2, R = Math.sqrt(B * B + IXY * IXY);
+  var ANG0 = Math.atan2(IXY, B);                               // angle of X on the circle
+  var THP = 0.5 * Math.atan2(2 * IXY, IYY - IXX) / D;          // 22.5°
+  var st = { th: 0 };
+  function tr(th) { var c2 = Math.cos(2 * th * D), s2 = Math.sin(2 * th * D); return { xx: CX + B * c2 - IXY * s2, yy: CX - B * c2 + IXY * s2, xy: B * s2 + IXY * c2 }; }
+
+  var p = CYL2D.plane(document.getElementById('fig81-stage'), {
+    xRange: [-0.4, 5.8], yRange: [-2.4, 2.4], grid: 'cartesian', gridStep: 1, ticks: 1, height: 400,
+    axisLabels: ['I', 'I_{xy}'], tickFormat: function (v) { return CYL.fmt(v / U, 2); },
+    ariaLabel: "Mohr's circle for inertia: a circle centred on the horizontal axis at 0.032 with radius 0.017, a diameter joining the points X prime and Y prime, and the principal moments where the circle crosses the axis."
+  });
+  p.circle({ center: [CX * U, 0], r: R * U, color: 'accent', width: 2, fill: 'accent', fillOpacity: 0.06 });
+  p.point([CX * U, 0], { color: 'muted', r: 3.5, label: 'C', labelAnchor: 'n' });
+  p.point([(CX + R) * U, 0], { color: 'bad', r: 5, label: 'I_{\\max}', labelAnchor: 'ne' });
+  p.point([(CX - R) * U, 0], { color: 'good', r: 5, label: 'I_{\\min}', labelAnchor: 'nw' });
+  p.point([IXX * U, IXY * U], { color: 'muted', r: 4, hollow: true, label: 'X', labelAnchor: 'nw' });
+  var dia = p.line([0, 0], [1, 0], { color: 'ink', width: 1.5 });
+  var arc = p.arc({ center: [CX * U, 0], r: 0.55, theta0: 0, theta1: 1, color: 'muted', width: 1.5, arrow: true, label: '2\\theta' });
+  var ptY = p.point([0, 0], { color: 'y', r: 6, label: "Y'", labelAnchor: 'sw' });
+  var ptX = p.point([IXX * U, IXY * U], { color: 'x', r: 7, label: "X'", labelAnchor: 'ne', draggable: true, bounds: false,
+    snap: function (q) { var a = Math.atan2(q[1], q[0] - CX * U); return [CX * U + R * U * Math.cos(a), R * U * Math.sin(a)]; },
+    ariaLabel: "Point X prime on Mohr's circle", ariaFormat: function () { return 'theta ' + CYL.fmt(st.th, 3) + ' degrees'; },
+    keyMove: function (pos, d) {
+      var a = Math.atan2(pos[1], pos[0] - CX * U) + ((d[0] + d[1]) > 0 ? 5 : -5) * D;
+      return [CX * U + R * U * Math.cos(a), R * U * Math.sin(a)];
+    },
+    onDrag: function (q) {
+      var a = Math.atan2(q[1], q[0] - CX * U), t = ((a - ANG0) / 2) / D;
+      t = ((t % 180) + 180) % 180;
+      setTheta(t);
+    } });
+
+  var panel = document.getElementById('fig81-controls');
+  var sT = CYL.slider({ label: 'Axes turned \\(\\theta\\)', min: 0, max: 180, step: 0.5, value: 0, unit: '°', format: function (x) { return CYL.fmt(x, 3); }, onInput: function (x) { setTheta(x); } });
+  var bP = CYL.button('Go to \\(\\theta_p = ' + CYL.fmt(THP, 3) + '^\\circ\\)', function () { setTheta(THP); }, { small: true });
+  var bP2 = CYL.button('\\(\\theta_p + 90^\\circ\\)', function () { setTheta(THP + 90); }, { small: true });
+  var plotBox = CYL.el('div', { class: 'fig-plot' });
+  var roXX = CYL.readout("\\(I_{x'x'}\\)", { color: 'x' });
+  var roYY = CYL.readout("\\(I_{y'y'}\\)", { color: 'y' });
+  var roXY = CYL.readout("\\(I_{x'y'}\\)");
+  var roP = CYL.readout('\\(I_{\\max},\\ I_{\\min}\\)');
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Rotate the axes' }));
+  panel.appendChild(sT.el);
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [bP, bP2]));
+  panel.appendChild(plotBox);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roXX.el, roYY.el, roXY.el, roP.el]));
+  CYL.renderMath(panel);
+  roP.set(CYL.fmt(CX + R, 4) + ', ' + CYL.fmt(CX - R, 4) + ' kg·m²');
+
+  var q = CYL2D.plane(plotBox, { xRange: [-0.32, 0.46], yRange: [-0.12, 0.42], grid: 'none', ticks: false, axisLabels: null, height: 200, pad: 10,
+    ariaLabel: "The L-plate with the rotated axes x prime and y prime at its corner, and its principal axes drawn dashed at 22.5 and 112.5 degrees." });
+  q.line([-0.3, 0], [0.45, 0], { color: 'axis', width: 1 }); q.line([0, -0.1], [0, 0.4], { color: 'axis', width: 1 });
+  q.polyline([[0, 0], [0.4, 0], [0.4, 0.1], [0.1, 0.1], [0.1, 0.3], [0, 0.3]], { color: 'accent', width: 1.5, closed: true, fill: 'accent', fillOpacity: 0.2 });
+  var c1 = Math.cos(THP * D), s1 = Math.sin(THP * D);
+  q.line([-0.12 * c1, -0.12 * s1], [0.44 * c1, 0.44 * s1], { color: 'good', width: 1.4, dashed: true });
+  q.line([0.12 * s1, -0.12 * c1], [-0.4 * s1, 0.4 * c1], { color: 'bad', width: 1.4, dashed: true });
+  var ax = q.line([0, 0], [0.3, 0], { color: 'x', width: 2.5, arrow: 'end' });
+  var ay = q.line([0, 0], [0, 0.3], { color: 'y', width: 2.5, arrow: 'end' });
+  var lx = q.label([0.3, 0], "x'", { color: 'x', anchor: 'e' }), ly = q.label([0, 0.3], "y'", { color: 'y', anchor: 'n' });
+
+  function setTheta(t) {
+    st.th = ((t % 180) + 180) % 180;
+    sT.set(Math.round(st.th * 2) / 2, true);
+    schedule();
+  }
+  function update() {
+    var T = tr(st.th), a = ANG0 + 2 * st.th * D;
+    ptX.set([T.xx * U, T.xy * U]); ptY.set([T.yy * U, -T.xy * U]);
+    dia.set([T.xx * U, T.xy * U], [T.yy * U, -T.xy * U]);
+    var a0 = ANG0, a1 = a; if (a1 < a0) a1 += 2 * Math.PI;
+    arc.set({ theta0: a0, theta1: a1 }); arc.setVisible(st.th > 1.5);
+    var c = Math.cos(st.th * D), s = Math.sin(st.th * D), L = 0.3;
+    ax.set([0, 0], [L * c, L * s]); ay.set([0, 0], [-L * s, L * c]); lx.set([L * c, L * s]); ly.set([-L * s, L * c]);
+    roXX.set(CYL.fmt(T.xx, 4) + ' kg·m²'); roYY.set(CYL.fmt(T.yy, 4) + ' kg·m²');
+    roXY.set(CYL.fmt(Math.abs(T.xy) < 5e-7 ? 0 : T.xy, 4) + ' kg·m²');
+  }
+  var schedule = CYL.throttleRAF(update);
+  update();
+});
+
+/* ---------- Figure 8.2: principal axes and the inertia ellipsoid about O or G ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BODIES = {
+    box: { label: 'Block with a corner at O (12 kg)',
+      parts: [{ type: 'box', m: 12, d: { a: 0.3, b: 0.2, c: 0.1 }, center: [0.15, 0.1, 0.05] }] },
+    bent: { label: 'Bent rod (Example 5.2)',
+      parts: [{ type: 'rod', m: 0.8, d: { l: 0.4 }, center: [0.2, 0, 0], axis: [1, 0, 0] },
+        { type: 'rod', m: 0.6, d: { l: 0.3 }, center: [0.4, 0.15, 0], axis: [0, 1, 0] },
+        { type: 'rod', m: 0.4, d: { l: 0.2 }, center: [0.4, 0.3, 0.1], axis: [0, 0, 1] }] },
+    cyl: { label: 'Tilted cylinder (4 kg)',
+      parts: [{ type: 'cylinder', m: 4, d: { r: 0.06, h: 0.4 }, center: [0.15, 0.1, 0.1], axis: [0.5, 0.3, 0.81] }] },
+    tee: { label: 'T-handle (two rods)',
+      parts: [{ type: 'rod', m: 1.2, d: { l: 0.4 }, center: [0.2, 0, 0], axis: [1, 0, 0] },
+        { type: 'rod', m: 0.9, d: { l: 0.3 }, center: [0.4, 0, 0], axis: [0, 0.6, 0.8] }] }
+  };
+  var COLS = ['bad', 'warn', 'good'];
+  var st = { body: 'bent', at: 'G', ell: true };
+  var stage = document.getElementById('fig82-stage'), panel = document.getElementById('fig82-controls');
+  var v = CYL3D.create(stage, {
+    extent: 0.45, zRange: [-0.3, 0.4], grid: 'cartesian', ui: ['iso', 'top', 'front', 'reset'],
+    camera: { azimuth: -35, elevation: 24, zoom: 1.1 },
+    ariaLabel: 'The bent rod with its three principal axes through its center of mass, and the inertia ellipsoid, longest along the minimum axis.'
+  });
+  var legend = CYL.el('div', { class: 'fig-legend', 'aria-hidden': 'true' });
+  ['Axis 1: \\(I_1\\) (max)', 'Axis 2: \\(I_2\\)', 'Axis 3: \\(I_3\\) (min)'].forEach(function (t, i) {
+    legend.appendChild(CYL.el('div', { class: 'fig-leg' }, [CYL.el('span', { class: 'fig-leg-sw', style: '--sw: var(--c-' + COLS[i] + ')' }), CYL.el('span', { html: t })]));
+  });
+  v.el.appendChild(legend);
+  CYL.renderMath(legend);
+  var drawn = [];
+  var ell = v.solid({ shape: 'ellipsoid', size: [0.1, 0.1, 0.1], color: 'surface', opacity: 0.22, rings: true, edges: true, segments: 64 });
+  var axes = COLS.map(function (c, i) {
+    return { line: v.line([[0, 0, 0], [0, 0, 1]], { color: c, width: 2.5 }),
+      arrow: v.arrow([0, 0, 0], [0, 0, 1], { color: c, label: String(i + 1), width: 0.006, headLength: 0.04, headRadius: 0.016 }) };
+  });
+  var ref = v.point([0, 0, 0], { color: 'point', size: 0.012, label: 'G' });
+
+  var sel = CYL.select({ label: 'Body', value: st.body,
+    options: Object.keys(BODIES).map(function (k) { return { value: k, label: BODIES[k].label }; }),
+    onChange: function (k) { st.body = k; rebuild(); } });
+  var tO = CYL.toggle({ label: 'About \\(O\\)', value: false, onChange: function () { pick('O'); } });
+  var tG = CYL.toggle({ label: 'About \\(G\\)', value: true, onChange: function () { pick('G'); } });
+  function pick(w) { st.at = w; tO.set(w === 'O', true); tG.set(w === 'G', true); rebuild(); }
+  var tE = CYL.toggle({ label: 'Inertia ellipsoid', value: true, onChange: function (on) { st.ell = on; ell.visible = on; v.render(); } });
+  var matBox = CYL.el('div', { class: 'mat-box', 'aria-live': 'off' });
+  var ros = [0, 1, 2].map(function (i) { return CYL.readout('\\(I_' + (i + 1) + '\\)', { color: COLS[i] }); });
+  var vecs = CYL.el('div', { class: 'fig-desc', 'aria-live': 'off' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Principal axes' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(CYL.el('div', { class: 'chip-row' }, [tO.el, tG.el, tE.el]));
+  panel.appendChild(CYL.el('p', { class: 'mat-label', html: 'Tensor in \\(x, y, z\\) (kg·m²)' }));
+  panel.appendChild(matBox);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, ros.map(function (r) { return r.el; })));
+  panel.appendChild(vecs);
+  panel.appendChild(CYL.el('p', { class: 'fig-note', text: 'Each axis is shown in one of its two directions; either sign describes the same axis.' }));
+  CYL.renderMath(panel);
+
+  function rebuild() {
+    var Bd = BODIES[st.body];
+    drawn.forEach(function (d) { v.remove(d.group); });
+    drawn = Bd.parts.map(function (p) { return INERT.draw(v, p, { rodRadius: 0.008, color: 'accent', opacity: st.body === 'box' || st.body === 'cyl' ? 0.35 : 0.9 }); });
+    var A = INERT.assemble(Bd.parts), T = st.at === 'O' ? A.IO : A.IG, P = st.at === 'O' ? [0, 0, 0] : A.G;
+    var e = INERT.eig(T), I = e.values, V = e.vectors;
+    // show each axis with its largest component positive, then restore a right-handed triad for the ellipsoid
+    var W = V.map(function (u) { var k = 0; for (var j = 1; j < 3; j++) if (Math.abs(u[j]) > Math.abs(u[k])) k = j; return u[k] < 0 ? u.map(function (x) { return -x; }) : u; });
+    var L = 0.3;
+    W.forEach(function (u, i) {
+      axes[i].line.setPoints([[P[0] - L * u[0], P[1] - L * u[1], P[2] - L * u[2]], [P[0] + L * u[0], P[1] + L * u[1], P[2] + L * u[2]]]);
+      axes[i].arrow.set(P, [P[0] + (L + 0.04) * u[0], P[1] + (L + 0.04) * u[1], P[2] + (L + 0.04) * u[2]]);
+      ros[i].set(CYL.fmt(I[i], 4) + ' kg·m²');
+    });
+    vecs.innerHTML = W.map(function (u, i) { return '<p>\\(\\uvec_' + (i + 1) + ' = ' + INERT.texVec(u, 3) + '\\)</p>'; }).join('');
+    CYL.renderMath(vecs);
+    var smax = 0.17, s = I.map(function (x) { return smax * Math.sqrt(Math.max(I[2], 1e-9) / Math.max(x, 1e-9)); });
+    ell.set({ center: P, size: s, rotation: [[V[0][0], V[1][0], V[2][0]], [V[0][1], V[1][1], V[2][1]], [V[0][2], V[1][2], V[2][2]]] });
+    ell.visible = st.ell;
+    ref.setPosition(P); ref.setLabel(st.at);
+    CYL.setTex(matBox, INERT.texMatrix(T, 3), true);
+    v.render();
+  }
+  rebuild();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l08-q1', type: 'numeric',
+    prompt: 'A thin plate in the \\(xy\\)-plane has \\(I_{xx} = 0.3\\), \\(I_{yy} = 0.1\\), \\(I_{xy} = -0.05\\ \\text{kg·m}^2\\) about \\(O\\). Find the angle \\(\\theta_p\\) between \\(0^\\circ\\) and \\(90^\\circ\\) (counterclockwise from \\(x\\)) of the principal axis of <em>maximum</em> moment of inertia.',
+    label: '\\(\\theta_p =\\)', answer: 13.28, tol: 0.15, unit: '°',
+    hints: ['\\(\\tan 2\\theta_p = 2I_{xy}/(I_{yy} - I_{xx})\\).', '\\(\\tan 2\\theta_p = 0.5\\). Check which of \\(\\theta_p\\) and \\(\\theta_p + 90^\\circ\\) gives the larger \\(I_{x\'x\'}\\).'],
+    explain: 'Solve for \\(\\theta_p\\), then test it in the formula for \\(I_{x\'x\'}\\).',
+    solution: '\\[ \\tan 2\\theta_p = \\frac{2(-0.05)}{0.1 - 0.3} = 0.5 \\ \\Rightarrow\\ \\theta_p = 13.28^\\circ \\]<p>\\(I_{x\'x\'}(13.28^\\circ) = 0.2 + 0.1(0.8944) + 0.05(0.4472) = 0.3118\\ \\text{kg·m}^2\\), the maximum.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l08-q2', type: 'fields',
+    prompt: 'For the same plate, find the principal moments of inertia in the \\(xy\\)-plane.',
+    fields: [
+      { name: 'imax', label: '\\(I_{\\max} =\\)', answer: 0.3118, unit: 'kg·m²' },
+      { name: 'imin', label: '\\(I_{\\min} =\\)', answer: 0.0882, unit: 'kg·m²' }
+    ],
+    hints: ['Centre of Mohr\'s circle: \\((I_{xx} + I_{yy})/2 = 0.2\\).', 'Radius: \\(\\sqrt{0.1^2 + 0.05^2}\\).'],
+    explain: '\\(I_{\\max,\\min} = C \\pm R\\).',
+    solution: '\\[ R = \\sqrt{0.1^2 + (-0.05)^2} = 0.1118, \\qquad I_{\\max} = 0.3118, \\quad I_{\\min} = 0.0882\\ \\text{kg·m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l08-q3', type: 'mc',
+    prompt: 'A rigid box has principal moments \\(I_1 > I_2 > I_3\\) about \\(G\\). Tossed in the air spinning about one principal axis, about which axis does the spin quickly become an erratic tumble?',
+    choices: [
+      { html: 'The axis of \\(I_2\\), the intermediate moment', correct: true },
+      { html: 'The axis of \\(I_1\\), the largest moment', feedback: 'Spin about the maximum axis is stable, and remains so even with energy dissipation.' },
+      { html: 'The axis of \\(I_3\\), the smallest moment', feedback: 'For a rigid body, spin about the minimum axis is stable. It drifts only if the body dissipates energy, and slowly.' },
+      { html: 'None: all three spins are stable', feedback: 'Try it with a book held shut with a rubber band: one axis always flips.' }
+    ],
+    hints: ['Think of tossing a book or a phone about each of its three edges.'],
+    explain: 'The intermediate-axis theorem.',
+    solution: '<p>Free rotation about the maximum or minimum principal axis is stable; about the intermediate axis small disturbances grow exponentially and the body flips repeatedly.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l08-q4', type: 'mc',
+    prompt: 'A flywheel is symmetric about its spin axis \\(z\\) and about its mid-plane. Which statement is true about the axes through its center?',
+    choices: [
+      { html: '\\(z\\) and every axis through the center in the mid-plane are principal axes', correct: true },
+      { html: 'Only \\(z\\) is a principal axis', feedback: 'The mid-plane normal is \\(z\\), and a body of revolution has equal transverse moments, so every transverse axis is principal too.' },
+      { html: 'Principal axes must be found with the eigenvalue problem', feedback: 'Symmetry gives them directly here.' },
+      { html: 'No axis is principal until the wheel is balanced', feedback: 'Principal axes exist for every body at every point; balancing makes the shaft coincide with one through \\(G\\).' }
+    ],
+    hints: ['An axis of symmetry is principal.', 'For a body of revolution, two principal moments are equal.'],
+    explain: 'Symmetry identifies the principal axes.',
+    solution: '<p>The symmetry axis \\(z\\) is principal. Because the wheel is a body of revolution, \\(I_{xx} = I_{yy}\\) for any transverse pair, and all transverse products vanish: every axis through the center in the mid-plane is principal.</p>'
+  });
+});
+</script>
+</body>
+</html>

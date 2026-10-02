@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion Explorer · Curvilinear Motion</title>
+<meta name="description" content="A free-play sandbox for plane curvilinear motion: choose a preset or type your own x(t) and y(t), and watch the velocity, acceleration, their x–y and n–t components and the osculating circle.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+<style>
+/* ---------- Motion Explorer: page-specific layout (tokens from module.css only) ---------- */
+.ex-fig { margin-top: 0; }
+.ex-viz { margin: 0; }
+.ex-panel { display: grid; gap: 12px; }
+.ex-custom { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg-sunken); }
+.ex-custom[hidden] { display: none; }
+.ex-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ex-custom label { display: block; margin: 0 0 3px; font-size: 0.84rem; font-weight: 650; color: var(--ink-muted); }
+.ex-custom input { width: 100%; font-family: var(--font-mono); font-size: 0.9rem; }
+.ex-msg { margin: 0; font-size: 0.86rem; line-height: 1.45; min-height: 1.2em; }
+.ex-msg.is-bad { color: var(--c-bad); }
+.ex-desc { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+.ex-fig-controls { display: grid; gap: 14px; }
+.ex-typing code { white-space: nowrap; }
+
+/* status line under the figure, and the idea cards */
+.ex-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; max-width: var(--content-max); margin: 10px auto 0; color: var(--ink-muted); font-size: 0.9rem; }
+.ex-status:empty { display: none; }
+.ex-ideas .card { display: flex; flex-direction: column; gap: 8px; }
+.ex-ideas .card h3, .ex-ideas .card p { margin: 0; }
+.ex-ideas .card .btn-row { margin-top: auto; padding-top: 2px; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Sandbox</p>
+    <h1>Motion Explorer</h1>
+    <p class="lede">Choose a motion, or type your own \(x(t)\) and \(y(t)\), and watch its velocity and acceleration as it moves. Switch between rectangular and path components, show the moving \(\et, \en\) frame and the osculating circle, and read every quantity live.</p>
+  </header>
+
+  <figure class="figure wide ex-fig" id="ex-figure" aria-labelledby="ex-cap">
+    <div class="viz mf-viz ex-viz">
+      <div class="viz-stage" id="ex-stage"></div>
+      <div class="viz-controls">
+        <p class="viz-title">Choose a motion</p>
+        <div class="ex-panel" id="ex-panel"></div>
+        <div class="ex-fig-controls" id="ex-fig-controls"></div>
+      </div>
+      <div class="mf-readouts" id="ex-readouts" aria-live="off"></div>
+    </div>
+    <div class="ex-status" id="ex-status" role="status" aria-live="polite" tabindex="-1"></div>
+    <figcaption id="ex-cap"><strong>The Explorer.</strong> Press <em>Play</em>, drag the time slider, or drag the particle along its path. From the keyboard, Tab to the particle and use the arrow keys to step in time. Green: velocity \(\vvec\); red: acceleration \(\avec\); gray and olive: \(x\) and \(y\) components; violet and orange: tangential and normal components. Positions are in metres and times in seconds.</figcaption>
+  </figure>
+
+  <section id="how-to">
+    <h2>How to use the Explorer</h2>
+    <p>Choose a motion, then press <strong>Play</strong>, drag the time slider, or drag the particle along its path. <strong>Reset</strong> goes back to the start, and <strong>Playback</strong> runs the motion at half or double speed. The page address (the part after <code>#</code>) keeps the motion you chose, including a custom one, so a bookmark or a copied link brings it back.</p>
+
+    <h3>Components</h3>
+    <p><strong>Components</strong> splits the vectors at the particle, drawn tip to tail. <em>Rectangular</em> shows \(v_x, v_y\) and \(a_x, a_y\) along the fixed \(\ihat\) and \(\jhat\) (<a href="../lessons/03-rectangular-components.html">Lesson 3</a>). <em>Path</em> shows \(a_t\) along \(\et\) and \(a_n\) along \(\en\) (<a href="../lessons/06-nt-acceleration.html">Lesson 6</a>); the velocity needs no split, because \(\vvec = v\,\et\). Under <strong>Show</strong>, turn \(\vvec\), \(\avec\), the moving frame \(\et, \en\), the osculating circle and the trace on and off.</p>
+
+    <h3>Live values</h3>
+    <p>The <strong>State</strong>, <strong>Velocity</strong> and <strong>Acceleration</strong> cards list the position, the direction of \(\vvec\), the radius of curvature \(\rho\) and every component of \(\vvec\) and \(\avec\), to 4 significant figures. To check a hand calculation, pause at the same \(t\) and compare.</p>
+
+    <h3 id="typing">Typing your own motion</h3>
+    <p>Choose <em>Custom</em> and type \(x(t)\) and \(y(t)\) in metres, using <code>t</code> for time in seconds. The Explorer differentiates numerically, so any smooth function works.</p>
+    <div class="table-wrap ex-typing">
+      <table class="data">
+        <caption>Examples of custom motions</caption>
+        <thead><tr><th scope="col">Motion</th><th scope="col">\(x(t)\)</th><th scope="col">\(y(t)\)</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Projectile, 20 m/s at 50°</th><td><code>20cos(50°)t</code></td><td><code>20sin(50°)t - 4.905t^2</code></td></tr>
+          <tr><th scope="row">Circle of radius 3, ω = 1 rad/s</th><td><code>3cos(t)</code></td><td><code>3sin(t)</code></td></tr>
+          <tr><th scope="row">Worksheet Problem 1</th><td><code>4t - t^2</code></td><td><code>3t^2</code></td></tr>
+          <tr><th scope="row">Slider on y = 0.1x², v<sub>x</sub> = 2</th><td><code>2t - 6</code></td><td><code>0.1(2t - 6)^2</code></td></tr>
+          <tr><th scope="row">Spiral</th><td><code>(0.5 + 0.3t)cos(t)</code></td><td><code>(0.5 + 0.3t)sin(t)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Functions: <code>sin cos tan sqrt exp ln abs</code>; constants <code>pi</code> and <code>e</code>; powers with <code>^</code>. Multiplication can be implied (<code>2t</code>, <code>3cos(t)</code>).</p>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake</p>
+      <p>Write powers with <code>^</code> and put the number first in a product: <code>t^2</code> and <code>2t</code>, not <code>t2</code>. Inside <code>sin</code> and <code>cos</code> an angle is in radians unless you add a degree sign: <code>cos(50)</code> is the cosine of 50 radians (about \(0.965\)), while <code>cos(50°)</code> is about \(0.643\).</p>
+    </aside>
+
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>To study one instant, pause, then Tab to the particle and step with the arrow keys: each press moves \(t\) by 1% of the time range. Turn on the osculating circle to see \(\rho\) and the center of curvature at that instant.</p>
+    </aside>
+  </section>
+
+  <section id="ideas" class="ex-ideas">
+    <h2>Ideas to try</h2>
+    <p>Each idea loads a motion into the Explorer and sets what it shows.</p>
+    <div class="grid-cards">
+      <div class="card">
+        <h3>Where \(a_t\) changes sign</h3>
+        <p>A projectile slows on the way up and speeds up on the way down, while \(\avec\) stays \(9.81\ \text{m/s}^2\) straight down. With path components on, where is \(a_t\) negative, zero and positive? Where is \(\rho\) smallest?</p>
+        <p class="card-meta"><a href="../lessons/04-projectile-motion.html">Lesson 4</a> · <a href="../lessons/08-connecting-systems.html">Lesson 8</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="projectile">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>A circle at constant speed</h3>
+        <p>Radius \(3\ \text{m}\) at \(3\ \text{m/s}\). Confirm that \(a_t = 0\) and \(a_n = v^2/R = 3\ \text{m/s}^2\) all the way round, always toward the center.</p>
+        <p class="card-meta"><a href="../lessons/06-nt-acceleration.html">Lesson 6</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="circle">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>Speeding up on a circle</h3>
+        <p>The same circle, starting at \(1\ \text{m/s}\) with \(a_t = 1\ \text{m/s}^2\). \(a_t\) stays fixed while \(a_n = v^2/R\) grows, so \(\avec\) swings toward the center.</p>
+        <p class="card-meta"><a href="../lessons/06-nt-acceleration.html">Lesson 6</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="circleUp">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>The osculating circle of an ellipse</h3>
+        <p>\(x = 4\cos t,\ y = 2\sin t\), with the osculating circle on. Where is the circle smallest? Is \(\avec\) ever perpendicular to \(\vvec\)?</p>
+        <p class="card-meta"><a href="../lessons/02-motion-vectors.html">Lesson 2</a> · <a href="../lessons/07-radius-of-curvature.html">Lesson 7</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="ellipse">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>Stopped, but still accelerating</h3>
+        <p>A point on the rim of a rolling wheel stops for an instant each time it touches the ground. Step to that instant: \(\vvec = \mathbf{0}\), yet \(\avec\) is not zero. Which way does it point?</p>
+        <p class="card-meta"><a href="../lessons/02-motion-vectors.html">Lesson 2</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="cycloid">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>Two independent motors</h3>
+        <p>A pen plotter draws a figure eight, \(x = 4\sin t,\ y = 2\sin 2t\). In rectangular components each motor's part is a simple oscillation of its own.</p>
+        <p class="card-meta"><a href="../lessons/03-rectangular-components.html">Lesson 3</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="eight">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>Check Worksheet Problem 1</h3>
+        <p>The drone of Worksheet Problem 1, \(x = 4t - t^2\), \(y = 3t^2\). It opens paused at \(t = 1\ \text{s}\): compare the speed and \(|\avec|\) with your answers to part (b).</p>
+        <p class="card-meta"><a href="../practice/worksheet.html">Printable Worksheet</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="worksheet">Load this motion</button></div>
+      </div>
+      <div class="card">
+        <h3>Your own motion</h3>
+        <p>Enter a problem from the <a href="../practice/practice-lab.html">Practice Lab</a> as a custom motion, then check your answers against the live values.</p>
+        <p class="card-meta"><a href="#typing">Typing your own motion</a></p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="custom">Open the custom boxes</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+/* ---------- Motion Explorer ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI, G = 9.81;
+  function circleSpeeding(R, v0, at) {
+    function s(t) { return v0 * t + at * t * t / 2; }
+    return { x: function (t) { return R * Math.cos(s(t) / R); }, y: function (t) { return R * Math.sin(s(t) / R); } };
+  }
+  var PRESETS = {
+    projectile: { label: 'Projectile (18 m/s at 55°)', t: [0, 2 * 18 * Math.sin(55 * PI / 180) / G], show: { comps: 'nt', circle: false },
+      desc: 'Gravity only: \\(\\avec\\) is \\(9.81\\ \\text{m/s}^2\\) straight down. In path components, \\(a_t \\lt 0\\) on the way up and \\(a_t \\gt 0\\) on the way down.',
+      m: { x: function (t) { return 18 * Math.cos(55 * PI / 180) * t; }, y: function (t) { return 18 * Math.sin(55 * PI / 180) * t - G * t * t / 2; } } },
+    circle: { label: 'Circle, constant speed', t: [0, 2 * PI], show: { comps: 'nt', circle: false },
+      desc: 'Radius 3 m, one lap every \\(2\\pi\\) s (\\(v = 3\\ \\text{m/s}\\)). \\(a_t = 0\\) and \\(a_n = v^2/R = 3\\ \\text{m/s}^2\\), always toward the center.',
+      m: { x: function (t) { return 3 * Math.cos(t); }, y: function (t) { return 3 * Math.sin(t); } } },
+    circleUp: { label: 'Circle, speeding up', t: [0, 4], show: { comps: 'nt', circle: false },
+      desc: 'Radius 3 m, starting at 1 m/s with \\(a_t = 1\\ \\text{m/s}^2\\). \\(a_t\\) stays fixed while \\(a_n = v^2/R\\) grows.',
+      m: circleSpeeding(3, 1, 1) },
+    ellipse: { label: 'Ellipse', t: [0, 2 * PI], show: { comps: 'nt', circle: true },
+      desc: '\\(x = 4\\cos t,\\ y = 2\\sin t\\). The acceleration always points at the center, so it has a tangential part everywhere except the ends of the axes.',
+      m: { x: function (t) { return 4 * Math.cos(t); }, y: function (t) { return 2 * Math.sin(t); } } },
+    eight: { label: 'Figure eight (plotter)', t: [0, 2 * PI], show: { comps: 'xy', circle: false },
+      desc: '\\(x = 4\\sin t,\\ y = 2\\sin 2t\\). Each component is an independent oscillation.',
+      m: { x: function (t) { return 4 * Math.sin(t); }, y: function (t) { return 2 * Math.sin(2 * t); } } },
+    cycloid: { label: 'Cycloid (point on a rolling wheel)', t: [0, 4 * PI], show: { comps: 'nt', circle: false },
+      desc: 'A wheel of radius 1 m rolls at 1 rad/s: \\(x = t - \\sin t,\\ y = 1 - \\cos t\\). At each ground contact the point stops, yet \\(\\avec\\) is \\(1\\ \\text{m/s}^2\\) straight up.',
+      m: { x: function (t) { return t - Math.sin(t); }, y: function (t) { return 1 - Math.cos(t); } } },
+    custom: { label: 'Custom x(t), y(t)', t: [0, 3], show: { comps: 'nt' }, desc: 'Type your own motion below.' }
+  };
+  var panel = document.getElementById('ex-panel'), figPanel = document.getElementById('ex-fig-controls');
+  var stage = document.getElementById('ex-stage'), readouts = document.getElementById('ex-readouts');
+  var st = { preset: 'projectile', cx: '4t - t^2', cy: '3t^2', t0: '0', t1: '3' };
+  // restore a shared or bookmarked custom motion from the page address
+  (function () {
+    var h = location.hash.replace(/^#/, '');
+    if (!h) return;
+    var q = {};
+    h.split('&').forEach(function (kv) { var i = kv.indexOf('='); if (i > 0) { try { q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); } catch (e) { /* ignore */ } } });
+    if (q.p && PRESETS[q.p]) st.preset = q.p;
+    ['cx', 'cy', 't0', 't1'].forEach(function (k) { if (q[k] != null) st[k] = q[k]; });
+  })();
+
+  var sel = CYL.select({
+    label: 'Motion', value: st.preset,
+    options: Object.keys(PRESETS).map(function (k) { return { value: k, label: PRESETS[k].label }; }),
+    onChange: function (k) { st.preset = k; custom.hidden = k !== 'custom'; setStatus(''); build(); }
+  });
+  var desc = CYL.el('p', { class: 'ex-desc' });
+  function field(id, label, val) {
+    var inp = CYL.el('input', { type: 'text', class: 'q-input', id: id, value: val, autocomplete: 'off', spellcheck: 'false', autocapitalize: 'off' });
+    return { el: CYL.el('div', null, [CYL.el('label', { for: id, html: label }), inp]), input: inp };
+  }
+  var fx = field('ex-x', 'x(t) in m', st.cx), fy = field('ex-y', 'y(t) in m', st.cy), f0 = field('ex-t0', 'from t =', st.t0), f1 = field('ex-t1', 'to t =', st.t1);
+  var msg = CYL.el('p', { class: 'ex-msg', 'aria-live': 'polite' });
+  var go = CYL.button('Plot this motion', function () { setStatus(''); build(); }, { primary: true, small: true });
+  var custom = CYL.el('div', { class: 'ex-custom' }, [fx.el, fy.el, CYL.el('div', { class: 'ex-row' }, [f0.el, f1.el]), CYL.el('div', { class: 'btn-row' }, [go]), msg]);
+  custom.hidden = st.preset !== 'custom';
+  [fx, fy, f0, f1].forEach(function (f) { f.input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); setStatus(''); build(); } }); });
+  panel.appendChild(sel.el); panel.appendChild(desc); panel.appendChild(custom);
+
+  function customMotion() {
+    var X, Y, a, b;
+    try { X = CYLExpr.compile(fx.input.value, ['t']); } catch (e) { throw new Error('x(t): ' + e.message); }
+    try { Y = CYLExpr.compile(fy.input.value, ['t']); } catch (e) { throw new Error('y(t): ' + e.message); }
+    a = CYLExpr.parseNumber(f0.input.value); b = CYLExpr.parseNumber(f1.input.value);
+    if (!isFinite(a) || !isFinite(b) || b <= a) throw new Error('The time range must be two numbers with "from" smaller than "to".');
+    if (b - a > 200) throw new Error('Use a time range of at most 200 s.');
+    for (var i = 0; i <= 100; i++) {
+      var t = a + (b - a) * i / 100;
+      if (!isFinite(X(t)) || !isFinite(Y(t))) throw new Error('The motion is undefined at t = ' + CYL.fmt(t, 3) + ' s (for example a square root of a negative number). Change the functions or the time range.');
+    }
+    return { m: { x: X, y: Y }, t: [a, b] };
+  }
+  function bounds(m, t0, t1) {
+    var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (var i = 0; i <= 300; i++) {
+      var t = t0 + (t1 - t0) * i / 300, x = m.x(t), y = m.y(t);
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    }
+    var span = Math.max(x1 - x0, y1 - y0, 1), pad = 0.28 * span;
+    return { x: [x0 - pad, x1 + pad], y: [y0 - pad, y1 + pad] };
+  }
+  var fig = null;
+  function writeHash() {
+    var h = 'p=' + st.preset;
+    if (st.preset === 'custom') h += '&cx=' + encodeURIComponent(fx.input.value) + '&cy=' + encodeURIComponent(fy.input.value) + '&t0=' + encodeURIComponent(f0.input.value) + '&t1=' + encodeURIComponent(f1.input.value);
+    try { history.replaceState(null, '', '#' + h); } catch (e) { /* file:// in some browsers */ }
+  }
+  function build(showOverride, tStart) {
+    var P = PRESETS[st.preset], m, tr;
+    desc.innerHTML = P.desc;
+    CYL.renderMath(desc);
+    if (st.preset === 'custom') {
+      try { var c = customMotion(); m = c.m; tr = c.t; msg.className = 'ex-msg'; msg.textContent = 'Plotted.'; }
+      catch (e) { msg.className = 'ex-msg is-bad'; msg.textContent = e.message; return false; }
+    } else { m = P.m; tr = P.t; }
+    if (fig) fig.destroy();
+    stage.innerHTML = ''; figPanel.innerHTML = '';
+    var B = bounds(m, tr[0], tr[1]);
+    fig = CURV.figure({
+      stage: stage, controls: figPanel, readoutsEl: readouts, motion: m, t0: tr[0], t1: tr[1], t: tStart != null && tStart >= tr[0] && tStart <= tr[1] ? tStart : tr[0] + 0.3 * (tr[1] - tr[0]),
+      speed: Math.max(0.2, Math.min(2, (tr[1] - tr[0]) / 6)), xRange: B.x, yRange: B.y, maxHeight: 620,
+      height: function (w) { return w >= 560 ? 460 : 380; },   // the 3D Explorer's stage heights, less its tallest step
+      show: Object.assign({ trace: true, frame: false, circle: false, comps: 'nt' }, P.show, showOverride || {}),
+      toggles: ['v', 'a', 'frame', 'circle', 'trace', 'comps'],
+      readouts: ['t', 'pos', 'psi', 'rho', 'vx', 'vy', 'v', 'ax', 'ay', 'at', 'an', 'a'],
+      aria: 'Plot of the motion "' + P.label + '": the path, the particle, and its velocity and acceleration arrows with the chosen components.'
+    });
+    writeHash();
+    return true;
+  }
+
+  /* ---------------- status line under the figure ---------------- */
+  var statusEl = document.getElementById('ex-status');
+  function setStatus(html) {
+    statusEl.innerHTML = '';
+    if (!html) return;
+    statusEl.appendChild(CYL.el('span', { html: html }));
+    if (/\\\(/.test(html)) CYL.renderMath(statusEl);
+  }
+
+  /* ---------------- ideas ---------------- */
+  // title: shown in the status line (may hold math); name: plain text for the button's accessible name
+  var IDEAS = {
+    projectile: { title: 'Where \\(a_t\\) changes sign', name: 'Where the tangential acceleration changes sign', preset: 'projectile', show: { comps: 'nt' } },
+    circle: { title: 'A circle at constant speed', preset: 'circle', show: { comps: 'nt' } },
+    circleUp: { title: 'Speeding up on a circle', preset: 'circleUp', show: { comps: 'nt' } },
+    ellipse: { title: 'The osculating circle of an ellipse', preset: 'ellipse', show: { comps: 'nt', circle: true } },
+    cycloid: { title: 'Stopped, but still accelerating', preset: 'cycloid', show: { comps: 'none' } },
+    eight: { title: 'Two independent motors', preset: 'eight', show: { comps: 'xy' } },
+    worksheet: { title: 'Check Worksheet Problem 1', preset: 'custom', motion: { cx: '4t - t^2', cy: '3t^2', t0: '0', t1: '3' }, t: 1, show: { comps: 'xy' } },
+    custom: { title: 'Your own motion', preset: 'custom' }
+  };
+  function loadIdea(id) {
+    var idea = IDEAS[id];
+    if (!idea) return;
+    var m = idea.motion;
+    if (m) { fx.input.value = m.cx; fy.input.value = m.cy; f0.input.value = m.t0; f1.input.value = m.t1; }
+    st.preset = idea.preset;
+    sel.set(idea.preset, true);
+    custom.hidden = idea.preset !== 'custom';
+    var ok = build(idea.show, idea.t);
+    setStatus(ok ? 'Loaded “' + idea.title + '”.' : 'Loaded “' + idea.title + '”. Fix the custom motion to plot it.');
+    var figEl = document.getElementById('ex-figure');
+    try { figEl.scrollIntoView({ behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' }); } catch (e) { figEl.scrollIntoView(); }
+    if (idea.preset === 'custom' && !m) { try { fx.input.focus({ preventScroll: true }); } catch (e) { fx.input.focus(); } }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-idea]'), function (b) {
+    var idea = IDEAS[b.getAttribute('data-idea')];
+    if (idea) b.setAttribute('aria-label', b.textContent.trim() + ': ' + (idea.name || idea.title));   // 8 buttons, 8 distinct names
+    b.addEventListener('click', function () { loadIdea(b.getAttribute('data-idea')); });
+  });
+
+  build();
+});
+</script>
+</body>
+</html>

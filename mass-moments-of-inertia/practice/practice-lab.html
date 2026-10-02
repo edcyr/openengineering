@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Mass Moments of Inertia</title>
+<meta name="description" content="Unlimited randomized practice problems on mass moments of inertia: standard bodies, the parallel-axis theorem, composite bodies, products of inertia, the inertia tensor, any axis and principal axes, each with hints, a worked solution and a 3D view.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/inertia.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it you can see it in 3D.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem in 3D: the body and the axis, or for tensor problems the inertia ellipsoid with \(\wvec\) (green) and \(\Hvec\) (red). It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>pax-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. pax-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>2/5*3*0.1^2</code></td><td>\(\tfrac25(3)(0.1)^2 = 0.012\)</td></tr>
+          <tr><td><code>2*1.2^2/12 + 2*0.4^2</code></td><td>\(0.24 + 0.32 = 0.56\)</td></tr>
+          <tr><td><code>sqrt(0.595/4.5)</code></td><td>\(\sqrt{0.1322} \approx 0.3636\)</td></tr>
+          <tr><td><code>6*pi*0.1^2/0.16</code></td><td>\(1.178\)</td></tr>
+          <tr><td><code>0.032 + sqrt(0.012^2+0.012^2)</code></td><td>\(0.04897\)</td></tr>
+          <tr><td><code>-0.0425</code></td><td>a decimal: accepted when it is within 1% of the exact value</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Answers are accepted within 1% (angles within 0.2°), so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>1/12*4*(3*0.1^2+0.5^2)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var D = Math.PI / 180;
+  var T = String.raw;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-'); }
+  function bump(v) { return v + 0.5 + Math.abs(v); }                         // a clearly wrong value, for the self-test
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function round(x, k) { var f = Math.pow(10, k); return Math.round(x * f) / f; }
+  function sq(x) { return x * x; }
+  var KG = '\\ \\text{kg}', MM = '\\ \\text{m}', KGM2 = '\\ \\text{kg·m}^2', HU = '\\ \\text{kg·m}^2/\\text{s}', RS = '\\ \\text{rad/s}', JJ = '\\ \\text{J}';
+  // A length given in the problem: metres, or millimetres when mm is true
+  function len(x, mm) { return mm ? nn(round(x * 1000, 3)) + '\\ \\text{mm}' : nn(x) + MM; }
+  // Numbers in a TeX expression: wrap negatives in parentheses
+  function pn(x) { return x < 0 ? '(' + nn(x) + ')' : nn(x); }
+  function vec3Tex(v, f) { return '(' + v.map(f || n4).join(',\\ ') + ')'; }
+  // A random physically possible inertia tensor with nice entries (moments 0.2–1.2, products up to 0.25)
+  function randTensor(rng) {
+    for (var k = 0; k < 200; k++) {
+      var Ixx = rng.int(2, 12) / 10, Iyy = rng.int(2, 12) / 10, Izz = rng.int(2, 12) / 10;
+      var pr = [-0.25, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15, 0.2, 0.25];
+      var Ixy = rng.pick(pr), Iyz = rng.pick(pr), Izx = rng.pick(pr);
+      if (!Ixy && !Iyz && !Izx) continue;
+      var Tm = INERT.tensor(Ixx, Iyy, Izz, Ixy, Iyz, Izx), e = INERT.eig(Tm).values;
+      if (e[2] < 0.05 || e[0] > e[1] + e[2] - 0.02) continue;          // positive definite and a real body
+      return { T: Tm, Ixx: Ixx, Iyy: Iyy, Izz: Izz, Ixy: Ixy, Iyz: Iyz, Izx: Izx };
+    }
+    return { T: INERT.tensor(0.6, 0.8, 1, 0.1, 0, 0.2), Ixx: 0.6, Iyy: 0.8, Izz: 1, Ixy: 0.1, Iyz: 0, Izx: 0.2 };
+  }
+  function givenTensor(t) {
+    return m('I_{xx} = ' + nn(t.Ixx)) + ', ' + m('I_{yy} = ' + nn(t.Iyy)) + ', ' + m('I_{zz} = ' + nn(t.Izz)) + ', ' +
+      m('I_{xy} = ' + nn(t.Ixy)) + ', ' + m('I_{yz} = ' + nn(t.Iyz)) + ' and ' + m('I_{zx} = ' + nn(t.Izx) + KGM2);
+  }
+  function matTex(Tm, f) {
+    f = f || nn;
+    return '\\begin{bmatrix} ' + Tm.map(function (r) { return r.map(f).join(' & '); }).join(' \\\\ ') + ' \\end{bmatrix}';
+  }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 Standard bodies (Lesson 2) ---------- */
+  var MASS = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12];
+  var RODL = [0.4, 0.5, 0.6, 0.8, 1, 1.2, 1.5, 2];
+  var RAD = [0.05, 0.06, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25, 0.3];
+  var HGT = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5];
+  var BASIC = [
+    { id: 'rodC', w: 2, who: ['A uniform slender rod', 'A robot-arm link, modelled as a slender rod,', 'A helicopter rotor blade, modelled as a slender rod,'],
+      what: 'about a perpendicular axis through its center', f: '\\tfrac1{12}ml^2',
+      make: function (rng) { var l = rng.pick(RODL); return { dims: [['length', 'l', l]], I: function (mm) { return mm * l * l / 12; }, sub: function (mm) { return T`\tfrac1{12}(${nn(mm)})(${nn(l)})^2`; },
+        part: { type: 'rod', d: { l: l }, center: [0, 0, 0], axis: [1, 0, 0] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'rodE', w: 2, who: ['A uniform slender rod', 'A door-closer arm, modelled as a slender rod,', 'A pendulum rod'],
+      what: 'about a perpendicular axis through one end', f: '\\tfrac13 ml^2',
+      make: function (rng) { var l = rng.pick(RODL); return { dims: [['length', 'l', l]], I: function (mm) { return mm * l * l / 3; }, sub: function (mm) { return T`\tfrac13(${nn(mm)})(${nn(l)})^2`; },
+        part: { type: 'rod', d: { l: l }, center: [0, 0, 0], axis: [1, 0, 0] }, axis: { through: [-l / 2, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'ring', w: 1, who: ['A thin uniform ring', 'A bicycle rim, modelled as a thin ring,'],
+      what: 'about the axis through its center perpendicular to its plane', f: 'mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD.concat([0.3, 0.35])); return { dims: [['radius', 'r', r]], I: function (mm) { return mm * r * r; }, sub: function (mm) { return T`(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'ring', d: { r: r }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'diskA', w: 2, who: ['A thin uniform disk', 'A thin brake disc, modelled as a uniform disk,', 'A grinding wheel, modelled as a thin disk,'],
+      what: 'about its axis', f: '\\tfrac12 mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD); return { dims: [['radius', 'r', r]], I: function (mm) { return mm * r * r / 2; }, sub: function (mm) { return T`\tfrac12(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'disk', d: { r: r }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'diskD', w: 1, who: ['A thin uniform disk', 'A thin circular plate'],
+      what: 'about a diameter', f: '\\tfrac14 mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD); return { dims: [['radius', 'r', r]], I: function (mm) { return mm * r * r / 4; }, sub: function (mm) { return T`\tfrac14(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'disk', d: { r: r }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [1, 0, 0] } }; } },
+    { id: 'cylA', w: 2, who: ['A solid uniform cylinder', 'A steel roller, modelled as a solid cylinder,', 'A motor rotor, modelled as a solid cylinder,'],
+      what: 'about its axis', f: '\\tfrac12 mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD), h = rng.pick(HGT); return { dims: [['radius', 'r', r], ['length', 'h', h]], I: function (mm) { return mm * r * r / 2; }, sub: function (mm) { return T`\tfrac12(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'cylinder', d: { r: r, h: h }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'cylT', w: 2, who: ['A solid uniform cylinder', 'A steel shaft section, modelled as a solid cylinder,'],
+      what: 'about a transverse axis through its center', f: '\\tfrac1{12}m(3r^2 + h^2)',
+      make: function (rng) { var r = rng.pick(RAD), h = rng.pick(HGT.concat([0.6, 0.8])); return { dims: [['radius', 'r', r], ['length', 'h', h]], I: function (mm) { return mm * (3 * r * r + h * h) / 12; }, sub: function (mm) { return T`\tfrac1{12}(${nn(mm)})\left(3(${nn(r)})^2 + (${nn(h)})^2\right)`; },
+        part: { type: 'cylinder', d: { r: r, h: h }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [1, 0, 0] } }; } },
+    { id: 'tube', w: 2, who: ['A thick-walled tube', 'A pipe section', 'A hollow drive shaft'],
+      what: 'about its axis', f: '\\tfrac12 m(r_o^2 + r_i^2)', mm: true,
+      make: function (rng) { var r = rng.pick(RAD), ri = round(r * rng.pick([0.5, 0.6, 0.7, 0.8]), 4), h = rng.pick(HGT); return { dims: [['outer radius', 'r_o', r], ['inner radius', 'r_i', ri], ['length', 'h', h]], I: function (mm) { return mm * (r * r + ri * ri) / 2; }, sub: function (mm) { return T`\tfrac12(${nn(mm)})\left((${nn(r)})^2 + (${nn(ri)})^2\right)`; },
+        part: { type: 'tube', d: { r: r, r0: ri, h: h }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'sph', w: 2, who: ['A solid uniform sphere', 'A steel ball bearing, modelled as a solid sphere,', 'A bowling ball, modelled as a solid sphere,'],
+      what: 'about a diameter', f: '\\tfrac25 mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD.slice(0, 7)); return { dims: [['radius', 'r', r]], I: function (mm) { return 0.4 * mm * r * r; }, sub: function (mm) { return T`\tfrac25(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'sphere', d: { r: r }, center: [0, 0, 0] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'shell', w: 1, who: ['A thin spherical shell', 'A hollow plastic ball, modelled as a thin spherical shell,'],
+      what: 'about a diameter', f: '\\tfrac23 mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD.slice(0, 7)); return { dims: [['radius', 'r', r]], I: function (mm) { return 2 * mm * r * r / 3; }, sub: function (mm) { return T`\tfrac23(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'shell', d: { r: r }, center: [0, 0, 0] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'box', w: 2, who: ['A solid rectangular block', 'A steel die block'],
+      what: 'about the axis through its center parallel to its \\(c\\) edges', f: '\\tfrac1{12}m(a^2 + b^2)',
+      make: function (rng) { var a = rng.pick([0.1, 0.2, 0.3, 0.4, 0.5]), b = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3]), c = rng.pick([0.1, 0.2, 0.3]); return { dims: [['edge', 'a', a], ['edge', 'b', b], ['edge', 'c', c]], I: function (mm) { return mm * (a * a + b * b) / 12; }, sub: function (mm) { return T`\tfrac1{12}(${nn(mm)})\left((${nn(a)})^2 + (${nn(b)})^2\right)`; },
+        part: { type: 'box', d: { a: a, b: b, c: c }, center: [0, 0, 0] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'plate', w: 1, who: ['A thin rectangular plate', 'A solar panel, modelled as a thin rectangular plate,'],
+      what: 'about the axis through its center perpendicular to the plate', f: '\\tfrac1{12}m(a^2 + b^2)',
+      make: function (rng) { var a = rng.pick([0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1]), b = rng.pick([0.1, 0.2, 0.3, 0.4, 0.5]); return { dims: [['side', 'a', a], ['side', 'b', b]], I: function (mm) { return mm * (a * a + b * b) / 12; }, sub: function (mm) { return T`\tfrac1{12}(${nn(mm)})\left((${nn(a)})^2 + (${nn(b)})^2\right)`; },
+        part: { type: 'plate', d: { a: a, b: b }, center: [0, 0, 0] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } },
+    { id: 'cone', w: 1, who: ['A solid uniform cone', 'A conical nose cone, modelled as a solid cone,'],
+      what: 'about its axis', f: '\\tfrac3{10} mr^2', mm: true,
+      make: function (rng) { var r = rng.pick(RAD.slice(0, 7)), h = rng.pick(HGT); return { dims: [['base radius', 'r', r], ['height', 'h', h]], I: function (mm) { return 0.3 * mm * r * r; }, sub: function (mm) { return T`\tfrac3{10}(${nn(mm)})(${nn(r)})^2`; },
+        part: { type: 'cone', d: { r: r, h: h }, center: [0, 0, 0], axis: [0, 0, 1] }, axis: { through: [0, 0, 0], dir: [0, 0, 1] } }; } }
+  ];
+  function genBasic(rng) {
+    var c = pickW(rng, BASIC.map(function (b) { return [b, b.w]; }));
+    var g = c.make(rng), mass = rng.pick(MASS), mm = !!c.mm && rng.next() < 0.35, askK = rng.next() < 0.35;
+    var I = g.I(mass), k = Math.sqrt(I / mass);
+    var dimText = g.dims.map(function (d) { return d[0] + ' ' + m(len(d[2], mm)); });
+    var dimList = dimText.length > 1 ? dimText.slice(0, -1).join(', ') + ' and ' + dimText[dimText.length - 1] : dimText[0];
+    var prompt = rng.pick(c.who) + ' has mass ' + m(nn(mass) + KG) + ' and ' + dimList + '. Find its moment of inertia ' + c.what +
+      (askK ? ', and its radius of gyration about that axis.' : '.');
+    var spec = askK ? { type: 'fields', prompt: prompt, fields: [{ name: 'I', label: '\\(I =\\)', answer: I, unit: 'kg·m²' }, { name: 'k', label: '\\(k =\\)', answer: k, unit: 'm' }] }
+      : { type: 'numeric', prompt: prompt, label: '\\(I =\\)', answer: I, unit: 'kg·m²' };
+    spec.hints = [
+      'Find the body in the table of standard bodies (Lesson 2, or the Formula Sheet), for the axis named in the problem.' + (mm ? ' Convert millimetres to metres first.' : ''),
+      T`\(I = ${c.f}\).`
+    ];
+    if (askK) spec.hints.push(T`\(k = \sqrt{I/m}\).`);
+    spec.explain = T`A standard result: \(I = ${c.f}\) ${c.what}.`;
+    spec.solution = '<p>From the table of standard bodies' + (mm ? ', with lengths in metres' : '') + ':</p>' + M(T`I = ${c.f} = ${g.sub(mass)} = ${n4(I)}${KGM2}`) +
+      (askK ? M(T`k = \sqrt{\frac{${n4(I)}}{${nn(mass)}}} = ${n4(k)}${MM}`) : '');
+    var part = Object.assign({ m: mass }, g.part);
+    return {
+      spec: spec,
+      view: {
+        title: 'The body and the axis',
+        items: [{ k: 'part', part: part }, { k: 'axis', through: g.axis.through, dir: g.axis.dir, color: 'bad', label: 'a' }],
+        readouts: [{ label: '\\(I\\) about axis \\(a\\)', tex: n4(I) + KGM2, color: 'bad' }, { label: '\\(k = \\sqrt{I/m}\\)', tex: n4(k) + MM }],
+        note: 'The red line is the axis of rotation.',
+        aria: 'The body with the axis of rotation drawn as a red line.'
+      },
+      test: {
+        right: [askK ? { I: typed(I), k: typed(k) } : { value: typed(I) }],
+        wrong: [askK ? { I: typed(2 * I), k: typed(k) } : { value: typed(2 * I) }],
+        check: function () {
+          var Ic = INERT.aboutAxis(INERT.shift(INERT.assemble([part]).IG, mass, g.axis.through), g.axis.dir);
+          return Math.abs(Ic - I) > 1e-9 * Math.max(1, I) ? ['I differs from INERT: ' + Ic + ' vs ' + I] : [];
+        }
+      }
+    };
+  }
+
+  /* ---------- 2.2 Parallel-axis theorem (Lesson 3) ---------- */
+  function genPax(rng) {
+    var kind = pickW(rng, [['fwd', 5], ['two', 3], ['back', 2]]);
+    var mass = rng.pick(MASS.slice(1, 10));
+    var body = rng.pick(['rod', 'disk', 'sphere', 'plate', 'cyl']);
+    var Ib, fIb, part, dir, off, desc, gAxis;
+    if (body === 'rod') { var l = rng.pick(RODL); Ib = mass * l * l / 12; fIb = T`\tfrac1{12}(${nn(mass)})(${nn(l)})^2`; part = { type: 'rod', m: mass, d: { l: l }, center: [0, 0, 0], axis: [1, 0, 0] }; dir = [0, 0, 1]; off = [1, 0, 0]; desc = 'uniform slender rod of length ' + m(nn(l) + MM); gAxis = 'a perpendicular axis through its center'; }
+    else if (body === 'disk') { var r = rng.pick(RAD); Ib = mass * r * r / 2; fIb = T`\tfrac12(${nn(mass)})(${nn(r)})^2`; part = { type: 'disk', m: mass, d: { r: r }, center: [0, 0, 0], axis: [0, 0, 1] }; dir = [0, 0, 1]; off = [1, 0, 0]; desc = 'thin uniform disk of radius ' + m(nn(r) + MM); gAxis = 'its axis'; }
+    else if (body === 'sphere') { var rs = rng.pick(RAD.slice(0, 7)); Ib = 0.4 * mass * rs * rs; fIb = T`\tfrac25(${nn(mass)})(${nn(rs)})^2`; part = { type: 'sphere', m: mass, d: { r: rs }, center: [0, 0, 0] }; dir = [0, 0, 1]; off = [1, 0, 0]; desc = 'solid sphere of radius ' + m(nn(rs) + MM); gAxis = 'a diameter'; }
+    else if (body === 'plate') { var a = rng.pick([0.2, 0.3, 0.4, 0.5, 0.6]), b = rng.pick([0.1, 0.2, 0.3, 0.4]); Ib = mass * (a * a + b * b) / 12; fIb = T`\tfrac1{12}(${nn(mass)})\left((${nn(a)})^2 + (${nn(b)})^2\right)`; part = { type: 'plate', m: mass, d: { a: a, b: b }, center: [0, 0, 0] }; dir = [0, 0, 1]; off = [1, 0, 0]; desc = 'thin rectangular plate, ' + m(nn(a) + '\\ \\text{m} \\times ' + nn(b) + MM); gAxis = 'the axis through its center perpendicular to the plate'; }
+    else { var rc = rng.pick(RAD), h = rng.pick(HGT.concat([0.6])); Ib = mass * (3 * rc * rc + h * h) / 12; fIb = T`\tfrac1{12}(${nn(mass)})\left(3(${nn(rc)})^2 + (${nn(h)})^2\right)`; part = { type: 'cylinder', m: mass, d: { r: rc, h: h }, center: [0, 0, 0], axis: [0, 0, 1] }; dir = [1, 0, 0]; off = [0, 0, 1]; desc = 'solid cylinder of radius ' + m(nn(rc) + MM) + ' and length ' + m(nn(h) + MM); gAxis = 'a transverse axis through its center'; }
+    var spec, ans, items, readouts, wrong, sol;
+    var dA = rng.pick([0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5]);
+    var axisG = { k: 'axis', through: [0, 0, 0], dir: dir, color: 'muted', label: 'G', dashed: true };
+    var A = [off[0] * dA, off[1] * dA, off[2] * dA];
+    if (kind === 'fwd') {
+      ans = Ib + mass * dA * dA;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' ' + desc + ' turns about an axis parallel to ' + gAxis + ', at a distance ' + m(nn(dA) + MM) + ' from its center of mass. Find its moment of inertia about that axis.',
+        label: '\\(I_A =\\)', answer: ans, unit: 'kg·m²' };
+      spec.hints = [T`First find \(\bar I\) about ${gAxis.replace(/\\\(|\\\)/g, '')} from the table of standard bodies.`, T`\(\bar I = ${fIb} = ${n4(Ib)}\ \text{kg·m}^2\). Then \(I_A = \bar I + m d^2\).`];
+      sol = M(T`\bar I = ${fIb} = ${n4(Ib)}${KGM2}`) + M(T`I_A = \bar I + m d^2 = ${n4(Ib)} + ${nn(mass)}(${nn(dA)})^2 = ${n4(ans)}${KGM2}`);
+      items = [{ k: 'part', part: part }, axisG, { k: 'axis', through: A, dir: dir, color: 'bad', label: 'A' }];
+      readouts = [{ label: '\\(\\bar I\\)', tex: n4(Ib) + KGM2 }, { label: '\\(m d^2\\)', tex: n4(mass * dA * dA) + KGM2 }, { label: '\\(I_A\\)', tex: n4(ans) + KGM2, color: 'bad' }];
+      wrong = typed(Ib + mass * dA);
+    } else if (kind === 'back') {
+      var IA = round(Ib + mass * dA * dA, 6);
+      ans = IA - mass * dA * dA;
+      spec = { type: 'numeric', prompt: 'A pendulum test gives the moment of inertia of a ' + m(nn(mass) + KG) + ' part about a pivot axis as ' + m(nn(IA) + KGM2) + '. The part\'s center of mass is ' + m(nn(dA) + MM) + ' from the pivot axis. Find its moment of inertia about the parallel axis through its center of mass.',
+        label: '\\(\\bar I =\\)', answer: ans, unit: 'kg·m²' };
+      spec.hints = ['The parallel-axis theorem works in both directions: ' + m('I_A = \\bar I + m d^2') + '.', T`\(\bar I = I_A - m d^2\): subtract, never add, when you move toward \(G\).`];
+      sol = M(T`\bar I = I_A - m d^2 = ${nn(IA)} - ${nn(mass)}(${nn(dA)})^2 = ${n4(ans)}${KGM2}`) + '<p>The centroidal value is the smallest moment of inertia among all parallel axes.</p>';
+      items = [{ k: 'part', part: part }, axisG, { k: 'axis', through: A, dir: dir, color: 'bad', label: 'A' }];
+      readouts = [{ label: '\\(I_A\\) (given)', tex: nn(IA) + KGM2, color: 'bad' }, { label: '\\(m d^2\\)', tex: n4(mass * dA * dA) + KGM2 }, { label: '\\(\\bar I\\)', tex: n4(ans) + KGM2 }];
+      wrong = typed(IA + mass * dA * dA);
+    } else {
+      var dB = rng.pick([0.05, 0.1, 0.15, 0.2, 0.3, 0.35, 0.45].filter(function (x) { return x !== dA; }));
+      var same = rng.next() < 0.35, IA2 = round(Ib + mass * dA * dA, 6);
+      ans = IA2 - mass * dA * dA + mass * dB * dB;
+      var B = same ? [off[0] * dB, off[1] * dB, off[2] * dB] : [-off[0] * dB, -off[1] * dB, -off[2] * dB];
+      var AB = same ? Math.abs(dA - dB) : dA + dB;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' link has a moment of inertia of ' + m(nn(IA2) + KGM2) + ' about a bearing axis ' + m('A') + '. Its center of mass ' + m('G') + ' is ' + m(nn(dA) + MM) + ' from ' + m('A') + '. A second, parallel bearing axis ' + m('B') + ' is ' + m(nn(round(AB, 6)) + MM) + ' from ' + m('A') + ', with ' + (!same ? m('G') + ' between ' + m('A') + ' and ' + m('B') : dB < dA ? m('B') + ' between ' + m('A') + ' and ' + m('G') : m('A') + ' between ' + m('B') + ' and ' + m('G')) + ', all on one line. Find the moment of inertia about ' + m('B') + '.',
+        label: '\\(I_B =\\)', answer: ans, unit: 'kg·m²' };
+      spec.hints = [T`The theorem only connects an axis through \(G\) to a parallel axis. Go from \(A\) to \(G\) first, then from \(G\) to \(B\).`,
+        T`\(\bar I = I_A - m d_A^2\), and \(G\) is \(d_B = ${nn(dB)}\ \text{m}\) from \(B\).`];
+      sol = M(T`\bar I = I_A - m d_A^2 = ${nn(IA2)} - ${nn(mass)}(${nn(dA)})^2 = ${n4(Ib)}${KGM2}`) + '<p>' + m('G') + ' is ' + m(nn(dB) + MM) + ' from ' + m('B') + ':</p>' +
+        M(T`I_B = \bar I + m d_B^2 = ${n4(Ib)} + ${nn(mass)}(${nn(dB)})^2 = ${n4(ans)}${KGM2}`);
+      items = [{ k: 'part', part: part }, axisG, { k: 'axis', through: A, dir: dir, color: 'bad', label: 'A' }, { k: 'axis', through: B, dir: dir, color: 'good', label: 'B' }];
+      readouts = [{ label: '\\(I_A\\) (given)', tex: nn(IA2) + KGM2, color: 'bad' }, { label: '\\(\\bar I\\)', tex: n4(Ib) + KGM2 }, { label: '\\(I_B\\)', tex: n4(ans) + KGM2, color: 'good' }];
+      wrong = typed(IA2 + mass * AB * AB);
+    }
+    spec.explain = T`Parallel-axis theorem: \(I = \bar I + m d^2\), where one of the two axes passes through \(G\).`;
+    spec.solution = sol;
+    return {
+      spec: spec,
+      view: { title: 'Parallel axes', items: items, readouts: readouts, note: 'The dashed line is the axis through the center of mass; the colored lines are parallel to it.', aria: 'The body with the axis through its center of mass drawn dashed and the parallel axes drawn in color.' },
+      test: { right: [{ value: typed(ans) }], wrong: [{ value: wrong }], check: function () { return ans > 0 ? [] : ['non-positive I']; } }
+    };
+  }
+
+  /* ---------- 2.3 Composite bodies (Lesson 4) ---------- */
+  function genComp(rng) {
+    if (rng.next() < 0.6) return genPendulum(rng);
+    return genHolePlate(rng);
+  }
+  function genPendulum(rng) {
+    var L = rng.pick([0.4, 0.5, 0.6, 0.8, 1]), mr = rng.pick([0.5, 1, 1.5, 2, 3]);
+    var bob = rng.pick(['disk', 'sphere', 'point']), mb = rng.pick([1, 2, 3, 4, 5, 6]), r = bob === 'point' ? 0 : rng.pick([0.05, 0.08, 0.1, 0.12, 0.15]);
+    var yb = L + r, askG = rng.next() < 0.4;
+    var Irod = mr * L * L / 3, Iown = bob === 'disk' ? 0.5 * mb * r * r : bob === 'sphere' ? 0.4 * mb * r * r : 0, Ibob = Iown + mb * yb * yb;
+    var IO = Irod + Ibob, mt = mr + mb, ybar = (mr * L / 2 + mb * yb) / mt, IG = IO - mt * ybar * ybar;
+    var bobText = bob === 'disk' ? 'a ' + m(nn(mb) + KG) + ' uniform disk of radius ' + m(nn(r) + MM) + ' in the plane of the swing, welded so its center is ' + m(nn(yb) + MM) + ' below ' + m('O')
+      : bob === 'sphere' ? 'a ' + m(nn(mb) + KG) + ' solid sphere of radius ' + m(nn(r) + MM) + ', with its center ' + m(nn(yb) + MM) + ' below ' + m('O')
+        : 'a small ' + m(nn(mb) + KG) + ' collar (a particle) at its lower end';
+    var prompt = 'A pendulum is a ' + m(nn(mr) + KG) + ' slender rod, ' + m(nn(L) + MM) + ' long, pinned at its top end ' + m('O') + ', carrying ' + bobText + '. Find the moment of inertia about the pin ' + m('O') + (askG ? ', and about the parallel axis through the center of mass.' : '.');
+    var spec = askG ? { type: 'fields', prompt: prompt, fields: [{ name: 'IO', label: '\\(I_O =\\)', answer: IO, unit: 'kg·m²' }, { name: 'IG', label: '\\(\\bar I =\\)', answer: IG, unit: 'kg·m²' }] }
+      : { type: 'numeric', prompt: prompt, label: '\\(I_O =\\)', answer: IO, unit: 'kg·m²' };
+    var bobF = bob === 'disk' ? T`\tfrac12(${nn(mb)})(${nn(r)})^2 + ${nn(mb)}(${nn(yb)})^2` : bob === 'sphere' ? T`\tfrac25(${nn(mb)})(${nn(r)})^2 + ${nn(mb)}(${nn(yb)})^2` : T`${nn(mb)}(${nn(yb)})^2`;
+    spec.hints = ['Find each part\'s moment of inertia about ' + m('O') + ', then add.', T`Rod about its end: \(\tfrac13 ml^2\). ` + (bob === 'point' ? 'The collar is a particle: ' + m('m d^2') + '.' : 'The ' + bob + ': its own ' + m('\\bar I') + ' plus ' + m('m d^2') + ', with ' + m('d = ' + nn(yb) + MM) + '.')];
+    if (askG) spec.hints.push(T`\(\bar y = \sum m_i y_i / \sum m_i\), then \(\bar I = I_O - m\bar y^2\).`);
+    spec.explain = 'Composite body: add the parts, each moved to the pin with the parallel-axis theorem.';
+    spec.solution = M(T`I_{O,\text{rod}} = \tfrac13(${nn(mr)})(${nn(L)})^2 = ${n4(Irod)}, \qquad I_{O,\text{${bob === 'point' ? 'collar' : bob}}} = ${bobF} = ${n4(Ibob)}`) +
+      M(T`I_O = ${n4(Irod)} + ${n4(Ibob)} = ${n4(IO)}${KGM2}`) +
+      (askG ? M(T`\bar y = \frac{${nn(mr)}(${nn(L / 2)}) + ${nn(mb)}(${nn(yb)})}{${nn(mt)}} = ${n4(ybar)}${MM}, \qquad \bar I = ${n4(IO)} - ${nn(mt)}(${n4(ybar)})^2 = ${n4(IG)}${KGM2}`) : '');
+    var parts = [{ type: 'rod', m: mr, d: { l: L }, center: [0, -L / 2, 0], axis: [0, 1, 0] }];
+    if (bob === 'disk') parts.push({ type: 'disk', m: mb, d: { r: r }, center: [0, -yb, 0], axis: [0, 0, 1] });
+    else if (bob === 'sphere') parts.push({ type: 'sphere', m: mb, d: { r: r }, center: [0, -yb, 0] });
+    else parts.push({ type: 'point', m: mb, center: [0, -yb, 0] });
+    return {
+      spec: spec,
+      view: {
+        title: 'The pendulum', items: parts.map(function (p) { return { k: 'part', part: p }; }).concat([{ k: 'axis', through: [0, 0, 0], dir: [0, 0, 1], color: 'bad', label: 'O' }, { k: 'pt', at: [0, -ybar, 0], label: 'G' }]),
+        readouts: [{ label: '\\(I_O\\)', tex: n4(IO) + KGM2, color: 'bad' }, { label: '\\(\\bar y\\) below \\(O\\)', tex: n4(ybar) + MM }, { label: '\\(\\bar I\\)', tex: n4(IG) + KGM2 }],
+        note: 'The pendulum swings in the \\(xy\\)-plane about the red pin axis.',
+        aria: 'A pendulum hanging from a pin at the origin: a rod with a bob at its lower end. The pin axis is drawn as a red line and the center of mass is marked G.'
+      },
+      test: {
+        right: [askG ? { IO: typed(IO), IG: typed(IG) } : { value: typed(IO) }],
+        wrong: [askG ? { IO: typed(IO - mb * yb * yb + mb * L * L * 0.25), IG: typed(IG) } : { value: typed(mr * L * L / 12 + Iown + mb * yb * yb * 0.5) }],
+        check: function () { var A = INERT.assemble(parts); return Math.abs(A.IO[2][2] - IO) > 1e-9 ? ['IO differs from INERT: ' + A.IO[2][2] + ' vs ' + IO] : []; }
+      }
+    };
+  }
+  function genHolePlate(rng) {
+    var a, b, rh, xh, yh, byRho, rho, mF, mh, d2, IF, Ih;
+    for (var tries = 0; tries < 80; tries++) {                // keep the hole large enough to matter (> 4 % of I)
+      a = rng.pick([0.3, 0.4, 0.5, 0.6]); b = rng.pick([0.2, 0.3, 0.4, 0.5]);
+      rh = rng.pick([0.05, 0.06, 0.08, 0.1, 0.12, 0.15].filter(function (x) { return 2.4 * x < Math.min(a, b); })) || 0.05;
+      xh = rng.pick([0, 0, 0.05, 0.1, -0.1, 0.15]); yh = rng.pick([0, 0, 0.05, -0.05, 0.1]);
+      if (Math.abs(xh) + rh > a / 2 - 0.01) xh = 0;
+      if (Math.abs(yh) + rh > b / 2 - 0.01) yh = 0;
+      byRho = rng.next() < 0.5; rho = rng.pick([20, 25, 40, 50, 60, 80]); mF = byRho ? rho * a * b : rng.pick([4, 5, 6, 8, 10, 12]);
+      mh = mF * Math.PI * rh * rh / (a * b); d2 = xh * xh + yh * yh;
+      IF = mF * (a * a + b * b) / 12; Ih = 0.5 * mh * rh * rh + mh * d2;
+      if (Ih > 0.04 * IF) break;
+    }
+    var I = IF - Ih, mNet = mF - mh, askM = rng.next() < 0.5;
+    var where = d2 ? 'whose center is at ' + m('(' + nn(xh) + ',\\ ' + nn(yh) + ')\\ \\text{m}') + ' from the plate\'s center' : 'at the plate\'s center';
+    var prompt = 'A thin rectangular plate, ' + m(nn(a) + '\\ \\text{m} \\times ' + nn(b) + MM) + ', ' + (byRho ? 'has a mass of ' + m(nn(rho) + '\\ \\text{kg/m}^2') + ' of area' : 'would have a mass of ' + m(nn(mF) + KG) + ' without its hole') +
+      '. It has a circular hole of radius ' + m(nn(rh) + MM) + ' ' + where + '. Find ' + (askM ? 'the mass of the plate, and ' : '') + 'its moment of inertia about the axis through the plate\'s center perpendicular to it.';
+    var spec = askM ? { type: 'fields', prompt: prompt, fields: [{ name: 'm', label: '\\(m =\\)', answer: mNet, unit: 'kg' }, { name: 'I', label: '\\(I =\\)', answer: I, unit: 'kg·m²' }] }
+      : { type: 'numeric', prompt: prompt, label: '\\(I =\\)', answer: I, unit: 'kg·m²' };
+    spec.hints = ['Treat the hole as a negative part: compute the full plate, then subtract a disk with the same areal density.',
+      T`The hole's mass is \(m_h = ${byRho ? nn(rho) : T`\frac{${nn(mF)}}{${nn(round(a * b, 6))}}`}\,\pi(${nn(rh)})^2 = ${n4(mh)}\ \text{kg}\).` + (d2 ? ' Move its ' + m('\\tfrac12 m_h r^2') + ' to the plate\'s center with ' + m('m_h d^2') + '.' : '')];
+    spec.explain = 'Composite body with a hole: subtract the hole\'s moment of inertia, found with the plate\'s density.';
+    spec.solution = (byRho ? M(T`m_\text{full} = ${nn(rho)}(${nn(a)})(${nn(b)}) = ${n4(mF)}${KG}`) : '') +
+      M(T`m_h = ${n4(mF)}\,\frac{\pi(${nn(rh)})^2}{${nn(round(a * b, 6))}} = ${n4(mh)}${KG}`) +
+      M(T`I_\text{full} = \tfrac1{12}(${n4(mF)})\left((${nn(a)})^2 + (${nn(b)})^2\right) = ${n4(IF)}, \qquad I_h = \tfrac12(${n4(mh)})(${nn(rh)})^2${d2 ? T` + ${n4(mh)}(${nn(round(d2, 6))})` : ''} = ${n4(Ih)}`) +
+      M(T`I = ${n4(IF)} - ${n4(Ih)} = ${n4(I)}${KGM2}`) + (askM ? M(T`m = ${n4(mF)} - ${n4(mh)} = ${n4(mNet)}${KG}`) : '');
+    var parts = [{ type: 'plate', m: mF, d: { a: a, b: b }, center: [0, 0, 0] }, { type: 'disk', m: mh, d: { r: rh }, center: [xh, yh, 0], axis: [0, 0, 1], hole: true }];
+    return {
+      spec: spec,
+      view: { title: 'Plate with a hole', items: [{ k: 'part', part: parts[0] }, { k: 'part', part: parts[1], color: 'bad' }, { k: 'axis', through: [0, 0, 0], dir: [0, 0, 1], color: 'bad', label: 'a' }],
+        readouts: [{ label: '\\(I_\\text{full}\\)', tex: n4(IF) + KGM2 }, { label: '\\(I_\\text{hole}\\)', tex: n4(Ih) + KGM2, color: 'bad' }, { label: '\\(I\\)', tex: n4(I) + KGM2 }, { label: 'Mass', tex: n4(mNet) + KG }],
+        note: 'The red disk is the hole, subtracted as a negative mass.', aria: 'A rectangular plate with a circular hole, drawn in red, and the axis through the plate center perpendicular to it.' },
+      test: {
+        right: [askM ? { m: typed(mNet), I: typed(I) } : { value: typed(I) }],
+        wrong: [askM ? { m: typed(mNet), I: typed(IF + Ih) } : { value: typed(IF + Ih) }],
+        check: function () { var A = INERT.assemble(parts); return Math.abs(A.IO[2][2] - I) > 1e-9 ? ['I differs from INERT'] : []; }
+      }
+    };
+  }
+
+  /* ---------- 2.4 Products of inertia (Lesson 5) ---------- */
+  var PNAME = { xy: ['x', 'y'], yz: ['y', 'z'], zx: ['z', 'x'] }, PIDX = { x: 0, y: 1, z: 2 };
+  function genProd(rng) {
+    var kind = pickW(rng, [['pts', 5], ['plate', 3], ['bent', 2]]);
+    var asks = rng.pick([['xy'], ['yz'], ['zx'], ['xy', 'yz'], ['xy', 'zx'], ['yz', 'zx']]);
+    var parts = [], prompt, sol, vals = {}, hint2, items = [];
+    function prodOf(list, key) {
+      var a = PIDX[PNAME[key][0]], b = PIDX[PNAME[key][1]];
+      return list.reduce(function (s, p) { return s + p.m * p.c[a] * p.c[b]; }, 0);
+    }
+    for (var tries = 0; tries < 60; tries++) {
+      parts = []; items = [];
+      if (kind === 'pts') {
+        var n = rng.pick([2, 3, 3]), C = [-0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0];
+        for (var i = 0; i < n; i++) parts.push({ m: rng.pick([1, 1.5, 2, 3, 4, 5]), c: [rng.pick(C), rng.pick(C), rng.pick(C)] });
+        prompt = 'Particles: ' + parts.map(function (p) { return m(nn(p.m) + KG) + ' at ' + m('(' + p.c.map(nn).join(',\\ ') + ')\\ \\text{m}'); }).join(', ') + '.';
+        hint2 = T`Each particle adds \(m\,x\,y\) (or \(m\,y\,z\), \(m\,z\,x\)), with the signs of its coordinates.`;
+      } else if (kind === 'plate') {
+        var a = rng.pick([0.2, 0.3, 0.4, 0.5]), b = rng.pick([0.1, 0.2, 0.3]), x0 = rng.pick([0, -a, 0.1, -0.1 - a, 0]), y0 = rng.pick([0, -b, 0.1, 0]), z0 = rng.pick([0, 0, 0.1, -0.2, 0.3]), mp = rng.pick([2, 3, 4, 5, 6]);
+        var c = [x0 + a / 2, y0 + b / 2, z0];
+        parts.push({ m: mp, c: c, plate: { a: a, b: b } });
+        prompt = 'A thin ' + m(nn(mp) + KG) + ' rectangular plate lies in the plane ' + m('z = ' + nn(z0) + MM) + ' and covers ' + m(nn(round(x0, 4)) + ' \\le x \\le ' + nn(round(x0 + a, 4)) + MM) + ', ' + m(nn(round(y0, 4)) + ' \\le y \\le ' + nn(round(y0 + b, 4)) + MM) + '.';
+        hint2 = T`About its own center the plate has no products (it is symmetric). Use \(I_{xy} = m\bar x\bar y\) (and similarly) with its center \(G = (${nn(round(c[0], 4))},\ ${nn(round(c[1], 4))},\ ${nn(z0)})\).`;
+      } else {
+        var lam = rng.pick([2, 3, 4, 5]), L1 = rng.pick([0.2, 0.3, 0.4]), L2 = rng.pick([0.1, 0.2, 0.3]), L3 = rng.pick([0.1, 0.15, 0.2, 0.25]);
+        var s3 = rng.pick([1, -1]);
+        // O → A along x, A → B along y, B → C along ±z
+        parts.push({ m: lam * L1, c: [L1 / 2, 0, 0], seg: [1, 0, 0], l: L1 }, { m: lam * L2, c: [L1, L2 / 2, 0], seg: [0, 1, 0], l: L2 }, { m: lam * L3, c: [L1, L2, s3 * L3 / 2], seg: [0, 0, 1], l: L3 });
+        prompt = 'A slender rod with ' + m(nn(lam) + '\\ \\text{kg/m}') + ' is bent into three straight segments: ' + m('OA') + ', ' + m(nn(L1) + MM) + ' along the ' + m('x') + '-axis; ' + m('AB') + ', ' + m(nn(L2) + MM) + ' parallel to ' + m('y') + '; and ' + m('BC') + ', ' + m(nn(L3) + MM) + ' parallel to the ' + (s3 > 0 ? 'positive' : 'negative') + ' ' + m('z') + '-axis.';
+        hint2 = 'Segments parallel to the axes have no products about their own centers. Add ' + m('m_i\\,\\bar x_i\\,\\bar y_i') + ' (and similarly) for the three segments, using each segment\'s center.';
+      }
+      vals = {};
+      asks.forEach(function (k) { vals[k] = prodOf(parts, k); });
+      if (asks.every(function (k) { return Math.abs(vals[k]) > 1e-6; })) break;
+    }
+    var askText = asks.map(function (k) { return m('I_{' + k + '}'); }).join(' and ');
+    var spec = { type: 'fields', prompt: prompt + ' Find ' + askText + ' about the origin.',
+      fields: asks.map(function (k) { return { name: k, label: '\\(I_{' + k + '} =\\)', answer: vals[k], unit: 'kg·m²' }; }) };
+    spec.hints = [T`\(I_{xy} = \int xy\,dm\), \(I_{yz} = \int yz\,dm\), \(I_{zx} = \int zx\,dm\): keep the signs.`, hint2];
+    spec.explain = 'Products of inertia: sums of mass times two signed coordinates, or ' + m('m\\bar x\\bar y') + ' for a part symmetric about its own center.';
+    sol = asks.map(function (k) {
+      var a = PIDX[PNAME[k][0]], b = PIDX[PNAME[k][1]];
+      var terms = parts.map(function (p) { return nn(round(p.m, 6)) + '(' + nn(round(p.c[a], 6)) + ')(' + nn(round(p.c[b], 6)) + ')'; });
+      return M(T`I_{${k}} = ${terms.join(' + ')} = ${n4(vals[k])}${KGM2}`);
+    }).join('');
+    spec.solution = (kind === 'pts' ? '' : '<p>Using each part\'s center of mass:</p>') + sol;
+    parts.forEach(function (p, i) {
+      if (kind === 'pts') items.push({ k: 'part', part: { type: 'point', m: p.m, center: p.c }, label: 'm_' + (i + 1) }, { k: 'drop', at: p.c });
+      else if (kind === 'plate') items.push({ k: 'part', part: { type: 'plate', m: p.m, d: p.plate, center: p.c } }, { k: 'pt', at: p.c, label: 'G' }, { k: 'drop', at: p.c });
+      else items.push({ k: 'part', part: { type: 'rod', m: p.m, d: { l: p.l }, center: p.c, axis: p.seg } });
+    });
+    items.push({ k: 'pt', at: [0, 0, 0], label: 'O' });
+    return {
+      spec: spec,
+      view: { title: 'Positions in 3D', items: items, readouts: asks.map(function (k) { return { label: '\\(I_{' + k + '}\\)', tex: n4(vals[k]) + KGM2 }; }),
+        note: 'The dashed lines drop each position to the \\(xy\\)-plane. Drag the view to see which octants the mass sits in: that sets the signs of the products.', aria: 'The masses of the problem in 3D, with the coordinate axes through the origin O.' },
+      test: {
+        right: [asks.reduce(function (o, k) { o[k] = typed(vals[k]); return o; }, {})],
+        wrong: [asks.reduce(function (o, k, i) { o[k] = typed(i === 0 ? -vals[k] : vals[k]); return o; }, {})],
+        check: function () {
+          if (kind === 'pts') return [];
+          var A = INERT.assemble(items.filter(function (it) { return it.k === 'part'; }).map(function (it) { return it.part; })), P = INERT.parts(A.IO), e = [];
+          asks.forEach(function (k) { var key = 'I' + k; if (Math.abs(P[key] - vals[k]) > 1e-9) e.push(k + ' differs from INERT'); });
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 2.5 The tensor: H and T (Lesson 6) ---------- */
+  function genTensor(rng) {
+    var t = randTensor(rng), W = [];
+    var pat = rng.pick([[0, 0, 1], [1, 0, 1], [1, 1, 0], [0, 1, 1], [1, 1, 1], [0, 0, 1], [1, 0, 0]]);
+    for (var i = 0; i < 3; i++) { var w = 0; if (pat[i]) { do { w = rng.int(-8, 8); } while (!w); } W.push(w); }
+    var Tf = INERT.tensor(t.Ixx, t.Iyy, t.Izz, -t.Ixy, -t.Iyz, -t.Izx), Hw = INERT.H(Tf, W), KEw = INERT.KE(Tf, W);   // the sign mistake
+    var H = INERT.H(t.T, W), KE = INERT.KE(t.T, W), askT = rng.next() < 0.45, point = rng.pick(['its center of mass \\(G\\)', 'a fixed point \\(O\\)']);
+    var wTex = [W[0] ? nn(W[0]) + '\\,\\ihat' : '', W[1] ? nn(W[1]) + '\\,\\jhat' : '', W[2] ? nn(W[2]) + '\\,\\khat' : ''].filter(Boolean).join(' + ').replace(/\+ -/g, '- ');
+    var prompt = 'About ' + point + ', a rigid body has ' + givenTensor(t) + '. It turns with ' + m('\\wvec = ' + wTex + RS) + '. ' + (askT ? 'Find its kinetic energy.' : 'Find the components of its angular momentum ' + m('\\Hvec') + '.');
+    var spec = askT ? { type: 'numeric', prompt: prompt, label: '\\(T =\\)', answer: KE, unit: 'J' }
+      : { type: 'fields', prompt: prompt, fields: ['x', 'y', 'z'].map(function (c, i) { return { name: 'h' + c, label: '\\(H_' + c + ' =\\)', answer: H[i], unit: 'kg·m²/s' }; }) };
+    var mat = matTex(t.T, function (x) { return nn(round(x, 6)); });
+    spec.hints = ['Write the inertia tensor with the moments on the diagonal and the <em>negatives</em> of the products off it.', T`\(\Hvec = \Imat\wvec\)` + (askT ? T`, then \(T = \tfrac12\wvec\cdot\Hvec\).` : ': multiply the matrix by the column ' + m('(' + W.map(nn).join(',\\ ') + ')') + '.')];
+    spec.explain = T`\(\Hvec = \Imat\wvec\) and \(T = \tfrac12\wvec^\mathsf{T}\Imat\wvec\).`;
+    spec.solution = M(T`\Hvec = ${mat}\begin{Bmatrix} ${W.map(nn).join(' \\\\ ')} \end{Bmatrix} = \begin{Bmatrix} ${H.map(n4).join(' \\\\ ')} \end{Bmatrix}${HU}`) +
+      (askT ? M(T`T = \tfrac12\wvec\cdot\Hvec = \tfrac12\left[${W.map(function (w, i) { return pn(w) + '(' + n4(H[i]) + ')'; }).join(' + ')}\right] = ${n4(KE)}${JJ}`) : '');
+    var Hn = Math.sqrt(H[0] * H[0] + H[1] * H[1] + H[2] * H[2]), Wn = Math.sqrt(W[0] * W[0] + W[1] * W[1] + W[2] * W[2]);
+    var ang = Math.acos(Math.max(-1, Math.min(1, (H[0] * W[0] + H[1] * W[1] + H[2] * W[2]) / (Hn * Wn)))) / D;
+    return {
+      spec: spec,
+      view: { title: 'Angular momentum and the ellipsoid', items: [{ k: 'ell', T: t.T }, { k: 'vec', dir: W, color: 'good', label: '\\wvec' }, { k: 'vec', dir: H, color: 'bad', label: '\\Hvec' }],
+        readouts: [{ label: '\\(\\Hvec\\)', tex: vec3Tex(H) + HU, color: 'bad' }, { label: 'Angle between \\(\\Hvec\\) and \\(\\wvec\\)', tex: n4(ang) + '^\\circ' }, { label: '\\(T\\)', tex: n4(KE) + JJ }],
+        note: 'Arrows show directions only. \\(\\Hvec\\) is perpendicular to the ellipsoid where the \\(\\wvec\\) line crosses its surface.', aria: 'The inertia ellipsoid of the body with a green angular-velocity arrow and a red angular-momentum arrow from its center.' },
+      test: {
+        right: [askT ? { value: typed(KE) } : { hx: typed(H[0]), hy: typed(H[1]), hz: typed(H[2]) }],
+        wrong: [askT ? { value: typed(Math.abs(KEw - KE) > 0.05 * KE ? KEw : bump(KE)) }
+          : (function () { var same = Hw.every(function (x, i) { return Math.abs(x - H[i]) < 0.02 * Math.max(1, Math.abs(H[i])); }); return same ? { hx: typed(bump(H[0])), hy: typed(H[1]), hz: typed(H[2]) } : { hx: typed(Hw[0]), hy: typed(Hw[1]), hz: typed(Hw[2]) }; })()],
+        check: function () { var k2 = 0.5 * (W[0] * H[0] + W[1] * H[1] + W[2] * H[2]); return Math.abs(k2 - KE) > 1e-9 ? ['KE mismatch'] : []; }
+      }
+    };
+  }
+
+  /* ---------- 2.6 Moment of inertia about any axis (Lesson 7) ---------- */
+  var DIRS = [[1, 2, 2], [2, 1, 2], [2, 2, 1], [2, -1, 2], [1, -2, 2], [-2, 2, 1], [0, 3, 4], [3, 0, 4], [4, 3, 0], [3, 4, 0], [0, 4, -3], [2, 3, 6], [6, 2, 3], [3, 6, 2], [1, 1, 0], [1, 0, 1], [0, 1, 1], [1, 1, 1], [1, -1, 1]];
+  function genAxis(rng) {
+    if (rng.next() < 0.3) return genBoxDiag(rng);
+    var t = randTensor(rng), d = rng.pick(DIRS), n = Math.sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]), u = d.map(function (x) { return x / n; });
+    var I = INERT.aboutAxis(t.T, u), nice = Math.abs(n - Math.round(n)) < 1e-9;
+    var dTex = [d[0] ? (d[0] === 1 ? '' : d[0] === -1 ? '-' : nn(d[0])) + '\\ihat' : '', d[1] ? (d[1] === 1 ? '' : d[1] === -1 ? '-' : nn(d[1])) + '\\jhat' : '', d[2] ? (d[2] === 1 ? '' : d[2] === -1 ? '-' : nn(d[2])) + '\\khat' : ''].filter(Boolean).join(' + ').replace(/\+ -/g, '- ');
+    var prompt = 'About a point ' + m('O') + ', a body has ' + givenTensor(t) + '. Find its moment of inertia about the axis through ' + m('O') + ' along ' + m(dTex) + '.';
+    var spec = { type: 'numeric', prompt: prompt, label: '\\(I_{Oa} =\\)', answer: I, unit: 'kg·m²' };
+    var nTex = nice ? nn(Math.round(n)) : '\\sqrt{' + nn(Math.round(n * n)) + '}';
+    var uTex = '\\uvec = \\tfrac{1}{' + nTex + '}(' + d.map(nn).join(',\\ ') + ')';
+    var mom = t.Ixx * u[0] * u[0] + t.Iyy * u[1] * u[1] + t.Izz * u[2] * u[2], prod = -2 * (t.Ixy * u[0] * u[1] + t.Iyz * u[1] * u[2] + t.Izx * u[2] * u[0]);
+    spec.hints = ['Make a unit vector first: divide ' + m('(' + d.map(nn).join(',\\ ') + ')') + ' by its length, ' + m(nTex) + '.',
+      T`\(I_{Oa} = I_{xx}u_x^2 + I_{yy}u_y^2 + I_{zz}u_z^2 - 2I_{xy}u_xu_y - 2I_{yz}u_yu_z - 2I_{zx}u_zu_x\).`];
+    spec.explain = T`\(I_{Oa} = \uvec^\mathsf{T}\Imat_O\uvec\), with \(\uvec\) a unit vector.`;
+    var n2 = Math.round(n * n);
+    spec.solution = M(uTex) + M(T`I_{Oa} = \tfrac1{${nn(n2)}}\left[${nn(t.Ixx)}(${nn(d[0] * d[0])}) + ${nn(t.Iyy)}(${nn(d[1] * d[1])}) + ${nn(t.Izz)}(${nn(d[2] * d[2])})\right] - \tfrac2{${nn(n2)}}\left[${pn(t.Ixy)}(${nn(d[0] * d[1])}) + ${pn(t.Iyz)}(${nn(d[1] * d[2])}) + ${pn(t.Izx)}(${nn(d[2] * d[0])})\right]`) +
+      M(T`I_{Oa} = ${n4(mom)} ${prod < 0 ? '-' : '+'} ${n4(Math.abs(prod))} = ${n4(I)}${KGM2}`);
+    return {
+      spec: spec,
+      view: { title: 'The axis and the inertia ellipsoid', items: [{ k: 'ell', T: t.T }, { k: 'axis', through: [0, 0, 0], dir: u, color: 'bad', label: 'a' }],
+        readouts: [{ label: '\\(\\uvec\\)', tex: vec3Tex(u), color: 'bad' }, { label: 'Moment terms', tex: n4(mom) + KGM2 }, { label: 'Product terms', tex: n4(prod) + KGM2 }, { label: '\\(I_{Oa}\\)', tex: n4(I) + KGM2 }],
+        note: 'The ellipsoid\'s radius along any axis is proportional to \\(1/\\sqrt{I}\\) for that axis.', aria: 'The inertia ellipsoid of the body with the axis of the problem drawn as a red line through its center.' },
+      test: { right: [{ value: typed(I) }], wrong: [{ value: typed(Math.abs(prod) > 0.03 * I ? mom - prod : bump(I)) }], check: function () { return Math.abs(mom + prod - I) > 1e-9 ? ['split mismatch'] : []; } }
+    };
+  }
+  function genBoxDiag(rng) {
+    var mass = rng.pick([2, 3, 4, 5, 6, 8, 10, 12]), a = rng.pick([0.1, 0.2, 0.3, 0.4]), b = rng.pick([0.1, 0.2, 0.3]), c = rng.pick([0.1, 0.2, 0.4, 0.5]);
+    var face = rng.next() < 0.4;
+    var Ixx = mass * (b * b + c * c) / 12, Iyy = mass * (a * a + c * c) / 12, Izz = mass * (a * a + b * b) / 12;
+    var dvec = face ? [a, b, 0] : [a, b, c], n = Math.sqrt(dvec[0] * dvec[0] + dvec[1] * dvec[1] + dvec[2] * dvec[2]), u = dvec.map(function (x) { return x / n; });
+    var I = Ixx * u[0] * u[0] + Iyy * u[1] * u[1] + Izz * u[2] * u[2];
+    var prompt = 'A ' + m(nn(mass) + KG) + ' solid block measures ' + m(nn(a) + ' \\times ' + nn(b) + ' \\times ' + nn(c) + MM) + ' along ' + m('x, y, z') + ', with its center at the origin. Find its moment of inertia about ' +
+      (face ? 'the line through its center parallel to the diagonal of its ' + m('xy') + ' faces (along ' + m('(' + nn(a) + ',\\ ' + nn(b) + ',\\ 0)') + ').' : 'its body diagonal (through its center, along ' + m('(' + nn(a) + ',\\ ' + nn(b) + ',\\ ' + nn(c) + ')') + ').');
+    var spec = { type: 'numeric', prompt: prompt, label: '\\(I =\\)', answer: I, unit: 'kg·m²' };
+    spec.hints = [T`About its center the block has no products: \(\bar I_{xx} = \tfrac{m}{12}(b^2 + c^2)\), and so on.`, T`With a unit vector \(\uvec\) along the line, \(I = \bar I_{xx}u_x^2 + \bar I_{yy}u_y^2 + \bar I_{zz}u_z^2\).`];
+    spec.explain = T`\(I = \uvec^\mathsf{T}\Imat_G\uvec\); with no products only the moment terms remain.`;
+    spec.solution = M(T`\bar I_{xx} = ${n4(Ixx)}, \quad \bar I_{yy} = ${n4(Iyy)}, \quad \bar I_{zz} = ${n4(Izz)}${KGM2}`) + M(T`\uvec = ${vec3Tex(u)}`) +
+      M(T`I = ${n4(Ixx)}(${n4(u[0] * u[0])}) + ${n4(Iyy)}(${n4(u[1] * u[1])})${face ? '' : T` + ${n4(Izz)}(${n4(u[2] * u[2])})`} = ${n4(I)}${KGM2}`);
+    var part = { type: 'box', m: mass, d: { a: a, b: b, c: c }, center: [0, 0, 0] };
+    return {
+      spec: spec,
+      view: { title: 'The block and the line', items: [{ k: 'part', part: part }, { k: 'axis', through: [0, 0, 0], dir: u, color: 'bad', label: 'a' }],
+        readouts: [{ label: '\\(\\uvec\\)', tex: vec3Tex(u), color: 'bad' }, { label: '\\(I\\)', tex: n4(I) + KGM2 }],
+        note: 'The red line passes through the block\'s center.', aria: 'A rectangular block centered at the origin with a red line through its center along the requested diagonal.' },
+      test: { right: [{ value: typed(I) }], wrong: [{ value: typed(Ixx + Iyy + (face ? 0 : Izz)) }], check: function () { return Math.abs(INERT.aboutAxis(INERT.assemble([part]).IG, u) - I) > 1e-9 ? ['I differs from INERT'] : []; } }
+    };
+  }
+
+  /* ---------- 2.7 Principal axes (Lesson 8) ---------- */
+  function genPrinc(rng) {
+    var Ixx, Iyy, Ixy;
+    do {
+      Ixx = rng.int(2, 30) / 100; Iyy = rng.int(2, 30) / 100; Ixy = rng.pick([-1, 1]) * rng.int(1, 10) / 100;
+    } while (Ixy * Ixy > 0.7 * Ixx * Iyy);                         // a real body: both principal moments positive
+    var C = (Ixx + Iyy) / 2, B = (Ixx - Iyy) / 2, R = Math.sqrt(B * B + Ixy * Ixy), Imax = C + R, Imin = C - R;
+    function Ith(th) { return C + B * Math.cos(2 * th * D) - Ixy * Math.sin(2 * th * D); }
+    var th0 = 0.5 * Math.atan2(2 * Ixy, Iyy - Ixx) / D;          // one principal angle
+    var thMax = Ith(th0) >= C ? th0 : th0 + 90;
+    if (thMax > 90) thMax -= 180;                                  // in (−90°, 90°]
+    var kind = pickW(rng, [['mom', 4], ['ang', 3], ['3d', 3]]), Izz = 0, spec, sol, P3 = null;
+    var given = m('I_{xx} = ' + nn(Ixx)) + ', ' + m('I_{yy} = ' + nn(Iyy)) + ' and ' + m('I_{xy} = ' + nn(Ixy) + KGM2);
+    var circ = M(T`C = \frac{${nn(Ixx)} + ${nn(Iyy)}}{2} = ${n4(C)}, \qquad R = \sqrt{\left(\frac{${nn(Ixx)} - ${nn(Iyy)}}{2}\right)^2 + (${nn(Ixy)})^2} = ${n4(R)}`);
+    if (kind === 'mom') {
+      spec = { type: 'fields', prompt: 'A thin plate in the ' + m('xy') + '-plane has ' + given + ' about ' + m('O') + '. Find its principal moments of inertia in the plane.',
+        fields: [{ name: 'imax', label: '\\(I_{\\max} =\\)', answer: Imax, unit: 'kg·m²' }, { name: 'imin', label: '\\(I_{\\min} =\\)', answer: Imin, unit: 'kg·m²' }] };
+      spec.hints = ['Mohr\'s circle: centre ' + m('C = (I_{xx} + I_{yy})/2') + ', radius ' + m('R = \\sqrt{((I_{xx} - I_{yy})/2)^2 + I_{xy}^2}') + '.', T`\(I_{\max,\min} = C \pm R\).`];
+      sol = circ + M(T`I_{\max} = ${n4(Imax)}${KGM2}, \qquad I_{\min} = ${n4(Imin)}${KGM2}`);
+    } else if (kind === 'ang') {
+      spec = { type: 'numeric', prompt: 'A thin plate in the ' + m('xy') + '-plane has ' + given + ' about ' + m('O') + '. Find the angle ' + m('\\theta_p') + ', between ' + m('-90^\\circ') + ' and ' + m('90^\\circ') + ' and measured counterclockwise from ' + m('x') + ', of the principal axis of <em>maximum</em> moment of inertia.',
+        label: '\\(\\theta_p =\\)', answer: thMax, tol: 0.2, unit: '°' };
+      spec.hints = [T`\(\tan 2\theta_p = 2I_{xy}/(I_{yy} - I_{xx})\). Its two solutions are \(90^\circ\) apart.`, T`Put your angle into \(I_{x'x'} = C + \tfrac{I_{xx} - I_{yy}}{2}\cos 2\theta - I_{xy}\sin 2\theta\): if it gives \(I_{\min}\), add or subtract \(90^\circ\).`];
+      sol = M(T`\tan 2\theta_p = \frac{2(${nn(Ixy)})}{${nn(Iyy)} - ${nn(Ixx)}}, \qquad \theta_p = ${n4(th0)}^\circ \ \text{or}\ ${n4(th0 > 0 ? th0 - 90 : th0 + 90)}^\circ`) +
+        M(T`I_{x'x'}(${n4(thMax)}^\circ) = ${n4(Ith(thMax))}${KGM2} = I_{\max}`) + '<p>So the maximum axis is at ' + m('\\theta_p = ' + n4(thMax) + '^\\circ') + '.</p>';
+    } else {
+      Izz = round(Imax + Imin + rng.pick([0, 0, 0.02, 0.05, 0.1]), 4);
+      var list = [Imax, Imin, Izz].sort(function (x, y) { return y - x; });
+      P3 = list;
+      spec = { type: 'fields', prompt: 'About its center of mass, a body has ' + given + ', ' + m('I_{zz} = ' + nn(Izz) + KGM2) + ' and ' + m('I_{yz} = I_{zx} = 0') + '. Find its three principal moments of inertia, ' + m('I_1 \\ge I_2 \\ge I_3') + '.',
+        fields: list.map(function (v, i) { return { name: 'i' + (i + 1), label: '\\(I_' + (i + 1) + ' =\\)', answer: v, unit: 'kg·m²' }; }) };
+      spec.hints = [T`With \(I_{yz} = I_{zx} = 0\), the \(z\)-axis is already principal: \(I_{zz}\) is one principal moment.`, T`The other two come from the plane formulas: \(C \pm R\).`];
+      sol = '<p>' + m('z') + ' is principal, so ' + m(nn(Izz)) + ' is one principal moment. In the ' + m('xy') + '-plane:</p>' + circ + M(T`C \pm R = ${n4(Imax)},\ ${n4(Imin)}`) + '<p>In order: ' + m('I_1 = ' + n4(list[0]) + ',\\ I_2 = ' + n4(list[1]) + ',\\ I_3 = ' + n4(list[2]) + KGM2) + '.</p>';
+    }
+    spec.explain = 'Principal axes: the axes with no products; in the plane, the ends of Mohr\'s circle.';
+    spec.solution = sol;
+    var Tm = INERT.tensor(Ixx, Iyy, kind === '3d' ? Izz : Ixx + Iyy, Ixy, 0, 0), c1 = Math.cos(thMax * D), s1 = Math.sin(thMax * D);
+    return {
+      spec: spec,
+      view: { title: 'Principal axes and the inertia ellipsoid', items: [{ k: 'ell', T: Tm }, { k: 'axis', through: [0, 0, 0], dir: [c1, s1, 0], color: 'bad', label: 'I_{\\max}' }, { k: 'axis', through: [0, 0, 0], dir: [-s1, c1, 0], color: 'good', label: 'I_{\\min}' }],
+        readouts: [{ label: '\\(I_{\\max}\\) (in the plane)', tex: n4(Imax) + KGM2, color: 'bad' }, { label: '\\(I_{\\min}\\) (in the plane)', tex: n4(Imin) + KGM2, color: 'good' }, { label: 'Angle of the max axis', tex: n4(thMax) + '^\\circ' }],
+        note: 'The principal axes are the symmetry axes of the ellipsoid, which is shortest along the maximum axis.', aria: 'The inertia ellipsoid with the two in-plane principal axes: red for the maximum moment and green for the minimum.' },
+      test: {
+        right: [kind === 'mom' ? { imax: typed(Imax), imin: typed(Imin) } : kind === 'ang' ? { value: typed(thMax) } : { i1: typed(P3[0]), i2: typed(P3[1]), i3: typed(P3[2]) }],
+        wrong: [kind === 'mom' ? { imax: typed(C + R * R), imin: typed(Imin) } : kind === 'ang' ? { value: typed(thMax > 0 ? thMax - 90 : thMax + 90) } : { i1: typed(P3[0]), i2: typed(P3[1]), i3: typed(P3[2] + R) }],
+        check: function () {
+          var e = INERT.eig(Tm).values, errs = [];
+          if (Math.abs(Ith(thMax) - Imax) > 1e-9) errs.push('thMax does not give Imax');
+          if (kind === '3d' && [Imax, Imin, Izz].some(function (v) { return !e.some(function (x) { return Math.abs(x - v) < 1e-9; }); })) errs.push('eig mismatch');
+          return errs;
+        }
+      }
+    };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l02: L(2, '02-integration.html', 'Moments of Inertia by Integration'), l03: L(3, '03-parallel-axis.html', 'The Parallel-Axis Theorem'),
+    l04: L(4, '04-composite-bodies.html', 'Composite Bodies'), l05: L(5, '05-products-of-inertia.html', 'Products of Inertia'),
+    l06: L(6, '06-inertia-tensor.html', 'The Inertia Tensor and Angular Momentum'), l07: L(7, '07-any-axis.html', 'Moment of Inertia About Any Axis'),
+    l08: L(8, '08-principal-axes.html', 'Principal Axes and Principal Moments')
+  };
+  var CATS = [
+    { id: 'basic', label: 'Standard bodies', gen: genBasic, lessons: [LES.l02] },
+    { id: 'pax', label: 'Parallel axes', gen: genPax, lessons: [LES.l03] },
+    { id: 'comp', label: 'Composite bodies', gen: genComp, lessons: [LES.l04] },
+    { id: 'prod', label: 'Products of inertia', gen: genProd, lessons: [LES.l05] },
+    { id: 'tensor', label: 'H and T from [I]', gen: genTensor, lessons: [LES.l06] },
+    { id: 'axis', label: 'Any axis', gen: genAxis, lessons: [LES.l07] },
+    { id: 'princ', label: 'Principal axes', gen: genPrinc, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      (v.items || []).forEach(function (it) { if (it.label) out.push(['item label', '\\(' + it.label + '\\)']); });
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.items || !vw.items.length) f('view has no items');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            var bad = vw.items.filter(function (it) {
+              var nums = [].concat(it.at || [], it.through || [], it.dir || [], it.part ? (it.part.center || []) : []);
+              if (it.part && it.part.d) Object.keys(it.part.d).forEach(function (k) { nums.push(it.part.d[k]); });
+              if (it.part && it.part.axis) nums = nums.concat(it.part.axis);
+              if (it.T) it.T.forEach(function (r) { nums = nums.concat(r); });
+              return nums.some(function (x) { return !isFinite(x); });
+            });
+            if (bad.length) f('view item with a non-finite number: ' + bad[0].k);
+            vw.items.forEach(function (it) { if (it.T && INERT.eig(it.T).values[2] <= 0) f('ellipsoid tensor not positive definite'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared 3D view (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var IDLE = 'Empty 3D axes. The picture for the current problem appears here after you solve it or open its solution.';
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it drawn here.' })]);
+    var v = CYL3D.create(stage, {
+      extent: 1.2, zRange: [-1.05, 1.15], grid: 'none', ui: ['iso', 'top', 'front', 'reset'],
+      camera: { azimuth: 32, elevation: 22, zoom: 1.05 }, ariaLabel: IDLE
+    });
+    (v.el || stage).appendChild(veil);
+    var content = v.group(), cur = null, revealed = false;
+    function norm(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]); }
+    function unit(a) { var n = norm(a) || 1; return [a[0] / n, a[1] / n, a[2] / n]; }
+    function radiusOf(p) {
+      var d = p.d || {};
+      switch (p.type) {
+        case 'rod': return d.l / 2;
+        case 'box': return 0.5 * Math.sqrt(d.a * d.a + d.b * d.b + d.c * d.c);
+        case 'plate': return 0.5 * Math.sqrt(d.a * d.a + d.b * d.b);
+        case 'cylinder': case 'tube': return Math.sqrt(d.r * d.r + d.h * d.h / 4);
+        case 'cone': return Math.sqrt(d.r * d.r + 0.5625 * d.h * d.h);
+        case 'disk': case 'ring': case 'sphere': case 'shell': return d.r;
+        default: return 0;
+      }
+    }
+    function idle() {
+      v.clear(content);
+      v.setAriaLabel(IDLE);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+      v.render();
+    }
+    function draw(vw) {
+      var items = vw.items, R0 = 0;
+      items.forEach(function (it) {
+        if (it.k === 'part') R0 = Math.max(R0, norm(it.part.center || [0, 0, 0]) + radiusOf(it.part));
+        if (it.k === 'pt') R0 = Math.max(R0, norm(it.at));
+      });
+      if (!(R0 > 1e-6)) R0 = 1;
+      var Rt = R0;
+      items.forEach(function (it) {
+        if (it.k === 'axis') Rt = Math.max(Rt, norm(it.through) + 1.3 * R0);
+        if (it.k === 'vec') Rt = Math.max(Rt, 1.15 * R0);
+      });
+      var k = 0.95 / Rt;                                  // world metres → view units
+      v.clear(content);
+      content.scale.setScalar(k);
+      items.forEach(function (it) {
+        if (it.k === 'part') {
+          INERT.draw(v, it.part, { parent: content, color: it.color || null, rodRadius: 0.022 / k, thin: 0.018 / k, plateThickness: 0.018 / k, pointSize: 0.045 / k, label: it.label || null });
+        } else if (it.k === 'axis') {
+          var u = unit(it.dir), c = it.through, L = norm(c) + 1.3 * R0;
+          var a = [c[0] - u[0] * L, c[1] - u[1] * L, c[2] - u[2] * L], b = [c[0] + u[0] * L, c[1] + u[1] * L, c[2] + u[2] * L];
+          v.line([a, b], { color: it.color || 'bad', width: 2.2, dashed: !!it.dashed, parent: content });
+          if (it.label) v.label(b, it.label, { color: it.color || 'bad', parent: content });
+        } else if (it.k === 'pt') {
+          v.point(it.at, { color: 'point', size: 0.03 / k, label: it.label || null, parent: content });
+        } else if (it.k === 'drop') {                      // dashed guides from a point down to the xy-plane and across to the axes
+          var P = it.at, F = [P[0], P[1], 0];
+          v.line([P, F], { color: 'muted', width: 1.2, dashed: true, parent: content });
+          v.line([[P[0], 0, 0], F, [0, P[1], 0]], { color: 'muted', width: 1.2, dashed: true, parent: content });
+        } else if (it.k === 'ell') {
+          var e = INERT.eig(it.T), V = e.vectors, s = e.values.map(function (x) { return 0.9 * R0 * Math.sqrt(e.values[2] / x); });
+          v.solid({ shape: 'ellipsoid', center: [0, 0, 0], size: s, rotation: [[V[0][0], V[1][0], V[2][0]], [V[0][1], V[1][1], V[2][1]], [V[0][2], V[1][2], V[2][2]]],
+            color: 'surface', opacity: 0.22, rings: true, segments: 64, parent: content });
+        } else if (it.k === 'vec') {
+          var w = unit(it.dir), Lv = 1.1 * R0;
+          v.arrow([0, 0, 0], [w[0] * Lv, w[1] * Lv, w[2] * Lv], { color: it.color, label: it.label || null, width: 0.018 / k, headLength: 0.09 / k, headRadius: 0.036 / k, parent: content });
+        }
+      });
+      v.setAriaLabel(vw.aria);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + (/\bview\b/.test(vw.note || '') ? '' : ' Drag to rotate the view.') });
+      panel.appendChild(n);
+      CYL.renderMath(n);
+      v.render();
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like pax-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

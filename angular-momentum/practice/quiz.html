@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Check Quiz · Angular Momentum</title>
+<meta name="description" content="Fifteen fixed questions on Lessons 1–8 of the angular momentum module, with a score, a worked solution for every question and a printable results sheet.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<style>
+  /* ---- Page-specific styles (design tokens only) ---- */
+  .quiz-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0;
+    list-style: none;
+  }
+  .quiz-facts > li {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .quiz-fact-value { display: block; font-size: 1.3rem; font-weight: 750; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .quiz-fact-label { display: block; margin-top: 2px; font-size: 0.84rem; color: var(--ink-muted); }
+
+  .quiz-rules { margin: 0; padding-left: 1.2em; }
+  .quiz-rules > li { margin: 0 0 0.45em; }
+  .quiz-rules > li:last-child { margin-bottom: 0; }
+  .quiz-subhead { margin: 0 0 8px; font-size: 1.02rem; font-weight: 700; }
+  .quiz-type-table { margin: 0; }
+  .quiz-type-table td code { white-space: nowrap; }
+
+  .quiz-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+  }
+  .quiz-toolbar-label { font-size: 0.84rem; font-weight: 650; color: var(--ink-muted); }
+  .quiz-host .q-set { margin-top: 0; }
+  .quiz-host .q-solution-body .quiz-review-link { margin-top: 0.6em; font-size: 0.9em; color: var(--ink-muted); }
+
+  .quiz-breakdown { margin: 18px 0 22px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .quiz-breakdown-title { margin: 0 0 4px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .quiz-breakdown-summary { margin: 0 0 10px; color: var(--ink-muted); font-size: 0.92rem; }
+  .quiz-breakdown .table-wrap { margin: 0; }
+  .quiz-breakdown td, .quiz-breakdown th { vertical-align: top; }
+  .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 7px 12px; }
+  /* table.data in module.css sets tbody th to 650: match its specificity so the muted titles stay regular weight */
+  .quiz-breakdown table.data tbody th { font-weight: 400; }
+  .quiz-breakdown table.data tbody th a { font-weight: 650; }
+  .quiz-breakdown .quiz-lesson-title { color: var(--ink-muted); }
+  .quiz-breakdown .quiz-score-cell { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Phones: the long lesson titles would wrap to 3–5 lines each; "Lesson N" (a link) is enough there */
+  @media (max-width: 560px) {
+    .quiz-breakdown .quiz-lesson-title { display: none; }
+    .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 6px 10px; }
+  }
+
+  .quiz-next { margin: 0; padding-left: 1.2em; }
+  .quiz-next > li { margin: 0 0 0.45em; }
+
+  @media print {
+    .quiz-toolbar { display: none !important; }
+    /* Printing before submitting gives every question on paper, whichever layout is on screen */
+    .quiz-host[data-state="open"] .q-set .q-card[hidden] { display: block !important; }
+    .quiz-host[data-state="open"] .q-set-dots,
+    .quiz-host[data-state="open"] .q-set-progress,
+    .quiz-host[data-state="open"] .q-set-confirm { display: none !important; }
+  }
+</style>
+</head>
+<body data-page="quiz" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 35 min</p>
+    <h1>Self-Check Quiz</h1>
+    <p class="lede">Fifteen questions on the core skills of Lessons 1–8: angular momentum of particles and systems, impulse and conservation, rigid bodies in plane motion, impact, 3D angular momentum, Euler's equations and gyroscopes. Submit to see your score and a worked solution for every question.</p>
+  </header>
+
+  <section id="before">
+    <h2>Before you start</h2>
+
+    <ul class="quiz-facts" aria-label="Quiz at a glance">
+      <li><span class="quiz-fact-value">15</span><span class="quiz-fact-label">questions</span></li>
+      <li><span class="quiz-fact-value">≈ 35 min</span><span class="quiz-fact-label">estimated time</span></li>
+      <li><span class="quiz-fact-value">L1–L8</span><span class="quiz-fact-label">lessons covered</span></li>
+      <li><span class="quiz-fact-value">Instant</span><span class="quiz-fact-label">score and solutions</span></li>
+    </ul>
+
+    <div class="two-col">
+      <div>
+        <p class="quiz-subhead">How it works</p>
+        <ul class="quiz-rules">
+          <li>Work on your own with a calculator and scrap paper. Try it without notes first: that shows you what you really know.</li>
+          <li>Nothing is marked until you press <strong>Submit quiz</strong>. Until then you can move between questions and change any answer.</li>
+          <li>Each question is either right or wrong. When a question has several boxes, every box must be right.</li>
+          <li>After you submit, you see your score, a review of every question with a worked solution, and a results sheet you can print or save as a PDF.</li>
+          <li id="quiz-l10-note">Use \(g = 9.81\ \text{m/s}^2\), and take counterclockwise as positive for angular momentum in the plane unless a question says otherwise.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="quiz-subhead">Typing answers</p>
+        <div class="table-wrap quiz-type-table">
+          <table class="data">
+            <caption class="visually-hidden">How to type common answers</caption>
+            <thead><tr><th scope="col">To enter</th><th scope="col">Type</th></tr></thead>
+            <tbody>
+              <tr><td>\(0.02(400)(0.9)\)</td><td><code>0.02*400*0.9</code></td></tr>
+              <tr><td>\(\tfrac13(5)(1.2)^2\)</td><td><code>5*1.2^2/3</code></td></tr>
+              <tr><td>\(\tfrac{6800}{9000}(8.2)\)</td><td><code>6800/9000*8.2</code></td></tr>
+              <tr><td>\(\sqrt{0.3^2 + 1.2^2}\)</td><td><code>sqrt(0.3^2+1.2^2)</code></td></tr>
+              <tr><td>\(-16.5\)</td><td><code>-16.5</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Each box shows how it read your entry (for example <span class="nowrap">= 7.2</span>), so you can check it before you submit. Type only the number; the unit is shown next to the box.</p>
+      </div>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">How close is close enough?</p>
+      <p>Answers are accepted within \(1\%\) of the exact value, so three or four significant figures are plenty. Typing the calculation itself, such as <code>0.02*400*0.9/(2.4+0.02*0.9^2)</code>, avoids rounding errors. Watch the sign of angular momentum in the plane: clockwise is negative.</p>
+    </aside>
+  </section>
+
+  <section id="quiz">
+    <h2>The quiz</h2>
+    <div class="quiz-toolbar" id="quiz-toolbar" hidden>
+      <span class="quiz-toolbar-label" id="quiz-layout-label">Show</span>
+      <div class="chip-row" role="group" aria-labelledby="quiz-layout-label">
+        <button type="button" class="chip" data-layout="paged" aria-pressed="true">One at a time</button>
+        <button type="button" class="chip" data-layout="all" aria-pressed="false">All on one page</button>
+      </div>
+    </div>
+    <div class="quiz-host" id="quiz-host"></div>
+    <noscript><p class="callout warning">This quiz needs JavaScript. Turn it on in your browser settings and reload the page.</p></noscript>
+  </section>
+
+  <section id="after">
+    <h2>After the quiz</h2>
+    <p>Use your results to decide what to do next. After you submit, the <strong>Results by lesson</strong> table under your score links straight to the lessons behind any questions you missed.</p>
+    <ul class="quiz-next">
+      <li>Missed a question? Read its worked solution, then revisit the lesson it points to.</li>
+      <li>Want more practice? The <a href="practice-lab.html">Practice Lab</a> generates unlimited problems on every skill in this quiz (particles, conservation, systems, rigid bodies in plane motion, impulse, impact and gyroscopic motion), each with hints and a full solution.</li>
+      <li>Prefer pen and paper? Try the <a href="worksheet.html">Printable Worksheet</a>.</li>
+      <li>Keep the <a href="../reference/cheat-sheet.html">Formula Sheet</a> next to you while you review.</li>
+      <li>Then press <strong>Retake quiz</strong> and aim for 15 out of 15.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ==========================================================================================
+   Self-Check Quiz: the 15 fixed questions.
+   Keep ids, order and choices stable.
+   Question order is fixed, and every mc question sets shuffle:false, so its choices appear on screen
+   exactly in the order listed here.
+   Standard CYLQuiz question fields (short = the title printed in the Question column of the results
+   sheet) plus custom fields that CYLQuiz ignores:
+     lesson       registry id of the lesson the question tests ('l01' … 'l08')
+     finalAnswer  the expected final answer (HTML with TeX), stated explicitly
+     choices[].aria  plain-text wording of a choice for screen readers
+   The numbers deliberately differ from every worked example and lesson check.
+   ========================================================================================== */
+window.CYL_QUIZ_QUESTIONS = (function () {
+  'use strict';
+  var T = String.raw;
+  function review(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return '<p class="quiz-review-link">Review: <a href="' + CYL.url(p.href) + '">Lesson ' + p.num + ' · ' + p.title + '</a></p>';
+  }
+  function nb(tex) { return '\\nobreak{' + tex + '}'; }
+  var AB = '\\allowbreak ';
+  var q10 = 0.01 * 500 * 0.8 / (12 * 0.81 / 3 + 0.01 * 0.64);
+
+  return [
+    /* ---------- Q1 · Lesson 1 · particle in the plane ---------- */
+    {
+      id: 'quiz-q01', lesson: 'l01', type: 'numeric', unit: 'kg·m²/s',
+      short: 'Angular momentum of a particle in the plane',
+      prompt: T`A \(1.5\ \text{kg}\) particle is at \((-2,\ 1)\ \text{m}\) and moves with \(\vvec = 3\,\ihat + 4\,\jhat\ \text{m/s}\). Find its angular momentum about the origin (counterclockwise positive).`,
+      label: T`\(H_O =\)`, answer: -16.5, answerTex: T`-16.5\ \text{kg·m}^2/\text{s}`,
+      finalAnswer: T`\(H_O = -16.5\ \text{kg·m}^2/\text{s}\) (clockwise)`,
+      explain: T`<p>\(H_O = m(x v_y - y v_x)\).</p>`,
+      solution: T`\[ H_O = 1.5\left[(-2)(4) - (1)(3)\right] = 1.5(-11) = -16.5\ \text{kg·m}^2/\text{s} \]<p>Negative: clockwise.</p>` + review('l01')
+    },
+
+    /* ---------- Q2 · Lesson 1 · straight-line motion ---------- */
+    {
+      id: 'quiz-q02', lesson: 'l01', type: 'mc', shuffle: false,
+      short: 'A car on a straight road, about a lamppost',
+      prompt: T`A car drives at constant speed along a straight road. How does its angular momentum about a lamppost \(10\ \text{m}\) from the road change as it passes?`,
+      choices: [
+        { html: T`It increases as the car approaches and decreases as it leaves`, aria: 'It increases as the car approaches and decreases as it leaves', feedback: T`The moment arm is the distance from the post to the road, which never changes.` },
+        { html: T`It stays constant`, aria: 'It stays constant', correct: true },
+        { html: T`It is zero when the car is level with the post`, aria: 'It is zero when the car is level with the post', feedback: T`There \(\rvec \perp \vvec\) and \(H = m v r\) with \(r = 10\ \text{m}\): the same value as always.` },
+        { html: T`It changes sign as the car passes the post`, aria: 'It changes sign as the car passes the post', feedback: T`The car keeps turning the same way about the post: the sign does not change.` }
+      ],
+      finalAnswer: T`B: constant, \(H = m v (10\ \text{m})\)`,
+      explain: T`<p>\(H_O = m v d\), and \(d\) is the fixed distance from the post to the line of motion.</p>`,
+      solution: T`<p>\(H_O = m v d\) with \(d = 10\ \text{m}\), the perpendicular distance from the post to the road. Speed and \(d\) are constant, so \(H_O\) is constant. (No force with a moment about the post acts on the car in the horizontal plane.)</p>` + review('l01')
+    },
+
+    /* ---------- Q3 · Lesson 2 · orbit ---------- */
+    {
+      id: 'quiz-q03', lesson: 'l02', type: 'numeric', unit: 'km/s',
+      short: 'Speed at apogee from conservation of H',
+      prompt: T`A satellite passes perigee \(6800\ \text{km}\) from the Earth's center at \(8.2\ \text{km/s}\). Its apogee is \(9000\ \text{km}\) from the center. Find its speed at apogee.`,
+      label: T`\(v_a =\)`, answer: 6800 * 8.2 / 9000, answerTex: T`6.196\ \text{km/s}`,
+      finalAnswer: T`\(v_a = 6800(8.2)/9000 = 6.196\ \text{km/s}\)`,
+      explain: T`<p>Gravity is central: \(r_p v_p = r_a v_a\).</p>`,
+      solution: T`\[ v_a = \frac{r_p}{r_a}\,v_p = \frac{6800}{9000}(8.2) = 6.196\ \text{km/s} \]` + review('l02')
+    },
+
+    /* ---------- Q4 · Lesson 2 · angular impulse ---------- */
+    {
+      id: 'quiz-q04', lesson: 'l02', type: 'numeric', unit: 'rad/s',
+      short: 'Spin-up of a mass on a light arm',
+      prompt: T`A \(2\ \text{kg}\) particle on a light arm \(0.4\ \text{m}\) long turns in a horizontal plane. Starting from rest, a constant moment of \(5\ \text{N·m}\) about the axis acts for \(2\ \text{s}\). Find the final angular velocity.`,
+      label: T`\(\omega =\)`, answer: 31.25, answerTex: T`31.25\ \text{rad/s}`,
+      finalAnswer: T`\(\omega = 10/(2 \cdot 0.16) = 31.25\ \text{rad/s}\)`,
+      explain: T`<p>\(0 + M\,\Delta t = m r^2\omega\).</p>`,
+      solution: T`\[ 5(2) = 2(0.4)^2\,\omega \quad\Rightarrow\quad \omega = \frac{10}{0.32} = 31.25\ \text{rad/s} \]` + review('l02')
+    },
+
+    /* ---------- Q5 · Lesson 3 · system split ---------- */
+    {
+      id: 'quiz-q05', lesson: 'l03', type: 'fields',
+      short: 'H of two particles about O and about G',
+      prompt: T`A \(3\ \text{kg}\) particle at \((0,\ 1)\ \text{m}\) moves at \(2\,\ihat\ \text{m/s}\); a \(1\ \text{kg}\) particle at \((2,\ 0)\ \text{m}\) moves at \(4\,\jhat\ \text{m/s}\). Find the system's angular momentum about the origin and about its center of mass (counterclockwise positive).`,
+      fields: [
+        { name: 'ho', label: T`\(H_O =\)`, answer: 2, unit: 'kg·m²/s', answerTex: nb(T`2\ \text{kg·m}^2/\text{s}`) },
+        { name: 'hg', label: T`\(${AB}H_G =\)`, ariaLabel: 'H G', answer: 4.5, unit: 'kg·m²/s', answerTex: nb(T`4.5\ \text{kg·m}^2/\text{s}`) }
+      ],
+      finalAnswer: T`\(H_O = 2\), \(H_G = 4.5\ \text{kg·m}^2/\text{s}\)`,
+      explain: T`<p>\(H_O = \sum m(x v_y - y v_x)\), then \(H_G = H_O - \rvec_G \times m\vvec_G\).</p>`,
+      solution: T`\[ H_O = 3\left[0 - 1(2)\right] + 1\left[2(4) - 0\right] = -6 + 8 = 2\ \text{kg·m}^2/\text{s} \]
+<p>\(\rvec_G = (0.5,\ 0.75)\ \text{m}\), \(\vvec_G = (1.5,\ 1)\ \text{m/s}\), so \(\rvec_G \times m\vvec_G = 4\left[0.5(1) - 0.75(1.5)\right] = -2.5\).</p>
+\[ H_G = 2 - (-2.5) = 4.5\ \text{kg·m}^2/\text{s} \]` + review('l03')
+    },
+
+    /* ---------- Q6 · Lesson 3 · arms out ---------- */
+    {
+      id: 'quiz-q06', lesson: 'l03', type: 'mc', shuffle: false,
+      short: 'An astronaut spinning with arms out',
+      prompt: T`An astronaut floating in a space station spins slowly about their own center of mass with arms tucked in, then stretches both arms out. What happens?`,
+      choices: [
+        { html: T`\(\omega\) decreases, \(H_G\) stays the same, and the kinetic energy decreases`, aria: 'omega decreases, H G stays the same, and the kinetic energy decreases', correct: true },
+        { html: T`\(\omega\) stays the same, and \(H_G\) increases`, aria: 'omega stays the same, and H G increases', feedback: T`No external moment acts about \(G\): \(H_G\) cannot change.` },
+        { html: T`\(\omega\) decreases, and the kinetic energy stays the same`, aria: 'omega decreases, and the kinetic energy stays the same', feedback: T`\(T = H_G^2/(2I)\) falls as \(I\) grows.` },
+        { html: T`Nothing changes, because the arm forces are internal`, aria: 'Nothing changes, because the arm forces are internal', feedback: T`Internal forces cannot change \(H_G\), but they change \(I\) and so \(\omega\).` }
+      ],
+      finalAnswer: T`A: \(\omega\) and \(T\) decrease; \(H_G\) is conserved`,
+      explain: T`<p>No external moment: \(H_G = I\omega\) is conserved while \(I\) grows.</p>`,
+      solution: T`<p>With no external moment about \(G\), \(H_G = I\omega\) is constant. Stretching the arms out increases \(I\), so \(\omega\) falls, and \(T = \tfrac12 I\omega^2 = H_G^2/(2I)\) falls too: the arm muscles absorb energy.</p>` + review('l03')
+    },
+
+    /* ---------- Q7 · Lesson 4 · rolling sphere ---------- */
+    {
+      id: 'quiz-q07', lesson: 'l04', type: 'numeric', unit: 'kg·m²/s',
+      short: 'A rolling sphere about its contact point',
+      prompt: T`A \(5\ \text{kg}\) solid sphere of radius \(0.1\ \text{m}\) rolls without slipping at \(v_G = 2\ \text{m/s}\). Find the magnitude of its angular momentum about the contact point.`,
+      label: T`\(|H_C| =\)`, answer: 1.4, answerTex: T`1.40\ \text{kg·m}^2/\text{s}`,
+      finalAnswer: T`\(|H_C| = I_C\omega = 1.40\ \text{kg·m}^2/\text{s}\)`,
+      explain: T`<p>About the contact point, \(H_C = I_C\omega\) with \(I_C = \tfrac25 mr^2 + mr^2\).</p>`,
+      solution: T`\[ \omega = \frac{2}{0.1} = 20\ \text{rad/s}, \qquad I_C = \tfrac75(5)(0.1)^2 = 0.070\ \text{kg·m}^2, \qquad |H_C| = 0.070(20) = 1.40\ \text{kg·m}^2/\text{s} \]
+<p>Check: \(I_G\omega + m v_G r = 0.02(20) + 5(2)(0.1) = 0.4 + 1.0 = 1.4\).</p>` + review('l04')
+    },
+
+    /* ---------- Q8 · Lesson 4 · H about a point ---------- */
+    {
+      id: 'quiz-q08', lesson: 'l04', type: 'numeric', unit: 'kg·m²/s',
+      short: 'H of a moving, spinning disk about a point below it',
+      prompt: T`A \(4\ \text{kg}\) disk of radius \(0.2\ \text{m}\) spins counterclockwise at \(10\ \text{rad/s}\) while its center moves to the right at \(3\ \text{m/s}\). Find its angular momentum about a point \(A\) that is \(0.5\ \text{m}\) directly below its center (counterclockwise positive).`,
+      label: T`\(H_A =\)`, answer: -5.2, answerTex: T`-5.2\ \text{kg·m}^2/\text{s}`,
+      finalAnswer: T`\(H_A = 0.8 - 6.0 = -5.2\ \text{kg·m}^2/\text{s}\)`,
+      explain: T`<p>\(H_A = I_G\omega + (\rvec_{G/A} \times m\vvec_G)_z\).</p>`,
+      solution: T`\[ I_G\omega = \tfrac12(4)(0.2)^2(10) = 0.80, \qquad (\rvec_{G/A} \times m\vvec_G)_z = 0(0) - 0.5(12) = -6.0 \]
+\[ H_A = 0.80 - 6.0 = -5.20\ \text{kg·m}^2/\text{s} \]
+<p>The momentum \(12\ \text{kg·m/s}\) to the right, \(0.5\ \text{m}\) above \(A\), turns clockwise about it.</p>` + review('l04')
+    },
+
+    /* ---------- Q9 · Lesson 5 · clutch ---------- */
+    {
+      id: 'quiz-q09', lesson: 'l05', type: 'numeric', unit: 'rad/s',
+      short: 'Two shafts coupled by a clutch',
+      prompt: T`Shaft \(A\) (\(I = 0.3\ \text{kg·m}^2\)) turns at \(200\ \text{rad/s}\) and shaft \(B\) (\(I = 0.5\ \text{kg·m}^2\)) at \(40\ \text{rad/s}\) in the same direction. A clutch couples them. Find their common angular velocity.`,
+      label: T`\(\omega =\)`, answer: 100, answerTex: T`100\ \text{rad/s}`,
+      finalAnswer: T`\(\omega = (60 + 20)/0.8 = 100\ \text{rad/s}\)`,
+      explain: T`<p>The clutch moments are internal: total angular momentum about the axis is conserved.</p>`,
+      solution: T`\[ 0.3(200) + 0.5(40) = 0.8\,\omega \quad\Rightarrow\quad \omega = 100\ \text{rad/s} \]` + review('l05')
+    },
+
+    /* ---------- Q10 · Lesson 5 · bullet into a door ---------- */
+    {
+      id: 'quiz-q10', lesson: 'l05', type: 'numeric', unit: 'rad/s',
+      short: 'A bullet embeds in a hinged door',
+      prompt: T`A \(12\ \text{kg}\) door, \(0.9\ \text{m}\) wide, hangs on vertical hinges. A \(10\ \text{g}\) bullet travelling at \(500\ \text{m/s}\), perpendicular to the door, embeds in it \(0.8\ \text{m}\) from the hinges. Find the door's angular velocity just after the impact. (Treat the door as a thin plate: \(I_\text{hinge} = \tfrac13 m w^2\).)`,
+      label: T`\(\omega =\)`, answer: q10, answerTex: T`1.232\ \text{rad/s}`,
+      finalAnswer: T`\(\omega = 4/3.2464 = 1.232\ \text{rad/s}\)`,
+      explain: T`<p>Angular momentum about the hinge axis is conserved during the impact.</p>`,
+      solution: T`\[ m_b v_b d = \left(\tfrac13(12)(0.9)^2 + m_b d^2\right)\omega \quad\Rightarrow\quad 0.01(500)(0.8) = (3.24 + 0.0064)\,\omega \quad\Rightarrow\quad \omega = 1.232\ \text{rad/s} \]` + review('l05')
+    },
+
+    /* ---------- Q11 · Lesson 6 · H in principal axes ---------- */
+    {
+      id: 'quiz-q11', lesson: 'l06', type: 'fields',
+      short: 'H of a body in principal axes',
+      prompt: T`A rotor has principal moments \(I_x = I_y = 5\ \text{kg·m}^2\) and \(I_z = 2\ \text{kg·m}^2\) about its center of mass. It turns at \(\wvec = \ihat + 10\,\khat\ \text{rad/s}\). Find \(H_x\) and \(H_z\).`,
+      fields: [
+        { name: 'hx', label: T`\(H_x =\)`, answer: 5, unit: 'kg·m²/s', answerTex: nb(T`5\ \text{kg·m}^2/\text{s}`) },
+        { name: 'hz', label: T`\(${AB}H_z =\)`, ariaLabel: 'H z', answer: 20, unit: 'kg·m²/s', answerTex: nb(T`20\ \text{kg·m}^2/\text{s}`) }
+      ],
+      finalAnswer: T`\(\Hvec_G = 5\,\ihat + 20\,\khat\ \text{kg·m}^2/\text{s}\)`,
+      explain: T`<p>In principal axes \(\Hvec = (I_x\omega_x,\ I_y\omega_y,\ I_z\omega_z)\).</p>`,
+      solution: T`\[ H_x = 5(1) = 5, \qquad H_z = 2(10) = 20\ \text{kg·m}^2/\text{s} \]
+<p>\(\wvec\) is \(5.7^\circ\) from \(z\); \(\Hvec\) is \(14.0^\circ\) from it: not parallel.</p>` + review('l06')
+    },
+
+    /* ---------- Q12 · Lesson 6 · kinetic energy ---------- */
+    {
+      id: 'quiz-q12', lesson: 'l06', type: 'numeric', unit: 'J',
+      short: 'Kinetic energy of a spinning, precessing rotor',
+      prompt: T`A rotor turns about a fixed point \(O\) with principal moments \(0.2\ \text{kg·m}^2\) about its spin axis \(x\) and \(0.5\ \text{kg·m}^2\) about the transverse axes through \(O\). At an instant \(\wvec = 20\,\ihat + 3\,\khat\ \text{rad/s}\). Find its kinetic energy.`,
+      label: T`\(T =\)`, answer: 42.25, answerTex: T`42.25\ \text{J}`,
+      finalAnswer: T`\(T = \tfrac12(80 + 4.5) = 42.25\ \text{J}\)`,
+      explain: T`<p>About a fixed point, \(T = \tfrac12(I_x\omega_x^2 + I_y\omega_y^2 + I_z\omega_z^2)\) in principal axes.</p>`,
+      solution: T`\[ T = \tfrac12\left[0.2(20)^2 + 0.5(3)^2\right] = \tfrac12(80 + 4.5) = 42.25\ \text{J} \]` + review('l06')
+    },
+
+    /* ---------- Q13 · Lesson 7 · Euler ---------- */
+    {
+      id: 'quiz-q13', lesson: 'l07', type: 'numeric', unit: 'N·m',
+      short: 'Moment needed for steady rotation (Euler)',
+      prompt: T`A body with principal moments \(I_x = 2\), \(I_y = 3\), \(I_z = 4\ \text{kg·m}^2\) about \(G\) rotates with a constant \(\wvec = 4\,\jhat + 5\,\khat\ \text{rad/s}\) in body axes. Find \(M_x\), the moment about \(x\) needed to keep this motion.`,
+      label: T`\(M_x =\)`, answer: 20, answerTex: T`20\ \text{N·m}`,
+      finalAnswer: T`\(M_x = -(3 - 4)(4)(5) = 20\ \text{N·m}\)`,
+      explain: T`<p>Euler: \(M_x = I_x\dot\omega_x - (I_y - I_z)\omega_y\omega_z\), with \(\dot\omega_x = 0\).</p>`,
+      solution: T`\[ M_x = 2(0) - (3 - 4)(4)(5) = 20\ \text{N·m} \]<p>Steady rotation about a non-principal direction still needs a moment.</p>` + review('l07')
+    },
+
+    /* ---------- Q14 · Lesson 8 · gyroscope ---------- */
+    {
+      id: 'quiz-q14', lesson: 'l08', type: 'numeric', unit: 'rad/s',
+      short: 'Precession rate of a gyroscope',
+      prompt: T`A \(0.6\ \text{kg}\) gyroscope is supported at one end of its horizontal axle, with its center of mass \(0.05\ \text{m}\) from the support. Its rotor has \(I_z = 0.004\ \text{kg·m}^2\) and spins at \(250\ \text{rad/s}\). Find the precession rate.`,
+      label: T`\(\Omega =\)`, answer: 0.2943, answerTex: T`0.2943\ \text{rad/s}`,
+      finalAnswer: T`\(\Omega = m g r/(I_z\omega_s) = 0.2943\ \text{rad/s}\)`,
+      explain: T`<p>Axle horizontal: \(m g r = I_z\Omega\omega_s\).</p>`,
+      solution: T`\[ \Omega = \frac{0.6(9.81)(0.05)}{0.004(250)} = \frac{0.2943}{1.0} = 0.2943\ \text{rad/s} \]` + review('l08')
+    },
+
+    /* ---------- Q15 · Lesson 8 · torque-free ---------- */
+    {
+      id: 'quiz-q15', lesson: 'l08', type: 'mc', shuffle: false,
+      short: 'Precession of a spinning coin in the air',
+      prompt: T`A coin (a thin disk, \(I_z = 2I\)) is flipped so that it spins and wobbles in the air. Ignoring air resistance, how does its axis move?`,
+      choices: [
+        { html: T`It precesses steadily about the fixed \(\Hvec_G\), in the retrograde sense`, aria: 'It precesses steadily about the fixed H G, in the retrograde sense', correct: true },
+        { html: T`It precesses about \(\Hvec_G\) in the direct sense`, aria: 'It precesses about H G in the direct sense', feedback: T`Direct precession needs \(I > I_z\), a long body. A coin is flat.` },
+        { html: T`It stays fixed in space`, aria: 'It stays fixed in space', feedback: T`Only if it spins exactly about its symmetry axis; here it wobbles.` },
+        { html: T`\(\Hvec_G\) itself precesses because gravity acts`, aria: 'H G itself precesses because gravity acts', feedback: T`Gravity acts at \(G\): no moment about \(G\), so \(\Hvec_G\) is fixed.` }
+      ],
+      finalAnswer: T`A: steady retrograde precession about the fixed \(\Hvec_G\)`,
+      explain: T`<p>Torque-free: \(\Hvec_G\) fixed; \(I \lt I_z\) gives retrograde precession.</p>`,
+      solution: T`<p>Gravity acts at \(G\), so \(\Hvec_G\) is constant. The axis precesses about it at \(\dot\phi = H_G/I\), and since \(\dot\psi = \frac{I - I_z}{I I_z}H_G\cos\theta \lt 0\) when \(I \lt I_z\), spin and precession have opposite senses: retrograde.</p>` + review('l08')
+    }
+  ];
+})();
+</script>
+
+<script>
+/* ---------- The quiz: CYLQuiz.set in quiz mode, with a paged / all-on-one-page layout switch ---------- */
+CYL.ready(function () {
+  'use strict';
+  var QUESTIONS = window.CYL_QUIZ_QUESTIONS;
+  var host = document.getElementById('quiz-host');
+  var toolbar = document.getElementById('quiz-toolbar');
+  var chips = Array.prototype.slice.call(toolbar.querySelectorAll('[data-layout]'));
+  var l10Note = document.getElementById('quiz-l10-note');
+  var LAYOUT_KEY = 'quiz:selfcheck:layout';
+  var STORAGE_KEY = 'selfcheck-v1';       // bump if the questions ever change (saved answers are keyed by it)
+
+  // Rules list: add a line about saving (only when the browser really keeps it across reloads).
+  if (CYL.store.available()) {
+    l10Note.parentNode.insertBefore(CYL.el('li', {
+      text: 'Your answers are saved in this browser as you go, so reloading the page does not lose them.'
+    }), l10Note);
+  }
+
+  var layout = CYL.store.get(LAYOUT_KEY, 'paged') === 'all' ? 'all' : 'paged';
+  var set = null;
+
+  function build() {
+    var responses = null;
+    if (set) {
+      responses = set.questions.map(function (q) { return q.getResponse(); });
+      set.el.parentNode.removeChild(set.el);
+    }
+    set = CYLQuiz.set(host, QUESTIONS, {
+      mode: 'quiz',
+      layout: layout,
+      storageKey: STORAGE_KEY,
+      intro: 'Answer in any order and change answers freely: nothing is marked until you press <strong>Submit quiz</strong>.',
+      onComplete: function () { refresh(); }
+    });
+    // The previous layout's answers win over the (possibly 250 ms old) saved copy.
+    if (responses) set.questions.forEach(function (q, i) { q.setResponse(responses[i]); });
+    var retake = set.retake;
+    set.retake = function () { var r = retake.apply(set, arguments); refresh(); return r; };
+    refresh();
+  }
+
+  // The layout switch only matters before submitting (the review always lists every question).
+  function refresh() {
+    var done = set.isSubmitted();
+    toolbar.hidden = done;
+    host.setAttribute('data-state', done ? 'submitted' : 'open');   // print CSS: before submitting, print every question
+    var intro = set.el.querySelector('.q-set-intro');           // "nothing is marked until…" no longer applies
+    if (intro) intro.hidden = done;
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-layout') === layout ? 'true' : 'false'); });
+    labelChoices();
+    if (done) renderBreakdown();
+  }
+
+  /* Accessible names for the radio buttons and checkboxes. CYLQuiz names each one from its <label>, but
+     browsers take little or no text from KaTeX output (Chrome gives "" for \(5\ \text{m}\)), so every choice
+     spec carries a plain-text 'aria' string. After submitting, the review tag ("Correct answer", "Your
+     answer") is added to the name, as it is to the visible label. */
+  var SPEC_BY_ID = {};
+  QUESTIONS.forEach(function (q) { SPEC_BY_ID[q.id] = q; });
+  function labelChoices() {
+    Array.prototype.forEach.call(set.el.querySelectorAll('.q-card'), function (card) {
+      var spec = SPEC_BY_ID[card.getAttribute('data-qid')];
+      if (!spec || !spec.choices) return;
+      Array.prototype.forEach.call(card.querySelectorAll('.q-choice'), function (lab) {
+        var input = lab.querySelector('input');
+        var c = input && spec.choices[+input.value];
+        if (!c || !c.aria) return;
+        var tag = lab.querySelector('.q-choice-tag');
+        input.setAttribute('aria-label', c.aria + (tag ? ' (' + tag.textContent + ')' : ''));
+      });
+    });
+  }
+
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      var want = c.getAttribute('data-layout');
+      if (want === layout || set.isSubmitted()) return;
+      layout = want;
+      CYL.store.set(LAYOUT_KEY, layout);
+      build();
+      c.focus();
+    });
+  });
+
+  /* Results by lesson: a small table added to the score summary after submitting. */
+  function lessonInfo(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return p ? { num: p.num, title: p.title, href: CYL.url(p.href) } : { num: '', title: id, href: '#' };
+  }
+  function renderBreakdown() {
+    var results = set.el.querySelector('.q-set-results');
+    if (!results) return;
+    var old = results.querySelector('.quiz-breakdown');
+    if (old) old.parentNode.removeChild(old);
+
+    var sc = set.score();
+    var groups = [], byId = {};
+    sc.results.forEach(function (r) {
+      var id = QUESTIONS[r.index].lesson;
+      if (!byId[id]) { byId[id] = { id: id, nums: [], correct: 0 }; groups.push(byId[id]); }
+      byId[id].nums.push(r.position + 1);
+      if (r.correct) byId[id].correct += 1;
+    });
+
+    var tbody = CYL.el('tbody');
+    var toReview = [];
+    groups.forEach(function (g) {
+      var info = lessonInfo(g.id);
+      var all = g.correct === g.nums.length;
+      if (!all) toReview.push('<a href="' + info.href + '">Lesson ' + info.num + '</a>');
+      tbody.appendChild(CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'row', html: '<a href="' + info.href + '">Lesson ' + info.num + '</a>' +
+          ' <span class="quiz-lesson-title">· ' + info.title + '</span>' }),
+        CYL.el('td', { text: g.nums.join(', ') }),
+        CYL.el('td', { class: 'quiz-score-cell ' + (all ? 'c-good' : 'c-bad'),
+          text: (all ? '✓ ' : '✗ ') + g.correct + ' of ' + g.nums.length })
+      ]));
+    });
+
+    var table = CYL.el('table', { class: 'data' }, [
+      CYL.el('caption', { class: 'visually-hidden', text: 'Quiz results grouped by lesson' }),
+      CYL.el('thead', {}, [CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'col', text: 'Lesson' }),
+        CYL.el('th', { scope: 'col', text: 'Questions' }),
+        CYL.el('th', { scope: 'col', text: 'Correct' })
+      ])]),
+      tbody
+    ]);
+    var summary = toReview.length
+      ? 'Revisit ' + (toReview.length === 1 ? toReview[0] : toReview.slice(0, -1).join(', ') + ' and ' + toReview[toReview.length - 1]) +
+        ', then open the worked solutions below.'
+      : 'Every lesson is fully correct. Well done.';
+    var box = CYL.el('div', { class: 'quiz-breakdown' }, [
+      CYL.el('p', { class: 'quiz-breakdown-title', text: 'Results by lesson' }),
+      CYL.el('p', { class: 'quiz-breakdown-summary', html: summary }),
+      CYL.el('div', { class: 'table-wrap' }, [table])
+    ]);
+    // Above the name / print row, so the "Show only questions I missed" chip stays next to the cards it filters.
+    var namebox = results.querySelector('.q-set-namebox');
+    results.insertBefore(box, namebox || results.querySelector('.q-set-review-note') || null);
+  }
+
+  build();
+  toolbar.hidden = set.isSubmitted();
+});
+</script>
+</body>
+</html>

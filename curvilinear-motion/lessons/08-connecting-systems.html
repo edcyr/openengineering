@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connecting x–y and n–t Components · Curvilinear Motion</title>
+<meta name="description" content="Converting between rectangular and path components: u_t = v/v, a_t = a·v/v, a_n = |v × a|/v, the radius of curvature from x–y data, and turning n–t components back into x and y.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+</head>
+<body data-page="l08" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 8 · 35 min</p>
+    <h1>Connecting x–y and n–t Components</h1>
+    <p class="lede">Rectangular and path components are two descriptions of the same vectors. Real problems often hand you one and ask about the other: a projectile (natural in \(x\)–\(y\)) whose path curvature you need, or a car (natural in \(n\)–\(t\)) whose acceleration you want on a map. This lesson is the bridge.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Write \(\et\) and \(\en\) in terms of \(\ihat\) and \(\jhat\) from the velocity.</li>
+      <li>Convert \(x\)–\(y\) acceleration components to \(a_t\) and \(a_n\) using the dot and cross products, and find \(\rho\).</li>
+      <li>Decide from \(\avec\cdot\vvec\) whether a particle is speeding up or slowing down.</li>
+      <li>Convert \(a_t\) and \(a_n\) back to \(a_x\) and \(a_y\) for a known direction of travel.</li>
+    </ul>
+  </section>
+
+  <section id="xy-to-nt">
+    <h2>From \(x\)–\(y\) to \(n\)–\(t\)</h2>
+    <p>Suppose you know \(\vvec = v_x\ihat + v_y\jhat\) and \(\avec = a_x\ihat + a_y\jhat\) at some instant. The tangent direction is the direction of the velocity, so</p>
+    \[ \et = \frac{\vvec}{v} = \frac{v_x\,\ihat + v_y\,\jhat}{v}, \qquad v = \sqrt{v_x^2 + v_y^2} \]
+    <p>The tangential acceleration is the part of \(\avec\) along \(\et\), a dot product. The normal acceleration is the part perpendicular to \(\et\); in the plane it is found with the "cross product" \(v_x a_y - v_y a_x\) (the size of \(\vvec \times \avec\)):</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Rectangular to path components</p>
+      \[ a_t = \avec\cdot\et = \frac{v_x a_x + v_y a_y}{v}, \qquad a_n = \frac{|v_x a_y - v_y a_x|}{v} = \sqrt{|\avec|^2 - a_t^2} \]
+      \[ \rho = \frac{v^2}{a_n} \]
+      <p>\(\en\) is \(\et\) turned \(90^\circ\): \(\en = (-v_y\,\ihat + v_x\,\jhat)/v\) if \(v_x a_y - v_y a_x \gt 0\) (the path turns counter-clockwise), and the opposite vector if it is negative.</p>
+    </div>
+
+    <p>The sign of \(a_t\), and so of \(\avec\cdot\vvec\), tells you what the speed is doing:</p>
+    <ul>
+      <li>\(\avec\cdot\vvec \gt 0\): \(\avec\) has a forward part, and the particle is <strong>speeding up</strong>.</li>
+      <li>\(\avec\cdot\vvec \lt 0\): \(\avec\) has a backward part, and it is <strong>slowing down</strong>.</li>
+      <li>\(\avec\cdot\vvec = 0\): \(\avec \perp \vvec\), and the speed is momentarily <strong>steady</strong>.</li>
+    </ul>
+
+    <figure class="figure" aria-labelledby="fig81-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig81-stage"></div>
+        <div class="viz-controls" id="fig81-controls"></div>
+      </div>
+      <figcaption id="fig81-cap"><strong>Figure 8.1</strong> Drag the tips of \(\vvec\) (green) and \(\avec\) (red). The acceleration splits into \(a_t\) along \(\vvec\) (violet) and \(a_n\) across it (orange), and \(a_n\) fixes the curvature of the path: the dashed arc is the osculating circle, with \(\rho = v^2/a_n\). Make \(\avec\) perpendicular to \(\vvec\) for pure turning, or parallel to it for a straight path.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 8.1 — A projectile described in path coordinates</p>
+      <p>A ball is launched at \(25\ \text{m/s}\), \(40^\circ\) above the horizontal. One second later, find its tangential and normal accelerations and the radius of curvature of its path.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Rectangular components at \(t = 1\ \text{s}\).</strong></p>
+          \[ \begin{aligned}
+            v_x &= 25\cos 40^\circ = 19.15\ \text{m/s}, & a_x &= 0 \\
+            v_y &= 25\sin 40^\circ - 9.81(1) = 6.260\ \text{m/s}, & a_y &= -9.81\ \text{m/s}^2
+          \end{aligned} \]
+          \[ v = \sqrt{19.15^2 + 6.260^2} = 20.15\ \text{m/s} \]
+          <p><strong>Tangential.</strong></p>
+          \[ a_t = \frac{v_x a_x + v_y a_y}{v} = \frac{0 + 6.260(-9.81)}{20.15} = -3.048\ \text{m/s}^2 \]
+          <p>Negative: the ball is still climbing, so gravity is slowing it down.</p>
+          <p><strong>Normal.</strong></p>
+          \[ a_n = \frac{|v_x a_y - v_y a_x|}{v} = \frac{|19.15(-9.81) - 0|}{20.15} = 9.325\ \text{m/s}^2 \]
+          <p>Check: \(\sqrt{3.048^2 + 9.325^2} = 9.81\ \text{m/s}^2 = g\). ✓</p>
+          <p><strong>Radius of curvature.</strong> \(\rho = v^2/a_n = 20.15^2/9.325 = 43.54\ \text{m}\). (At the top of the flight it would be \(19.15^2/9.81 = 37.39\ \text{m}\): the parabola is tightest at its peak.)</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 8.2 — The robot gripper again</p>
+      <p>In Example 3.1, the gripper had \(\vvec = 6\ihat + 10\jhat\ \text{m/s}\) and \(\avec = 6\ihat + 6\jhat\ \text{m/s}^2\) at \(t = 2\ \text{s}\). Find \(a_t\), \(a_n\) and \(\rho\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ v = \sqrt{136} = 11.66\ \text{m/s} \]
+          \[ a_t = \frac{6(6) + 10(6)}{11.66} = 8.232\ \text{m/s}^2, \qquad a_n = \frac{|6(6) - 10(6)|}{11.66} = \frac{24}{11.66} = 2.058\ \text{m/s}^2 \]
+          \[ \rho = \frac{v^2}{a_n} = \frac{136}{2.058} = 66.08\ \text{m} \]
+          <p>\(v_x a_y - v_y a_x = -24 \lt 0\): the path is turning clockwise, to the right of the direction of travel, and the gripper is speeding up strongly (\(a_t \gt 0\)).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="nt-to-xy">
+    <h2>From \(n\)–\(t\) back to \(x\)–\(y\)</h2>
+    <p>Now suppose you know \(a_t\) and \(a_n\) and the direction of travel \(\psi\) (measured counter-clockwise from \(+x\)). Write both unit vectors in rectangular form and add:</p>
+    \[ \et = \cos\psi\,\ihat + \sin\psi\,\jhat, \qquad \en = \pm\left(-\sin\psi\,\ihat + \cos\psi\,\jhat\right) \]
+    <p>with \(+\) for a left (counter-clockwise) turn and \(-\) for a right turn. Then \(\avec = a_t\,\et + a_n\,\en\). For a left turn:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Path to rectangular components (turning left, counter-clockwise)</p>
+      \[ a_x = a_t\cos\psi - a_n\sin\psi, \qquad a_y = a_t\sin\psi + a_n\cos\psi \]
+      <p>For a right turn, change the sign of every \(a_n\) term.</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 8.3 — A car on a map</p>
+      <p>A car heading \(30^\circ\) north of east is turning left, with \(a_t = 2\ \text{m/s}^2\) and \(a_n = 3\ \text{m/s}^2\). With \(x\) east and \(y\) north, find \(a_x\) and \(a_y\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>\(\psi = 30^\circ\), left turn:</p>
+          \[ \begin{aligned}
+            a_x &= 2\cos 30^\circ - 3\sin 30^\circ = 1.732 - 1.5 = 0.232\ \text{m/s}^2 \\
+            a_y &= 2\sin 30^\circ + 3\cos 30^\circ = 1 + 2.598 = 3.598\ \text{m/s}^2
+          \end{aligned} \]
+          <p>Check: \(\sqrt{0.232^2 + 3.598^2} = 3.606 = \sqrt{2^2 + 3^2}\ \text{m/s}^2\). ✓ The size of a vector does not depend on the components you use.</p>
+        </div>
+      </details>
+    </div>
+
+    <figure class="figure" aria-labelledby="fig82-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig82-stage"></div>
+        <div class="viz-controls" id="fig82-controls"></div>
+      </div>
+      <figcaption id="fig82-cap"><strong>Figure 8.2</strong> The gripper of Examples 3.1 and 8.2, with \(x = 0.5t^3\) and \(y = 3t^2 - 2t\). Switch the components between rectangular and path: the red \(\avec\) never changes, but its pieces do. The live values list both sets side by side; check that \(a_x^2 + a_y^2 = a_t^2 + a_n^2\) at every instant.</figcaption>
+    </figure>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: mixing the two sets</p>
+      <p>Never add \(a_x\) to \(a_t\), or write \(\sqrt{a_x^2 + a_n^2}\). Each set is complete on its own: \(|\avec| = \sqrt{a_x^2 + a_y^2} = \sqrt{a_t^2 + a_n^2}\).</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\et = \vvec/v\); \(\en\) is \(\et\) turned \(90^\circ\) toward the side the path bends.</li>
+      <li>\(a_t = (v_x a_x + v_y a_y)/v\) and \(a_n = |v_x a_y - v_y a_x|/v\); then \(\rho = v^2/a_n\).</li>
+      <li>\(\avec\cdot\vvec \gt 0\) means speeding up, \(\lt 0\) slowing down, \(= 0\) steady speed.</li>
+      <li>Back to \(x\)–\(y\) (left turn): \(a_x = a_t\cos\psi - a_n\sin\psi\), \(a_y = a_t\sin\psi + a_n\cos\psi\).</li>
+      <li>Next: <a href="09-applications.html">Lesson 9</a> puts it all together: choosing a system and solving engineering problems.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 8.1: drag v and a, see a_t, a_n and the osculating circle ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { v: [3, 1], a: [0.5, 2] };
+  var p = CYL2D.plane(document.getElementById('fig81-stage'), {
+    xRange: [-4.5, 4.5], yRange: [-3.5, 4.5], grid: 'cartesian', gridStep: 1, axisLabels: null, height: 400,
+    ariaLabel: 'A particle at the origin with a draggable velocity arrow and a draggable acceleration arrow. The acceleration is split into a tangential part along the velocity and a normal part perpendicular to it. ' +
+      'A dashed arc of the osculating circle shows the local shape of the path.'
+  });
+  var circ = p.circle({ center: [0, 0], r: 1, color: 'muted', width: 1.2, dashed: true });
+  var pathArc = p.polyline([], { color: 'accent', width: 3 });
+  var aT = p.line([0, 0], [0, 0], { color: 't', width: 2.5, arrow: true, label: 'a_t', labelSide: 'right' });
+  var aN = p.line([0, 0], [0, 0], { color: 'n', width: 2.5, arrow: true, label: 'a_n', labelSide: 'right' });
+  var vL = p.line([0, 0], st.v, { color: 'good', width: 3.25, arrow: true });
+  var aL = p.line([0, 0], st.a, { color: 'bad', width: 3.25, arrow: true });
+  p.point([0, 0], { color: 'point', r: 5.5, label: 'P', labelAnchor: 'sw' });
+  var snap = function (q) { return [Math.round(q[0] * 4) / 4, Math.round(q[1] * 4) / 4]; };
+  var V = p.point(st.v, { color: 'good', r: 7, draggable: true, snap: snap, label: '\\vvec', labelAnchor: 'ne', ariaLabel: 'Tip of the velocity',
+    ariaFormat: function (q) { return 'v = (' + q[0] + ', ' + q[1] + ') m/s'; }, onDrag: function (q) { st.v = q; schedule(); } });
+  var A = p.point(st.a, { color: 'bad', r: 7, draggable: true, snap: snap, label: '\\avec', labelAnchor: 'ne', ariaLabel: 'Tip of the acceleration',
+    ariaFormat: function (q) { return 'a = (' + q[0] + ', ' + q[1] + ') m/s squared'; }, onDrag: function (q) { st.a = q; schedule(); } });
+  var panel = document.getElementById('fig81-controls');
+  var R = {
+    v: CYL.readout('\\(\\vvec\\)', { color: 'good' }), a: CYL.readout('\\(\\avec\\)', { color: 'bad' }),
+    at: CYL.readout('\\(a_t = \\avec\\cdot\\vvec/v\\)', { color: 't' }), an: CYL.readout('\\(a_n = |v_x a_y - v_y a_x|/v\\)', { color: 'n' }),
+    rho: CYL.readout('\\(\\rho = v^2/a_n\\)'), sp: CYL.readout('Speed is')
+  };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Drag the arrow tips' }));
+  panel.appendChild(CYL.el('div', { class: 'readout-grid' }, Object.keys(R).map(function (k) { return R[k].el; })));
+  var note = CYL.el('p', { class: 'mf-note', html: 'Both arrows start at the particle \\(P\\). Grid: 1 unit is 1 m/s for \\(\\vvec\\) and 1 m/s² for \\(\\avec\\); the osculating circle is drawn in metres.' });
+  panel.appendChild(note);
+  CYL.renderMath(note);
+  function update() {
+    var vx = st.v[0], vy = st.v[1], ax = st.a[0], ay = st.a[1];
+    vL.set([0, 0], st.v); aL.set([0, 0], st.a);
+    var s = CURV.nt(vx, vy, ax, ay);
+    R.v.set('(' + CYL.fmt(vx) + ', ' + CYL.fmt(vy) + ') m/s');
+    R.a.set('(' + CYL.fmt(ax) + ', ' + CYL.fmt(ay) + ') m/s\u00b2');
+    if (!(s.v > 1e-9)) {
+      aT.setVisible(false); aN.setVisible(false); circ.setVisible(false); pathArc.set([]);
+      R.at.set('\u2014'); R.an.set('\u2014'); R.rho.set('\u2014 (\\(v = 0\\))'); R.sp.set('undefined: at rest');
+      return;
+    }
+    var et = s.et, Q = [et[0] * s.at, et[1] * s.at];
+    aT.set([0, 0], Q); aT.setVisible(Math.abs(s.at) > 0.02);
+    aN.set(Q, [Q[0] + s.en[0] * s.an, Q[1] + s.en[1] * s.an]); aN.setVisible(s.an > 0.02);
+    R.at.set(CYL.fmt(s.at, 4) + ' m/s\u00b2'); R.an.set(CYL.fmt(s.an, 4) + ' m/s\u00b2');
+    R.sp.set(Math.abs(s.at) < 1e-9 ? 'steady (\\(\\avec \\perp \\vvec\\))' : s.at > 0 ? 'increasing (\\(\\avec\\cdot\\vvec \\gt 0\\))' : 'decreasing (\\(\\avec\\cdot\\vvec \\lt 0\\))');
+    // local path: the osculating circle, or a straight segment when a_n = 0
+    var pts = [], i;
+    if (s.an > 1e-9 && s.rho < 60) {
+      var c = [s.rho * s.en[0], s.rho * s.en[1]], th0 = Math.atan2(-c[1], -c[0]), span = Math.min(Math.PI * 0.9, 3.2 / s.rho);
+      for (i = -30; i <= 30; i++) { var th = th0 + s.turn * span * i / 30; pts.push([c[0] + s.rho * Math.cos(th), c[1] + s.rho * Math.sin(th)]); }
+      circ.set({ center: c, r: s.rho }); circ.setVisible(true);
+      R.rho.set(CYL.fmt(s.rho, 4) + ' m');
+    } else {
+      for (i = -1; i <= 1; i += 2) pts.push([3.2 * i * et[0], 3.2 * i * et[1]]);
+      circ.setVisible(false);
+      R.rho.set(s.an > 1e-9 ? CYL.fmt(s.rho, 4) + ' m' : '\u221e (straight)');
+    }
+    pathArc.set(pts);
+  }
+  var schedule = CYL.throttleRAF(update);
+  update();
+});
+
+/* ---------- Figure 8.2: the gripper in both component sets ---------- */
+CYL.ready(function () {
+  'use strict';
+  CURV.figure({
+    stage: document.getElementById('fig82-stage'), controls: document.getElementById('fig82-controls'),
+    motion: {
+      x: function (t) { return 0.5 * t * t * t; }, y: function (t) { return 3 * t * t - 2 * t; },
+      vx: function (t) { return 1.5 * t * t; }, vy: function (t) { return 6 * t - 2; },
+      ax: function (t) { return 3 * t; }, ay: function () { return 6; }
+    },
+    t0: 0, t1: 2.3, t: 2, speed: 0.5, xRange: [-1, 7.5], yRange: [-1, 11.6], gridStep: 1,
+    vScale: 5, aScale: 5, show: { comps: 'nt' }, toggles: ['comps', 'v', 'a', 'circle'],
+    readouts: ['t', 'v', 'ax', 'ay', 'at', 'an', 'a', 'rho'],
+    aria: 'The gripper path from the origin, first dipping slightly below the x-axis and then curving up and to the right. Arrows show the velocity, the acceleration and its components, either in x and y or in the tangential and normal directions.'
+  });
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l08-q1', type: 'fields',
+    prompt: 'At an instant, a particle has \\(\\vvec = 3\\ihat + 4\\jhat\\ \\text{m/s}\\) and \\(\\avec = 2\\ihat - \\jhat\\ \\text{m/s}^2\\). Find \\(a_t\\), \\(a_n\\) and the radius of curvature of its path.',
+    fields: [
+      { name: 'at', label: '\\(a_t =\\)', answer: 0.4, unit: 'm/s²' },
+      { name: 'an', label: '\\(a_n =\\)', answer: 2.2, unit: 'm/s²' },
+      { name: 'rho', label: '\\(\\rho =\\)', answer: 25 / 2.2, unit: 'm' }
+    ],
+    hints: ['\\(v = 5\\ \\text{m/s}\\). \\(a_t = (v_x a_x + v_y a_y)/v\\).', '\\(a_n = |v_x a_y - v_y a_x|/v\\), then \\(\\rho = v^2/a_n\\).'],
+    explain: 'Project \\(\\avec\\) onto \\(\\et = \\vvec/v\\) for \\(a_t\\); the perpendicular part is \\(a_n\\).',
+    solution: '\\[ a_t = \\frac{3(2) + 4(-1)}{5} = 0.4\\ \\text{m/s}^2, \\qquad a_n = \\frac{|3(-1) - 4(2)|}{5} = \\frac{11}{5} = 2.2\\ \\text{m/s}^2 \\]' +
+      '\\[ \\rho = \\frac{5^2}{2.2} = 11.36\\ \\text{m} \\]<p>Check: \\(0.4^2 + 2.2^2 = 5 = 2^2 + 1^2\\). ✓</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l08-q2', type: 'mc',
+    prompt: 'A particle has \\(\\vvec = -2\\ihat + \\jhat\\ \\text{m/s}\\) and \\(\\avec = 3\\ihat + \\jhat\\ \\text{m/s}^2\\). At this instant, is it speeding up or slowing down?',
+    choices: [
+      { html: 'Slowing down, because \\(\\avec\\cdot\\vvec \\lt 0\\)', correct: true },
+      { html: 'Speeding up, because \\(|\\avec| \\gt 0\\)', feedback: 'A nonzero acceleration can also slow a particle down or just turn it. Look at the sign of \\(\\avec\\cdot\\vvec\\).' },
+      { html: 'Speeding up, because \\(\\avec\\cdot\\vvec \\gt 0\\)', feedback: 'Compute it: \\((-2)(3) + (1)(1) = -5\\), which is negative.' },
+      { html: 'Neither: its speed is steady', feedback: 'Steady speed needs \\(\\avec\\cdot\\vvec = 0\\). Here it is \\(-5\\).' }
+    ],
+    hints: ['Compute \\(\\avec\\cdot\\vvec = a_x v_x + a_y v_y\\).'],
+    explain: 'The sign of \\(a_t = \\avec\\cdot\\vvec/v\\) says whether the speed grows or shrinks.',
+    solution: '<p>\\(\\avec\\cdot\\vvec = 3(-2) + 1(1) = -5\\ \\text{m}^2/\\text{s}^3 \\lt 0\\), so \\(a_t = -5/\\sqrt5 = -2.236\\ \\text{m/s}^2\\): the particle is slowing down.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l08-q3', type: 'fields',
+    prompt: 'A drone flies due north (\\(+y\\)) while turning to its <strong>right</strong> (clockwise seen from above). Its tangential acceleration is \\(-1\\ \\text{m/s}^2\\) (braking) and its normal acceleration is \\(4\\ \\text{m/s}^2\\). With \\(x\\) east, find \\(a_x\\) and \\(a_y\\).',
+    fields: [
+      { name: 'ax', label: '\\(a_x =\\)', answer: 4, unit: 'm/s²' },
+      { name: 'ay', label: '\\(a_y =\\)', answer: -1, unit: 'm/s²' }
+    ],
+    hints: ['\\(\\et = \\jhat\\) (north). Turning right from north means the center of curvature is to the east: \\(\\en = \\ihat\\).', '\\(\\avec = a_t\\,\\et + a_n\\,\\en\\).'],
+    explain: 'Find \\(\\et\\) and \\(\\en\\) as rectangular unit vectors, then add \\(a_t\\,\\et + a_n\\,\\en\\).',
+    solution: '\\[ \\avec = (-1)\\,\\jhat + 4\\,\\ihat \\quad\\Rightarrow\\quad a_x = 4\\ \\text{m/s}^2,\\ \\ a_y = -1\\ \\text{m/s}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l08-q4', type: 'numeric', unit: 'm',
+    prompt: 'A javelin is released at \\(30\\ \\text{m/s}\\), \\(50^\\circ\\) above the horizontal (treat it as a particle, no drag). What is the radius of curvature of its path \\(2\\ \\text{s}\\) later?',
+    label: '\\(\\rho =\\)', answer: (function () { var vx = 30 * Math.cos(50 * Math.PI / 180), vy = 30 * Math.sin(50 * Math.PI / 180) - 9.81 * 2, v = Math.hypot(vx, vy); return v * v / (vx * 9.81 / v); })(),
+    hints: ['\\(v_x = 30\\cos 50^\\circ\\), \\(v_y = 30\\sin 50^\\circ - 9.81(2)\\), \\(a_x = 0\\), \\(a_y = -9.81\\).', '\\(a_n = |v_x a_y - v_y a_x|/v = v_x g/v\\), then \\(\\rho = v^2/a_n = v^3/(v_x g)\\).'],
+    explain: 'For a projectile, \\(a_n = g\\,v_x/v\\), so \\(\\rho = v^3/(g\\,v_x)\\).',
+    solution: '\\[ v_x = 19.28\\ \\text{m/s}, \\quad v_y = 22.98 - 19.62 = 3.361\\ \\text{m/s}, \\quad v = 19.57\\ \\text{m/s} \\]' +
+      '\\[ a_n = \\frac{19.28(9.81)}{19.57} = 9.664\\ \\text{m/s}^2, \\qquad \\rho = \\frac{19.57^2}{9.664} = 39.65\\ \\text{m} \\]'
+  });
+});
+</script>
+</body>
+</html>

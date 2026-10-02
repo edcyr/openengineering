@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Inertia Tensor and Angular Momentum · Mass Moments of Inertia</title>
+<meta name="description" content="The inertia tensor [I]: angular momentum H = [I]ω, why H is not parallel to ω, kinetic energy T = ½ ωᵀ[I]ω, the parallel-axis theorem in matrix form, and a spinning body with its bearing moment.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/inertia.js"></script>
+<style>
+  /* ---- Lesson 6 page styles (tokens from module.css only) ---- */
+  .l06-dims { display: grid; gap: 14px; }
+  .l06-dims[hidden] { display: none; }
+</style>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 35 min</p>
+    <h1>The Inertia Tensor and Angular Momentum</h1>
+    <p class="lede">In the plane, angular momentum is \(I\omega\) and points along the axis. In three dimensions it generally does not: spin a tilted rod about a vertical shaft and its angular momentum leans away from the shaft. Six numbers, arranged as a matrix, tell you exactly how.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Assemble the inertia tensor \(\Imat\) from three moments and three products of inertia.</li>
+      <li>Compute the angular momentum \(\Hvec = \Imat\wvec\), and explain why it is generally not parallel to \(\wvec\).</li>
+      <li>Compute the kinetic energy \(T = \tfrac12 \wvec^\mathsf{T}\Imat\,\wvec\).</li>
+      <li>Transfer a whole tensor to a new origin with the parallel-axis theorem in matrix form.</li>
+    </ul>
+  </section>
+
+  <section id="angular-momentum">
+    <h2>Angular momentum of a rotating body</h2>
+    <p>Take a rigid body turning with angular velocity \(\wvec = \omega_x\ihat + \omega_y\jhat + \omega_z\khat\) about a fixed point \(O\) (or about its center of mass \(G\)). A mass element at \(\rvec\) has velocity \(\wvec \times \rvec\), so the body's angular momentum about \(O\) is</p>
+    \[ \Hvec_O = \int \rvec \times (\wvec \times \rvec)\,dm. \]
+
+    <details class="reveal">
+      <summary>Expanding the cross products</summary>
+      <div>
+        <p>With \(\rvec = x\ihat + y\jhat + z\khat\), the vector identity \(\rvec \times (\wvec \times \rvec) = \wvec\,(\rvec\cdot\rvec) - \rvec\,(\rvec\cdot\wvec)\) gives, for the \(x\)-component,</p>
+        \[ \omega_x(x^2 + y^2 + z^2) - x(x\omega_x + y\omega_y + z\omega_z) = (y^2 + z^2)\,\omega_x - xy\,\omega_y - xz\,\omega_z. \]
+        <p>Integrate over the body:</p>
+        \[ H_x = \left(\int (y^2 + z^2)\,dm\right)\omega_x - \left(\int xy\,dm\right)\omega_y - \left(\int xz\,dm\right)\omega_z = I_{xx}\,\omega_x - I_{xy}\,\omega_y - I_{xz}\,\omega_z \]
+        <p>and \(H_y\), \(H_z\) follow by cycling the letters.</p>
+      </div>
+    </details>
+
+    <p>Each component of \(\Hvec\) mixes all three components of \(\wvec\), with the moments on the diagonal and the products, with minus signs, off it. That is a matrix product:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">The inertia tensor and angular momentum</p>
+      \[ \begin{Bmatrix} H_x \\ H_y \\ H_z \end{Bmatrix} = \begin{bmatrix} I_{xx} & -I_{xy} & -I_{xz} \\ -I_{yx} & I_{yy} & -I_{yz} \\ -I_{zx} & -I_{zy} & I_{zz} \end{bmatrix} \begin{Bmatrix} \omega_x \\ \omega_y \\ \omega_z \end{Bmatrix}, \qquad \Hvec_O = \Imat_O\,\wvec \]
+      <p>The matrix \(\Imat_O\) is the <dfn>inertia tensor</dfn> about \(O\). It is symmetric (\(I_{yx} = I_{xy}\), …), so six numbers define it. It holds about a fixed point \(O\) or about \(G\).</p>
+    </div>
+
+    <p>Plane rotation is the special case \(\wvec = \omega\khat\) with \(I_{xz} = I_{yz} = 0\): then \(\Hvec = I_{zz}\,\omega\,\khat\), the familiar \(H = I\omega\).</p>
+  </section>
+
+  <section id="not-parallel">
+    <h2>Why \(\Hvec\) is not parallel to \(\wvec\)</h2>
+    <p>Spin a body about the \(z\)-axis, \(\wvec = \omega\khat\). The matrix product picks out the third column of \(\Imat\):</p>
+    \[ \Hvec = -I_{xz}\,\omega\,\ihat - I_{yz}\,\omega\,\jhat + I_{zz}\,\omega\,\khat. \]
+    <p>If \(I_{xz}\) or \(I_{yz}\) is not zero, \(\Hvec\) has components perpendicular to the spin axis. As the body turns, those components turn with it, so \(\Hvec\) sweeps out a cone around the shaft. A changing angular momentum needs a moment, \(\sum\Mvec_O = \dot{\Hvec}_O\), and the only things that can supply it are the bearings. That is a <dfn>dynamic imbalance</dfn>: a rotor that shakes its bearings even when its center of mass is exactly on the shaft.</p>
+
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> A body fixed to a vertical shaft (the \(z\)-axis) and spinning about it. The green arrow is \(\colW{\wvec}\), along the shaft; the red arrow is \(\colH{\Hvec_O} = \Imat_O\wvec\). Tilt the rod or the disk: \(\Hvec_O\) leans away from the shaft, and when the body spins it sweeps a cone, traced by the dashed circle. At \(0^\circ\) and \(90^\circ\) the products \(I_{xz}, I_{yz}\) vanish and \(\Hvec_O\) lines up with \(\wvec\). Arrows show directions only; the readouts give the values.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 6.1 — A tilted rod on a shaft</p>
+      <p>A uniform \(3\ \text{kg}\) slender rod, \(0.8\ \text{m}\) long, is welded at its midpoint \(O\) to a vertical shaft, at \(\beta = 30^\circ\) to the shaft. The shaft spins at a constant \(\omega = 20\ \text{rad/s}\). At the instant the rod lies in the \(xz\)-plane, find \(\Imat_O\), \(\Hvec_O\), the angle between \(\Hvec_O\) and the shaft, and the moment the bearings must supply.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Points of the rod are at \(s(\sin\beta,\ 0,\ \cos\beta)\), \(-\tfrac l2 \le s \le \tfrac l2\), with \(dm = (m/l)\,ds\). Every integral is \(\int s^2\,dm = \tfrac1{12} m l^2 = \tfrac1{12}(3)(0.8)^2 = 0.16\ \text{kg·m}^2\) times a trigonometric factor:</p>
+          \[ I_{xx} = 0.16\cos^2\beta, \quad I_{yy} = 0.16, \quad I_{zz} = 0.16\sin^2\beta, \quad I_{xz} = 0.16\sin\beta\cos\beta, \quad I_{xy} = I_{yz} = 0 \]
+          \[ \Imat_O = \begin{bmatrix} 0.12 & 0 & -0.06928 \\ 0 & 0.16 & 0 \\ -0.06928 & 0 & 0.04 \end{bmatrix}\ \text{kg·m}^2 \]
+          <p>With \(\wvec = 20\,\khat\), \(\Hvec_O\) is \(20\) times the third column:</p>
+          \[ \Hvec_O = -1.386\,\ihat + 0.800\,\khat\ \ \text{kg·m}^2/\text{s} \]
+          <p>It makes \(\arctan(1.386/0.800) = 60^\circ\) with the shaft: it is perpendicular to the rod, as it must be for a slender rod.</p>
+          <p><strong>Bearing moment.</strong> \(\Hvec_O\) is fixed in the rod, which turns at \(\wvec\), so \(\dot{\Hvec}_O = \wvec \times \Hvec_O\):</p>
+          \[ \sum\Mvec_O = 20\,\khat \times (-1.386\,\ihat + 0.800\,\khat) = -27.71\,\jhat\ \ \text{N·m} \]
+          <p>A \(27.7\ \text{N·m}\) moment, perpendicular to the plane of the rod and turning with it, even though the rod is perfectly balanced about the shaft (\(G\) is on the axis).</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 6.2 — The bent rod, spinning</p>
+      <p>The bent rod of Example 5.2 (\(I_{xx} = 0.05933\), \(I_{yy} = 0.2080\), \(I_{zz} = 0.2567\), \(I_{xy} = 0.0840\), \(I_{yz} = 0.0120\), \(I_{zx} = 0.0160\ \text{kg·m}^2\) about \(O\)) spins about the \(z\)-axis at \(10\ \text{rad/s}\). Find \(\Hvec_O\) and its angle to the \(z\)-axis.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \Hvec_O = \begin{bmatrix} 0.05933 & -0.0840 & -0.0160 \\ -0.0840 & 0.2080 & -0.0120 \\ -0.0160 & -0.0120 & 0.2567 \end{bmatrix} \begin{Bmatrix} 0 \\ 0 \\ 10 \end{Bmatrix} = \begin{Bmatrix} -0.160 \\ -0.120 \\ 2.567 \end{Bmatrix}\ \text{kg·m}^2/\text{s} \]
+          <p>\(|\Hvec_O| = 2.574\ \text{kg·m}^2/\text{s}\), and the angle to \(z\) is \(\arccos(2.567/2.574) = 4.46^\circ\). The large product \(I_{xy}\) plays no part here: only products that involve the spin axis (\(z\)) tilt \(\Hvec\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="energy">
+    <h2>Kinetic energy</h2>
+    <p>The kinetic energy of a body rotating about a fixed point \(O\) (or the rotational part about \(G\)) is \(\tfrac12\int|\wvec \times \rvec|^2\,dm\), which becomes</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Rotational kinetic energy</p>
+      \[ T = \tfrac12\,\wvec^\mathsf{T}\Imat\,\wvec = \tfrac12\,\wvec\cdot\Hvec \]
+      \[ T = \tfrac12\left(I_{xx}\omega_x^2 + I_{yy}\omega_y^2 + I_{zz}\omega_z^2\right) - I_{xy}\,\omega_x\omega_y - I_{yz}\,\omega_y\omega_z - I_{zx}\,\omega_z\omega_x \]
+    </div>
+    <p>For the tilted rod of Example 6.1, \(T = \tfrac12(20)(0.800) = 8.00\ \text{J}\): only the component of \(\Hvec\) along \(\wvec\) stores energy.</p>
+  </section>
+
+  <section id="transfer">
+    <h2>Moving the tensor: the parallel-axis theorem in matrix form</h2>
+    <p>Lessons 3 and 5 moved one moment or one product at a time. Doing all six at once, with \(G\) at \((\bar x, \bar y, \bar z)\) from \(O\):</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Parallel-axis theorem for the inertia tensor</p>
+      \[ \Imat_O = \Imat_G + m \begin{bmatrix} \bar y^2 + \bar z^2 & -\bar x\bar y & -\bar x\bar z \\ -\bar x\bar y & \bar z^2 + \bar x^2 & -\bar y\bar z \\ -\bar x\bar z & -\bar y\bar z & \bar x^2 + \bar y^2 \end{bmatrix} \]
+      <p>The added matrix is the inertia tensor of a particle of mass \(m\) at \(G\). The axes at \(O\) must be parallel to those at \(G\).</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 6.3 — An offset sphere</p>
+      <p>A \(2\ \text{kg}\) solid sphere of radius \(0.1\ \text{m}\) has its center at \((0.3,\ 0.2,\ 0)\ \text{m}\). Find its inertia tensor about the origin.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>About its center, \(\Imat_G = \tfrac25(2)(0.1)^2\,\mathbf{1} = 0.008\,\mathbf{1}\) (a sphere has no products). The transfer matrix with \((0.3, 0.2, 0)\):</p>
+          \[ \Imat_O = \begin{bmatrix} 0.008 + 2(0.04) & -2(0.06) & 0 \\ -2(0.06) & 0.008 + 2(0.09) & 0 \\ 0 & 0 & 0.008 + 2(0.13) \end{bmatrix} = \begin{bmatrix} 0.088 & -0.120 & 0 \\ -0.120 & 0.188 & 0 \\ 0 & 0 & 0.268 \end{bmatrix}\ \text{kg·m}^2 \]
+          <p>So \(I_{xy} = +0.120\ \text{kg·m}^2\) (the sphere is in the first quadrant), entered as \(-0.120\) in the tensor.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: the signs in the tensor</p>
+      <p>The off-diagonal entries of \(\Imat\) are the <em>negatives</em> of the products of inertia (with this module's definition \(I_{xy} = \int xy\,dm\)). A positive \(I_{xy}\) appears as a negative number in the matrix. Forgetting the minus sign flips the transverse components of \(\Hvec\).</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\Hvec_O = \Imat_O\wvec\), with moments on the diagonal of \(\Imat_O\) and <em>minus</em> the products off it.</li>
+      <li>For spin about \(z\), \(\Hvec = (-I_{xz}\ihat - I_{yz}\jhat + I_{zz}\khat)\,\omega\): products involving the spin axis tilt \(\Hvec\) away from \(\wvec\).</li>
+      <li>A tilted \(\Hvec\) turning with the body needs a bearing moment \(\wvec \times \Hvec\): dynamic imbalance.</li>
+      <li>\(T = \tfrac12\wvec^\mathsf{T}\Imat\,\wvec = \tfrac12\wvec\cdot\Hvec\).</li>
+      <li>\(\Imat_O = \Imat_G +\) (tensor of a particle \(m\) at \(G\)).</li>
+      <li>Next: <a href="07-any-axis.html">Lesson 7</a> uses \(\Imat\) to find the moment of inertia about any axis.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 6.1: a body spinning on a vertical shaft; ω, H_O = [I]ω and the H cone ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI, D = PI / 180, LA = 0.33;
+  var st = { type: 'rod', beta: 30, w: 20, th: 0 };
+  function bodyParts() {
+    var b = st.beta * D, ax = [Math.sin(b), 0, Math.cos(b)];
+    if (st.type === 'rod') return [{ type: 'rod', m: 3, d: { l: 0.8 }, center: [0, 0, 0], axis: ax }];
+    if (st.type === 'disk') return [{ type: 'disk', m: 3, d: { r: 0.3 }, center: [0, 0, 0], axis: ax }];
+    return [{ type: 'rod', m: 0.8, d: { l: 0.4 }, center: [0.2, 0, 0], axis: [1, 0, 0] },
+      { type: 'rod', m: 0.6, d: { l: 0.3 }, center: [0.4, 0.15, 0], axis: [0, 1, 0] },
+      { type: 'rod', m: 0.4, d: { l: 0.2 }, center: [0.4, 0.3, 0.1], axis: [0, 0, 1] }];
+  }
+  var stage = document.getElementById('fig61-stage'), panel = document.getElementById('fig61-controls');
+  var v = CYL3D.create(stage, {
+    extent: 0.6, zRange: [-0.5, 0.65], grid: 'none', ui: ['iso', 'front', 'top', 'reset'],
+    camera: { azimuth: 28, elevation: 18, zoom: 1.1 },
+    ariaLabel: 'A slender rod tilted 30 degrees to a vertical shaft, spinning about the shaft. A green arrow along the shaft is the angular velocity; a red arrow is the angular momentum, perpendicular to the rod.'
+  });
+  v.solid({ shape: 'cylinder', r: 0.006, h: 0.84, center: [0, 0, -0.05], color: 'surface', opacity: 1, edges: false });
+  v.solid({ shape: 'cylinder', r: 0.03, h: 0.04, center: [0, 0, -0.45], color: 'surface', opacity: 0.8, edges: true });
+  v.solid({ shape: 'cylinder', r: 0.03, h: 0.04, center: [0, 0, 0.35], color: 'surface', opacity: 0.8, edges: true });
+  var spinner = v.group();
+  var drawn = [];
+  var wArrow = v.arrow([0, 0, 0.38], [0, 0, 0.6], { color: 'good', label: '\\wvec', width: 0.01, headLength: 0.05, headRadius: 0.02 });
+  var hArrow = v.arrow([0, 0, 0], [0, 0, LA], { color: 'bad', label: '\\Hvec_O', width: 0.008, headLength: 0.05, headRadius: 0.02 });
+  var cone = v.curve(function () { return [0, 0, 0]; }, 0, 2 * PI, { color: 'bad', width: 1.2, dashed: true, segments: 96 });
+
+  var sel = CYL.select({ label: 'Body on the shaft', value: st.type,
+    options: [{ value: 'rod', label: 'Tilted rod (3 kg, 0.8 m)' }, { value: 'disk', label: 'Tilted thin disk (3 kg, r = 0.3 m)' }, { value: 'bent', label: 'Bent rod (Example 5.2)' }],
+    onChange: function (k) { st.type = k; dims.hidden = k === 'bent'; rebuild(); } });
+  var sB = CYL.slider({ label: 'Tilt \\(\\beta\\) from the shaft', min: 0, max: 90, step: 1, value: st.beta, unit: '°', onInput: function (x) { st.beta = x; rebuild(); } });
+  var dims = CYL.el('div', { class: 'l06-dims' }, [sB.el]);
+  var sW = CYL.slider({ label: 'Spin \\(\\omega\\)', min: 1, max: 30, step: 1, value: st.w, unit: 'rad/s', color: 'good', onInput: function (x) { st.w = x; schedule(); } });
+  var matBox = CYL.el('div', { class: 'mat-box', 'aria-live': 'off' });
+  var roH = CYL.readout('\\(\\Hvec_O = \\Imat_O\\wvec\\)', { color: 'bad' });
+  var roAng = CYL.readout('Angle between \\(\\Hvec_O\\) and \\(\\wvec\\)');
+  var roT = CYL.readout('\\(T = \\tfrac12\\wvec\\cdot\\Hvec_O\\)');
+  var roM = CYL.readout('Bearing moment \\(|\\wvec \\times \\Hvec_O|\\)');
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5.2v13.6L18.6 12z"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.8 5h3.6v14H6.8zM13.6 5h3.6v14h-3.6z"/></svg>';
+  var playBtn = CYL.button(ICON_PLAY + '<span>Spin</span>', function () { if (stopAnim) pause(); else play(); }, { primary: true });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Spinning body' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(dims);
+  panel.appendChild(sW.el);
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [playBtn]));
+  panel.appendChild(CYL.el('p', { class: 'mat-label', html: '\\(\\Imat_O\\) in the fixed axes, now (kg·m²)' }));
+  panel.appendChild(matBox);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roH.el, roAng.el, roT.el, roM.el]));
+  CYL.renderMath(panel);
+
+  var IB = null;                                          // tensor with the body at th = 0
+  function rebuild() {
+    var parts = bodyParts();
+    drawn.forEach(function (d) { v.remove(d.group); });
+    drawn = parts.map(function (p) { return INERT.draw(v, p, { parent: spinner, rodRadius: 0.012, thin: 0.01, color: 'accent', opacity: st.type === 'disk' ? 0.55 : 0.95 }); });
+    IB = INERT.assemble(parts).IO;
+    schedule();
+  }
+  function update() {
+    var c = Math.cos(st.th), s = Math.sin(st.th), R = [[c, -s, 0], [s, c, 0], [0, 0, 1]];
+    spinner.rotation.z = st.th;
+    var I = INERT.rotate(IB, R), w = [0, 0, st.w], H = INERT.H(I, w);
+    var Hn = Math.sqrt(H[0] * H[0] + H[1] * H[1] + H[2] * H[2]);
+    var u = Hn > 1e-12 ? [H[0] / Hn, H[1] / Hn, H[2] / Hn] : [0, 0, 1];
+    hArrow.set([0, 0, 0], [LA * u[0], LA * u[1], LA * u[2]]);
+    var rr = LA * Math.sqrt(u[0] * u[0] + u[1] * u[1]), zz = LA * u[2];
+    cone.setFn(function (t) { return [rr * Math.cos(t), rr * Math.sin(t), zz]; }, 0, 2 * PI);
+    cone.visible = rr > 0.01;
+    CYL.setTex(matBox, INERT.texMatrix(I, 4), true);
+    roH.set(INERT.texVec(H, 4) + '\\ \\text{kg·m}^2/\\text{s}', { tex: true });
+    var ang = Math.acos(Math.max(-1, Math.min(1, u[2]))) / D;
+    roAng.set(CYL.fmt(ang, 3) + '°');
+    roT.set(CYL.fmt(0.5 * st.w * H[2], 4) + ' J');
+    roM.set(CYL.fmt(st.w * Math.sqrt(H[0] * H[0] + H[1] * H[1]), 4) + ' N·m');
+    v.render();
+  }
+  var schedule = CYL.throttleRAF(update);
+  var stopAnim = null;
+  function setBtn(on) { playBtn.innerHTML = (on ? ICON_PAUSE : ICON_PLAY) + '<span>' + (on ? 'Pause' : 'Spin') + '</span>'; }
+  function play() {
+    if (stopAnim) return;
+    stopAnim = v.animate(function (dt) { st.th = (st.th + 0.9 * dt) % (2 * PI); update(); });
+    setBtn(true);
+  }
+  function pause() { if (stopAnim) { stopAnim(); stopAnim = null; } setBtn(false); }
+  rebuild();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1', type: 'fields',
+    prompt: 'A body has \\(I_{xx} = 0.5\\), \\(I_{yy} = 0.8\\), \\(I_{zz} = 1.0\\), \\(I_{xy} = 0.1\\), \\(I_{yz} = 0\\) and \\(I_{zx} = 0.2\\ \\text{kg·m}^2\\) about \\(O\\). It spins with \\(\\wvec = 6\\khat\\ \\text{rad/s}\\). Find the components of \\(\\Hvec_O\\).',
+    fields: [
+      { name: 'hx', label: '\\(H_x =\\)', answer: -1.2, unit: 'kg·m²/s' },
+      { name: 'hy', label: '\\(H_y =\\)', answer: 0, unit: 'kg·m²/s', tol: 1e-3 },
+      { name: 'hz', label: '\\(H_z =\\)', answer: 6, unit: 'kg·m²/s' }
+    ],
+    hints: ['With \\(\\wvec = \\omega\\khat\\), \\(\\Hvec\\) is \\(\\omega\\) times the third column of \\(\\Imat\\).', 'The third column is \\((-I_{xz},\\ -I_{yz},\\ I_{zz})\\).'],
+    explain: '\\(\\Hvec = (-I_{xz}\\ihat - I_{yz}\\jhat + I_{zz}\\khat)\\,\\omega\\).',
+    solution: '\\[ \\Hvec_O = 6\\,(-0.2,\\ 0,\\ 1.0) = (-1.2,\\ 0,\\ 6.0)\\ \\text{kg·m}^2/\\text{s} \\]<p>\\(I_{xy}\\) does not enter, because \\(\\omega_x = \\omega_y = 0\\).</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2', type: 'numeric',
+    prompt: 'The same body (\\(I_{xx} = 0.5\\), \\(I_{yy} = 0.8\\), \\(I_{xy} = 0.1\\ \\text{kg·m}^2\\), …) turns with \\(\\wvec = 2\\ihat + 1\\jhat\\ \\text{rad/s}\\). Find its kinetic energy.',
+    label: '\\(T =\\)', answer: 1.2, unit: 'J',
+    hints: ['\\(T = \\tfrac12(I_{xx}\\omega_x^2 + I_{yy}\\omega_y^2 + I_{zz}\\omega_z^2) - I_{xy}\\omega_x\\omega_y - \\ldots\\)', 'Here only \\(\\omega_x\\) and \\(\\omega_y\\) are nonzero.'],
+    explain: '\\(T = \\tfrac12\\wvec^\\mathsf{T}\\Imat\\,\\wvec\\).',
+    solution: '\\[ T = \\tfrac12\\left(0.5(2)^2 + 0.8(1)^2\\right) - 0.1(2)(1) = 1.4 - 0.2 = 1.20\\ \\text{J} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3', type: 'mc',
+    prompt: 'A rotor spins about its shaft, the \\(z\\)-axis, with its center of mass on the shaft. When is its angular momentum about \\(O\\) parallel to the shaft?',
+    choices: [
+      { html: 'When \\(I_{xz} = I_{yz} = 0\\)', correct: true },
+      { html: 'Always, because \\(G\\) is on the shaft', feedback: 'That is static balance. A tilted rod through its center still has \\(I_{xz} \\ne 0\\) and a tilted \\(\\Hvec\\).' },
+      { html: 'When \\(I_{xy} = 0\\)', feedback: '\\(I_{xy}\\) does not involve the spin axis \\(z\\); it cannot tilt \\(\\Hvec\\) away from \\(z\\).' },
+      { html: 'When \\(I_{xx} = I_{yy}\\)', feedback: 'Equal transverse moments do not remove the products that couple \\(z\\) to \\(x\\) and \\(y\\).' }
+    ],
+    hints: ['Write \\(\\Hvec\\) for \\(\\wvec = \\omega\\khat\\).'],
+    explain: 'The transverse components of \\(\\Hvec\\) are \\(-I_{xz}\\omega\\) and \\(-I_{yz}\\omega\\).',
+    solution: '<p>For \\(\\wvec = \\omega\\khat\\), \\(\\Hvec = (-I_{xz}\\ihat - I_{yz}\\jhat + I_{zz}\\khat)\\,\\omega\\). It is along \\(z\\) only if \\(I_{xz} = I_{yz} = 0\\): the shaft must be a principal axis (dynamic balance).</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l06-q4', type: 'numeric',
+    prompt: 'A \\(4\\ \\text{kg}\\) solid sphere of radius \\(0.05\\ \\text{m}\\) is centered at \\((0.2,\\ 0,\\ 0.1)\\ \\text{m}\\). Find its product of inertia \\(I_{zx}\\) about the origin.',
+    label: '\\(I_{zx} =\\)', answer: 0.08, unit: 'kg·m²',
+    hints: ['A sphere has no products about its own center.', '\\(I_{zx} = \\bar I_{z\'x\'} + m\\,\\bar z\\,\\bar x\\).'],
+    explain: 'Parallel-axis theorem for products.',
+    solution: '\\[ I_{zx} = 0 + 4(0.1)(0.2) = 0.0800\\ \\text{kg·m}^2 \\]<p>In the tensor it appears as \\(-0.0800\\).</p>'
+  });
+});
+</script>
+</body>
+</html>

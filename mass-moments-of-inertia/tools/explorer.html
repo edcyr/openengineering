@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inertia Explorer · Mass Moments of Inertia</title>
+<meta name="description" content="A 3D sandbox for mass moments of inertia: build a body from standard parts, see its center of mass, inertia tensor, principal axes and inertia ellipsoid, and spin it about any axis to compare the angular velocity with the angular momentum.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/inertia.js"></script>
+<style>
+/* ---------- Inertia Explorer: page-specific layout (tokens from module.css only) ---------- */
+.xp-fig { margin-top: 0; }
+.xp-viz { --stage-h: 380px; --controls-w: 370px; margin: 0; }
+.xp-viz > .viz-stage { container: xpstage / inline-size; }
+.xp-viz > .viz-stage .cyl3d { height: var(--stage-h); }
+@container cylmain (min-width: 560px) { .xp-viz { --stage-h: 460px; } }
+@container cylmain (min-width: 880px) {
+  .xp-viz { --stage-h: 640px; grid-template-columns: minmax(0, 1fr) var(--controls-w); }
+  .xp-viz > .viz-stage { border-bottom: 0; border-right: 1px solid var(--line); }
+  .xp-viz > .xp-panel { height: var(--stage-h); }
+  .xp-panel .xp-tabs { height: 100%; }
+  .xp-panel .xp-pane { overflow-y: auto; overscroll-behavior: contain; }
+}
+.xp-panel.viz-controls { gap: 0; min-width: 0; padding: 0; }
+.xp-tabs.tabs { display: flex; flex-direction: column; min-height: 0; margin: 0; }
+.xp-tabs > [role="tablist"] { flex: none; gap: 0; padding: 4px 8px 0; }
+.xp-tabs [role="tab"] { flex: 1 1 auto; padding: 10px 6px 9px; font-size: 0.84rem; }
+.xp-tabs > .xp-pane[role="tabpanel"] { display: flex; flex: 1 1 auto; flex-direction: column; gap: 12px; min-height: 0; padding: 14px 16px 18px; }
+.xp-pane > * { flex-shrink: 0; margin: 0; }
+.xp-pane p { margin: 0; }
+.xp-sub { display: flex; flex-direction: column; gap: 9px; padding-top: 12px; border-top: 1px solid var(--line); }
+.xp-sub-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.xp-row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.xp-row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.xp-row2 select, .xp-row3 select { width: 100%; }
+.xp-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.xp-field > label { overflow: hidden; color: var(--ink-muted); font-size: 0.8rem; font-weight: 650; white-space: nowrap; text-overflow: ellipsis; }
+.xp-field > label .katex { font-size: 1.1em; }
+input.xp-in { width: 100%; min-width: 0; padding: 6px 8px; font-family: var(--font-mono); font-size: 0.93rem; }
+input.xp-in[aria-invalid="true"] { border-color: var(--c-bad); background: var(--c-bad-soft); }
+@media (max-width: 559.98px) { input.xp-in { font-size: 16px; } }
+.xp-hint { color: var(--ink-muted); font-size: 0.8rem; line-height: 1.45; }
+.xp-msg { color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.xp-msg:empty, .xp-note:empty { display: none; }
+.xp-msg.is-error { color: var(--c-bad); }
+.xp-note { color: var(--ink-muted); font-size: 0.84rem; line-height: 1.45; }
+.xp-check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; }
+.xp-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.xp-item { display: flex; gap: 6px; min-width: 0; margin: 0; }
+.xp-item-main {
+  display: flex; flex: 1 1 auto; align-items: center; gap: 10px; min-width: 0; padding: 6px 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink);
+  font-size: 0.84rem; line-height: 1.4; text-align: left; cursor: pointer;
+}
+.xp-item-main:hover { border-color: var(--accent); }
+.xp-item-main[aria-pressed="true"] { border-color: var(--c-warn); background: var(--c-warn-soft); }
+.xp-item-num { flex: none; min-width: 1.4em; color: var(--ink-muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+.xp-item-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.xp-item-hole { flex: none; color: var(--c-bad); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.xp-del { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 34px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink-muted); cursor: pointer; }
+.xp-del:hover { border-color: var(--c-bad); color: var(--c-bad); }
+.xp-del svg { width: 15px; height: 15px; }
+.xp-legend {
+  position: absolute; top: 10px; left: 10px; z-index: 5; display: grid; gap: 3px; max-width: min(46%, 260px);
+  padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--viz-ui-bg);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: var(--ink); font-size: 0.76rem; line-height: 1.35; pointer-events: none;
+}
+.xp-legend:empty { display: none; }
+.xp-leg { display: flex; align-items: center; gap: 7px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.xp-leg .katex { font-size: 1em; }
+.xp-leg-line { flex: none; width: 14px; height: 3px; border-radius: 2px; background: var(--sw); }
+.xp-leg-dot { flex: none; width: 8px; height: 8px; margin: 0 3px; border-radius: 50%; background: var(--sw); }
+@container xpstage (max-width: 440px) { .xp-legend { top: auto; bottom: 10px; max-width: calc(100% - 20px); } .xp-legend ~ .cyl3d-hint, .cyl3d-hint { display: none; } }
+.xp-png img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+.xp-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; max-width: var(--content-max); margin: 10px auto 0; color: var(--ink-muted); font-size: 0.9rem; }
+.xp-status:empty { display: none; }
+.xp-ideas .card { display: flex; flex-direction: column; gap: 8px; }
+.xp-ideas .card h3, .xp-ideas .card p { margin: 0; }
+.xp-ideas .card .btn-row { margin-top: auto; padding-top: 2px; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page xp-page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Sandbox</p>
+    <h1>Inertia Explorer</h1>
+    <p class="lede">Build a body from standard parts, or load one of the presets, and see its center of mass, inertia tensor, principal axes and inertia ellipsoid update as you change it. Then spin it about any axis and compare \(\wvec\) with \(\Hvec\).</p>
+  </header>
+
+  <figure class="figure wide xp-fig" id="xp-figure" aria-labelledby="xp-cap">
+    <div class="viz stacked xp-viz">
+      <div class="viz-stage" id="xp-stage"></div>
+      <div class="viz-controls xp-panel">
+        <div class="tabs xp-tabs" id="xp-tabs">
+          <div role="tablist" aria-label="Explorer tools">
+            <button role="tab" aria-controls="xp-pane-body">Body</button>
+            <button role="tab" aria-controls="xp-pane-res">Inertia</button>
+            <button role="tab" aria-controls="xp-pane-spin">Spin</button>
+            <button role="tab" aria-controls="xp-pane-view">View</button>
+          </div>
+
+          <!-- Body -->
+          <div role="tabpanel" id="xp-pane-body" class="xp-pane">
+            <div class="field"><label for="xp-preset">Load a preset body</label><select id="xp-preset"></select></div>
+            <p class="xp-note" id="xp-preset-note"></p>
+            <div class="xp-sub">
+              <div class="xp-sub-head">
+                <p class="viz-title" id="xp-parts-title">Parts</p>
+                <div class="btn-row"><button type="button" class="btn small" id="xp-add">Add part</button><button type="button" class="btn small" id="xp-clear">Clear all</button></div>
+              </div>
+              <ol class="xp-list" id="xp-list" aria-labelledby="xp-parts-title"></ol>
+              <p class="xp-note" id="xp-empty">No parts yet. Press Add part, or load a preset.</p>
+              <p class="xp-note" id="xp-pick">Select a part in the list to edit it.</p>
+            </div>
+            <div class="xp-sub" id="xp-edit">
+              <p class="viz-title" id="xp-edit-title">Selected part</p>
+              <div class="xp-row2">
+                <div class="field"><label for="xp-type">Type</label><select id="xp-type"></select></div>
+                <div class="xp-field"><label for="xp-m">Mass (kg)</label><input class="xp-in" type="text" id="xp-m" autocomplete="off" spellcheck="false"></div>
+              </div>
+              <div class="xp-row3" id="xp-dims"></div>
+              <p class="xp-hint">Center of the part (m)</p>
+              <div class="xp-row3">
+                <div class="xp-field"><label for="xp-cx">\(x\)</label><input class="xp-in" type="text" id="xp-cx" autocomplete="off" spellcheck="false"></div>
+                <div class="xp-field"><label for="xp-cy">\(y\)</label><input class="xp-in" type="text" id="xp-cy" autocomplete="off" spellcheck="false"></div>
+                <div class="xp-field"><label for="xp-cz">\(z\)</label><input class="xp-in" type="text" id="xp-cz" autocomplete="off" spellcheck="false"></div>
+              </div>
+              <div id="xp-orient">
+                <p class="xp-hint" id="xp-orient-hint">Direction of the part's own \(z\)-axis</p>
+                <div class="xp-row3">
+                  <div class="xp-field"><label for="xp-ux">\(u_x\)</label><input class="xp-in" type="text" id="xp-ux" autocomplete="off" spellcheck="false"></div>
+                  <div class="xp-field"><label for="xp-uy">\(u_y\)</label><input class="xp-in" type="text" id="xp-uy" autocomplete="off" spellcheck="false"></div>
+                  <div class="xp-field"><label for="xp-uz">\(u_z\)</label><input class="xp-in" type="text" id="xp-uz" autocomplete="off" spellcheck="false"></div>
+                </div>
+                <div class="xp-row2" id="xp-roll-row">
+                  <div class="xp-field"><label for="xp-roll">Turn about own \(z\) (°)</label><input class="xp-in" type="text" id="xp-roll" autocomplete="off" spellcheck="false"></div>
+                </div>
+              </div>
+              <label class="xp-check" id="xp-hole-row"><input type="checkbox" id="xp-hole"> A hole: subtract this part</label>
+              <p class="xp-msg" id="xp-edit-msg" aria-live="polite"></p>
+              <div class="btn-row"><button type="button" class="btn small" id="xp-dup">Duplicate</button><button type="button" class="btn small" id="xp-del">Delete</button></div>
+            </div>
+          </div>
+
+          <!-- Inertia -->
+          <div role="tabpanel" id="xp-pane-res" class="xp-pane">
+            <p class="viz-title">Mass and center of mass</p>
+            <div class="readout-grid" id="xp-ro-mass" aria-live="off"></div>
+            <p class="viz-title" id="xp-ref-title">Tensor and principal axes about</p>
+            <div class="chip-row" id="xp-ref-chips" role="group" aria-labelledby="xp-ref-title"></div>
+            <p class="mat-label" id="xp-mat-label"></p>
+            <div class="mat-box" id="xp-mat" aria-live="off"></div>
+            <div class="readout-grid" id="xp-ro-princ" aria-live="off"></div>
+            <div class="fig-desc" id="xp-princ-vecs" aria-live="off"></div>
+            <div class="chip-row" id="xp-show-chips"></div>
+            <p class="xp-note">Products of inertia are \(I_{xy} = \int xy\,dm\), entered in the tensor with a minus sign. Principal axes are shown in one of their two directions.</p>
+          </div>
+
+          <!-- Spin -->
+          <div role="tabpanel" id="xp-pane-spin" class="xp-pane">
+            <p class="xp-note" id="xp-spin-about"></p>
+            <p class="viz-title">Spin axis</p>
+            <div class="btn-row" id="xp-axis-btns"></div>
+            <div id="xp-spin-sliders"></div>
+            <div class="readout-grid" id="xp-ro-spin" aria-live="off"></div>
+            <div class="btn-row" id="xp-spin-btns"></div>
+            <div class="chip-row" id="xp-spin-chips"></div>
+            <p class="xp-note">Arrows show directions only. When \(\Hvec\) is not along \(\wvec\), it turns with the body, and the bearings must supply \(\wvec \times \Hvec\).</p>
+          </div>
+
+          <!-- View -->
+          <div role="tabpanel" id="xp-pane-view" class="xp-pane">
+            <p class="viz-title">Scene</p>
+            <div class="xp-row2">
+              <div class="field"><label for="xp-grid">Floor grid</label>
+                <select id="xp-grid"><option value="cartesian">Cartesian</option><option value="none">None</option></select></div>
+              <div class="field"><label for="xp-reach">Axes reach</label>
+                <select id="xp-reach"><option value="0.25">±0.25 m</option><option value="0.5">±0.5 m</option><option value="1">±1 m</option><option value="1.5">±1.5 m</option><option value="2">±2 m</option></select></div>
+            </div>
+            <div class="btn-row"><button type="button" class="btn small" id="xp-reset-view">Reset view</button></div>
+            <p class="viz-title">Save a picture</p>
+            <div class="btn-row"><button type="button" class="btn" id="xp-png-btn">Make PNG</button></div>
+            <p class="xp-msg" id="xp-png-msg" aria-live="polite"></p>
+            <div class="xp-png" id="xp-png-out" hidden></div>
+            <p class="viz-title">Start over</p>
+            <div class="btn-row"><button type="button" class="btn small" id="xp-reset-all">Clear everything</button></div>
+            <p class="xp-note" id="xp-save-note"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="xp-status" id="xp-status" role="status" aria-live="polite" tabindex="-1"></div>
+    <figcaption id="xp-cap"><strong>The Explorer.</strong> Drag the view to rotate it; hold Ctrl (or ⌘) and scroll, or pinch, to zoom. The selected part is drawn in amber and holes in red. Build the body in the Body tab, read its inertia in the Inertia tab, and spin it in the Spin tab.</figcaption>
+  </figure>
+
+  <section id="how-to">
+    <h2>How to use the Explorer</h2>
+    <p>The <strong>Body</strong> tab holds a list of parts. Each part is a standard body from Lesson 2 (a slender rod, block, thin plate, cylinder, tube, disk, ring, sphere, shell, cone or particle) with a mass, dimensions, a center and a direction. Rods, cylinders, tubes, disks, rings and cones lie along their own \(z\)-axis; blocks and plates can also be turned about it. Tick <em>A hole</em> to subtract a part, as in Lesson 4. Any box accepts an expression such as <code>0.3/2</code> or <code>sqrt(2)/2</code>.</p>
+    <p>The <strong>Inertia</strong> tab shows the total mass, the center of mass \(G\), the inertia tensor about the origin \(O\) or about \(G\), and the principal moments and axes about that point (Lessons 4 to 8). The inertia ellipsoid's radius along any axis is proportional to \(1/\sqrt{I}\) about that axis.</p>
+    <p>The <strong>Spin</strong> tab spins the body about an axis through the same point. It shows the moment of inertia about that axis, \(\Hvec = \Imat\wvec\), the angle between \(\Hvec\) and \(\wvec\), and the kinetic energy (Lessons 6 and 7). Your body is saved in this browser, so it is still here next time.</p>
+  </section>
+
+  <section id="ideas" class="xp-ideas">
+    <h2>Ideas to try</h2>
+    <p>Each idea loads a ready-made body and replaces what is in the Explorer.</p>
+    <div class="grid-cards">
+      <div class="card">
+        <h3>The tennis-racket axis</h3>
+        <p>A T-handle has three different principal moments about \(G\). Find the intermediate axis, then toss a phone or a book about its three axes to see why that one is unstable (Lesson 8).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="thandle">Load this body</button></div>
+      </div>
+      <div class="card">
+        <h3>A tilted dumbbell</h3>
+        <p>Spin a dumbbell whose bar is tilted \(20^\circ\) from the \(xy\)-plane about \(z\). \(\Hvec\) leans away from \(\wvec\) and sweeps a cone (Lesson 6). Change the bar's direction to \((1, 0, 0)\) and the lean disappears.</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="dumbbell">Load this body</button></div>
+      </div>
+      <div class="card">
+        <h3>Balance a rotor</h3>
+        <p>A disk sits on a shaft with its axis tilted \(8^\circ\). Its center of mass is on the shaft, yet \(\Hvec\) is not. Set the disk's direction to \((0, 0, 1)\) to balance it dynamically (Lessons 6 and 8).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="rotor">Load this body</button></div>
+      </div>
+      <div class="card">
+        <h3>A flywheel with holes</h3>
+        <p>A steel flywheel with a bore and four lightening holes (Worksheet Problem 5). Compare \(I_{zz}\) with and without the holes, and notice that symmetry keeps \(z\) a principal axis (Lessons 4 and 8).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="flywheel">Load this body</button></div>
+      </div>
+      <div class="card">
+        <h3>The bent rod of Example 5.2</h3>
+        <p>Check the tensor about \(O\) against Example 5.2, then switch to \(G\) and compare with Example 8.3. Spin it about \(z\) at \(10\ \text{rad/s}\) to reproduce Example 6.2.</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="bent">Load this body</button></div>
+      </div>
+      <div class="card">
+        <h3>A small satellite</h3>
+        <p>The satellite from the home page. Find its principal axes, then spin it about the axis of maximum moment of inertia: the only spin that stays stable when a real spacecraft dissipates energy (Lesson 8).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="satellite">Load this body</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Inertia Explorer: a list of parts (INERT standard bodies) → INERT.assemble → tensor, principal axes,
+   ellipsoid, and a spin about any axis through O or G. The scene is saved with CYL.store.
+   ============================================================================================== */
+CYL.ready(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var D = Math.PI / 180, PI = Math.PI;
+  var STORE_KEY = 'explorer:scene:v1';
+  var TYPES = {
+    rod: { label: 'Slender rod', dims: [['l', 'Length (m)']], axis: true },
+    box: { label: 'Block', dims: [['a', 'Edge \\(a\\) along own \\(x\\)'], ['b', 'Edge \\(b\\) along own \\(y\\)'], ['c', 'Edge \\(c\\) along own \\(z\\)']], axis: true, roll: true },
+    plate: { label: 'Thin plate', dims: [['a', 'Side \\(a\\) along own \\(x\\)'], ['b', 'Side \\(b\\) along own \\(y\\)']], axis: true, roll: true },
+    cylinder: { label: 'Solid cylinder', dims: [['r', 'Radius (m)'], ['h', 'Length (m)']], axis: true },
+    tube: { label: 'Thick-walled tube', dims: [['r', 'Outer radius'], ['r0', 'Inner radius'], ['h', 'Length (m)']], axis: true },
+    disk: { label: 'Thin disk', dims: [['r', 'Radius (m)']], axis: true },
+    ring: { label: 'Thin ring', dims: [['r', 'Radius (m)']], axis: true },
+    sphere: { label: 'Solid sphere', dims: [['r', 'Radius (m)']] },
+    shell: { label: 'Spherical shell', dims: [['r', 'Radius (m)']] },
+    cone: { label: 'Solid cone', dims: [['r', 'Base radius'], ['h', 'Height (m)']], axis: true },
+    point: { label: 'Particle', dims: [] }
+  };
+  var DEF_D = { l: 0.4, a: 0.2, b: 0.1, c: 0.1, r: 0.06, r0: 0.04, h: 0.2 };
+
+  /* ---------------- presets ---------------- */
+  function P(type, m, d, center, axis, extra) { return Object.assign({ type: type, m: m, d: d || {}, center: center, axis: axis || [0, 0, 1], roll: 0, hole: false }, extra || {}); }
+  var SAT = (function () {
+    var b = [0.3, 0.2, 0.9], n = Math.sqrt(0.94), L = 0.8, base = [0.15, 0.1, 0.25];
+    b = b.map(function (x) { return x / n; });
+    var parts = [P('box', 60, { a: 0.5, b: 0.4, c: 0.5 }, [0, 0, 0]), P('plate', 8, { a: 0.35, b: 1 }, [0, 0.8, 0]), P('plate', 8, { a: 0.35, b: 1 }, [0, -0.8, 0]),
+      P('rod', 3, { l: L }, base.map(function (x, i) { return x + b[i] * L / 2; }), b), P('sphere', 6, { r: 0.07 }, base.map(function (x, i) { return x + b[i] * L; }))];
+    var G = INERT.assemble(parts.map(toINERT)).G;
+    parts.forEach(function (p) { p.center = p.center.map(function (x, i) { return round(x - G[i], 4); }); p.axis = p.axis.map(function (x) { return round(x, 4); }); });
+    return parts;
+  })();
+  var PRESETS = {
+    thandle: { label: 'T-handle (two rods)', reach: 0.5, ref: 'G', note: 'A 0.4 kg shaft along z and a 0.3 kg crossbar along y. Its three principal moments about G are all different.',
+      parts: [P('rod', 0.4, { l: 0.4 }, [0, 0, 0.2], [0, 0, 1]), P('rod', 0.3, { l: 0.3 }, [0, 0, 0.4], [0, 1, 0])], spin: { dir: [0, 1, 0] } },
+    dumbbell: { label: 'Tilted dumbbell', reach: 0.5, ref: 'O', note: 'Two 3 kg spheres on a 1 kg bar 0.6 m long, tilted 20° from the xy-plane. G is at the origin.',
+      parts: (function () { var u = [Math.cos(20 * D), 0, Math.sin(20 * D)].map(function (x) { return round(x, 4); }); return [P('rod', 1, { l: 0.6 }, [0, 0, 0], u), P('sphere', 3, { r: 0.06 }, u.map(function (x) { return round(0.3 * x, 4); })), P('sphere', 3, { r: 0.06 }, u.map(function (x) { return round(-0.3 * x, 4); }))]; })(),
+      spin: { dir: [0, 0, 1], spin: true } },
+    rotor: { label: 'Unbalanced rotor', reach: 0.5, ref: 'O', note: 'A 5 kg disk of radius 0.15 m on a 2 kg shaft, with its axis tilted 8° from the shaft (z).',
+      parts: [P('rod', 2, { l: 0.6 }, [0, 0, 0], [0, 0, 1]), P('disk', 5, { r: 0.15 }, [0, 0, 0], [round(Math.sin(8 * D), 4), 0, round(Math.cos(8 * D), 4)])], spin: { dir: [0, 0, 1], spin: true } },
+    flywheel: { label: 'Flywheel with holes', reach: 0.25, ref: 'O', note: 'A steel disk, radius 200 mm and 40 mm thick, with a 20 mm bore and four 30 mm holes at 120 mm (Worksheet Problem 5).',
+      parts: (function () {
+        var rho = 7850, t = 0.04, mh = round(rho * PI * 0.0009 * t, 4), list = [P('cylinder', round(rho * PI * 0.04 * t, 4), { r: 0.2, h: t }, [0, 0, 0]), P('cylinder', round(rho * PI * 0.0004 * t, 4), { r: 0.02, h: t }, [0, 0, 0], [0, 0, 1], { hole: true })];
+        for (var i = 0; i < 4; i++) list.push(P('cylinder', mh, { r: 0.03, h: t }, [round(0.12 * Math.cos(i * PI / 2), 4), round(0.12 * Math.sin(i * PI / 2), 4), 0], [0, 0, 1], { hole: true }));
+        return list;
+      })(), spin: { dir: [0, 0, 1] } },
+    bent: { label: 'Bent rod (Example 5.2)', reach: 0.5, ref: 'O', note: 'A 2 kg/m rod bent along x, y and z: O → A(0.4, 0, 0) → B(0.4, 0.3, 0) → C(0.4, 0.3, 0.2) m.',
+      parts: [P('rod', 0.8, { l: 0.4 }, [0.2, 0, 0], [1, 0, 0]), P('rod', 0.6, { l: 0.3 }, [0.4, 0.15, 0], [0, 1, 0]), P('rod', 0.4, { l: 0.2 }, [0.4, 0.3, 0.1], [0, 0, 1])], spin: { dir: [0, 0, 1], w: 10 } },
+    satellite: { label: 'Small satellite', reach: 1.5, ref: 'G', note: 'A 60 kg bus, two 8 kg solar panels and a 3 kg boom with a 6 kg tip mass, placed so that G is at the origin.',
+      parts: SAT, spin: { dir: [0, 0, 1] } },
+    sphere: { label: 'Offset sphere (Example 6.3)', reach: 0.5, ref: 'O', note: 'A 2 kg solid sphere of radius 0.1 m centered at (0.3, 0.2, 0) m.',
+      parts: [P('sphere', 2, { r: 0.1 }, [0.3, 0.2, 0])], spin: { dir: [0, 0, 1] } },
+    empty: { label: 'Empty (start from scratch)', reach: 0.5, ref: 'G', note: '', parts: [], spin: { dir: [0, 0, 1] } }
+  };
+  function round(x, k) { var f = Math.pow(10, k); return Math.round(x * f) / f; }
+  function clonePart(p) { return JSON.parse(JSON.stringify(p)); }
+
+  /* ---------------- state ---------------- */
+  var st = { reach: 0.5, grid: 'cartesian', parts: [], sel: -1, ref: 'G', showG: true, showAxes: true, showEll: false, showArrows: true,
+    phi: 0, lam: 90, w: 10, spinning: false, th: 0 };
+  function saveScene() {
+    CYL.store.set(STORE_KEY, { reach: st.reach, grid: st.grid, parts: st.parts, ref: st.ref, phi: st.phi, lam: st.lam, w: st.w,
+      showG: st.showG, showAxes: st.showAxes, showEll: st.showEll, showArrows: st.showArrows });
+  }
+  function loadScene() {
+    var s = CYL.store.get(STORE_KEY, null);
+    if (!s || !Array.isArray(s.parts)) return false;
+    var ok = s.parts.every(function (p) { return p && TYPES[p.type] && isFinite(p.m) && Array.isArray(p.center); });
+    if (!ok) return false;
+    Object.assign(st, { reach: +s.reach || 0.5, grid: s.grid === 'none' ? 'none' : 'cartesian', parts: s.parts, ref: s.ref === 'O' ? 'O' : 'G',
+      phi: isFinite(s.phi) ? +s.phi : 0, lam: isFinite(s.lam) ? +s.lam : 90, w: isFinite(s.w) ? +s.w : 10,
+      showG: s.showG !== false, showAxes: s.showAxes !== false, showEll: !!s.showEll, showArrows: s.showArrows !== false });
+    st.sel = -1;
+    return true;
+  }
+
+  /* ---------------- geometry ---------------- */
+  function mul(A, B) { var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]; for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) for (var k = 0; k < 3; k++) C[i][j] += A[i][k] * B[k][j]; return C; }
+  function Rz(deg) { var c = Math.cos(deg * D), s = Math.sin(deg * D); return [[c, -s, 0], [s, c, 0], [0, 0, 1]]; }
+  // The part's own axes (columns x, y, z) for its own z along u: the identity when u is +z, so a block or plate with
+  // the default direction keeps its a and b edges along x and y.
+  function frame(u) {
+    var z = unitv(u), ref = Math.abs(z[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+    var y = unitv([z[1] * ref[2] - z[2] * ref[1], z[2] * ref[0] - z[0] * ref[2], z[0] * ref[1] - z[1] * ref[0]]);
+    var x = [y[1] * z[2] - y[2] * z[1], y[2] * z[0] - y[0] * z[2], y[0] * z[1] - y[1] * z[0]];
+    return [[x[0], y[0], z[0]], [x[1], y[1], z[1]], [x[2], y[2], z[2]]];
+  }
+  function toINERT(p) {
+    var u = p.axis && (p.axis[0] || p.axis[1] || p.axis[2]) ? p.axis : [0, 0, 1];
+    return { type: p.type, m: p.m, d: p.d, center: p.center, rotation: mul(frame(u), Rz(p.roll || 0)), hole: !!p.hole };
+  }
+  function norm(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]); }
+  function unitv(a) { var n = norm(a) || 1; return [a[0] / n, a[1] / n, a[2] / n]; }
+  function dirFromAngles() { return [Math.cos(st.lam * D) * Math.cos(st.phi * D), Math.cos(st.lam * D) * Math.sin(st.phi * D), Math.sin(st.lam * D)]; }
+  function anglesFromDir(u) {
+    u = unitv(u);
+    st.lam = Math.asin(Math.max(-1, Math.min(1, u[2]))) / D;
+    st.phi = Math.abs(u[0]) + Math.abs(u[1]) < 1e-9 ? 0 : Math.atan2(u[1], u[0]) / D;
+  }
+  function rodrigues(u, a) {
+    var c = Math.cos(a), s = Math.sin(a), t = 1 - c, x = u[0], y = u[1], z = u[2];
+    return [[t * x * x + c, t * x * y - s * z, t * x * z + s * y], [t * x * y + s * z, t * y * y + c, t * y * z - s * x], [t * x * z - s * y, t * y * z + s * x, t * z * z + c]];
+  }
+  function mv(A, x) { return [A[0][0] * x[0] + A[0][1] * x[1] + A[0][2] * x[2], A[1][0] * x[0] + A[1][1] * x[1] + A[1][2] * x[2], A[2][0] * x[0] + A[2][1] * x[1] + A[2][2] * x[2]]; }
+
+  /* ---------------- the 3D view ---------------- */
+  var stage = $('xp-stage'), v = null, body = null, world = null, legend = null;
+  var COLS = ['bad', 'warn', 'good'];
+  function makeViewer() {
+    if (v) { v.dispose(); stage.innerHTML = ''; }
+    var R = st.reach;
+    v = CYL3D.create(stage, {
+      extent: R, zRange: [-R, R], grid: st.grid, gridStep: R <= 0.25 ? 0.05 : R <= 0.5 ? 0.1 : R <= 1 ? 0.2 : 0.5,
+      ui: ['iso', 'top', 'front', 'side', 'reset'], camera: { azimuth: 32, elevation: 22, zoom: 1 },
+      ariaLabel: 'The body built in the Explorer.'
+    });
+    legend = CYL.el('div', { class: 'xp-legend', 'aria-hidden': 'true' });
+    (v.el || stage).appendChild(legend);
+    body = v.group(); world = v.group();
+    v.controls && v.controls.addEventListener && v.controls.addEventListener('start', function () { /* keep spinning while the view is dragged */ });
+  }
+
+  var calc = null;                                      // latest results
+  function compute() {
+    var parts = st.parts.map(toINERT);
+    var A = INERT.assemble(parts);
+    var okMass = A.m > 1e-9;
+    var P0 = st.ref === 'G' && okMass ? A.G : [0, 0, 0];
+    var T = st.ref === 'G' && okMass ? A.IG : A.IO;
+    var eig = okMass ? INERT.eig(T) : null;
+    var u = dirFromAngles(), W = [u[0] * st.w, u[1] * st.w, u[2] * st.w], H = INERT.H(T, W);
+    calc = { A: A, okMass: okMass, P: P0, T: T, eig: eig, u: u, W: W, H: H, Iu: INERT.aboutAxis(T, u), KE: INERT.KE(T, W) };
+    return calc;
+  }
+
+  function redraw() {
+    var c = compute(), R = st.reach;
+    v.clear(body); v.clear(world);
+    body.position.set(0, 0, 0); body.quaternion.set(0, 0, 0, 1);
+    st.parts.forEach(function (p, i) {
+      INERT.draw(v, toINERT(p), { parent: body, rodRadius: 0.012 * R, thin: 0.01 * R, plateThickness: 0.01 * R, pointSize: 0.025 * R,
+        color: p.hole ? 'bad' : i === st.sel ? 'warn' : 'accent', opacity: p.hole ? 0.3 : i === st.sel ? 0.75 : 0.55 });
+    });
+    var leg = [];
+    if (c.okMass && st.showG) {
+      v.point(c.A.G, { color: 'point', size: 0.02 * R, label: 'G', parent: body });
+      leg.push(['dot', 'point', 'Center of mass \\(G\\)']);
+    }
+    if (c.okMass && c.eig) {
+      var V = c.eig.vectors, P0 = c.P, L = 0.75 * R;
+      if (st.showAxes) {
+        V.forEach(function (u0, i) {
+          var k = 0; for (var j = 1; j < 3; j++) if (Math.abs(u0[j]) > Math.abs(u0[k])) k = j;
+          var u = u0[k] < 0 ? u0.map(function (x) { return -x; }) : u0;
+          v.line([[P0[0] - L * u[0], P0[1] - L * u[1], P0[2] - L * u[2]], [P0[0] + L * u[0], P0[1] + L * u[1], P0[2] + L * u[2]]], { color: COLS[i], width: 2.2, parent: body });
+          v.label([P0[0] + L * u[0], P0[1] + L * u[1], P0[2] + L * u[2]], String(i + 1), { color: COLS[i], parent: body });
+        });
+        leg.push(['line', 'bad', 'Axis 1 (\\(I_1\\), max)'], ['line', 'warn', 'Axis 2'], ['line', 'good', 'Axis 3 (min)']);
+      }
+      if (st.showEll) {
+        var ev = c.eig.values, s = ev.map(function (x) { return 0.6 * R * Math.sqrt(Math.max(ev[2], 1e-12) / Math.max(x, 1e-12)); });
+        v.solid({ shape: 'ellipsoid', center: P0, size: s, rotation: [[V[0][0], V[1][0], V[2][0]], [V[0][1], V[1][1], V[2][1]], [V[0][2], V[1][2], V[2][2]]],
+          color: 'surface', opacity: 0.2, rings: true, segments: 64, parent: body });
+      }
+    }
+    if (st.showArrows && c.okMass) {
+      var P1 = c.P, u = c.u, LA = 0.85 * R;
+      v.line([[P1[0] - LA * u[0], P1[1] - LA * u[1], P1[2] - LA * u[2]], [P1[0] + LA * u[0], P1[1] + LA * u[1], P1[2] + LA * u[2]]], { color: 'muted', width: 1.2, dashed: true, parent: world });
+      world.userData.w = v.arrow(P1, [P1[0] + 0.7 * R * u[0], P1[1] + 0.7 * R * u[1], P1[2] + 0.7 * R * u[2]], { color: 'good', label: '\\wvec', width: 0.012 * R, headLength: 0.07 * R, headRadius: 0.028 * R, parent: world });
+      world.userData.h = v.arrow(P1, P1, { color: 'bad', label: '\\Hvec', width: 0.012 * R, headLength: 0.07 * R, headRadius: 0.028 * R, parent: world });
+      leg.push(['line', 'good', 'Angular velocity \\(\\wvec\\)'], ['line', 'bad', 'Angular momentum \\(\\Hvec\\)']);
+    } else { world.userData.w = world.userData.h = null; }
+    legend.innerHTML = leg.map(function (l) {
+      return '<div class="xp-leg"><span class="xp-leg-' + l[0] + '" style="--sw: var(--c-' + l[1] + ')"></span><span>' + l[2] + '</span></div>';
+    }).join('');
+    CYL.renderMath(legend);
+    v.setAriaLabel(describe(c));
+    placeSpin();
+    renderResults(c);
+    saveScene();
+  }
+  function placeSpin() {                                // body orientation for the current spin angle, and the H arrow
+    if (!calc || !calc.okMass) { v.render(); return; }
+    var c = calc, R3 = rodrigues(c.u, st.th), P0 = c.P, THREE = v.THREE;
+    if (THREE) {
+      body.quaternion.setFromAxisAngle(new THREE.Vector3(c.u[0], c.u[1], c.u[2]), st.th);
+      var RP = mv(R3, P0);
+      body.position.set(P0[0] - RP[0], P0[1] - RP[1], P0[2] - RP[2]);
+    }
+    if (world.userData.h) {
+      var Hw = mv(R3, c.H), n = norm(Hw), L = 0.7 * st.reach;
+      if (n > 1e-12) world.userData.h.set(P0, [P0[0] + L * Hw[0] / n, P0[1] + L * Hw[1] / n, P0[2] + L * Hw[2] / n]);
+    }
+    v.render();
+  }
+  function describe(c) {
+    if (!st.parts.length) return 'An empty scene: no parts yet.';
+    return 'A body made of ' + st.parts.length + ' part' + (st.parts.length > 1 ? 's' : '') + ': ' + st.parts.map(function (p) { return (p.hole ? 'a hole shaped as a ' : 'a ') + TYPES[p.type].label.toLowerCase(); }).join(', ') + '.' +
+      (c.okMass ? ' Total mass ' + CYL.fmt(c.A.m, 4) + ' kg, center of mass at (' + c.A.G.map(function (x) { return CYL.fmt(x, 3); }).join(', ') + ') m.' : ' The holes remove more mass than the parts have.') +
+      (st.showAxes && c.okMass ? ' Principal axes are drawn through ' + (st.ref === 'G' ? 'the center of mass.' : 'the origin.') : '');
+  }
+
+  /* ---------------- Inertia tab ---------------- */
+  var roM = CYL.readout('Total mass'), roG = CYL.readout('\\(G\\)');
+  $('xp-ro-mass').appendChild(roM.el); $('xp-ro-mass').appendChild(roG.el);
+  var tRefO = CYL.toggle({ label: 'Origin \\(O\\)', value: false, onChange: function () { setRef('O'); } });
+  var tRefG = CYL.toggle({ label: 'Center of mass \\(G\\)', value: true, onChange: function () { setRef('G'); } });
+  $('xp-ref-chips').appendChild(tRefO.el); $('xp-ref-chips').appendChild(tRefG.el);
+  function setRef(r) { st.ref = r; tRefO.set(r === 'O', true); tRefG.set(r === 'G', true); stopSpin(); redraw(); }
+  var roP = [0, 1, 2].map(function (i) { return CYL.readout('\\(I_' + (i + 1) + '\\)', { color: COLS[i] }); });
+  roP.forEach(function (r) { $('xp-ro-princ').appendChild(r.el); });
+  function showChip(key, label) { return CYL.toggle({ label: label, value: st[key], onChange: function (on) { st[key] = on; redraw(); } }); }
+  var chG = showChip('showG', 'Show \\(G\\)'), chA = showChip('showAxes', 'Principal axes'), chE = showChip('showEll', 'Inertia ellipsoid');
+  [chG, chA, chE].forEach(function (c) { $('xp-show-chips').appendChild(c.el); });
+  function renderResults(c) {
+    roM.set(CYL.fmt(c.A.m, 4) + ' kg');
+    roG.set(c.okMass ? INERT.texVec(c.A.G.map(function (x) { return Math.abs(x) < 1e-4 * st.reach ? 0 : x; }), 3) + '\\ \\text{m}' : '\\text{—}', { tex: true });
+    $('xp-mat-label').innerHTML = (st.ref === 'G' ? '\\(\\Imat_G\\)' : '\\(\\Imat_O\\)') + ' in \\(x, y, z\\) (kg·m²)';
+    CYL.renderMath($('xp-mat-label'));
+    CYL.setTex($('xp-mat'), INERT.texMatrix(c.T, 4), true);
+    if (c.eig) {
+      c.eig.values.forEach(function (x, i) { roP[i].set(CYL.fmt(x, 4) + ' kg·m²'); });
+      var vecs = c.eig.vectors.map(function (u0, i) {
+        var k = 0; for (var j = 1; j < 3; j++) if (Math.abs(u0[j]) > Math.abs(u0[k])) k = j;
+        var u = u0[k] < 0 ? u0.map(function (x) { return -x; }) : u0;
+        return '<p>\\(\\uvec_' + (i + 1) + ' = ' + INERT.texVec(u, 3) + '\\)</p>';
+      });
+      $('xp-princ-vecs').innerHTML = vecs.join('');
+      CYL.renderMath($('xp-princ-vecs'));
+    } else { roP.forEach(function (r) { r.set('—'); }); $('xp-princ-vecs').innerHTML = ''; }
+    // spin tab
+    $('xp-spin-about').innerHTML = 'The spin axis passes through ' + (st.ref === 'G' ? 'the center of mass \\(G\\)' : 'the origin \\(O\\)') + ' (change this in the Inertia tab).';
+    CYL.renderMath($('xp-spin-about'));
+    roU.set(INERT.texVec(c.u.map(function (x) { return Math.abs(x) < 5e-5 ? 0 : x; }), 3), { tex: true });
+    roIu.set(CYL.fmt(c.Iu, 4) + ' kg·m²');
+    roH.set(INERT.texVec(c.H, 4) + '\\ \\text{kg·m}^2/\\text{s}', { tex: true });
+    var Hn = norm(c.H), ang = Hn > 1e-12 ? Math.acos(Math.max(-1, Math.min(1, (c.H[0] * c.u[0] + c.H[1] * c.u[1] + c.H[2] * c.u[2]) / Hn))) / D : 0;
+    roAng.set(CYL.fmt(ang, 3) + '°');
+    roKE.set(CYL.fmt(c.KE, 4) + ' J');
+    var Mb = st.w * Math.sqrt(Math.max(0, Hn * Hn - Math.pow(c.H[0] * c.u[0] + c.H[1] * c.u[1] + c.H[2] * c.u[2], 2)));
+    roM2.set(CYL.fmt(Mb, 4) + ' N·m');
+  }
+
+  /* ---------------- Spin tab ---------------- */
+  var roU = CYL.readout('\\(\\uvec\\)', { color: 'good' }), roIu = CYL.readout('\\(I\\) about the spin axis'), roH = CYL.readout('\\(\\Hvec = \\Imat\\wvec\\)', { color: 'bad' });
+  var roAng = CYL.readout('Angle between \\(\\Hvec\\) and \\(\\wvec\\)'), roKE = CYL.readout('\\(T = \\tfrac12\\wvec\\cdot\\Hvec\\)'), roM2 = CYL.readout('Bearing moment \\(|\\wvec \\times \\Hvec|\\)');
+  [roU, roIu, roH, roAng, roKE, roM2].forEach(function (r) { $('xp-ro-spin').appendChild(r.el); });
+  var sPhi = CYL.slider({ label: 'Azimuth \\(\\phi\\)', min: -180, max: 180, step: 1, value: st.phi, unit: '°', onInput: function (x) { st.phi = x; redrawSoon(); } });
+  var sLam = CYL.slider({ label: 'Elevation \\(\\lambda\\)', min: -90, max: 90, step: 1, value: st.lam, unit: '°', onInput: function (x) { st.lam = x; redrawSoon(); } });
+  var sW = CYL.slider({ label: 'Spin rate \\(\\omega\\)', min: 1, max: 30, step: 1, value: st.w, unit: 'rad/s', color: 'good', onInput: function (x) { st.w = x; redrawSoon(); } });
+  [sPhi.el, sLam.el, sW.el].forEach(function (e) { $('xp-spin-sliders').appendChild(e); });
+  function setDir(u) { anglesFromDir(u); sPhi.set(Math.round(st.phi), true); sLam.set(Math.round(st.lam), true); stopSpin(); redraw(); }
+  [['\\(x\\)', [1, 0, 0]], ['\\(y\\)', [0, 1, 0]], ['\\(z\\)', [0, 0, 1]]].forEach(function (b) {
+    $('xp-axis-btns').appendChild(CYL.button('Along ' + b[0], function () { setDir(b[1]); }, { small: true }));
+  });
+  [0, 1, 2].forEach(function (i) {
+    $('xp-axis-btns').appendChild(CYL.button('Axis ' + (i + 1), function () { if (calc && calc.eig) setDir(calc.eig.vectors[i]); }, { small: true }));
+  });
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5.2v13.6L18.6 12z"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.8 5h3.6v14H6.8zM13.6 5h3.6v14h-3.6z"/></svg>';
+  var spinBtn = CYL.button(ICON_PLAY + '<span>Spin</span>', function () { if (stopAnim) stopSpin(); else startSpin(); }, { primary: true });
+  var resetSpin = CYL.button('Back to start', function () { stopSpin(); st.th = 0; placeSpin(); }, { small: true });
+  $('xp-spin-btns').appendChild(spinBtn); $('xp-spin-btns').appendChild(resetSpin);
+  var chW = CYL.toggle({ label: '\\(\\wvec\\) and \\(\\Hvec\\)', value: st.showArrows, onChange: function (on) { st.showArrows = on; redraw(); } });
+  $('xp-spin-chips').appendChild(chW.el);
+  var stopAnim = null;
+  function setSpinBtn(on) { spinBtn.innerHTML = (on ? ICON_PAUSE : ICON_PLAY) + '<span>' + (on ? 'Pause' : 'Spin') + '</span>'; }
+  function startSpin() {
+    if (stopAnim || !calc || !calc.okMass) return;
+    stopAnim = v.animate(function (dt) { st.th = (st.th + 1.2 * dt) % (2 * PI); placeSpin(); });
+    setSpinBtn(true);
+  }
+  function stopSpin() { if (stopAnim) { stopAnim(); stopAnim = null; } setSpinBtn(false); }
+  var redrawSoon = CYL.throttleRAF(function () { redraw(); });
+
+  /* ---------------- Body tab ---------------- */
+  var presetSel = $('xp-preset');
+  presetSel.appendChild(CYL.el('option', { value: '', text: 'Choose a preset…' }));
+  Object.keys(PRESETS).forEach(function (k) { presetSel.appendChild(CYL.el('option', { value: k, text: PRESETS[k].label })); });
+  presetSel.addEventListener('change', function () { if (presetSel.value) loadPreset(presetSel.value); });
+  var typeSel = $('xp-type');
+  Object.keys(TYPES).forEach(function (k) { typeSel.appendChild(CYL.el('option', { value: k, text: TYPES[k].label })); });
+
+  function partLabel(p) {
+    var d = p.d || {}, dims = TYPES[p.type].dims.map(function (x) { return x[0].replace('r0', 'rᵢ') + ' ' + CYL.fmt(d[x[0]], 3); }).join(', ');
+    return TYPES[p.type].label + ', ' + CYL.fmt(p.m, 4) + ' kg' + (dims ? ' · ' + dims : '');
+  }
+  var DEL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  function renderList() {
+    var list = $('xp-list');
+    list.innerHTML = '';
+    st.parts.forEach(function (p, i) {
+      var main = CYL.el('button', { type: 'button', class: 'xp-item-main', 'aria-pressed': String(i === st.sel) }, [
+        CYL.el('span', { class: 'xp-item-num', text: String(i + 1) }),
+        CYL.el('span', { class: 'xp-item-text', text: partLabel(p) }),
+        p.hole ? CYL.el('span', { class: 'xp-item-hole', text: 'hole' }) : null
+      ]);
+      main.addEventListener('click', function () { st.sel = i; renderList(); fillEditor(); redraw(); });
+      var del = CYL.el('button', { type: 'button', class: 'xp-del', 'aria-label': 'Delete part ' + (i + 1), html: DEL_SVG });
+      del.addEventListener('click', function () { removePart(i); });
+      list.appendChild(CYL.el('li', { class: 'xp-item' }, [main, del]));
+    });
+    $('xp-empty').hidden = st.parts.length > 0;
+    $('xp-pick').hidden = !st.parts.length || st.sel >= 0;
+    $('xp-edit').hidden = st.sel < 0;
+  }
+  var dimInputs = {};
+  function buildDims(type) {
+    var box = $('xp-dims');
+    box.innerHTML = ''; dimInputs = {};
+    TYPES[type].dims.forEach(function (d) {
+      var id = 'xp-d-' + d[0], inp = CYL.el('input', { class: 'xp-in', type: 'text', id: id, autocomplete: 'off', spellcheck: 'false' });
+      box.appendChild(CYL.el('div', { class: 'xp-field' }, [CYL.el('label', { for: id, html: d[1] }), inp]));
+      inp.addEventListener('input', onEdit);
+      dimInputs[d[0]] = inp;
+    });
+    box.hidden = !TYPES[type].dims.length;
+    CYL.renderMath(box);
+    $('xp-orient').hidden = !TYPES[type].axis;
+    $('xp-roll-row').hidden = !TYPES[type].roll;
+    $('xp-hole-row').hidden = type === 'point';
+  }
+  function fmtIn(x) { return String(+(+x).toPrecision(6)); }
+  function fillEditor() {
+    var p = st.parts[st.sel];
+    if (!p) { $('xp-edit').hidden = true; return; }
+    $('xp-edit').hidden = false;
+    $('xp-edit-title').textContent = 'Part ' + (st.sel + 1);
+    typeSel.value = p.type;
+    buildDims(p.type);
+    $('xp-m').value = fmtIn(p.m);
+    TYPES[p.type].dims.forEach(function (d) { dimInputs[d[0]].value = fmtIn(p.d[d[0]] != null ? p.d[d[0]] : DEF_D[d[0]]); });
+    ['x', 'y', 'z'].forEach(function (k, i) { $('xp-c' + k).value = fmtIn(p.center[i]); $('xp-u' + k).value = fmtIn((p.axis || [0, 0, 1])[i]); });
+    $('xp-roll').value = fmtIn(p.roll || 0);
+    $('xp-hole').checked = !!p.hole;
+    $('xp-edit-msg').textContent = ''; $('xp-edit-msg').className = 'xp-msg';
+    Array.prototype.forEach.call($('xp-edit').querySelectorAll('input.xp-in'), function (e) { e.removeAttribute('aria-invalid'); });
+  }
+  function num(inp) {
+    var x = CYLExpr.parseNumber(inp.value);
+    var ok = isFinite(x);
+    if (ok) inp.removeAttribute('aria-invalid'); else inp.setAttribute('aria-invalid', 'true');
+    return ok ? x : NaN;
+  }
+  function onEdit() {
+    var p = st.parts[st.sel];
+    if (!p) return;
+    var errs = [], mass = num($('xp-m'));
+    if (!(mass > 0)) { errs.push('The mass must be a positive number.'); $('xp-m').setAttribute('aria-invalid', 'true'); }
+    var d = {};
+    TYPES[p.type].dims.forEach(function (dd) {
+      var x = num(dimInputs[dd[0]]);
+      if (!(x > 0)) { errs.push('Every dimension must be a positive number.'); dimInputs[dd[0]].setAttribute('aria-invalid', 'true'); }
+      d[dd[0]] = x;
+    });
+    if (p.type === 'tube' && d.r0 >= d.r) { errs.push('The inner radius must be smaller than the outer radius.'); dimInputs.r0.setAttribute('aria-invalid', 'true'); }
+    var c = ['x', 'y', 'z'].map(function (k) { return num($('xp-c' + k)); });
+    if (c.some(function (x) { return !isFinite(x); })) errs.push('The center needs three numbers.');
+    var u = ['x', 'y', 'z'].map(function (k) { return num($('xp-u' + k)); });
+    if (TYPES[p.type].axis && (u.some(function (x) { return !isFinite(x); }) || norm(u) < 1e-9)) errs.push('The direction needs three numbers, not all zero.');
+    var roll = num($('xp-roll'));
+    if (TYPES[p.type].roll && !isFinite(roll)) errs.push('The turn must be a number of degrees.');
+    var msg = $('xp-edit-msg');
+    if (errs.length) { msg.textContent = errs.filter(function (e, i) { return errs.indexOf(e) === i; }).join(' '); msg.className = 'xp-msg is-error'; return; }
+    msg.textContent = ''; msg.className = 'xp-msg';
+    p.m = mass; p.d = d; p.center = c;
+    if (TYPES[p.type].axis) p.axis = u;
+    if (TYPES[p.type].roll) p.roll = roll;
+    p.hole = p.type !== 'point' && $('xp-hole').checked;
+    renderList(); stopSpin(); redraw();
+  }
+  ['xp-m', 'xp-cx', 'xp-cy', 'xp-cz', 'xp-ux', 'xp-uy', 'xp-uz', 'xp-roll'].forEach(function (id) { $(id).addEventListener('input', onEdit); });
+  $('xp-hole').addEventListener('change', onEdit);
+  typeSel.addEventListener('change', function () {
+    var p = st.parts[st.sel];
+    if (!p) return;
+    p.type = typeSel.value;
+    var d = {};
+    TYPES[p.type].dims.forEach(function (dd) { d[dd[0]] = p.d[dd[0]] != null ? p.d[dd[0]] : DEF_D[dd[0]]; });
+    if (p.type === 'tube' && d.r0 >= d.r) d.r0 = round(0.7 * d.r, 4);
+    p.d = d;
+    if (p.type === 'point') p.hole = false;
+    fillEditor(); renderList(); stopSpin(); redraw();
+  });
+  function addPart() {
+    st.parts.push(P('sphere', 1, { r: round(0.08 * st.reach, 4) }, [round(0.4 * st.reach, 4), 0, 0]));
+    st.sel = st.parts.length - 1;
+    renderList(); fillEditor(); stopSpin(); redraw();
+    status('Added part ' + st.parts.length + '. Edit it below the list.');
+  }
+  function removePart(i) {
+    st.parts.splice(i, 1);
+    st.sel = st.parts.length ? Math.min(i, st.parts.length - 1) : -1;
+    renderList(); fillEditor(); stopSpin(); redraw();
+    status('Deleted part ' + (i + 1) + '.');
+  }
+  $('xp-add').addEventListener('click', addPart);
+  $('xp-dup').addEventListener('click', function () {
+    var p = st.parts[st.sel]; if (!p) return;
+    var q = clonePart(p); q.center = [round(q.center[0] + 0.1 * st.reach, 4), q.center[1], q.center[2]];
+    st.parts.splice(st.sel + 1, 0, q); st.sel += 1;
+    renderList(); fillEditor(); stopSpin(); redraw();
+    status('Duplicated the part, moved a little along \\(x\\).');
+  });
+  $('xp-del').addEventListener('click', function () { if (st.sel >= 0) removePart(st.sel); });
+  $('xp-clear').addEventListener('click', function () { st.parts = []; st.sel = -1; renderList(); fillEditor(); stopSpin(); redraw(); status('Cleared all parts.'); });
+
+  /* ---------------- View tab ---------------- */
+  var gridSel = $('xp-grid'), reachSel = $('xp-reach');
+  gridSel.addEventListener('change', function () { st.grid = gridSel.value; rebuildViewer(); });
+  reachSel.addEventListener('change', function () { st.reach = +reachSel.value; rebuildViewer(); });
+  function rebuildViewer() { stopSpin(); makeViewer(); redraw(); }
+  $('xp-reset-view').addEventListener('click', function () { v.setView('iso', true); });
+  $('xp-png-btn').addEventListener('click', function () {
+    var url = v.screenshot ? v.screenshot() : null, out = $('xp-png-out'), msg = $('xp-png-msg');
+    out.innerHTML = '';
+    if (!url) { msg.textContent = 'This browser could not make a picture of the 3D view.'; out.hidden = true; return; }
+    var a = CYL.el('a', { href: url, download: 'inertia-explorer.png', class: 'btn small', text: 'Download the PNG' });
+    out.appendChild(CYL.el('img', { src: url, alt: 'Picture of the current 3D view' }));
+    out.appendChild(CYL.el('div', { class: 'btn-row' }, [a]));
+    out.hidden = false;
+    msg.textContent = 'Here is the picture. Download it, or right-click it and choose Copy image.';
+  });
+  $('xp-reset-all').addEventListener('click', function () { loadPreset('empty', true); status('Started over with an empty scene.'); });
+  $('xp-save-note').textContent = CYL.store.available() ? 'Your body is saved in this browser as you work.' : 'This browser is not saving data (for example in a private window), so your body lasts only until you close the page.';
+
+  /* ---------------- presets and ideas ---------------- */
+  function status(html) { var s = $('xp-status'); s.innerHTML = html; CYL.renderMath(s); }
+  function loadPreset(key, quiet) {
+    var pr = PRESETS[key]; if (!pr) return;
+    stopSpin();
+    st.parts = pr.parts.map(clonePart); st.sel = -1; st.ref = pr.ref || 'G'; st.th = 0;
+    var sp = pr.spin || {};
+    anglesFromDir(sp.dir || [0, 0, 1]); st.w = sp.w || 10;
+    tRefO.set(st.ref === 'O', true); tRefG.set(st.ref === 'G', true);
+    sPhi.set(Math.round(st.phi), true); sLam.set(Math.round(st.lam), true); sW.set(st.w, true);
+    $('xp-preset-note').textContent = pr.note || '';
+    presetSel.value = key === 'empty' ? '' : key;
+    if (st.reach !== pr.reach) { st.reach = pr.reach; reachSel.value = String(pr.reach); makeViewer(); }
+    renderList(); fillEditor(); redraw();
+    if (sp.spin) startSpin();
+    if (!quiet) status('Loaded “' + CYL.escapeHtml(pr.label) + '”.');
+  }
+  var TABS = Array.prototype.slice.call(document.querySelectorAll('#xp-tabs [role="tab"]'));
+  function showTab(i) { if (TABS[i]) TABS[i].click(); }
+  var IDEAS = {
+    thandle: function () { loadPreset('thandle'); st.showAxes = true; chA.set(true, true); redraw(); showTab(1); },
+    dumbbell: function () { loadPreset('dumbbell'); showTab(2); },
+    rotor: function () { loadPreset('rotor'); showTab(2); },
+    flywheel: function () { loadPreset('flywheel'); showTab(1); },
+    bent: function () { loadPreset('bent'); showTab(1); },
+    satellite: function () { loadPreset('satellite'); st.showEll = true; chE.set(true, true); redraw(); showTab(1); }
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-idea]'), function (b) {
+    b.setAttribute('aria-label', 'Load this body: ' + b.closest('.card').querySelector('h3').textContent);
+    b.addEventListener('click', function () {
+      IDEAS[b.getAttribute('data-idea')]();
+      var fig = $('xp-figure'), r = fig.getBoundingClientRect();
+      if (r.top < 0 || r.top > window.innerHeight * 0.5) fig.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      $('xp-status').focus({ preventScroll: true });
+    });
+  });
+
+  /* ---------------- start ---------------- */
+  var restored = loadScene();
+  reachSel.value = String(st.reach); gridSel.value = st.grid;
+  if (!reachSel.value) { st.reach = 0.5; reachSel.value = '0.5'; }
+  makeViewer();
+  chG.set(st.showG, true); chA.set(st.showAxes, true); chE.set(st.showEll, true); chW.set(st.showArrows, true);
+  if (restored) {
+    tRefO.set(st.ref === 'O', true); tRefG.set(st.ref === 'G', true);
+    sPhi.set(Math.round(st.phi), true); sLam.set(Math.round(st.lam), true); sW.set(st.w, true);
+    renderList(); fillEditor(); redraw();
+    status('Restored the body from your last visit.');
+  } else {
+    loadPreset('thandle', true);
+  }
+  window.__explorer = { state: st, calc: function () { return calc; }, loadPreset: loadPreset };
+});
+</script>
+</body>
+</html>

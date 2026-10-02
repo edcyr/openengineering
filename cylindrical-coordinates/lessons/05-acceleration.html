@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceleration · Cylindrical Coordinates</title>
+<meta name="description" content="Acceleration in polar and cylindrical coordinates: a = (r̈ − rθ̇²) u_r + (rθ̈ + 2ṙθ̇) u_θ + z̈ u_z. The centripetal and Coriolis terms, circular motion, and motions given as functions of time.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/polar-motion.js"></script>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 35 min</p>
+    <h1>Acceleration</h1>
+    <p class="lede">When a robot arm swings round and extends at the same time, its gripper accelerates even though every joint runs at a steady rate. Differentiating the velocity once more shows why, one term at a time.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Derive \(\avec = (\ddot r - r\dot\theta^2)\,\er + (r\ddot\theta + 2\dot r\dot\theta)\,\et + \ddot z\,\ez\).</li>
+      <li>Name the centripetal, Coriolis and angular-acceleration terms, and predict when each one is zero.</li>
+      <li>Connect circular motion in polar coordinates with the path (\(t\), \(n\)) components.</li>
+      <li>Find the velocity and acceleration of a motion given as \(r(t)\), \(\theta(t)\), \(z(t)\) at a given instant.</li>
+    </ul>
+  </section>
+
+  <section id="derivation">
+    <h2>Differentiating the velocity</h2>
+    <p>Start from \(\vvec = \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez\) and differentiate each term with the product rule. Every time a unit vector is differentiated, replace \(d\er/dt\) by \(\dot\theta\,\et\) and \(d\et/dt\) by \(-\dot\theta\,\er\):</p>
+    \[ \begin{aligned}
+      \frac{d}{dt}\left(\dot r\,\er\right) &= \ddot r\,\er + \dot r\dot\theta\,\et \\
+      \frac{d}{dt}\left(r\dot\theta\,\et\right) &= \dot r\dot\theta\,\et + r\ddot\theta\,\et - r\dot\theta^2\,\er \\
+      \frac{d}{dt}\left(\dot z\,\ez\right) &= \ddot z\,\ez
+    \end{aligned} \]
+    <p>The middle line has three terms because \(r\dot\theta\,\et\) is a product of three changing factors: \(r\), \(\dot\theta\) and \(\et\). Add the three lines and collect the \(\er\), \(\et\) and \(\ez\) parts:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Acceleration in cylindrical coordinates</p>
+      \[ \avec = \left(\ddot r - r\dot\theta^2\right)\colR{\er} + \left(r\ddot\theta + 2\dot r\dot\theta\right)\colT{\et} + \ddot z\,\colZ{\ez} \]
+      \[ a_r = \ddot r - r\dot\theta^2, \qquad a_\theta = r\ddot\theta + 2\dot r\dot\theta, \qquad a_z = \ddot z, \qquad a = \sqrt{a_r^2 + a_\theta^2 + a_z^2} \]
+    </div>
+
+    <p>Each piece has a name and a physical meaning:</p>
+    \[ \begin{aligned}
+      a_r &= \ddot r \underbrace{{}- r\dot\theta^2}_{\text{centripetal}} \\
+      a_\theta &= \underbrace{r\ddot\theta}_{\text{angular accel.}} + \underbrace{2\dot r\dot\theta}_{\text{Coriolis}}
+    \end{aligned} \]
+
+    <div class="table-wrap">
+      <table class="data">
+        <caption>The five acceleration terms</caption>
+        <thead>
+          <tr><th scope="col">Term</th><th scope="col">Direction</th><th scope="col">Name</th><th scope="col">Nonzero when…</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">\(\ddot r\)</th><td>\(\er\)</td><td>Radial (sliding) acceleration</td><td>the rate of moving in or out changes</td></tr>
+          <tr><th scope="row">\(-r\dot\theta^2\)</th><td>\(-\er\), toward the axis</td><td>Centripetal acceleration</td><td>the particle turns (\(\dot\theta \ne 0\)) away from the axis</td></tr>
+          <tr><th scope="row">\(r\ddot\theta\)</th><td>\(\et\)</td><td>Angular-acceleration term</td><td>the turning rate changes (\(\ddot\theta \ne 0\))</td></tr>
+          <tr><th scope="row">\(2\dot r\dot\theta\)</th><td>\(\et\)</td><td>Coriolis acceleration</td><td>the particle moves in or out <em>while</em> turning</td></tr>
+          <tr><th scope="row">\(\ddot z\)</th><td>\(\ez\)</td><td>Axial acceleration</td><td>the climbing rate changes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>Why the 2 in the Coriolis term?</strong> One \(\dot r\dot\theta\) comes from \(\er\) turning while the particle moves outward, so the radial velocity \(\dot r\,\er\) keeps changing direction. The other comes from \(v_\theta = r\dot\theta\) growing because \(r\) grows. Both point along \(\et\), so they add.</p>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistakes</p>
+      <ul>
+        <li>\(a_r\) is \(\ddot r - r\dot\theta^2\), not \(\ddot r\). A particle going round a circle at a steady rate has \(\ddot r = 0\) but still accelerates toward the axis.</li>
+        <li>\(a_\theta\) is \(r\ddot\theta + 2\dot r\dot\theta\). Constant joint rates (\(\ddot r = \ddot\theta = 0\)) do <em>not</em> mean zero acceleration.</li>
+        <li>\(\ddot r\) is the second derivative of the coordinate \(r\), not the acceleration component \(a_r\). Keep the two apart.</li>
+      </ul>
+    </aside>
+  </section>
+
+  <section id="circular">
+    <h2>Circular motion as a special case</h2>
+    <p>On a circle of radius \(r\) about \(O\), \(\dot r = \ddot r = 0\). What is left is</p>
+    \[ a_r = -r\dot\theta^2 = -\frac{v^2}{r}, \qquad a_\theta = r\ddot\theta = \dot v \qquad (v = r\dot\theta) \]
+    <p>These are the path components you know: the normal acceleration \(a_n = v^2/\rho\) points to the center (here \(-\er\), with \(\rho = r\)), and the tangential acceleration \(a_t = \dot v\) points along the path (here \(\et\) for counter-clockwise travel). For a circle centered on \(O\), polar and path components are the same thing. For any other path they differ, and the polar form is usually easier when the motion is given through \(r\) and \(\theta\).</p>
+  </section>
+
+  <section id="simulator">
+    <h2>See the terms in motion</h2>
+    <p>The simulator moves a particle with \(r(t)\), \(\theta(t)\) and \(z(t)\) that you choose, and draws \(\vvec\) and \(\avec\) at the particle together with their components along \(\er\), \(\et\) and \(\ez\). The live numbers list every term of the acceleration as it plays.</p>
+
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+        <div class="mf-readouts" id="fig51-readouts" aria-live="off"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> Choose a motion, press <em>Play</em>, or drag the time slider. The green arrow is the velocity \(\vvec\), tangent to the path; the red arrow is the acceleration \(\avec\). The thinner arrows are their components along \(\er\) (orange), \(\et\) (violet) and \(\ez\) (blue), drawn tip to tail so that each chain adds up to its vector. In <em>Robot arm</em>, \(\avec\) points toward the column but tilts forward, in the direction of rotation: that sideways part is the Coriolis term \(2\dot r\dot\theta\). In <em>Custom</em>, set \(\dot r = 0\) and the Coriolis term disappears.</figcaption>
+    </figure>
+  </section>
+
+  <section id="examples">
+    <h2>Worked examples</h2>
+
+    <div class="example">
+      <p class="example-title">Example 5.1 — A robot arm that extends while it slews</p>
+      <p>The robot of Example 4.1 rotates at a constant <span class="nowrap">\(\dot\theta = 2\ \text{rad/s}\),</span> extends at a constant <span class="nowrap">\(\dot r = 0.5\ \text{m/s}\)</span> and rises at a constant <span class="nowrap">\(\dot z = 0.3\ \text{m/s}\).</span> Find the acceleration of the gripper at the instant when <span class="nowrap">\(r = 1\ \text{m}\).</span></p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Every rate is constant, so \(\ddot r = \ddot\theta = \ddot z = 0\).</p>
+          \[ \begin{aligned}
+            a_r &= \ddot r - r\dot\theta^2 = 0 - (1)(2)^2 = -4\ \text{m/s}^2 \\
+            a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0 + 2(0.5)(2) = 2\ \text{m/s}^2 \\
+            a_z &= \ddot z = 0
+          \end{aligned} \]
+          \[ \avec = (-4\,\er + 2\,\et)\ \text{m/s}^2, \qquad a = \sqrt{(-4)^2 + 2^2} = 2\sqrt{5} \approx 4.472\ \text{m/s}^2 \]
+          <p><strong>Interpret.</strong> Although every joint runs at a constant rate, the gripper accelerates at \(4.472\ \text{m/s}^2\). The \(-4\,\er\) part is centripetal (toward the column); the \(2\,\et\) part is entirely Coriolis, because \(\ddot\theta = 0\). Together they tilt \(\avec\) by \(\tan^{-1}(2/4) \approx 26.57^\circ\) from \(-\er\) toward the direction of rotation. In Figure 5.1, choose <em>Robot arm</em> and press <em>Jump to Example 5.1</em>.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 5.2 — Riding a spiral slide</p>
+      <p>The chute of a spiral slide is a helix of radius <span class="nowrap">\(r = 2\ \text{m}\)</span> around a vertical pole. A child goes round the pole at a constant <span class="nowrap">\(\dot\theta = 0.8\ \text{rad/s}\)</span> and descends at a constant <span class="nowrap">\(\dot z = -0.5\ \text{m/s}\).</span> Find the child's velocity, speed and acceleration.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The radius is fixed, so \(\dot r = \ddot r = 0\); the rates \(\dot\theta\) and \(\dot z\) are constant, so \(\ddot\theta = \ddot z = 0\).</p>
+          \[ \vvec = r\dot\theta\,\et + \dot z\,\ez = (1.6\,\et - 0.5\,\ez)\ \text{m/s}, \qquad v = \sqrt{1.6^2 + 0.5^2} \approx 1.676\ \text{m/s} \]
+          \[ \begin{aligned}
+            a_r &= \ddot r - r\dot\theta^2 = 0 - (2)(0.8)^2 = -1.28\ \text{m/s}^2 \\
+            a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0, \qquad a_z = \ddot z = 0
+          \end{aligned} \]
+          <p><strong>Interpret.</strong> The speed is constant, yet the child accelerates, because the direction of \(\vvec\) keeps changing. The acceleration is purely centripetal: \(1.28\ \text{m/s}^2\) (about \(0.13g\)), horizontal and pointing straight at the pole. The chute slopes down at \(\tan^{-1}(0.5/1.6) \approx 17.35^\circ\), and one turn takes \(2\pi/0.8 \approx 7.854\ \text{s}\), during which the child drops \(3.927\ \text{m}\). <a href="07-equations-of-motion.html">Lesson 7</a> finds the force the chute exerts.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection: Coriolis in machines</p>
+      <p>The Coriolis term matters whenever something moves along a rotating part. A robot that extends its arm while slewing must push the payload sideways, and that push comes from the slew motor. Water flowing outward through the spinning impeller of a centrifugal pump is pushed sideways by the blades in the same way, which is how the impeller passes the motor's torque to the water.</p>
+    </aside>
+  </section>
+
+  <section id="functions-of-time">
+    <h2>Motion given as functions of time</h2>
+    <p>Many problems give the motion as \(r(t)\) and \(\theta(t)\) (and \(z(t)\)). The procedure is always the same:</p>
+    <ol>
+      <li>Differentiate each coordinate twice: \(r, \dot r, \ddot r\) and \(\theta, \dot\theta, \ddot\theta\) (and \(\dot z, \ddot z\)).</li>
+      <li>Evaluate all of them at the instant asked for.</li>
+      <li>Substitute into \(v_r, v_\theta\) and \(a_r, a_\theta\), and combine for the magnitudes.</li>
+    </ol>
+
+    <div class="example">
+      <p class="example-title">Example 5.3 — A collar on an accelerating rod</p>
+      <p>A rod turns in a horizontal plane with \(\theta = 0.5t^2\ \text{rad}\), and a collar slides along it with \(r = (1 + 0.2t^2)\ \text{m}\), where \(t\) is in seconds. Find the collar's velocity and acceleration at \(t = 2\ \text{s}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Derivatives at \(t = 2\ \text{s}\):</strong></p>
+          \[ \begin{aligned}
+            r &= 1 + 0.2t^2 = 1.8\ \text{m}, & \dot r &= 0.4t = 0.8\ \text{m/s}, & \ddot r &= 0.4\ \text{m/s}^2 \\
+            \theta &= 0.5t^2 = 2\ \text{rad}, & \dot\theta &= t = 2\ \text{rad/s}, & \ddot\theta &= 1\ \text{rad/s}^2
+          \end{aligned} \]
+          <p><strong>Velocity:</strong></p>
+          \[ v_r = \dot r = 0.8\ \text{m/s}, \quad v_\theta = r\dot\theta = (1.8)(2) = 3.6\ \text{m/s}, \quad v = \sqrt{0.8^2 + 3.6^2} \approx 3.688\ \text{m/s} \]
+          <p><strong>Acceleration:</strong></p>
+          \[ \begin{aligned}
+            a_r &= \ddot r - r\dot\theta^2 = 0.4 - (1.8)(2)^2 = -6.8\ \text{m/s}^2 \\
+            a_\theta &= r\ddot\theta + 2\dot r\dot\theta = (1.8)(1) + 2(0.8)(2) = 1.8 + 3.2 = 5.0\ \text{m/s}^2 \\
+            a &= \sqrt{(-6.8)^2 + 5.0^2} \approx 8.440\ \text{m/s}^2
+          \end{aligned} \]
+          <p>The Coriolis term (\(3.2\ \text{m/s}^2\)) is larger than the angular-acceleration term (\(1.8\ \text{m/s}^2\)). Figure 5.2 shows this motion.</p>
+        </div>
+      </details>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig52-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig52-stage"></div>
+        <div class="viz-controls" id="fig52-controls"></div>
+        <div class="mf-readouts" id="fig52-readouts" aria-live="off"></div>
+      </div>
+      <figcaption id="fig52-cap"><strong>Figure 5.2</strong> Example 5.3 seen from above: \(r = (1 + 0.2t^2)\ \text{m}\) and \(\theta = 0.5t^2\ \text{rad}\), for \(0 \le t \le 2.5\ \text{s}\). The rod (gray) turns faster and faster while the collar slides out. The red acceleration arrow is split into \(a_r\,\er\) (orange) and \(a_\theta\,\et\) (violet); the live numbers split \(a_r\) and \(a_\theta\) into their terms. Press <em>Jump to t = 2 s</em> to check the example.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\avec = (\ddot r - r\dot\theta^2)\,\er + (r\ddot\theta + 2\dot r\dot\theta)\,\et + \ddot z\,\ez\).</li>
+      <li>\(-r\dot\theta^2\) is centripetal (toward the axis), \(2\dot r\dot\theta\) is Coriolis (moving in or out while turning) and \(r\ddot\theta\) comes from a changing turning rate.</li>
+      <li>Constant joint rates do not mean zero acceleration: a slewing, extending arm still accelerates.</li>
+      <li>On a circle about \(O\): \(a_r = -v^2/r\) and \(a_\theta = \dot v\), the normal and tangential accelerations.</li>
+      <li>For motion given as functions of time: differentiate twice, evaluate at the instant, substitute.</li>
+      <li>Next, <a href="06-paths-r-theta.html">Lesson 6</a> handles particles guided along a path \(r = f(\theta)\).</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: animated particle with v, a and their components (3D) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  var stage = document.getElementById('fig51-stage');
+  var panel = document.getElementById('fig51-controls');
+  var RMAX = 2.5, ZMIN = 0, ZMAX = 4, TCUSTOM = 6;
+  // Every motion has r(t) = r0 + rd·t, θ(t) = th0 + thd·t + ½·thdd·t², z(t) = z0 + zd·t (so r̈ = z̈ = 0).
+  var PRESETS = {
+    arm: { r0: 0.5, rd: 0.5, th0: 0, thd: 2, thdd: 0, z0: 1.5, zd: 0.3, T: 3, speed: 0.5 },
+    helix: { r0: 2, rd: 0, th0: 0, thd: 0.8, thdd: 0, z0: 4, zd: -0.5, T: 8, speed: 1 }
+  };
+  var custom = { r0: 1, rd: 0.2, th0: 0, thd: 1, thdd: 0, z0: 0.5, zd: 0.2 };
+  var CAMS = {
+    arm: { azimuth: 38, elevation: 28, zoom: 1.6, target: [0.3, 0.1, 1.15] },
+    helix: { azimuth: 36, elevation: 30, zoom: 1.12, target: [0.3, 0.3, 1.45] },
+    custom: { azimuth: 32, elevation: 24, zoom: 1.25, target: [0, 0, 1.6] },
+    arm1: { azimuth: 58, elevation: 42, zoom: 1.6, target: [0.15, 0.2, 1.3] }   // the Example 5.1 instant
+  };
+  function motion(p) {
+    return {
+      r: function (t) { return Math.max(0, p.r0 + p.rd * t); }, rd: function () { return p.rd; }, rdd: function () { return 0; },
+      th: function (t) { return p.th0 + p.thd * t + 0.5 * p.thdd * t * t; }, thd: function (t) { return p.thd + p.thdd * t; }, thdd: function () { return p.thdd; },
+      z: function (t) { return p.z0 + p.zd * t; }, zd: function () { return p.zd; }, zdd: function () { return 0; }
+    };
+  }
+  // Custom motions stop early when the particle reaches the axis or the edge of the view.
+  function customDuration(p) {
+    var T = TCUSTOM, why = '';
+    function lim(tt, reason) { if (tt < T - 1e-9) { T = Math.max(0, tt); why = reason; } }
+    if (p.rd < 0) lim(p.r0 / -p.rd, 'the particle reaches the axis (\\(r = 0\\))');
+    if (p.rd > 0) lim((RMAX - p.r0) / p.rd, '\\(r\\) reaches 2.5 m, the edge of the view');
+    if (p.zd > 0) lim((ZMAX - p.z0) / p.zd, '\\(z\\) reaches 4 m, the top of the view');
+    if (p.zd < 0) lim((p.z0 - ZMIN) / -p.zd, '\\(z\\) reaches 0, the floor of the view');
+    return { T: T, why: why };
+  }
+  var state = { preset: 'arm', stopWhy: '' };
+  var sc = {};
+
+  var selEl = CYL.el('div');
+  var desc = CYL.el('div', { class: 'mf-desc' });
+  var jumpRow = CYL.el('div', { class: 'btn-row' });
+  var customBox = CYL.el('div', { class: 'mf-custom' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Choose a motion' }));
+  panel.appendChild(selEl);
+  panel.appendChild(desc);
+  panel.appendChild(jumpRow);
+  panel.appendChild(customBox);
+
+  var fig = POLAR.figure3d({
+    stage: stage, controls: panel, readoutsEl: document.getElementById('fig51-readouts'),
+    motion: motion(PRESETS.arm), t0: 0, t1: PRESETS.arm.T, t: 0, speed: PRESETS.arm.speed,
+    extent: 2.5, zRange: [-0.2, 4.2], camera: CAMS.arm,
+    show: { v: true, a: true, vc: false, ac: true, radial: false, drop: false },
+    toggles: ['path', 'v', 'a', 'vc', 'ac'],
+    readouts: ['t', 'r', 'th', 'z', 'thd', 'vr', 'vt', 'vz', 'v', 'ar', 'ar_rdd', 'ar_cent', 'at', 'at_ang', 'at_cor', 'az', 'a'],
+    decorate: function (v) {
+      sc.arm = POLAR.robotArm(v);
+      var H = PRESETS.helix;
+      sc.slide = POLAR.helixSlide(v, { r: H.r0, th0: H.th0, thd: H.thd, z0: H.z0, zd: H.zd, t1: H.T });
+      sc.v = v;
+      return { update: function (s) { if (state.preset === 'arm') sc.arm.update(s); } };
+    },
+    aria: 'Animated 3D view of a particle moving in cylindrical coordinates. A trace shows its path so far. A green arrow at the particle is its velocity v, tangent to the path, and a red arrow is its acceleration a. Thinner arrows show their components along u_r (orange), u_theta (violet) and u_z (blue), drawn tip to tail so they add up to the vector. A panel of live numbers lists every component.'
+  });
+
+  var presetSel = CYL.select({
+    label: 'Motion',
+    options: [{ value: 'arm', label: 'Robot arm: rotate + extend' }, { value: 'helix', label: 'Spiral slide (helix)' }, { value: 'custom', label: 'Custom motion' }],
+    value: 'arm',
+    onChange: function (val) { setPreset(val, true); }
+  });
+  selEl.appendChild(presetSel.el);
+  jumpRow.appendChild(CYL.button('<span>Jump to Example 5.1 (\\(t = 1\\ \\text{s}\\))</span>', function () { fig.setT(1); fig.setCamera(CAMS.arm1, true); }, { small: true }));
+  function setCustom(key) { return function (x) { custom[key] = x; customChanged(); }; }
+  var cs = {
+    r0: CYL.slider({ label: '\\(r_0\\) start radius', min: 0, max: 2.5, step: 0.1, value: custom.r0, color: 'r', unit: 'm', onInput: setCustom('r0') }),
+    rd: CYL.slider({ label: '\\(\\dot r\\) radial rate', min: -0.5, max: 0.5, step: 0.05, value: custom.rd, color: 'r', unit: 'm/s', onInput: setCustom('rd') }),
+    th0: CYL.angleSlider({ label: '\\(\\theta_0\\) start angle', min: 0, max: 71 * PI / 36, snap: PI / 36, value: custom.th0, onInput: setCustom('th0') }),
+    thd: CYL.slider({ label: '\\(\\dot\\theta_0\\) start turning rate', min: -2, max: 2, step: 0.1, value: custom.thd, color: 't', unit: 'rad/s', onInput: setCustom('thd') }),
+    thdd: CYL.slider({ label: '\\(\\ddot\\theta\\) angular acceleration', min: -0.5, max: 0.5, step: 0.05, value: custom.thdd, color: 't', unit: 'rad/s\u00b2', onInput: setCustom('thdd') }),
+    z0: CYL.slider({ label: '\\(z_0\\) start height', min: 0, max: 4, step: 0.1, value: custom.z0, color: 'z', unit: 'm', onInput: setCustom('z0') }),
+    zd: CYL.slider({ label: '\\(\\dot z\\) vertical rate', min: -0.5, max: 0.5, step: 0.05, value: custom.zd, color: 'z', unit: 'm/s', onInput: setCustom('zd') })
+  };
+  ['r0', 'rd', 'th0', 'thd', 'thdd', 'z0', 'zd'].forEach(function (k) { customBox.appendChild(cs[k].el); });
+  customBox.hidden = true;
+
+  function describe() {
+    var html;
+    if (state.preset === 'arm') {
+      html = '<p>A cylindrical robot: \\(r = (0.5 + 0.5t)\\ \\text{m}\\), \\(\\theta = 2t\\ \\text{rad}\\), \\(z = (1.5 + 0.3t)\\ \\text{m}\\), for \\(0 \\le t \\le 3\\ \\text{s}\\). Every joint runs at a constant rate.</p>';
+    } else if (state.preset === 'helix') {
+      html = '<p>A spiral slide: \\(r = 2\\ \\text{m}\\), \\(\\theta = 0.8t\\ \\text{rad}\\), \\(z = (4 - 0.5t)\\ \\text{m}\\), for \\(0 \\le t \\le 8\\ \\text{s}\\). The numbers match Example 5.2 at every instant.</p>';
+    } else {
+      html = '<p>\\(r = r_0 + \\dot r\\,t\\), \\(\\theta = \\theta_0 + \\dot\\theta_0\\,t + \\tfrac12\\ddot\\theta\\,t^2\\), \\(z = z_0 + \\dot z\\,t\\), for up to \\(6\\ \\text{s}\\).</p>' +
+        (state.stopWhy ? '<p class="mf-stop">Stops at \\(t = ' + CYL.fmtTex(fig ? figT1 : 0, 3) + '\\ \\text{s}\\): ' + state.stopWhy + '.</p>' : '');
+    }
+    desc.innerHTML = html;
+    CYL.renderMath(desc);
+  }
+  var figT1 = PRESETS.arm.T;
+  function scenery() {
+    sc.arm.group.visible = state.preset === 'arm';
+    sc.slide.group.visible = state.preset === 'helix';
+    fig.setShow('radial', state.preset !== 'arm');
+    fig.setShow('drop', state.preset === 'custom');
+    sc.v.render();
+  }
+  function setPreset(name, animateCam) {
+    state.preset = name;
+    customBox.hidden = name !== 'custom';
+    jumpRow.hidden = name !== 'arm';
+    if (name === 'custom') {
+      var d = customDuration(custom);
+      figT1 = d.T; state.stopWhy = d.why;
+      fig.setMotion(motion(custom), 0, Math.max(1e-6, d.T), 0);
+    } else {
+      var P = PRESETS[name];
+      figT1 = P.T; state.stopWhy = '';
+      fig.setMotion(motion(P), 0, P.T, 0);
+    }
+    fig.setCamera(CAMS[name], animateCam);
+    scenery();
+    describe();
+  }
+  function customChanged() {
+    if (state.preset !== 'custom') return;
+    var d = customDuration(custom);
+    var u = figT1 > 0 ? fig.t() / figT1 : 0;
+    figT1 = d.T; state.stopWhy = d.why;
+    fig.setMotion(motion(custom), 0, Math.max(1e-6, d.T), u * d.T);
+    describe();
+  }
+  setPreset('arm', false);
+  if (!CYL.prefersReducedMotion()) fig.play();
+  else fig.setT(1);
+});
+
+/* ---------- Figure 5.2: Example 5.3, a collar on an accelerating rod (2D) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var panel = document.getElementById('fig52-controls');
+  var fig = POLAR.figure({
+    stage: document.getElementById('fig52-stage'), controls: panel, readoutsEl: document.getElementById('fig52-readouts'),
+    motion: {
+      r: function (t) { return 1 + 0.2 * t * t; }, rd: function (t) { return 0.4 * t; }, rdd: function () { return 0.4; },
+      th: function (t) { return 0.5 * t * t; }, thd: function (t) { return t; }, thdd: function () { return 1; }
+    },
+    t0: 0, t1: 2.5, t: 2, speed: 0.5, loop: true,
+    xRange: [-2.6, 2.6], yRange: [-2.6, 2.6], polarStep: { r: 0.5, thetaDeg: 30 },
+    arm: { length: 2.4, width: 8 },
+    vScale: 5, aScale: 5,
+    show: { v: false, a: true, comps: 'rt', trace: true, radial: false },
+    toggles: ['v', 'a', 'comps'],
+    readouts: ['t', 'r', 'th', 'rd', 'thd', 'rdd', 'thdd', 'vr', 'vt', 'v', 'ar', 'ar_rdd', 'ar_cent', 'at', 'at_ang', 'at_cor', 'a'],
+    aria: 'Top view of a rod pivoted at the origin O that turns faster and faster, with a collar P sliding outward along it. A red acceleration arrow at P is split into its radial component along the rod and its transverse component across the rod.'
+  });
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [CYL.button('<span>Jump to \\(t = 2\\ \\text{s}\\)</span>', function () { fig.setT(2); }, { small: true })]));
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1',
+    type: 'fields',
+    prompt: 'A bead slides along a straight rod that turns in a horizontal plane about a vertical axis. At one instant ' +
+      '<span class="nowrap">\\(r = 0.25\\ \\text{m}\\),</span> <span class="nowrap">\\(\\dot r = 0.5\\ \\text{m/s}\\),</span> <span class="nowrap">\\(\\ddot r = -0.2\\ \\text{m/s}^2\\),</span> <span class="nowrap">\\(\\dot\\theta = 4\\ \\text{rad/s}\\)</span> and ' +
+      '<span class="nowrap">\\(\\ddot\\theta = 2\\ \\text{rad/s}^2\\).</span> Find the acceleration components of the bead.',
+    fields: [
+      { name: 'ar', label: '\\(a_r =\\)', answer: -4.2, unit: 'm/s²' },
+      { name: 'at', label: '\\(a_\\theta =\\)', answer: 4.5, unit: 'm/s²' },
+      { name: 'az', label: '\\(a_z =\\)', answer: 0, unit: 'm/s²' }
+    ],
+    hints: [
+      '\\(a_r = \\ddot r - r\\dot\\theta^2\\), \\(a_\\theta = r\\ddot\\theta + 2\\dot r\\dot\\theta\\), \\(a_z = \\ddot z\\).',
+      'The rod stays in a horizontal plane, so \\(z\\) never changes and \\(a_z = 0\\). For \\(a_r\\): \\(-0.2 - (0.25)(4)^2\\).'
+    ],
+    explain: 'The radial component combines \\(\\ddot r\\) with the centripetal term; the transverse component combines \\(r\\ddot\\theta\\) with the Coriolis term.',
+    solution: '\\[ \\begin{aligned} a_r &= \\ddot r - r\\dot\\theta^2 = -0.2 - (0.25)(16) = -4.2\\ \\text{m/s}^2 \\\\ ' +
+      'a_\\theta &= r\\ddot\\theta + 2\\dot r\\dot\\theta = (0.25)(2) + 2(0.5)(4) = 0.5 + 4 = 4.5\\ \\text{m/s}^2 \\\\ ' +
+      'a_z &= \\ddot z = 0 \\end{aligned} \\]' +
+      '<p>The Coriolis term, \\(4\\ \\text{m/s}^2\\), is most of \\(a_\\theta\\). The magnitude is \\(\\sqrt{(-4.2)^2 + 4.5^2} \\approx 6.155\\ \\text{m/s}^2\\).</p>'
+  });
+
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2',
+    type: 'mc',
+    prompt: 'A test car drives around a flat, circular track centered on \\(O\\) and is <strong>speeding up</strong>. Which acceleration components are nonzero?',
+    choices: [
+      { html: '\\(a_r\\) and \\(a_\\theta\\)', correct: true,
+        feedback: '\\(a_r = -r\\dot\\theta^2\\) points toward the center, and \\(a_\\theta = r\\ddot\\theta\\) is there because the car speeds up. The Coriolis term \\(2\\dot r\\dot\\theta\\) is zero because \\(\\dot r = 0\\).' },
+      { html: '\\(a_r\\) only', feedback: 'The centripetal term is there, but speeding up means \\(\\ddot\\theta \\ne 0\\), so \\(a_\\theta = r\\ddot\\theta\\) is nonzero too.' },
+      { html: '\\(a_\\theta\\) only', feedback: 'Any motion round a circle with \\(\\dot\\theta \\ne 0\\) has the centripetal term \\(a_r = -r\\dot\\theta^2\\).' },
+      { html: '\\(a_r\\), \\(a_\\theta\\) and \\(a_z\\)', feedback: 'The track is flat, so \\(z\\) is constant and \\(a_z = \\ddot z = 0\\).' }
+    ],
+    hints: ['The radius is constant, so \\(\\dot r = \\ddot r = 0\\). Which of the five terms survive?'],
+    explain: 'Check the five terms one at a time: a term is zero exactly when one of its factors is zero.',
+    solution: '<p>With \\(r\\) constant, \\(\\dot r = \\ddot r = 0\\), and on a flat track \\(\\ddot z = 0\\). What is left is</p>' +
+      '\\[ \\avec = -r\\dot\\theta^2\\,\\er + r\\ddot\\theta\\,\\et \\]' +
+      '<p>The first term is centripetal and the second comes from the changing turning rate. So \\(a_r\\) and \\(a_\\theta\\) are nonzero, and \\(a_z = 0\\).</p>'
+  });
+
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3',
+    type: 'fields',
+    prompt: 'A particle moves in a plane with \\(r = (2 + 0.5t^2)\\ \\text{m}\\) and \\(\\theta = 0.4t^2\\ \\text{rad}\\), where \\(t\\) is in seconds. Find \\(a_r\\) and \\(a_\\theta\\) at \\(t = 1\\ \\text{s}\\).',
+    fields: [
+      { name: 'ar', label: '\\(a_r =\\)', answer: -0.6, unit: 'm/s²' },
+      { name: 'at', label: '\\(a_\\theta =\\)', answer: 3.6, unit: 'm/s²' }
+    ],
+    hints: ['At \\(t = 1\\ \\text{s}\\): \\(r = 2.5\\), \\(\\dot r = t = 1\\), \\(\\ddot r = 1\\); \\(\\dot\\theta = 0.8t = 0.8\\), \\(\\ddot\\theta = 0.8\\).',
+      'Substitute into \\(a_r = \\ddot r - r\\dot\\theta^2\\) and \\(a_\\theta = r\\ddot\\theta + 2\\dot r\\dot\\theta\\).'],
+    explain: 'Differentiate twice, evaluate at the instant, then substitute.',
+    solution: '\\[ \\begin{aligned} a_r &= \\ddot r - r\\dot\\theta^2 = 1 - (2.5)(0.8)^2 = 1 - 1.6 = -0.6\\ \\text{m/s}^2 \\\\ a_\\theta &= r\\ddot\\theta + 2\\dot r\\dot\\theta = (2.5)(0.8) + 2(1)(0.8) = 2 + 1.6 = 3.6\\ \\text{m/s}^2 \\end{aligned} \\]'
+  });
+});
+</script>
+</body>
+</html>

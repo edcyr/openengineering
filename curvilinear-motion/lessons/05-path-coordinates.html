@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Path Coordinates: Tangential and Normal · Curvilinear Motion</title>
+<meta name="description" content="Normal and tangential (path) coordinates: the unit vectors u_t and u_n that travel with the particle, the radius and center of curvature, the osculating circle, and velocity v = v u_t.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 30 min</p>
+    <h1>Path Coordinates: Tangential and Normal</h1>
+    <p class="lede">A driver does not think in compass directions. They think "forward" and "sideways toward the inside of the bend". Path coordinates formalize that view, and they make curved-path problems remarkably short.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Define the tangential and normal unit vectors \(\et\) and \(\en\), and draw them at any point of a path.</li>
+      <li>Explain the radius of curvature \(\rho\), the center of curvature and the osculating circle.</li>
+      <li>Write the velocity in path coordinates as \(\vvec = v\,\et\), and explain why it has no normal component.</li>
+      <li>Find \(\et\) and \(\en\) in terms of \(\ihat\) and \(\jhat\) from the slope of the path and the direction of travel.</li>
+    </ul>
+  </section>
+
+  <section id="idea">
+    <h2>Axes that ride with the particle</h2>
+    <p>In <dfn>path coordinates</dfn> (also called <dfn>normal and tangential</dfn>, or \(n\)–\(t\), coordinates) the origin is the particle itself, and the two axes move with it:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">The path unit vectors</p>
+      <ul>
+        <li>\(\colT{\et}\), the <dfn>tangential</dfn> unit vector, is tangent to the path and points in the <strong>direction of motion</strong>.</li>
+        <li>\(\colN{\en}\), the <dfn>normal</dfn> unit vector, is perpendicular to \(\et\) and points toward the <strong>center of curvature</strong>, on the concave (inner) side of the path.</li>
+      </ul>
+    </div>
+
+    <p>Compare this with rectangular coordinates. There, \(\ihat\) and \(\jhat\) are fixed and the particle's coordinates change. Here, the particle is always at the origin of its own frame, and it is the <em>unit vectors</em> that change direction as the particle moves. That is the price of path coordinates; Lesson 6 shows it is also where the normal acceleration comes from.</p>
+
+    <aside class="callout note">
+      <p class="callout-title">How to decide which way \(\en\) points</p>
+      <p>Look at the path near the particle and ask which side it curves toward. \(\en\) points to that side, whichever way the particle is travelling. Reversing the direction of travel flips \(\et\) but <em>not</em> \(\en\).</p>
+    </aside>
+  </section>
+
+  <section id="curvature">
+    <h2>Radius of curvature and the osculating circle</h2>
+    <p>Near any point, a smooth curve looks like an arc of a circle. The circle that fits the curve best there (same tangent, and bending at the same rate) is the <dfn>osculating circle</dfn>, from the Latin for "kissing". Its radius is the <dfn>radius of curvature</dfn> \(\rho\) and its center is the <dfn>center of curvature</dfn> \(C\). The normal \(\en\) points from the particle toward \(C\).</p>
+    <ul>
+      <li>A circle of radius \(R\) has \(\rho = R\) everywhere.</li>
+      <li>A straight line never bends: \(\rho = \infty\), and \(\en\) is undefined (any sideways direction will do, since it will be multiplied by zero).</li>
+      <li>A tight bend has a small \(\rho\); a gentle one has a large \(\rho\). The <dfn>curvature</dfn> \(\kappa = 1/\rho\) measures how sharply the path bends.</li>
+      <li>At an <dfn>inflection point</dfn>, where the path switches from bending one way to bending the other, \(\rho \to \infty\) and \(\en\) jumps to the other side of the path.</li>
+    </ul>
+
+    <figure class="figure" aria-labelledby="fig51-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> A car on a winding road, \(y = 1.6\sin(0.7x)\) (metres). Violet \(\et\) always points forward along the road; orange \(\en\) points into each bend, toward the center \(C\) of the dashed osculating circle. Drag the car through the S-bend: at the inflection points the circle grows without limit (\(\rho \to \infty\)) and \(\en\) flips to the other side.</figcaption>
+    </figure>
+    <p>Lesson 7 gives formulas for \(\rho\). For now, the picture is what matters: at every point there is a best-fit circle, and \(\en\) points to its center.</p>
+  </section>
+
+  <section id="velocity">
+    <h2>Velocity in path coordinates</h2>
+    <p>Measure distance along the path by the <dfn>path coordinate</dfn> \(s\), increasing in the direction of motion. Lesson 2 showed that \(\vvec\) is tangent to the path with magnitude \(v = ds/dt\). Since \(\et\) is <em>defined</em> as the unit tangent in the direction of motion,</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Velocity in path coordinates</p>
+      \[ \vvec = v\,\colT{\et}, \qquad v = \dot s = \frac{ds}{dt} \]
+      <p>The velocity has <strong>no normal component</strong>: \(v_t = v\) and \(v_n = 0\), always.</p>
+    </div>
+
+    <p>That is the great simplification of path coordinates: one number, the speed, describes the velocity completely. All the complexity moves into the acceleration, where \(\et\) turning produces a normal part. You will see it in Lesson 6.</p>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: a normal velocity</p>
+      <p>There is no "\(v_n\)". If your answer has a velocity component along \(\en\), the frame is not a path frame: either \(\et\) is not along the velocity, or you have mixed \(n\)–\(t\) with \(x\)–\(y\) components.</p>
+    </aside>
+  </section>
+
+  <section id="in-xy">
+    <h2>Writing \(\et\) and \(\en\) with \(\ihat\) and \(\jhat\)</h2>
+    <p>To connect the two systems you often need \(\et\) and \(\en\) in rectangular form. Let \(\psi\) be the angle from the \(+x\) axis to the direction of motion. Then</p>
+    \[ \et = \cos\psi\,\ihat + \sin\psi\,\jhat, \qquad \en = \pm(-\sin\psi\,\ihat + \cos\psi\,\jhat) \]
+    <p>Both choices of sign are perpendicular to \(\et\); take the one that points to the concave side (\(+\) when the path turns counter-clockwise, that is, to the left of the direction of travel). If the velocity is known, \(\et = \vvec/v\).</p>
+
+    <div class="example">
+      <p class="example-title">Example 5.1 — Unit vectors on a parabolic guide</p>
+      <p>A bead slides along the wire \(y = x^2/4\) (metres) in the \(+x\) direction. Find \(\et\) and \(\en\) at \(x = 2\ \text{m}\). What changes if the bead moves in the \(-x\) direction instead?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Tangent.</strong> The slope is \(dy/dx = x/2 = 1\) at \(x = 2\), so the tangent direction is \(\ihat + \jhat\) (angle \(45^\circ\)). Moving in \(+x\):</p>
+          \[ \et = \frac{\ihat + \jhat}{\sqrt2} = 0.7071\,\ihat + 0.7071\,\jhat \]
+          <p><strong>Normal.</strong> The two perpendicular unit vectors are \(\pm(-\ihat + \jhat)/\sqrt2\). The parabola opens upward (\(d^2y/dx^2 = \tfrac12 \gt 0\)), so its concave side is above it and \(\en\) must have a positive \(y\) component:</p>
+          \[ \en = \frac{-\ihat + \jhat}{\sqrt2} = -0.7071\,\ihat + 0.7071\,\jhat \]
+          <p><strong>Moving in \(-x\).</strong> \(\et\) reverses: \(\et = -0.7071\,\ihat - 0.7071\,\jhat\). The parabola still bends upward, so \(\en\) is unchanged.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 5.2 — A car on a highway curve</p>
+      <p>A car travels at \(90\ \text{km/h}\) round a curve of radius \(300\ \text{m}\). Write its velocity in path coordinates.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Convert: \(90\ \text{km/h} = 90/3.6 = 25\ \text{m/s}\). In path coordinates \(\vvec = v\,\et\), so \(\vvec = 25\,\et\ \text{m/s}\). That is the whole answer: the radius of the curve does not affect the velocity (it will affect the acceleration), and there is no \(\en\) part.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Path coordinates ride with the particle: \(\et\) points along the path in the direction of motion, \(\en\) points toward the center of curvature.</li>
+      <li>The osculating circle fits the path best at a point; its radius is \(\rho\). A straight line has \(\rho = \infty\); an inflection point flips \(\en\).</li>
+      <li>\(\vvec = v\,\et\): the velocity has no normal component.</li>
+      <li>\(\et = \cos\psi\,\ihat + \sin\psi\,\jhat = \vvec/v\); \(\en\) is perpendicular to it, on the concave side.</li>
+      <li>Next: <a href="06-nt-acceleration.html">Lesson 6</a> differentiates \(\vvec = v\,\et\) and finds the famous \(v^2/\rho\).</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 5.1: winding road with the n-t frame and the osculating circle ---------- */
+CYL.ready(function () {
+  'use strict';
+  var A = 1.6, k = 0.7;
+  CURV.figure({
+    stage: document.getElementById('fig51-stage'), controls: document.getElementById('fig51-controls'),
+    motion: {
+      x: function (t) { return t; }, y: function (t) { return A * Math.sin(k * t); },
+      vx: function () { return 1; }, vy: function (t) { return A * k * Math.cos(k * t); },
+      ax: function () { return 0; }, ay: function (t) { return -A * k * k * Math.sin(k * t); }
+    },
+    t0: -0.5, t1: 13, t: 1.2, speed: 1.2, xRange: [-1, 13.5], yRange: [-4.2, 4.2], gridStep: 1,
+    show: { v: false, a: false, frame: true, circle: true, trace: false },
+    toggles: ['frame', 'circle', 'v'], readouts: ['pos', 'psi', 'rho'],
+    decorate: function (p) {
+      p.fn(function (x) { return A * Math.sin(k * x) + 0.45; }, { color: 'surface', width: 1.2, domain: [-1, 13.5] });
+      p.fn(function (x) { return A * Math.sin(k * x) - 0.45; }, { color: 'surface', width: 1.2, domain: [-1, 13.5] });
+    },
+    aria: 'A winding road shaped like a sine wave. At the car, a violet unit vector u_t points forward along the road and an orange unit vector u_n points toward the inside of the bend, ' +
+      'toward the center C of a dashed osculating circle that touches the road at the car. Near the inflection points the circle becomes very large.'
+  });
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var H = Math.SQRT1_2;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1', type: 'mc',
+    prompt: 'In path coordinates, how is the velocity of a particle written?',
+    choices: [
+      { html: '\\(\\vvec = v\\,\\et\\)', correct: true },
+      { html: '\\(\\vvec = v\\,\\et + \\dfrac{v^2}{\\rho}\\,\\en\\)', feedback: '\\(v^2/\\rho\\) is the normal <em>acceleration</em> (Lesson 6). The velocity has no normal part.' },
+      { html: '\\(\\vvec = v_t\\,\\et + v_n\\,\\en\\), with \\(v_n \\ne 0\\) on a curve', feedback: '\\(\\et\\) is defined along the velocity, so \\(v_n = 0\\) always, even on a curve.' },
+      { html: '\\(\\vvec = v\\,\\en\\)', feedback: '\\(\\en\\) is perpendicular to the path. The velocity is tangent to the path.' }
+    ],
+    hints: ['Which way does \\(\\vvec\\) point relative to the path (Lesson 2)?', 'Which unit vector is defined along that direction?'],
+    explain: '\\(\\et\\) is the unit tangent in the direction of motion, so \\(\\vvec = v\\,\\et\\) exactly.',
+    solution: '<p>The velocity is tangent to the path and points the way the particle moves, and \\(\\et\\) is defined as exactly that direction. So \\(\\vvec = v\\,\\et\\) with \\(v = ds/dt\\), and there is no \\(\\en\\) component.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2', type: 'fields',
+    prompt: 'A particle moves along \\(y = -0.25x^2\\) (metres) in the <strong>\\(-x\\) direction</strong>. At \\(x = 2\\ \\text{m}\\), give the components of \\(\\et\\) and \\(\\en\\).',
+    fields: [
+      { name: 'etx', label: '\\(\\et\\cdot\\ihat =\\)', answer: -H, tol: 0.01 },
+      { name: 'ety', label: '\\(\\et\\cdot\\jhat =\\)', answer: H, tol: 0.01 },
+      { name: 'enx', label: '\\(\\en\\cdot\\ihat =\\)', answer: -H, tol: 0.01 },
+      { name: 'eny', label: '\\(\\en\\cdot\\jhat =\\)', answer: -H, tol: 0.01 }
+    ],
+    hints: ['Slope at \\(x = 2\\): \\(dy/dx = -0.5x = -1\\). The tangent line runs along \\(\\ihat - \\jhat\\).', 'Moving in \\(-x\\) reverses that: \\(\\et \\propto -\\ihat + \\jhat\\). The parabola opens downward, so \\(\\en\\) points down.'],
+    explain: '\\(\\et\\) follows the direction of travel; \\(\\en\\) points to the concave side whatever the direction of travel.',
+    solution: '<p>The tangent direction is \\(\\pm(\\ihat - \\jhat)/\\sqrt2\\). Moving toward \\(-x\\) picks \\(\\et = (-\\ihat + \\jhat)/\\sqrt2 \\approx -0.7071\\,\\ihat + 0.7071\\,\\jhat\\).</p>' +
+      '<p>The perpendicular directions are \\(\\pm(\\ihat + \\jhat)/\\sqrt2\\). \\(y\'\' = -0.5 \\lt 0\\): the curve is concave down, so \\(\\en = (-\\ihat - \\jhat)/\\sqrt2 \\approx -0.7071\\,\\ihat - 0.7071\\,\\jhat\\). Check: \\(\\et\\cdot\\en = 0.5 - 0.5 = 0\\). ✓</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3', type: 'mc',
+    prompt: 'A cyclist rides over the crest of a rounded hump in the road. At the very top, which way does \\(\\en\\) point?',
+    choices: [
+      { html: 'Straight down, toward the center of curvature below the road', correct: true },
+      { html: 'Straight up, away from the road', feedback: 'At a crest the road bends downward on both sides, so the concave side (and the center of curvature) is below.' },
+      { html: 'Forward, in the direction of travel', feedback: 'That is \\(\\et\\). \\(\\en\\) is perpendicular to it.' },
+      { html: 'It is undefined, because the road is horizontal at the top', feedback: 'Horizontal means the slope is zero, not the curvature. The hump still bends, so \\(\\rho\\) is finite and \\(\\en\\) is defined.' }
+    ],
+    hints: ['Where is the center of the circle that best fits the top of the hump?'],
+    explain: '\\(\\en\\) points to the center of curvature, on the concave side of the path.',
+    solution: '<p>The osculating circle at the crest sits under the road, like a wheel under a rope. \\(\\en\\) points from the cyclist toward its center: straight down.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l05-q4', type: 'mc',
+    prompt: 'On an S-shaped road, what happens at the point where the road stops bending left and starts bending right?',
+    choices: [
+      { html: 'The radius of curvature becomes infinite and \\(\\en\\) switches to the other side of the road.', correct: true },
+      { html: 'The radius of curvature becomes zero.', feedback: '\\(\\rho = 0\\) would be an infinitely sharp corner. At the switch-over the road is momentarily straight: \\(\\rho \\to \\infty\\).' },
+      { html: '\\(\\et\\) reverses direction.', feedback: '\\(\\et\\) follows the motion, which does not reverse. It is \\(\\en\\) that flips.' },
+      { html: 'Nothing: \\(\\en\\) always points to the driver\'s left.', feedback: '\\(\\en\\) points to the inside of the bend, which is left on a left bend and right on a right bend.' }
+    ],
+    hints: ['Try it in Figure 5.1: drag the car through an inflection point.'],
+    explain: 'At an inflection point the curvature is zero (\\(\\rho = \\infty\\)) and the concave side changes.',
+    solution: '<p>The switch-over point is an <em>inflection point</em>. The path is momentarily straight there, so the osculating circle becomes a straight line (\\(\\rho \\to \\infty\\)). Either side, the concave side is different, so \\(\\en\\) jumps across.</p>'
+  });
+});
+</script>
+</body>
+</html>

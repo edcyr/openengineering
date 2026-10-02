@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Euler's Equations of Motion · Angular Momentum</title>
+<meta name="description" content="The rate of change of angular momentum in a rotating frame, Euler's equations for a rigid body in principal axes, the modified form for axisymmetric bodies, gyroscopic moments, and why spin about the intermediate principal axis is unstable.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/angmom.js"></script>
+<script src="../assets/js/spin.js"></script>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 35 min</p>
+    <h1>Euler's Equations of Motion</h1>
+    <p class="lede">\(\sum\Mvec = \dot{\Hvec}\) is easy to write and awkward to use: the inertia tensor is constant only in axes that turn with the body, but \(\dot{\Hvec}\) must be taken in fixed axes. Euler's trick is to differentiate in the rotating axes and add a correction for their rotation. The result explains gyroscopic moments, wobbling rotors and why a tossed book flips.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Differentiate a vector expressed in rotating axes: \(\dot{\Hvec} = (\dot{\Hvec})_{xyz} + \Wvec \times \Hvec\).</li>
+      <li>Write and apply Euler's equations in principal body axes.</li>
+      <li>Use the modified form with \(\Wvec \ne \wvec\) for axisymmetric bodies, and compute gyroscopic moments.</li>
+      <li>Explain the stability of free rotation about the maximum and minimum principal axes, and the instability about the intermediate axis.</li>
+    </ul>
+  </section>
+
+  <section id="rotating-frame">
+    <h2>Rates of change in rotating axes</h2>
+    <p>Let axes \(x, y, z\) rotate with angular velocity \(\Wvec\). A vector written in them, \(\mathbf{A} = A_x\ihat + A_y\jhat + A_z\khat\), changes for two reasons: its components change, and the unit vectors turn (\(\dot{\ihat} = \Wvec \times \ihat\), and so on). So</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Derivative in a rotating frame</p>
+      \[ \dot{\mathbf{A}} = (\dot{\mathbf{A}})_{xyz} + \Wvec \times \mathbf{A}, \qquad (\dot{\mathbf{A}})_{xyz} = \dot A_x\ihat + \dot A_y\jhat + \dot A_z\khat \]
+      <p>Applied to angular momentum about \(G\) (or a fixed point \(O\)): \(\sum\Mvec = (\dot{\Hvec})_{xyz} + \Wvec \times \Hvec\).</p>
+    </div>
+
+    <p>The natural choice is axes fixed in the body, \(\Wvec = \wvec\): then the inertia tensor in those axes never changes. Choosing them along the principal axes also removes the products of inertia.</p>
+  </section>
+
+  <section id="euler">
+    <h2>Euler's equations</h2>
+    <p>With \(\Wvec = \wvec\) and principal body axes, \(\Hvec = (I_x\omega_x,\ I_y\omega_y,\ I_z\omega_z)\) and \((\dot{\Hvec})_{xyz} = (I_x\dot\omega_x,\ I_y\dot\omega_y,\ I_z\dot\omega_z)\). Expanding \(\wvec \times \Hvec\):</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Euler's equations (principal axes fixed in the body)</p>
+      \[ \begin{aligned} \sum M_x &= I_x\dot\omega_x - (I_y - I_z)\,\omega_y\omega_z \\ \sum M_y &= I_y\dot\omega_y - (I_z - I_x)\,\omega_z\omega_x \\ \sum M_z &= I_z\dot\omega_z - (I_x - I_y)\,\omega_x\omega_y \end{aligned} \]
+      <p>Moments about \(G\), or about a fixed point \(O\) with principal moments about \(O\). The components are along the body axes at the instant considered.</p>
+    </div>
+
+    <p>For plane motion (\(\omega_x = \omega_y = 0\)) the third equation reduces to \(\sum M_z = I_z\dot\omega_z\): the familiar \(\sum M_G = I_G\alpha\). The extra product terms are what 3D adds.</p>
+
+    <div class="example">
+      <p class="example-title">Example 7.1 — The moments behind a tumbling motion</p>
+      <p>A body has principal moments \(I_x = 10\), \(I_y = 15\), \(I_z = 20\ \text{kg·m}^2\) about \(G\). At an instant \(\wvec = (1,\ 2,\ 3)\ \text{rad/s}\) and \(\dot{\wvec} = (0.5,\ 0,\ -0.2)\ \text{rad/s}^2\) in body axes. Find the moment about \(G\) that produces this motion.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \begin{aligned} M_x &= 10(0.5) - (15 - 20)(2)(3) = 5 + 30 = 35\ \text{N·m} \\ M_y &= 15(0) - (20 - 10)(3)(1) = -30\ \text{N·m} \\ M_z &= 20(-0.2) - (10 - 15)(1)(2) = -4 + 10 = 6\ \text{N·m} \end{aligned} \]
+          <p>A moment of \(-30\ \text{N·m}\) about \(y\) is needed even though \(\dot\omega_y = 0\): keeping \(\omega_y\) steady while the body turns about \(x\) and \(z\) takes effort.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="modified">
+    <h2>Axisymmetric bodies: letting the frame lag the body</h2>
+    <p>For a wheel, rotor or gyroscope, any axes through the symmetry axis are principal, whether or not they spin with the body. It is then convenient to let the axes follow the axle but not the spin. The frame turns at \(\Wvec\), the body at \(\wvec = \Wvec + \omega_s\khat\), and</p>
+    \[ \sum\Mvec = (\dot{\Hvec})_{xyz} + \Wvec \times \Hvec, \qquad \Hvec = I_x\omega_x\ihat + I_y\omega_y\jhat + I_z\omega_z\khat \]
+    <p>For <strong>steady</strong> motion (every component constant in the rotating axes) the first term vanishes and \(\sum\Mvec = \Wvec \times \Hvec\).</p>
+
+    <div class="example">
+      <p class="example-title">Example 7.2 — The moment on a turning axle</p>
+      <p>The disk of Lesson 6 (Example 6.1) spins at \(30\ \text{rad/s}\) on its axle while the axle turns about the vertical at a steady \(2\ \text{rad/s}\). What moment about the pivot \(O\) is needed to keep this motion going?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Use axes turning with the axle, \(\Wvec = 2\khat\), with \(x\) along the axle. From Example 6.1, \(\Hvec_O = 2.40\,\ihat + 2.08\,\khat\), constant in these axes.</p>
+          \[ \sum\Mvec_O = \Wvec \times \Hvec_O = 2\khat \times (2.40\,\ihat + 2.08\,\khat) = 4.80\,\jhat\ \text{N·m} \]
+          <p>The moment is horizontal and perpendicular to the axle. Only the spin part of \(\Hvec\) contributes: \(M = I_s\omega_s\Omega = 0.08(30)(2)\). This is a <dfn>gyroscopic moment</dfn>. Lesson 8 finds the precession rate at which gravity alone supplies it.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection: gyroscopic loads</p>
+      <p>Any fast rotor that is turned about a perpendicular axis loads its bearings with \(M = I_s\omega_s\Omega\). A jet engine's spool when the aircraft pitches, a ship's turbine in a rolling sea, a car's wheels when it corners, and a hard-disk platter in a laptop swung around all feel it. Designers size the bearings, and sometimes the airframe, for these moments.</p>
+    </aside>
+  </section>
+
+  <section id="stability">
+    <h2>Free rotation and the intermediate axis</h2>
+    <p>With no moments, Euler's equations still allow interesting motion. Spin a body about principal axis \(x\) at \(\omega_x \approx n\), with tiny wobbles \(\omega_y\), \(\omega_z\). To first order the second and third equations give</p>
+    \[ \ddot\omega_y = \frac{(I_z - I_x)(I_x - I_y)}{I_y I_z}\,n^2\,\omega_y \]
+    <p>If \(x\) is the axis of maximum or minimum moment, the factor is negative: \(\omega_y\) oscillates, and the wobble stays small. If \(x\) is the intermediate axis, the factor is positive: the wobble grows exponentially and the body flips. \(\Hvec\) is conserved throughout (no moments), so it is \(\wvec\) and the body that wander.</p>
+
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> A book-shaped block (\(24 \times 16 \times 4\ \text{cm}\), \(1\ \text{kg}\)) tossed spinning at \(10\ \text{rad/s}\), simulated by integrating Euler's equations. Choose the spin axis. About the maximum axis (\(z\), normal to the cover) or the minimum axis (\(x\), the long one) the block spins steadily; about the intermediate axis (\(y\)) a 1% disturbance grows until the block flips, again and again. The red \(\colH{\Hvec}\) never moves; the green \(\colW{\wvec}\) does.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 7.3 — How fast does the book flip?</p>
+      <p>For the block of Figure 7.1, \(I_x = 2.267\), \(I_y = 4.933\), \(I_z = 6.933\) (all \(\times 10^{-3}\ \text{kg·m}^2\)). Spinning about \(y\) at \(n = 10\ \text{rad/s}\), how fast does a small wobble grow? And spinning about \(z\), at what rate does a wobble oscillate?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>About the intermediate axis \(y\) (swap the roles of \(x\) and \(y\) in the equation above):</p>
+          \[ \lambda^2 = \frac{(I_z - I_y)(I_y - I_x)}{I_x I_z}\,n^2 = \frac{(2.000)(2.667)}{(2.267)(6.933)}(100) = 33.9\ \text{s}^{-2}, \qquad \lambda = 5.83\ \text{s}^{-1} \]
+          <p>A wobble grows by a factor \(e\) every \(0.17\ \text{s}\): a 1% disturbance becomes the whole spin in under a second.</p>
+          <p>About the maximum axis \(z\): \(\dfrac{(I_x - I_z)(I_z - I_y)}{I_x I_y}n^2 = -83.5\ \text{s}^{-2}\), a negative factor, so the wobble oscillates at \(\sqrt{83.5} = 9.14\ \text{rad/s}\) and stays small.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\sum\Mvec = (\dot{\Hvec})_{xyz} + \Wvec \times \Hvec\) in axes rotating at \(\Wvec\).</li>
+      <li>Euler's equations: \(\sum M_x = I_x\dot\omega_x - (I_y - I_z)\omega_y\omega_z\), and cyclically, in principal body axes.</li>
+      <li>For axisymmetric bodies let the frame follow the axle; in steady motion \(\sum\Mvec = \Wvec \times \Hvec\), the gyroscopic moment \(I_s\omega_s\Omega\).</li>
+      <li>Torque-free spin is stable about the maximum and minimum principal axes and unstable about the intermediate one.</li>
+      <li>Next: <a href="08-gyroscopes.html">Lesson 8</a> puts this to work on gyroscopes and tops.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 7.1: a torque-free block, Euler's equations integrated live ---------- */
+CYL.ready(function () {
+  'use strict';
+  var A = 0.24, B = 0.16, C = 0.04, M = 1, N0 = 10;
+  var I = [M * (B * B + C * C) / 12, M * (A * A + C * C) / 12, M * (A * A + B * B) / 12];
+  var AX = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
+  var st = { axis: 'y', t: 0 };
+  var sim = null, hist = [];
+  var stage = document.getElementById('fig71-stage'), panel = document.getElementById('fig71-controls');
+  var v = CYL3D.create(stage, {
+    extent: 0.3, zRange: [-0.25, 0.3], grid: 'none', axes: false, ui: ['iso', 'top', 'front', 'reset'],
+    camera: { azimuth: 30, elevation: 18, zoom: 1.45 },
+    ariaLabel: 'A book-shaped block spinning in space, with a red angular momentum arrow fixed in space and a green angular velocity arrow that moves.'
+  });
+  var body = v.group();
+  v.solid({ shape: 'box', size: [A, B, C], center: [0, 0, 0], color: 'accent', opacity: 0.6, parent: body });
+  v.line([[A / 2, -B / 2, C / 2 + 0.001], [A / 2, B / 2, C / 2 + 0.001]], { color: 'warn', width: 4, parent: body });
+  v.line([[0, 0, 0], [0.19, 0, 0]], { color: 'x', width: 2, parent: body });
+  v.line([[0, 0, 0], [0, 0.15, 0]], { color: 'y', width: 2, parent: body });
+  v.line([[0, 0, 0], [0, 0, 0.12]], { color: 'z', width: 2, parent: body });
+  v.label([0.2, 0, 0], 'x', { color: 'x', parent: body }); v.label([0, 0.16, 0], 'y', { color: 'y', parent: body }); v.label([0, 0, 0.13], 'z', { color: 'z', parent: body });
+  var hA = v.arrow([0, 0, 0], [0, 0, 0.2], { color: 'bad', label: '\\Hvec', width: 0.006, headLength: 0.025, headRadius: 0.011 });
+  var wA = v.arrow([0, 0, 0], [0, 0, 0.2], { color: 'good', label: '\\wvec', width: 0.006, headLength: 0.025, headRadius: 0.011 });
+
+  var chips = {};
+  var tx = CYL.toggle({ label: 'Minimum axis \\(x\\)', value: false, onChange: function () { pick('x'); } });
+  var ty = CYL.toggle({ label: 'Intermediate \\(y\\)', value: true, onChange: function () { pick('y'); } });
+  var tz = CYL.toggle({ label: 'Maximum axis \\(z\\)', value: false, onChange: function () { pick('z'); } });
+  chips = { x: tx, y: ty, z: tz };
+  function pick(a) { st.axis = a; Object.keys(chips).forEach(function (k) { chips[k].set(k === a, true); }); start(); }
+  var plotBox = CYL.el('div', { class: 'fig-plot' });
+  var roW = CYL.readout('\\(\\wvec\\) in body axes', { color: 'good' }), roH = CYL.readout('\\(|\\Hvec|\\)', { color: 'bad' }), roT = CYL.readout('Kinetic energy \\(T\\)');
+  var loop = AM.loop(function (dt) { sim.step(dt); st.t += dt; record(); update(); }, { label: 'Toss', autoplay: false });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Spin about' }));
+  panel.appendChild(CYL.el('div', { class: 'chip-row' }, [tx.el, ty.el, tz.el]));
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [loop.btn, AM.resetButton('Toss again', function () { start(); })]));
+  panel.appendChild(plotBox);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roW.el, roH.el, roT.el]));
+  panel.appendChild(CYL.el('p', { class: 'fig-note', html: 'The plot shows \\(\\colX{\\omega_x}\\), \\(\\colY{\\omega_y}\\), \\(\\colZ{\\omega_z}\\) over the last 8 s. The amber stripe marks one edge of the block.' }));
+  CYL.renderMath(panel);
+  var q = CYL2D.plane(plotBox, { xRange: [0, 4], yRange: [-1.15, 1.15], grid: 'none', ticks: false, axisLabels: ['t', '\\omega'], height: 150, pad: 12,
+    ariaLabel: 'Plot of the three body-axis components of the angular velocity over the last eight seconds.' });
+  var lx = q.polyline([], { color: 'x', width: 1.8 }), ly = q.polyline([], { color: 'y', width: 1.8 }), lz = q.polyline([], { color: 'z', width: 1.8 });
+
+  function start() {
+    var a = AX[st.axis], w = [a[0] * N0, a[1] * N0, a[2] * N0], eps = 0.1;
+    if (st.axis !== 'x') w[0] += eps; if (st.axis !== 'y') w[1] += eps; if (st.axis !== 'z') w[2] += eps;
+    sim = SPIN.create({ I: I, w: w, q: SPIN.quat.fromAxisAngle([1, 0.4, 0.2], 0.5), maxStep: 0.002 });
+    st.t = 0; hist = []; record(); update();
+  }
+  function record() {
+    hist.push([st.t, sim.state.w.slice()]);
+    while (hist.length && hist[0][0] < st.t - 8) hist.shift();
+  }
+  function update() {
+    var q4 = sim.state.q;
+    body.quaternion.set(q4[1], q4[2], q4[3], q4[0]);
+    var H = sim.H(), Hn = AM.norm(H), ww = sim.wWorld(), wn = AM.norm(ww);
+    hA.set([0, 0, 0], AM.scale(H, 0.2 / Hn));
+    wA.set([0, 0, 0], AM.scale(ww, 0.2 / wn * (wn / N0)));
+    var t0 = Math.max(0, st.t - 8);
+    lx.set(hist.map(function (h) { return [(h[0] - t0) / 2, h[1][0] / N0]; }));
+    ly.set(hist.map(function (h) { return [(h[0] - t0) / 2, h[1][1] / N0]; }));
+    lz.set(hist.map(function (h) { return [(h[0] - t0) / 2, h[1][2] / N0]; }));
+    roW.set(AM.vecTex(sim.state.w, 3) + '\\ \\text{rad/s}', { tex: true });
+    roH.set(CYL.fmt(Hn, 5) + ' kg·m²/s'); roT.set(CYL.fmt(sim.T(), 5) + ' J');
+    v.render();
+  }
+  start();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1', type: 'fields',
+    prompt: 'A body has principal moments \\(I_x = 4\\), \\(I_y = 6\\), \\(I_z = 8\\ \\text{kg·m}^2\\) about \\(G\\). At an instant \\(\\wvec = (1,\\ 2,\\ 3)\\ \\text{rad/s}\\) and \\(\\dot{\\wvec} = (0,\\ 0,\\ 1)\\ \\text{rad/s}^2\\) in body axes. Find the moment about \\(G\\).',
+    fields: [
+      { name: 'mx', label: '\\(M_x =\\)', answer: 12, unit: 'N·m' },
+      { name: 'my', label: '\\(M_y =\\)', answer: -12, unit: 'N·m' },
+      { name: 'mz', label: '\\(M_z =\\)', answer: 12, unit: 'N·m' }
+    ],
+    hints: ['\\(M_x = I_x\\dot\\omega_x - (I_y - I_z)\\omega_y\\omega_z\\), and cyclically.', '\\(M_x = 0 - (6 - 8)(2)(3)\\).'],
+    explain: 'Euler\'s equations in principal body axes.',
+    solution: '\\[ M_x = 0 - (6 - 8)(2)(3) = 12, \\quad M_y = 0 - (8 - 4)(3)(1) = -12, \\quad M_z = 8(1) - (4 - 6)(1)(2) = 12\\ \\text{N·m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2', type: 'mc',
+    prompt: 'When is it convenient to use axes that do not spin with the body (\\(\\Wvec \\ne \\wvec\\))?',
+    choices: [
+      { html: 'For a body with an axis of symmetry, such as a rotor, so the axes can follow the axle but not the spin', correct: true },
+      { html: 'Never: the axes must always be fixed in the body', feedback: 'Any axes in which the moments of inertia stay constant will do.' },
+      { html: 'Whenever the body has no principal axes', feedback: 'Every body has principal axes at every point.' },
+      { html: 'Only for plane motion', feedback: 'In plane motion the distinction does not matter; the trick is for 3D.' }
+    ],
+    hints: ['The inertia tensor must stay constant in the chosen axes.'],
+    explain: 'For an axisymmetric body, axes along the symmetry axis stay principal whether or not they spin.',
+    solution: '<p>For a wheel, rotor or gyroscope, any pair of axes perpendicular to the symmetry axis is principal with the same moment. The axes can follow the axle without spinning, which keeps the equations simple. That is the modified form \\(\\sum\\Mvec = (\\dot{\\Hvec})_{xyz} + \\Wvec \\times \\Hvec\\).</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3', type: 'numeric',
+    prompt: 'A rotor with \\(I_s = 0.05\\ \\text{kg·m}^2\\) about its axis spins at \\(300\\ \\text{rad/s}\\) while its axle is turned at a steady \\(0.5\\ \\text{rad/s}\\) about a perpendicular axis. Find the magnitude of the moment the bearings must supply.',
+    label: '\\(M =\\)', answer: 7.5, unit: 'N·m',
+    hints: ['Steady motion: \\(\\sum\\Mvec = \\Wvec \\times \\Hvec\\).', 'Only the spin part \\(I_s\\omega_s\\) of \\(\\Hvec\\) is perpendicular to \\(\\Wvec\\).'],
+    explain: 'The gyroscopic moment \\(M = I_s\\omega_s\\Omega\\).',
+    solution: '\\[ M = I_s\\omega_s\\Omega = 0.05(300)(0.5) = 7.50\\ \\text{N·m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l07-q4', type: 'mc',
+    prompt: 'A rigid box with principal moments \\(I_1 > I_2 > I_3\\) is thrown spinning in free flight. Which spin is unstable?',
+    choices: [
+      { html: 'About the axis of \\(I_2\\)', correct: true },
+      { html: 'About the axis of \\(I_1\\)', feedback: 'The linearized factor is negative for the maximum axis: the wobble oscillates.' },
+      { html: 'About the axis of \\(I_3\\)', feedback: 'For a rigid body the minimum axis is stable too.' },
+      { html: 'All three are stable', feedback: 'Figure 7.1 shows the intermediate axis flipping.' }
+    ],
+    hints: ['Look at the sign of \\((I_z - I_x)(I_x - I_y)\\) when \\(x\\) is the spin axis.'],
+    explain: 'The intermediate-axis theorem.',
+    solution: '<p>For spin about axis \\(x\\), small wobbles obey \\(\\ddot\\omega_y = \\frac{(I_z - I_x)(I_x - I_y)}{I_y I_z}n^2\\omega_y\\). The factor is positive only when \\(I_x\\) lies between \\(I_y\\) and \\(I_z\\): the intermediate axis.</p>'
+  });
+});
+</script>
+</body>
+</html>

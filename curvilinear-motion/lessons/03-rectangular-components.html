@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rectangular (x–y) Components · Curvilinear Motion</title>
+<meta name="description" content="Velocity and acceleration in rectangular components: differentiating x(t) and y(t), motion along a path y = f(x) with the chain rule, and integrating an acceleration with initial conditions.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 35 min</p>
+    <h1>Rectangular (x–y) Components</h1>
+    <p class="lede">With fixed axes, a curved motion splits into two straight-line motions, one along \(x\) and one along \(y\). Every rectilinear skill you already have now works twice over.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Write \(\rvec\), \(\vvec\) and \(\avec\) in rectangular components, and find the speed and the direction of motion.</li>
+      <li>Find velocity and acceleration from given functions \(x(t)\) and \(y(t)\).</li>
+      <li>Use the chain rule when the path \(y = f(x)\) and one velocity component are given.</li>
+      <li>Integrate a given acceleration, with initial conditions, to find velocity and position.</li>
+    </ul>
+  </section>
+
+  <section id="components">
+    <h2>Position, velocity and acceleration in components</h2>
+    <p>Put fixed \(x\) and \(y\) axes at the origin. The position of the particle is</p>
+    \[ \rvec = x\,\colX{\ihat} + y\,\colY{\jhat} \]
+    <p>The unit vectors \(\ihat\) and \(\jhat\) never change size or direction, so their time derivatives are zero. Differentiating \(\rvec\) therefore only differentiates the coordinates:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Rectangular components</p>
+      \[ \begin{aligned}
+        \vvec &= \dot x\,\colX{\ihat} + \dot y\,\colY{\jhat} = v_x\,\colX{\ihat} + v_y\,\colY{\jhat} \\
+        \avec &= \ddot x\,\colX{\ihat} + \ddot y\,\colY{\jhat} = a_x\,\colX{\ihat} + a_y\,\colY{\jhat}
+      \end{aligned} \]
+      <p>with \(v_x = \dot x,\ v_y = \dot y,\ a_x = \dot v_x = \ddot x,\ a_y = \dot v_y = \ddot y\).</p>
+    </div>
+
+    <p>So a plane curvilinear motion is two rectilinear motions happening at the same time: the "shadow" of the particle on the \(x\)-axis moves with \(x(t)\), and its shadow on the \(y\)-axis moves with \(y(t)\). The magnitudes and directions follow from the components:</p>
+    \[ v = \sqrt{v_x^2 + v_y^2}, \qquad \theta_v = \atantwo(v_y,\ v_x), \qquad |\avec| = \sqrt{a_x^2 + a_y^2} \]
+    <p>Here \(\theta_v\) is the direction of travel, measured counter-clockwise from the \(+x\) axis. Because \(\vvec\) is tangent to the path, \(\tan\theta_v = v_y/v_x\) is also the slope of the path, \(dy/dx\).</p>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: adding speeds instead of components</p>
+      <p>You add <em>components</em>, never magnitudes. The speed is \(\sqrt{v_x^2 + v_y^2}\), not \(v_x + v_y\), and \(|\avec| \ne |a_x| + |a_y|\). Also watch the quadrant: \(\arctan(v_y/v_x)\) is wrong by \(180^\circ\) when \(v_x \lt 0\); \(\atantwo\) or a quick sketch fixes it.</p>
+    </aside>
+
+    <figure class="figure" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> A pen-plotter head draws a figure eight with \(x = 4\sin t\) and \(y = 2\sin 2t\) (metres, seconds). The dashed gray and olive arrows are \(v_x\) and \(v_y\), drawn tip to tail so they add up to \(\vvec\); the solid ones are \(a_x\) and \(a_y\). Each component is simply the derivative of one coordinate. Where the path crosses itself the head passes twice, with different velocities.</figcaption>
+    </figure>
+  </section>
+
+  <section id="given-xt-yt">
+    <h2>When \(x(t)\) and \(y(t)\) are given</h2>
+    <p>This is the most direct case: differentiate each coordinate once for velocity and twice for acceleration, then evaluate at the time you need.</p>
+
+    <div class="example">
+      <p class="example-title">Example 3.1 — A robot gripper</p>
+      <p>The gripper of a pick-and-place robot follows \(x = 0.5t^3\ \text{m}\) and \(y = 3t^2 - 2t\ \text{m}\), with \(t\) in seconds. At \(t = 2\ \text{s}\), find its position, velocity (magnitude and direction) and acceleration.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Position.</strong> \(x = 0.5(2)^3 = 4\ \text{m}\) and \(y = 3(2)^2 - 2(2) = 8\ \text{m}\).</p>
+          <p><strong>Velocity.</strong> Differentiate once:</p>
+          \[ \begin{aligned}
+            v_x &= \dot x = 1.5t^2 = 6\ \text{m/s} \\
+            v_y &= \dot y = 6t - 2 = 10\ \text{m/s}
+          \end{aligned} \]
+          \[ v = \sqrt{6^2 + 10^2} = \sqrt{136} \approx 11.66\ \text{m/s}, \qquad \theta_v = \arctan\tfrac{10}{6} \approx 59.04^\circ \]
+          <p>(both components are positive, so the arctangent is already in the right quadrant).</p>
+          <p><strong>Acceleration.</strong> Differentiate again:</p>
+          \[ a_x = \ddot x = 3t = 6\ \text{m/s}^2, \qquad a_y = \ddot y = 6\ \text{m/s}^2 \]
+          \[ |\avec| = \sqrt{6^2 + 6^2} = 6\sqrt2 \approx 8.485\ \text{m/s}^2 \ \text{at}\ 45^\circ \]
+          <p><strong>Interpret.</strong> \(\avec\) (at \(45^\circ\)) is not parallel to \(\vvec\) (at \(59^\circ\)), so the gripper is both speeding up and turning, as Lesson 2 predicted.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="path-given">
+    <h2>When the path \(y = f(x)\) is given</h2>
+    <p>Often you know the <em>shape</em> of the path, for example the profile of a guide, a cam or a road, together with one of the velocity components. Because \(x\) changes with time, \(y = f(x)\) depends on time through \(x\). Differentiate with the chain rule:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Motion along a known path \(y = f(x)\)</p>
+      \[ \begin{aligned}
+        v_y &= \dot y = f'(x)\,\dot x = f'(x)\,v_x \\
+        a_y &= \dot v_y = f''(x)\,v_x^2 + f'(x)\,a_x
+      \end{aligned} \]
+      <p>The second line uses the product rule on \(f'(x)\,v_x\): \(\tfrac{d}{dt}f'(x) = f''(x)\,\dot x\).</p>
+    </div>
+
+    <p>The first line says again that \(\vvec\) is tangent to the path: \(v_y/v_x = f'(x)\) is the slope. The second line holds a surprise: even when \(v_x\) is constant (\(a_x = 0\)), \(a_y = f''(x)\,v_x^2\) is not zero wherever the path is curved.</p>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: dropping the \(f''\) term</p>
+      <p>Differentiating \(v_y = f'(x)\,v_x\) as if \(f'(x)\) were a constant gives \(a_y = f'(x)\,a_x\), which misses the curvature of the path. \(f'(x)\) changes as the particle moves along \(x\), so it must be differentiated too.</p>
+    </aside>
+
+    <figure class="figure" aria-labelledby="fig32-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig32-stage"></div>
+        <div class="viz-controls" id="fig32-controls"></div>
+      </div>
+      <figcaption id="fig32-cap"><strong>Figure 3.2</strong> A slider moves along the guide \(y = 0.1x^2\) (metres) with a constant horizontal velocity \(v_x\). There is no \(a_x\), yet the acceleration \(a_y = f''(x)\,v_x^2 = 0.2\,v_x^2\) points up everywhere: the same value at every point of this parabola. Double \(v_x\) and \(a_y\) becomes four times as large.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 3.2 — A slider on a parabolic guide</p>
+      <p>The slider in Figure 3.2 moves with a constant \(v_x = 4\ \text{m/s}\) along \(y = 0.1x^2\). Find its velocity and acceleration when \(x = 5\ \text{m}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Derivatives of the path.</strong> \(f'(x) = 0.2x\) and \(f''(x) = 0.2\ \text{m}^{-1}\). At \(x = 5\): \(f' = 1\).</p>
+          <p><strong>Velocity.</strong> \(v_y = f'(x)\,v_x = (1)(4) = 4\ \text{m/s}\), so \(\vvec = 4\ihat + 4\jhat\ \text{m/s}\), with \(v = 4\sqrt2 \approx 5.657\ \text{m/s}\) at \(45^\circ\), along the tangent (slope 1).</p>
+          <p><strong>Acceleration.</strong> \(a_x = 0\) because \(v_x\) is constant, and</p>
+          \[ a_y = f''(x)\,v_x^2 + f'(x)\,a_x = (0.2)(4)^2 + (1)(0) = 3.2\ \text{m/s}^2 \]
+          <p>So \(\avec = 3.2\,\jhat\ \text{m/s}^2\): straight up, toward the concave side of the guide.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="integrating">
+    <h2>Working backwards: from acceleration to position</h2>
+    <p>When the acceleration is known (for example, from the forces through Newton's second law), integrate each component separately, using the initial conditions to fix the constants:</p>
+    \[ v_x = v_{x0} + \int_0^t a_x\,dt, \qquad x = x_0 + \int_0^t v_x\,dt \qquad \text{(and the same for } y\text{)} \]
+
+    <div class="example">
+      <p class="example-title">Example 3.3 — A delivery drone takes off</p>
+      <p>A drone starts from rest at the origin. Its acceleration is \(\avec = 1.2\,\ihat + (3 - 0.6t)\,\jhat\ \text{m/s}^2\). Find its velocity and position at \(t = 4\ \text{s}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Velocity.</strong> Integrate each component from \(\vvec(0) = \mathbf{0}\):</p>
+          \[ \begin{aligned}
+            v_x &= \int_0^t 1.2\,dt = 1.2t \\
+            v_y &= \int_0^t (3 - 0.6t)\,dt = 3t - 0.3t^2
+          \end{aligned} \]
+          <p><strong>Position.</strong> Integrate again from \(\rvec(0) = \mathbf{0}\):</p>
+          \[ x = 0.6t^2, \qquad y = 1.5t^2 - 0.1t^3 \]
+          <p><strong>At \(t = 4\ \text{s}\).</strong></p>
+          \[ \begin{aligned}
+            \vvec &= 4.8\,\ihat + 7.2\,\jhat\ \text{m/s}, \quad v \approx 8.653\ \text{m/s at } 56.31^\circ \\
+            \rvec &= 9.6\,\ihat + 17.6\,\jhat\ \text{m}
+          \end{aligned} \]
+          <p><strong>Check.</strong> Differentiating \(y = 1.5t^2 - 0.1t^3\) twice gives \(3 - 0.6t\), the given \(a_y\). ✓ Note that \(a_y\) is not constant, so \(y = \tfrac12 a t^2\) would have been wrong.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+    <div class="check" id="check-5"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\vvec = \dot x\,\ihat + \dot y\,\jhat\) and \(\avec = \ddot x\,\ihat + \ddot y\,\jhat\): with fixed axes, differentiate the coordinates.</li>
+      <li>Speed \(v = \sqrt{v_x^2 + v_y^2}\); direction of travel \(\theta_v = \atantwo(v_y, v_x)\), which is also the slope angle of the path.</li>
+      <li>On a known path \(y = f(x)\): \(v_y = f'(x)\,v_x\) and \(a_y = f''(x)\,v_x^2 + f'(x)\,a_x\). Do not forget the \(f''\) term.</li>
+      <li>Given \(\avec(t)\), integrate each component with its own initial conditions.</li>
+      <li>Next: <a href="04-projectile-motion.html">Lesson 4</a> applies this to the most famous two-component motion of all, the projectile.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 3.1: figure-eight plotter ---------- */
+CYL.ready(function () {
+  'use strict';
+  CURV.figure({
+    stage: document.getElementById('fig31-stage'), controls: document.getElementById('fig31-controls'),
+    motion: {
+      x: function (t) { return 4 * Math.sin(t); }, y: function (t) { return 2 * Math.sin(2 * t); },
+      vx: function (t) { return 4 * Math.cos(t); }, vy: function (t) { return 4 * Math.cos(2 * t); },
+      ax: function (t) { return -4 * Math.sin(t); }, ay: function (t) { return -8 * Math.sin(2 * t); }
+    },
+    t0: 0, t1: 2 * Math.PI, t: 0.5, speed: 0.5, xRange: [-5, 5], yRange: [-3, 3], gridStep: 1,
+    vScale: 4, aScale: 5, show: { comps: 'xy', trace: true }, toggles: ['comps', 'v', 'a'],
+    readouts: ['t', 'pos', 'vx', 'vy', 'v', 'ax', 'ay', 'a'],
+    aria: 'A figure-eight path, 8 m wide and 4 m tall, crossing itself at the origin. The pen head moves along it with a green velocity arrow tangent to the path and a red acceleration arrow. ' +
+      'Gray and olive component arrows show the x and y parts of each vector, drawn tip to tail.'
+  });
+});
+
+/* ---------- Figure 3.2: slider on y = 0.1x² with constant v_x ---------- */
+CYL.ready(function () {
+  'use strict';
+  var panel = document.getElementById('fig32-controls');
+  var vx = 2, X0 = -6.5;
+  function motion(v) {
+    return {
+      x: function (t) { return X0 + v * t; }, y: function (t) { var x = X0 + v * t; return 0.1 * x * x; },
+      vx: function () { return v; }, vy: function (t) { return 0.2 * (X0 + v * t) * v; },
+      ax: function () { return 0; }, ay: function () { return 0.2 * v * v; }
+    };
+  }
+  var s = CYL.slider({ label: 'Horizontal velocity \\(v_x\\)', min: 1, max: 4, step: 0.5, value: vx, unit: 'm/s', color: 'x',
+    onInput: function (v) { var x = X0 + vx * fig.t(); vx = v; fig.setMotion(motion(v), 0, 13 / v, (x - X0) / v); } });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Slider on the guide' }));
+  panel.appendChild(s.el);
+  var roSlope = CYL.readout('Slope \\(f\'(x) = 0.2x\\)');
+  var fig = CURV.figure({
+    stage: document.getElementById('fig32-stage'), controls: panel,
+    motion: motion(vx), t0: 0, t1: 13 / vx, t: 5.75 / vx, xRange: [-7, 7], yRange: [-0.6, 5.2], gridStep: 1,
+    vScale: 2, aScale: 2, show: { comps: 'xy', trace: false }, toggles: ['v', 'a'],
+    readouts: ['pos', 'vx', 'vy', 'v', 'ax', 'ay'],
+    decorate: function (p) {
+      p.fn(function (x) { return 0.1 * x * x - 0.12; }, { color: 'surface', width: 1.2, domain: [-7, 7] });
+      p.fn(function (x) { return 0.1 * x * x + 0.12; }, { color: 'surface', width: 1.2, domain: [-7, 7] });
+    },
+    onUpdate: function (st) { roSlope.set(CYL.fmt(0.2 * st.x, 4)); },
+    aria: 'A parabolic guide y = 0.1 x squared from x = -7 m to 7 m. A slider moves to the right with constant horizontal velocity. Its green velocity arrow is tangent to the guide, and its red acceleration arrow points straight up with the same length everywhere.'
+  });
+  var grid = panel.querySelector('.readout-grid');
+  if (grid) grid.insertBefore(roSlope.el, grid.firstChild);
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1', type: 'fields',
+    prompt: 'A particle moves with \\(x = 2t^2 - 1\\ \\text{m}\\) and \\(y = t^3\\ \\text{m}\\). Find its speed and the magnitude of its acceleration at \\(t = 2\\ \\text{s}\\).',
+    fields: [
+      { name: 'v', label: '\\(v =\\)', answer: Math.sqrt(208), unit: 'm/s' },
+      { name: 'a', label: '\\(|\\avec| =\\)', answer: Math.sqrt(160), unit: 'm/s²' }
+    ],
+    hints: ['\\(v_x = 4t,\\ v_y = 3t^2\\) and \\(a_x = 4,\\ a_y = 6t\\).', 'At \\(t = 2\\): \\(\\vvec = 8\\ihat + 12\\jhat\\) and \\(\\avec = 4\\ihat + 12\\jhat\\).'],
+    explain: 'Differentiate each coordinate, then combine the components with Pythagoras.',
+    solution: '\\[ \\begin{aligned} \\vvec &= 4t\\,\\ihat + 3t^2\\,\\jhat = 8\\ihat + 12\\jhat, & v &= \\sqrt{208} \\approx 14.42\\ \\text{m/s} \\\\ ' +
+      '\\avec &= 4\\,\\ihat + 6t\\,\\jhat = 4\\ihat + 12\\jhat, & |\\avec| &= \\sqrt{160} \\approx 12.65\\ \\text{m/s}^2 \\end{aligned} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2', type: 'numeric', angle: true,
+    prompt: 'At some instant a particle has \\(v_x = -3\\ \\text{m/s}\\) and \\(v_y = 4\\ \\text{m/s}\\). What is the direction of its velocity, measured counter-clockwise from the \\(+x\\) axis? Type degrees with a ° sign (e.g. <code>30°</code>) or radians.',
+    label: '\\(\\theta_v =\\)', answer: Math.atan2(4, -3),
+    hints: ['Sketch the vector: \\(v_x \\lt 0\\) and \\(v_y \\gt 0\\) puts it in quadrant II.', '\\(\\arctan(4/(-3)) = -53.13^\\circ\\) points into quadrant IV; add \\(180^\\circ\\).'],
+    explain: 'When \\(v_x \\lt 0\\), the arctangent is off by \\(180^\\circ\\). Use atan2 or a sketch.',
+    solution: '<p>The calculator gives \\(\\arctan(-4/3) = -53.13^\\circ\\), which is in quadrant IV. The vector is in quadrant II, so add \\(180^\\circ\\):</p>\\[ \\theta_v = -53.13^\\circ + 180^\\circ = 126.87^\\circ \\ (2.214\\ \\text{rad}) \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3', type: 'fields',
+    prompt: 'A pin moves in a slot shaped like \\(y = 0.5x^2\\ \\text{m}\\), driven so that \\(v_x = 3\\ \\text{m/s}\\) stays constant. Find \\(v_y\\) and \\(a_y\\) when \\(x = 2\\ \\text{m}\\).',
+    fields: [
+      { name: 'vy', label: '\\(v_y =\\)', answer: 6, unit: 'm/s' },
+      { name: 'ay', label: '\\(a_y =\\)', answer: 9, unit: 'm/s²' }
+    ],
+    hints: ['\\(f\'(x) = x\\) and \\(f\'\'(x) = 1\\).', '\\(v_y = f\'(x)\\,v_x\\) and \\(a_y = f\'\'(x)\\,v_x^2 + f\'(x)\\,a_x\\), with \\(a_x = 0\\).'],
+    explain: 'Use the chain rule: \\(y\\) depends on time through \\(x\\).',
+    solution: '\\[ \\begin{aligned} v_y &= f\'(x)\\,v_x = (2)(3) = 6\\ \\text{m/s} \\\\ a_y &= f\'\'(x)\\,v_x^2 + f\'(x)\\,a_x = (1)(3)^2 + (2)(0) = 9\\ \\text{m/s}^2 \\end{aligned} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l03-q4', type: 'mc',
+    prompt: 'A particle moves along a curved path \\(y = f(x)\\) with <strong>constant</strong> \\(v_x\\). Which expression gives \\(a_y\\)?',
+    shuffle: true,
+    choices: [
+      { html: '\\(a_y = f\'\'(x)\\,v_x^2\\)', correct: true },
+      { html: '\\(a_y = 0\\), because \\(v_x\\) is constant', feedback: 'Constant \\(v_x\\) makes \\(a_x = 0\\), but \\(v_y = f\'(x)\\,v_x\\) still changes because the slope \\(f\'(x)\\) changes.' },
+      { html: '\\(a_y = f\'(x)\\,a_x\\)', feedback: 'This forgets that \\(f\'(x)\\) itself changes with time. Here it would also give zero, which is wrong for a curved path.' },
+      { html: '\\(a_y = f\'(x)\\,v_x\\)', feedback: 'That is \\(v_y\\), not \\(a_y\\).' }
+    ],
+    hints: ['Start from \\(v_y = f\'(x)\\,v_x\\) and differentiate with the product rule.'],
+    explain: '\\(a_y = f\'\'(x)\\,v_x^2 + f\'(x)\\,a_x\\); with \\(a_x = 0\\) only the first term remains.',
+    solution: '\\[ a_y = \\frac{d}{dt}\\big(f\'(x)\\,v_x\\big) = f\'\'(x)\\,\\dot x\\,v_x + f\'(x)\\,\\dot v_x = f\'\'(x)\\,v_x^2 + 0 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-5'), {
+    id: 'l03-q5', type: 'fields',
+    prompt: 'A puck on an air table starts at the origin with \\(\\vvec_0 = 3\\,\\ihat + 8\\,\\jhat\\ \\text{m/s}\\). A steady air jet gives it \\(\\avec = 2\\,\\ihat - 4\\,\\jhat\\ \\text{m/s}^2\\). Find its position at \\(t = 2\\ \\text{s}\\).',
+    fields: [
+      { name: 'x', label: '\\(x =\\)', answer: 10, unit: 'm' },
+      { name: 'y', label: '\\(y =\\)', answer: 8, unit: 'm' }
+    ],
+    hints: ['The acceleration is constant in each direction, so \\(x = x_0 + v_{x0}t + \\tfrac12 a_x t^2\\), and the same for \\(y\\).'],
+    explain: 'Each component is an independent constant-acceleration motion.',
+    solution: '\\[ \\begin{aligned} x &= 0 + 3(2) + \\tfrac12(2)(2)^2 = 10\\ \\text{m} \\\\ y &= 0 + 8(2) + \\tfrac12(-4)(2)^2 = 8\\ \\text{m} \\end{aligned} \\]'
+  });
+});
+</script>
+</body>
+</html>

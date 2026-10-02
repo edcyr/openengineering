@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formula Sheet · Cylindrical Coordinates</title>
+<meta name="description" content="Every key result of the module on two printable pages: coordinates, unit vectors, velocity, acceleration, paths r = f(θ), equations of motion, guides and central forces, choosing coordinates, check values, and finding θ with a calculator or code.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ==========================================================================
+   Formula sheet: page-specific styles (screen: multi-column cards; print: 2 pages)
+   ========================================================================== */
+.cs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 18px 0 0; }
+.cs-actions .small { margin: 0; max-width: 46ch; line-height: 1.45; }
+
+.cs-sheet { counter-reset: cs; margin-top: 0; margin-bottom: 0; font-size: 0.94rem; }
+@container cylmain (min-width: 820px) {
+  .cs-sheet { column-count: 2; column-gap: 18px; }
+}
+/* From 1360px the shell shows the TOC rail. Its scroll-spy marks the last card whose top has
+   scrolled past, which only tracks reading order when the cards are stacked, so keep one column
+   (at text width) whenever the rail is on screen. Print keeps its own two columns below. */
+@media screen and (min-width: 1360px) {
+  .has-rail .cs-sheet { column-count: auto; --wide-max: var(--content-max); }
+}
+.cs-card {
+  counter-increment: cs;
+  margin: 0 0 18px;
+  padding: 14px 18px 16px;
+  box-shadow: var(--shadow-sm);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.cs-card > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.06rem;
+  line-height: 1.3;
+}
+.cs-card > h2::before {
+  content: counter(cs);
+  flex: none;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cs-card.cs-warn { border-top: 3px solid var(--c-warn); }
+.cs-card.cs-warn > h2::before { background: var(--c-warn); color: var(--bg-elev); }
+
+.cs-card p { margin: 0 0 0.55em; color: var(--ink); font-size: 1em; }
+.cs-card ul { margin: 0 0 0.6em; padding-left: 1.15em; }
+.cs-card li { margin: 0.25em 0; }
+.cs-card li::marker { color: var(--ink-faint); }
+.cs-card h3 {
+  margin: 0.95em 0 0.3em;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-card > h2 + h3 { margin-top: 0; }
+.cs-card .katex-display { margin: 0.45em 0; }
+.cs-card .key-formula { margin: 0.65em 0; padding: 6px 14px 7px; box-shadow: none; }
+.cs-card .key-formula .katex-display { margin: 0.3em 0; }
+.cs-card .key-formula-title { margin-top: 2px; }
+.cs-card .table-wrap { margin: 0.6em 0 0.7em; border-radius: var(--radius-sm); }
+.cs-card table.data { font-size: 0.9em; }
+.cs-card table.data th, .cs-card table.data td { padding: 5px 9px; vertical-align: middle; }
+.cs-card table.data thead th { font-size: 0.85em; white-space: normal; }
+.cs-card table.data tbody th { font-weight: 600; }
+.cs-card table.data caption { padding: 6px 9px; }
+.cs-card table.data .katex { font-size: 1.04em; white-space: nowrap; }
+.cs-card table.cs-eqs td { white-space: nowrap; }
+/* never split an inline formula across lines: on a reference sheet a broken result is easy to misread */
+.cs-sheet .katex { white-space: nowrap; }
+.cs-card .muted { color: var(--ink-muted); }
+.cs-card p.cs-note { color: var(--ink-muted); font-size: 0.9em; }
+.cs-card p.cs-more { margin: 0.75em 0 0; color: var(--ink-muted); font-size: 0.8rem; }
+.cs-card > :last-child { margin-bottom: 0; }
+
+/* two formula boxes side by side, wrapping on narrow cards */
+.cs-pair { display: flex; flex-wrap: wrap; gap: 10px; margin: 0.65em 0; }
+.cs-pair > * { flex: 1 1 165px; min-width: 0; }
+.cs-card .cs-pair > .key-formula { margin: 0; }
+.cs-pair > div:not(.key-formula) .katex-display { margin: 0.2em 0; }
+
+/* formulas that wrap onto a new line in a narrow card instead of scrolling sideways */
+.cs-sheet .cs-card .cs-flow { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; column-gap: 1.1em; }
+.cs-sheet .cs-card .cs-flow > .katex-display { margin: 0.3em 0; }
+
+/* symbol / meaning list */
+.cs-dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0 0 0.6em; }
+.cs-dl dt { font-weight: 700; text-align: center; }
+.cs-dl dd { margin: 0; }
+
+/* static figures */
+.cs-card .cs-figure { max-width: 250px; margin: 0.3em auto 0.7em; }
+.cs-card .cs-figure.small { max-width: 200px; }
+.cs-figure figcaption { margin-top: 2px; font-size: 0.78rem; line-height: 1.4; text-align: center; }
+.cs-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cs-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.cs-svg .ax { stroke: var(--c-axis); stroke-width: 1.4; }
+.cs-svg .ax-back { stroke-dasharray: 3 3; opacity: 0.55; }
+.cs-svg .ax-fill { fill: var(--c-axis); }
+.cs-svg .leg, .cs-svg .guide { stroke: var(--ink-faint); stroke-width: 1.1; stroke-dasharray: 3 3; }
+.cs-svg .hidden { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2.5 2.5; opacity: 0.8; }
+.cs-svg .r { stroke: var(--c-r); }
+.cs-svg .t { stroke: var(--c-t); }
+.cs-svg .z { stroke: var(--c-z); }
+.cs-svg .thick { stroke-width: 3; }
+.cs-svg .mid { stroke-width: 2.2; }
+.cs-svg .thin { stroke-width: 1.4; }
+.cs-svg .dash { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.cs-svg .t-fill { fill: var(--c-t); }
+.cs-svg .pt { fill: var(--c-point); }
+.cs-svg .pt-open { fill: var(--bg-elev); stroke: var(--c-point); stroke-width: 1.5; }
+.cs-svg .face { fill: var(--accent); }
+.cs-svg .f-top { fill-opacity: 0.1; }
+.cs-svg .f-out { fill-opacity: 0.24; }
+.cs-svg .f-side { fill-opacity: 0.17; }
+.cs-svg .edge { stroke: var(--ink-muted); stroke-width: 1.2; }
+.cs-svg text {
+  font-family: KaTeX_Math, "Times New Roman", serif;
+  font-size: 15px;
+  font-style: italic;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--bg-elev);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.cs-svg .lbl-ax { fill: var(--c-axis); font-size: 14px; }
+.cs-svg .lbl-mute { fill: var(--ink-muted); font-size: 13px; }
+.cs-svg .lbl-r { fill: var(--c-r); }
+.cs-svg .lbl-t { fill: var(--c-t); }
+.cs-svg .lbl-z { fill: var(--c-z); }
+.cs-svg .sm { font-size: 12.5px; }
+
+/* software notes */
+.cs-tools { display: grid; gap: 7px; margin: 0.5em 0 0; }
+.cs-tool { padding: 7px 11px 8px; border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.cs-tool-name {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--ink-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-tool-name strong { color: var(--c-warn); font-weight: 700; white-space: nowrap; }
+.cs-card .cs-tool p { margin: 0; line-height: 1.55; }
+.cs-tool :not(pre) > code { background: var(--bg-elev); white-space: nowrap; }
+.cs-tool .cs-code > code { white-space: normal; } /* long lines break only between their .nowrap parts */
+.cs-tools { container-type: inline-size; }
+.cs-code { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 3px 12px; margin: 2px 0 0; }
+.cs-code > code { justify-self: start; }
+.cs-code > span { color: var(--ink-muted); font-size: 0.86em; line-height: 1.35; }
+.cs-card .cs-tool p.cs-tool-note { margin-top: 4px; color: var(--ink-muted); font-size: 0.9em; }
+@container (max-width: 25em) {
+  .cs-code { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .cs-code > span { margin: 0 0 4px 2px; }
+}
+
+.cs-mistakes li { margin: 0.4em 0; }
+
+.cs-after { margin: 0.4rem 0 0; color: var(--ink-muted); font-size: 0.92em; }
+
+@media (max-width: 559.98px) {
+  .cs-card { padding: 12px 14px 14px; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px 6px; }
+  .cs-card table.cs-eqs, .cs-card table.cs-quad { font-size: 0.82em; }
+}
+@media (max-width: 379.98px) {
+  /* small phones (320-379px): a little more room so formulas and the surfaces table fit without scrolling */
+  .cs-card { padding: 12px 12px 14px; }
+  .cs-card .key-formula { padding-left: 10px; padding-right: 10px; }
+  .cs-card .katex-display > .katex { font-size: 0.96em; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px; }
+}
+
+/* ---------- Print: two pages on US Letter or A4 ---------- */
+@media print {
+  @page { margin: 9mm; }
+  html { font-size: 7.8pt; }
+  .page { font-size: 1rem; line-height: 1.3; }
+  .katex { font-size: 1.04em; }
+  .lesson-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0 6mm;
+    margin: 0 0 2.4mm;
+    padding: 0 0 1.8mm;
+    border-bottom: 0.8pt solid var(--line-strong);
+  }
+  .lesson-header .eyebrow { grid-column: 1 / -1; margin: 0 0 0.4mm; font-size: 6.6pt; }
+  .lesson-header h1 { margin: 0; font-size: 16pt; line-height: 1.1; }
+  .lesson-header .lede { max-width: none; font-size: 8pt; line-height: 1.35; text-align: right; }
+  /* floats: blocks next to a floated figure shrink beside it instead of running underneath */
+  .cs-card > :is(p, ul, .table-wrap, .key-formula) { display: flow-root; }
+  .cs-card > .katex-display, .cs-card .key-formula > .katex-display { display: flow-root; }
+  .cs-card .cs-figure.cs-float { float: right; width: 40%; max-width: none; margin: 0 0 1mm 2.5mm; }
+  .cs-card .cs-figure.small.cs-float { width: 33%; }
+  .cs-sheet {
+    column-count: 2;
+    column-gap: 4mm;
+    font-size: 1rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-card { margin: 0 0 2.6mm; padding: 1.9mm 2.8mm 2.2mm; border-color: var(--line-strong); border-radius: 2mm; box-shadow: none; }
+  .cs-card > h2 { gap: 1.8mm; margin: 0 0 1.4mm; padding: 0 0 1.1mm; font-size: 9.6pt; }
+  .cs-card > h2::before { width: 12.5pt; height: 12.5pt; font-size: 6.8pt; }
+  .cs-card p { margin: 0 0 0.9mm; }
+  .cs-card ul { margin: 0 0 1mm; padding-left: 3.4mm; }
+  .cs-card li { margin: 0.35mm 0; }
+  .cs-card h3 { margin: 1.6mm 0 0.5mm; font-size: 6.6pt; }
+  .cs-card .katex-display { margin: 0.9mm 0; padding: 0; }
+  .cs-card .key-formula { margin: 1.2mm 0; padding: 0.6mm 2.4mm 0.8mm; border-width: 0.8pt; border-radius: 1.6mm; }
+  .cs-card .key-formula .katex-display { margin: 0.5mm 0; }
+  .cs-pair { gap: 1.8mm; margin: 1.2mm 0; }
+  .cs-pair > * { flex-basis: 30mm; }
+  .cs-sheet .cs-card .cs-flow { column-gap: 1em; }
+  .cs-sheet .cs-card .cs-flow > .katex-display { margin: 0.5mm 0; }
+  .cs-card .table-wrap { margin: 1.1mm 0 1.3mm; border-radius: 1.4mm; border-color: var(--line-strong); }
+  .cs-card table.data th, .cs-card table.data td { padding: 0.55mm 1.8mm; }
+  .cs-card table.data thead th { font-size: 6.4pt; }
+  .cs-card table.data caption { padding: 0.6mm 1.8mm; font-size: 7pt; }
+  .cs-card .cs-figure { max-width: 43mm; margin: 0.4mm auto 1.2mm; }
+  .cs-card .cs-figure.small { max-width: 36mm; }
+  .cs-figure figcaption { margin-top: 0.3mm; font-size: 6.8pt; }
+  .cs-svg text { font-size: 17.5px; }
+  .cs-svg .lbl-ax { font-size: 16px; }
+  .cs-svg .lbl-mute { font-size: 15px; }
+  .cs-svg .sm { font-size: 14.5px; }
+  .cs-tools { gap: 1.1mm; margin-top: 0.8mm; }
+  .cs-tool { padding: 0.9mm 2mm 1mm; border-radius: 1.4mm; }
+  .cs-tool-name { margin-bottom: 0.3mm; font-size: 6.4pt; }
+  .cs-card .cs-tool p { line-height: 1.45; }
+  .cs-tool :not(pre) > code { font-size: 0.86em; }
+  .cs-mistakes li { margin: 0.5mm 0; }
+  /* page 2 is the last page, which Chrome does not balance: start the second column here */
+  #check-values { break-before: column; }
+}
+</style>
+</head>
+<body data-page="cheatsheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow"><span class="no-print">Reference</span><span class="print-only">Cylindrical Coordinates</span></p>
+    <h1>Formula Sheet</h1>
+    <p class="lede">Every key result from the module in one place. Conventions: Hibbeler notation \(\er, \et, \ez\); \(\theta\) counter-clockwise from \(+x\), in radians; SI units.</p>
+    <div class="cs-actions no-print">
+      <button type="button" class="btn primary" id="cs-print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Print this sheet</button>
+      <p class="small muted">Fits on two pages of Letter or A4. For a digital copy, choose “Save as PDF” as the printer.</p>
+    </div>
+  </header>
+
+  <div class="cs-sheet wide">
+
+    <section class="card cs-card" id="position">
+      <h2><span>Coordinates and position</span></h2>
+      <figure class="figure cs-figure cs-float">
+        <svg class="cs-svg" viewBox="0 8 246 200" role="img" aria-label="Point P with cylindrical coordinates r, theta and z. From the origin O, an orange segment of length r runs along the xy-plane to P prime, the shadow of P. A violet arc marks the angle theta from the positive x-axis to that segment, counter-clockwise seen from above. A blue vertical segment of length z rises from P prime to P.">
+          <path class="ax ax-back" d="M109.2,118.2 L84,138 M50.4,131 L84,138"/>
+          <path class="ax" d="M84,138 L14,193 M84,138 L228,168 M84,138 L84,15.5"/>
+          <polygon class="ax-fill" points="14,193 18.9,184.6 23.3,190.3"/>
+          <polygon class="ax-fill" points="228,168 218.5,169.7 219.9,162.6"/>
+          <polygon class="ax-fill" points="84,15.5 87.6,24.5 80.4,24.5"/>
+          <path class="leg" d="M42.6,170.5 L127.2,188.1 L168.6,155.6"/>
+          <path class="r dash" d="M84,60.5 L127.2,110.6"/>
+          <path class="r thick" d="M84,138 L127.2,188.1"/>
+          <path class="z thick" d="M127.2,188.1 L127.2,110.6"/>
+          <path class="t mid" d="M53.8,161.8 L55.7,162.1 L57.6,162.5 L59.6,162.8 L61.6,163.1 L63.6,163.3 L65.7,163.5 L67.8,163.7 L69.9,163.9 L72,164 L74.2,164 L76.3,164.1 L78.5,164.1 L80.7,164.1 L82.9,164 L85,163.9 L87.2,163.8 L89.4,163.6 L91.6,163.4 L93.7,163.2 L95.9,162.9 L98,162.6 L100.1,162.3 L102.2,161.9 L104.3,161.5"/>
+          <polygon class="t-fill" points="106.2,161.2 99.1,166.4 97.7,158.9"/>
+          <circle class="pt-open" cx="127.2" cy="188.1" r="3.2"/>
+          <circle class="pt" cx="127.2" cy="110.6" r="4.2"/>
+          <text x="2" y="197" class="lbl-ax">x</text>
+          <text x="229" y="183" class="lbl-ax">y</text>
+          <text x="91" y="22.5" class="lbl-ax">z</text>
+          <text x="67" y="135" class="lbl-mute">O</text>
+          <text x="135.2" y="106.6" class="lbl">P</text>
+          <text x="135.2" y="202.1" class="lbl">P′</text>
+          <text x="113.7" y="166.2" class="lbl-r">r</text>
+          <text x="76.9" y="158.5" class="lbl-t">θ</text>
+          <text x="134.2" y="139.4" class="lbl-z">z</text>
+        </svg>
+        <figcaption><strong>Figure F.1</strong> Walk out \(r\) at angle \(\theta\) to reach \(P'\), then rise \(z\) to \(P\).</figcaption>
+      </figure>
+      <dl class="cs-dl">
+        <dt>\(\colR{r}\)</dt><dd>distance from the \(z\)-axis (in a plane: from \(O\)); \(r \ge 0\)</dd>
+        <dt>\(\colT{\theta}\)</dt><dd>angle from the \(+x\) axis, counter-clockwise seen from \(+z\), in radians</dd>
+        <dt>\(\colZ{z}\)</dt><dd>height along the axis</dd>
+      </dl>
+      <div class="cs-pair">
+        <div class="key-formula">
+          <p class="key-formula-title">To rectangular</p>
+          \[ x = r\cos\theta, \quad y = r\sin\theta \]
+        </div>
+        <div class="key-formula">
+          <p class="key-formula-title">From rectangular</p>
+          \[ r = \sqrt{x^2 + y^2}, \quad \theta = \atantwo(y, x) \]
+        </div>
+      </div>
+      <p>Position vector: \(\rvec = r\,\er + z\,\ez\) (no \(\et\) term), with \(|\rvec| = \sqrt{r^2 + z^2}\). A motion is \(r(t)\), \(\theta(t)\), \(z(t)\); \(N\) rpm \(= 2\pi N/60\) rad/s.</p>
+      <p class="cs-more no-print">More in <a href="../lessons/02-position.html">Lesson 2</a></p>
+    </section>
+
+    <section class="card cs-card" id="theta-quadrants">
+      <h2><span>Finding \(\theta\): the quadrant table</span></h2>
+      <div class="table-wrap">
+        <table class="data cs-quad">
+          <caption class="visually-hidden">The angle theta from x and y, by the location of the point</caption>
+          <thead><tr><th scope="col">\((x, y)\) lies in</th><th scope="col">\(\theta\) in \([0, 2\pi)\)</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">I: \(x > 0,\ y \ge 0\)</th><td>\(\arctan(y/x)\)</td></tr>
+            <tr><th scope="row">II or III: \(x \lt 0\)</th><td>\(\arctan(y/x) + \pi\)</td></tr>
+            <tr><th scope="row">IV: \(x > 0,\ y \lt 0\)</th><td>\(\arctan(y/x) + 2\pi\)</td></tr>
+            <tr><th scope="row">\(x = 0\)</th><td>\(\tfrac{\pi}{2}\) if \(y > 0\), \(\tfrac{3\pi}{2}\) if \(y \lt 0\)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>A calculator's \(\tan^{-1}\) key returns only \(-\tfrac{\pi}{2}\) to \(\tfrac{\pi}{2}\): sketch the point first, then pick the row.</p>
+      <p class="cs-more no-print">More in <a href="../lessons/02-position.html">Lesson 2</a></p>
+    </section>
+
+    <section class="card cs-card" id="unit-vectors">
+      <h2><span>Unit vectors that turn</span></h2>
+      <div class="cs-pair">
+        <div>\[ \begin{aligned} \colR{\er} &= \cos\theta\,\ihat + \sin\theta\,\jhat \\ \colT{\et} &= -\sin\theta\,\ihat + \cos\theta\,\jhat \\ \colZ{\ez} &= \khat \end{aligned} \]</div>
+        <div class="key-formula">
+          <p class="key-formula-title">Time derivatives</p>
+          \[ \begin{aligned} \dot{\mathbf{u}}_r &= \dot\theta\,\et \\ \dot{\mathbf{u}}_\theta &= -\dot\theta\,\er \\ \dot{\mathbf{u}}_z &= \mathbf{0} \end{aligned} \]
+        </div>
+      </div>
+      <h3>Components of a vector (\(\theta\) = angle of the particle's position)</h3>
+      <div class="cs-pair">
+        <div>\[ \begin{aligned} F_r &= F_x\cos\theta + F_y\sin\theta \\ F_\theta &= -F_x\sin\theta + F_y\cos\theta \end{aligned} \]</div>
+        <div>\[ \begin{aligned} F_x &= F_r\cos\theta - F_\theta\sin\theta \\ F_y &= F_r\sin\theta + F_\theta\cos\theta \end{aligned} \]</div>
+      </div>
+      <p>Weight with \(\theta\) from the horizontal in a vertical plane (\(y\) up): \(W_r = -mg\sin\theta\), \(W_\theta = -mg\cos\theta\).</p>
+      <p class="cs-more no-print">More in <a href="../lessons/03-unit-vectors.html">Lesson 3</a></p>
+    </section>
+
+    <section class="card cs-card" id="velocity">
+      <h2><span>Velocity</span></h2>
+      <div class="key-formula">
+        \[ \vvec = \dot r\,\colR{\er} + r\dot\theta\,\colT{\et} + \dot z\,\colZ{\ez} \]
+      </div>
+      <p>\(v_r = \dot r\) (moving out), \(v_\theta = r\dot\theta\) (going round), \(v_z = \dot z\) (climbing). Speed \(v = \sqrt{\dot r^2 + (r\dot\theta)^2 + \dot z^2}\).</p>
+      <p>Direction in the \(r\)–\(\theta\) plane: \(\tan\psi = v_\theta/v_r\), measured from the radial line. A tracker reads \(\dot r = v_r\) and \(\dot\theta = v_\theta/r\).</p>
+      <p class="cs-more no-print">More in <a href="../lessons/04-velocity.html">Lesson 4</a></p>
+    </section>
+
+    <section class="card cs-card" id="acceleration">
+      <h2><span>Acceleration</span></h2>
+      <div class="key-formula">
+        \[ \avec = \left(\ddot r - r\dot\theta^2\right)\colR{\er} + \left(r\ddot\theta + 2\dot r\dot\theta\right)\colT{\et} + \ddot z\,\colZ{\ez} \]
+      </div>
+      <div class="table-wrap">
+        <table class="data">
+          <caption class="visually-hidden">The terms of the acceleration</caption>
+          <thead><tr><th scope="col">Term</th><th scope="col">Name</th><th scope="col">Zero when</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">\(\ddot r\)</th><td>radial (sliding)</td><td>\(\dot r\) constant</td></tr>
+            <tr><th scope="row">\(-r\dot\theta^2\)</th><td>centripetal, toward the axis</td><td>\(\dot\theta = 0\)</td></tr>
+            <tr><th scope="row">\(r\ddot\theta\)</th><td>angular acceleration</td><td>\(\dot\theta\) constant</td></tr>
+            <tr><th scope="row">\(2\dot r\dot\theta\)</th><td>Coriolis</td><td>\(\dot r = 0\) or \(\dot\theta = 0\)</td></tr>
+            <tr><th scope="row">\(\ddot z\)</th><td>axial</td><td>\(\dot z\) constant</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Circle about \(O\) (\(r\) constant): \(a_r = -r\dot\theta^2 = -v^2/r\), \(a_\theta = r\ddot\theta = \dot v\). Given \(r(t)\), \(\theta(t)\): differentiate twice, evaluate, substitute.</p>
+      <p class="cs-more no-print">More in <a href="../lessons/05-acceleration.html">Lesson 5</a></p>
+    </section>
+
+    <section class="card cs-card" id="paths">
+      <h2><span>Paths given as \(r = f(\theta)\)</span></h2>
+      <div class="cs-pair">
+        <div class="key-formula">
+          <p class="key-formula-title">Chain rule</p>
+          \[ \dot r = \frac{dr}{d\theta}\,\dot\theta, \qquad \ddot r = \frac{d^2r}{d\theta^2}\,\dot\theta^2 + \frac{dr}{d\theta}\,\ddot\theta \]
+        </div>
+        <div class="key-formula">
+          <p class="key-formula-title">Tangent angle</p>
+          \[ \tan\psi = \frac{r}{dr/d\theta} \]
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data cs-eqs">
+          <caption class="visually-hidden">Common paths and their derivatives</caption>
+          <thead><tr><th scope="col">Path</th><th scope="col">\(f'\)</th><th scope="col">\(f''\)</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">\(r = b\theta\) (spiral)</th><td>\(b\)</td><td>\(0\)</td></tr>
+            <tr><th scope="row">\(r = a(1 + \cos\theta)\)</th><td>\(-a\sin\theta\)</td><td>\(-a\cos\theta\)</td></tr>
+            <tr><th scope="row">\(r = d\cos\theta\) (circle through \(O\))</th><td>\(-d\sin\theta\)</td><td>\(-d\cos\theta\)</td></tr>
+            <tr><th scope="row">\(r = ae^{k\theta}\) (\(\psi\) constant)</th><td>\(kr\)</td><td>\(k^2 r\)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>\(\psi\) is measured from the extended radial line to the tangent, positive toward \(\et\).</p>
+      <p class="cs-more no-print">More in <a href="../lessons/06-paths-r-theta.html">Lesson 6</a></p>
+    </section>
+
+    <section class="card cs-card" id="equations-of-motion">
+      <h2><span>Equations of motion</span></h2>
+      <div class="key-formula cs-flow">
+        \[ \textstyle\sum F_r = m\left(\ddot r - r\dot\theta^2\right), \]
+        \[ \textstyle\sum F_\theta = m\left(r\ddot\theta + 2\dot r\dot\theta\right), \]
+        \[ \textstyle\sum F_z = m\ddot z \]
+      </div>
+      <p><strong>Procedure:</strong> free-body and kinetic diagrams with \(\er\), \(\et\) at the particle; kinematics (\(r, \dot r, \ddot r, \dot\theta, \ddot\theta\)); one equation per direction; solve and check signs.</p>
+      <ul>
+        <li>Smooth rod or slot turning with the arm: force \(N\,\et\) only (no \(\er\) part).</li>
+        <li>Spring along the arm from \(O\): \(-k(r - r_0)\,\er\). Cord through \(O\): \(-T\,\er\) with \(T \ge 0\).</li>
+        <li>Collar free on a driven rod: \(\ddot r = r\dot\theta^2\) and \(N = 2m\dot r\dot\theta\).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/07-equations-of-motion.html">Lesson 7</a></p>
+    </section>
+
+    <section class="card cs-card" id="applications">
+      <h2><span>Guides and central forces</span></h2>
+      <h3>Pin in a smooth fixed guide, pushed by a smooth arm (horizontal plane)</h3>
+      \[ \begin{gathered} \mathbf{N} = N(-\sin\psi\,\er + \cos\psi\,\et) \\ N = -\frac{m a_r}{\sin\psi}, \qquad F = m a_\theta - N\cos\psi \end{gathered} \]
+      <h3>Central force (\(\sum F_\theta = 0\): cord through \(O\), gravity of a planet)</h3>
+      <div class="key-formula cs-flow">
+        \[ r^2\dot\theta = h = \text{constant}, \]
+        \[ v_\theta = \frac{h}{r}, \]
+        \[ \textstyle\sum F_r = m\left(\ddot r - \dfrac{h^2}{r^3}\right) \]
+      </div>
+      <p>Orbits: \(r_p v_p = r_a v_a\) at perigee and apogee. Pulled cord: \(\dot\theta_2 = \dot\theta_1 (r_1/r_2)^2\).</p>
+      <p class="cs-more no-print">More in <a href="../lessons/08-applications.html">Lesson 8</a></p>
+    </section>
+
+    <section class="card cs-card" id="choosing">
+      <h2><span>Choosing a coordinate system</span></h2>
+      <div class="table-wrap">
+        <table class="data">
+          <caption class="visually-hidden">Which components make the equations simplest</caption>
+          <thead><tr><th scope="col">Use</th><th scope="col">When the problem has</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Rectangular \(x, y, z\)</th><td>forces in fixed directions: projectiles, blocks on fixed inclines</td></tr>
+            <tr><th scope="row">Path \(t, n\)</th><td>a known path and its radius of curvature: cars on curves, roller coasters</td></tr>
+            <tr><th scope="row">Polar \(r, \theta\)</th><td>a rotating arm, rod or slot; radar data \(r, \theta\); a path \(r = f(\theta)\); a cord through \(O\)</td></tr>
+            <tr><th scope="row">Cylindrical \(r, \theta, z\)</th><td>polar motion plus a height: helix, spiral chute, robot arm that lifts</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>All systems give the same \(\vvec\) and \(\avec\), so \(v\) and \(a\) agree. Circle centered on \(O\): \(a_n = -a_r = v^2/r\), \(a_t = a_\theta\).</p>
+      <p class="cs-more no-print">More in <a href="../lessons/01-why-cylindrical.html#three-descriptions">Lesson 1</a> and <a href="../lessons/08-applications.html#choosing">Lesson 8</a></p>
+    </section>
+
+    <section class="card cs-card cs-warn" id="common-mistakes">
+      <h2><span>Common mistakes</span></h2>
+      <ul class="cs-mistakes">
+        <li><strong>Trusting \(\arctan(y/x)\).</strong> It misses the quadrant whenever \(x \lt 0\).</li>
+        <li><strong>A \(\theta\)-term in \(\rvec\).</strong> \(\rvec = r\,\er + z\,\ez\), never \(r\,\er + \theta\,\et\).</li>
+        <li><strong>\(v_\theta = \dot\theta\).</strong> It is \(r\dot\theta\): check the units (m/s, not rad/s).</li>
+        <li><strong>\(a_r = \ddot r\).</strong> It is \(\ddot r - r\dot\theta^2\); constant rates do not mean zero acceleration.</li>
+        <li><strong>Forgetting the Coriolis term</strong> \(2\dot r\dot\theta\) when the particle moves in or out while turning.</li>
+        <li><strong>\(\ddot r = f''\ddot\theta\) on a path.</strong> It is \(f''\dot\theta^2 + f'\ddot\theta\).</li>
+        <li><strong>Degrees in a formula.</strong> \(r\dot\theta\) and \(r\dot\theta^2\) need rad/s.</li>
+        <li><strong>Assuming \(r^2\dot\theta\) is constant</strong> when an arm or rod pushes sideways (\(\sum F_\theta \ne 0\)).</li>
+      </ul>
+    </section>
+
+    <section class="card cs-card" id="check-values">
+      <h2><span>Check values</span></h2>
+      <p>Test your calculator, spreadsheet or code on these before trusting it with a new problem.</p>
+      <h3>Example 5.3: \(r = 1 + 0.2t^2\ \text{m}\), \(\theta = 0.5t^2\ \text{rad}\), at \(t = 2\ \text{s}\)</h3>
+      <div class="table-wrap">
+        <table class="data cs-eqs cs-checks">
+          <caption class="visually-hidden">Values at t = 2 s for Example 5.3</caption>
+          <tbody>
+            <tr><th scope="row">\(r,\ \dot r,\ \ddot r\)</th><td>\(1.8\) m</td><td>\(0.8\) m/s</td><td>\(0.4\) m/s²</td></tr>
+            <tr><th scope="row">\(\theta,\ \dot\theta,\ \ddot\theta\)</th><td>\(2\) rad</td><td>\(2\) rad/s</td><td>\(1\) rad/s²</td></tr>
+            <tr><th scope="row">\(v_r,\ v_\theta,\ v\)</th><td>\(0.8\)</td><td>\(3.6\)</td><td>\(3.688\) m/s</td></tr>
+            <tr><th scope="row">\(a_r,\ a_\theta,\ a\)</th><td>\(-6.8\)</td><td>\(5.0\)</td><td>\(8.440\) m/s²</td></tr>
+            <tr><th scope="row">\(\sum F_r,\ \sum F_\theta\) (\(m = 2\) kg)</th><td>\(-13.6\) N</td><td>\(10.0\) N</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Conversions</h3>
+      <p>\((x, y) = (-3, 4)\): \(r = 5\), \(\theta = 2.214\) rad \((126.87^\circ)\). \((-3, -4)\): \(\theta = 4.069\) rad \((233.13^\circ)\); code returns \(-2.214\), so add \(2\pi\). \(60\) rpm \(= 2\pi\) rad/s \(= 6.283\) rad/s.</p>
+      <p class="cs-more no-print">Worked in <a href="../lessons/05-acceleration.html#examples">Lesson 5</a> and <a href="../lessons/02-position.html">Lesson 2</a></p>
+    </section>
+
+    <section class="card cs-card" id="software">
+      <h2><span>Finding \(\theta\) with a calculator or code</span></h2>
+      <p>These return \(\theta\) from \(-\pi\) to \(\pi\) (\(-180^\circ\) to \(180^\circ\) in DEG mode). For \(0 \le \theta \lt 2\pi\), add \(2\pi\) to a negative result, or use a mod form.</p>
+      <div class="cs-tools">
+        <div class="cs-tool">
+          <span class="cs-tool-name">Calculator: <strong>x first</strong></span>
+          <p>Use RAD mode for anything with \(\dot\theta\) or \(\ddot\theta\). \(\tan^{-1}\) alone needs the quadrant table; <code>Pol(x, y)</code> (Casio) and <code>R►Pθ(x, y)</code> (TI) get the quadrant right.</p>
+        </div>
+        <div class="cs-tool">
+          <span class="cs-tool-name">Excel / Google Sheets: <strong>x first</strong></span>
+          <div class="cs-code">
+            <code>=ATAN2(x, y)</code><span>\(-\pi\) to \(\pi\)</span>
+            <code>=MOD(ATAN2(x, y), 2*PI())</code><span>\(0\) to \(2\pi\)</span>
+          </div>
+          <p class="cs-tool-note"><code>ATAN2(0, 0)</code> returns <code>#DIV/0!</code> (the particle is at \(O\)).</p>
+        </div>
+        <div class="cs-tool">
+          <span class="cs-tool-name">Python / NumPy: y first</span>
+          <div class="cs-code">
+            <code><span class="nowrap">math.atan2(y, x)</span> <span class="nowrap">% (2*math.pi)</span></code><span>\(0\) to \(2\pi\)</span>
+            <code>math.hypot(x, y)</code><span>\(r\)</span>
+            <code><span class="nowrap">np.arctan2(y, x)</span> <span class="nowrap">% (2*np.pi)</span></code><span>arrays</span>
+          </div>
+          <p class="cs-tool-note">C, Java, JavaScript: also \((y, x)\), but <code>%</code> and <code>fmod</code> keep the sign; add \(2\pi\) if negative.</p>
+        </div>
+        <div class="cs-tool">
+          <span class="cs-tool-name">MATLAB: atan2 y first, cart2pol <strong>x first</strong></span>
+          <div class="cs-code">
+            <code>mod(atan2(y, x), 2*pi)</code><span>\(0\) to \(2\pi\)</span>
+            <code><span class="nowrap">[theta, rho] =</span> <span class="nowrap">cart2pol(x, y)</span></code><span>\(\theta\) first, \(-\pi\) to \(\pi\)</span>
+          </div>
+        </div>
+      </div>
+      <p class="cs-more no-print">More in <a href="../lessons/02-position.html">Lesson 2</a></p>
+    </section>
+
+  </div>
+
+  <p class="cs-after no-print">Put the formulas to work in the <a href="../practice/practice-lab.html">Practice Lab</a>, test yourself with the <a href="../practice/quiz.html">Self-Check Quiz</a>, or look up a term in the <a href="glossary.html">Glossary</a>.</p>
+</main>
+
+<script>
+/* Formula sheet: the only control is the print button (the page itself is static reference content). */
+CYL.ready(function () {
+  'use strict';
+  var btn = document.getElementById('cs-print');
+  btn.addEventListener('click', function () { window.print(); });
+});
+</script>
+</body>
+</html>

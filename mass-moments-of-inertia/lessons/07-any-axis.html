@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moment of Inertia About Any Axis · Mass Moments of Inertia</title>
+<meta name="description" content="The moment of inertia about an arbitrary axis from the inertia tensor, I = uᵀ[I]u; rotating the coordinate axes, [I'] = R[I]Rᵀ; and the plane transformation formulas for rotation about one axis.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/inertia.js"></script>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 30 min</p>
+    <h1>Moment of Inertia About Any Axis</h1>
+    <p class="lede">A crankshaft turns about its bearing line, a satellite tumbles about whatever axis its thrusters leave it, and an aircraft's stability axes tilt with its angle of attack. The inertia tensor about one set of axes already contains the moment of inertia about every other axis through the same point.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute the moment of inertia about an axis with unit vector \(\uvec\) as \(I_{Oa} = \uvec^\mathsf{T}\Imat_O\,\uvec\).</li>
+      <li>Transform the whole inertia tensor to rotated axes with \(\Imat' = R\,\Imat R^\mathsf{T}\).</li>
+      <li>Apply the plane transformation formulas for a rotation about one coordinate axis.</li>
+      <li>Recognise the quantities that do not change when the axes rotate.</li>
+    </ul>
+  </section>
+
+  <section id="any-axis">
+    <h2>An axis in any direction</h2>
+    <p>Let an axis \(Oa\) pass through \(O\) with unit vector \(\uvec = u_x\ihat + u_y\jhat + u_z\khat\). The perpendicular distance from the axis to a mass element at \(\rvec\) is \(|\uvec \times \rvec|\), so</p>
+    \[ I_{Oa} = \int |\uvec \times \rvec|^2\,dm. \]
+
+    <details class="reveal">
+      <summary>Expanding \(|\uvec \times \rvec|^2\)</summary>
+      <div>
+        <p>Using \(|\uvec \times \rvec|^2 = |\rvec|^2 - (\uvec\cdot\rvec)^2\) and \(u_x^2 + u_y^2 + u_z^2 = 1\):</p>
+        \[ |\uvec \times \rvec|^2 = (y^2 + z^2)u_x^2 + (z^2 + x^2)u_y^2 + (x^2 + y^2)u_z^2 - 2xy\,u_xu_y - 2yz\,u_yu_z - 2zx\,u_zu_x. \]
+        <p>Integrating term by term gives the moments and products of inertia about \(x, y, z\).</p>
+      </div>
+    </details>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Moment of inertia about an axis through \(O\)</p>
+      \[ I_{Oa} = I_{xx}u_x^2 + I_{yy}u_y^2 + I_{zz}u_z^2 - 2I_{xy}\,u_xu_y - 2I_{yz}\,u_yu_z - 2I_{zx}\,u_zu_x \]
+      \[ I_{Oa} = \uvec^\mathsf{T}\,\Imat_O\,\uvec = \uvec\cdot(\Imat_O\,\uvec) \]
+      <p>The components of \(\uvec\) are its direction cosines. The axis must pass through the point \(O\) about which \(\Imat_O\) was found; for a parallel axis elsewhere, use the parallel-axis theorem afterwards.</p>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> An axis through \(O\), steered by its azimuth \(\phi\) (from \(x\), in the \(xy\)-plane) and elevation \(\lambda\) (above the \(xy\)-plane). The readouts split \(I_{Oa} = \uvec^\mathsf{T}\Imat_O\uvec\) into its moment terms and its product terms. Look for the directions that make \(I_{Oa}\) largest and smallest: Lesson 8 finds them directly.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 7.1 — A box about its diagonal</p>
+      <p>A \(12\ \text{kg}\) solid block measures \(a = 0.3\), \(b = 0.2\), \(c = 0.1\ \text{m}\) along \(x, y, z\). Find its moment of inertia about the body diagonal through its center \(G\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>About its centroidal axes the block has no products, and</p>
+          \[ \bar I_{xx} = \tfrac{12}{12}(0.2^2 + 0.1^2) = 0.050, \quad \bar I_{yy} = \tfrac{12}{12}(0.3^2 + 0.1^2) = 0.100, \quad \bar I_{zz} = \tfrac{12}{12}(0.3^2 + 0.2^2) = 0.130\ \text{kg·m}^2. \]
+          <p>The diagonal runs along \((a, b, c)\), of length \(\sqrt{0.14} = 0.3742\ \text{m}\), so \(\uvec = (0.8018,\ 0.5345,\ 0.2673)\):</p>
+          \[ I_{Ga} = 0.050(0.6429) + 0.100(0.2857) + 0.130(0.0714) = 0.0700\ \text{kg·m}^2 \]
+          <p>In closed form, \(I_{Ga} = \dfrac{m}{6}\,\dfrac{a^2b^2 + b^2c^2 + c^2a^2}{a^2 + b^2 + c^2}\). The same line also passes through two opposite corners. Because it passes through \(G\), the moment of inertia about the corner-to-corner diagonal is the same \(0.0700\ \text{kg·m}^2\): try the box with a corner at \(O\) in Figure 7.1.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout note">
+      <p class="callout-title">Cubes and spheres look alike</p>
+      <p>For a cube, \(a = b = c\) and the formula gives \(\tfrac16 ma^2\) about the diagonal: the same as about any centroidal axis parallel to an edge. A cube's centroidal tensor is \(\tfrac16 ma^2\,\mathbf{1}\), so every axis through \(G\) has the same moment of inertia. The same is true of any body with cubic symmetry, such as a regular die.</p>
+    </aside>
+
+    <div class="example">
+      <p class="example-title">Example 7.2 — The bent rod about \(OC\)</p>
+      <p>For the bent rod of Example 5.2, find the moment of inertia about the line \(OC\) from the origin to the free end \(C(0.4,\ 0.3,\ 0.2)\ \text{m}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>\(|OC| = \sqrt{0.29} = 0.5385\ \text{m}\), so \(\uvec = (0.7428,\ 0.5571,\ 0.3714)\). With the tensor about \(O\) from Example 5.2:</p>
+          \[ \begin{aligned} I_{OC} &= 0.05933(0.5517) + 0.2080(0.3103) + 0.2567(0.1379) \\ &\quad - 2(0.0840)(0.4138) - 2(0.0120)(0.2069) - 2(0.0160)(0.2759) \\ &= 0.1327 - 0.0833 = 0.0494\ \text{kg·m}^2 \end{aligned} \]
+          <p>The products remove almost two thirds of the moment terms: most of the rod lies close to the line \(OC\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="rotating-axes">
+    <h2>Rotating the axes</h2>
+    <p>The formula \(I_{Oa} = \uvec^\mathsf{T}\Imat\,\uvec\) gives one diagonal entry of the tensor in a new frame. The products in the new frame follow the same pattern: with new unit vectors \(\uvec_{x'}\) and \(\uvec_{y'}\),</p>
+    \[ I_{x'x'} = \uvec_{x'}^\mathsf{T}\Imat\,\uvec_{x'}, \qquad I_{x'y'} = -\,\uvec_{x'}^\mathsf{T}\Imat\,\uvec_{y'}. \]
+    <p>Stack the new unit vectors as the <em>rows</em> of a rotation matrix \(R\) and all nine entries come at once:</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Inertia tensor in rotated axes</p>
+      \[ \Imat' = R\,\Imat\,R^\mathsf{T}, \qquad R = \begin{bmatrix} \uvec_{x'}^\mathsf{T} \\ \uvec_{y'}^\mathsf{T} \\ \uvec_{z'}^\mathsf{T} \end{bmatrix} \]
+      <p>Both frames share the same origin. The trace \(I_{xx} + I_{yy} + I_{zz}\) is the same in every frame (it equals \(2\int r^2\,dm\)).</p>
+    </div>
+
+    <h3>Rotation about one axis</h3>
+    <p>The most common case turns the \(x\)- and \(y\)-axes through an angle \(\theta\) about \(z\) (counterclockwise seen from \(+z\)). Then \(\uvec_{x'} = (\cos\theta,\ \sin\theta,\ 0)\), \(\uvec_{y'} = (-\sin\theta,\ \cos\theta,\ 0)\), and</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Plane transformation (rotation \(\theta\) about \(z\))</p>
+      \[ I_{x'x'} = \frac{I_{xx} + I_{yy}}{2} + \frac{I_{xx} - I_{yy}}{2}\cos 2\theta - I_{xy}\sin 2\theta \]
+      \[ I_{y'y'} = \frac{I_{xx} + I_{yy}}{2} - \frac{I_{xx} - I_{yy}}{2}\cos 2\theta + I_{xy}\sin 2\theta \]
+      \[ I_{x'y'} = \frac{I_{xx} - I_{yy}}{2}\sin 2\theta + I_{xy}\cos 2\theta \]
+      <p>\(I_{z'z'} = I_{zz}\), and \(I_{x'x'} + I_{y'y'} = I_{xx} + I_{yy}\) for every \(\theta\). These are the same equations as for stress transformation and for second moments of area.</p>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig72-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig72-stage"></div>
+        <div class="viz-controls" id="fig72-controls"></div>
+      </div>
+      <figcaption id="fig72-cap"><strong>Figure 7.2</strong> A thin L-shaped plate (\(20\ \text{kg/m}^2\)) in the \(xy\)-plane, with axes \(\colX{x'}\), \(\colY{y'}\) turned through \(\theta\) about \(z\) at the corner \(O\). The plot shows \(\colX{I_{x'x'}}\), \(\colY{I_{y'y'}}\) and \(I_{x'y'}\) over half a turn: every curve repeats after \(180^\circ\), and the two moments always add to the same total.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 7.3 — The L-plate, rotated</p>
+      <p>The thin L-shaped plate of Figure 7.2 is made of a \(0.8\ \text{kg}\) rectangle covering \(0 \le x \le 0.4\), \(0 \le y \le 0.1\ \text{m}\) and a \(0.4\ \text{kg}\) rectangle covering \(0 \le x \le 0.1\), \(0.1 \le y \le 0.3\ \text{m}\). Find \(I_{xx}\), \(I_{yy}\), \(I_{xy}\) about \(O\), then the moments and product about axes turned \(30^\circ\) about \(z\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>For a thin plate in the \(xy\)-plane, \(I_{xx} = \int y^2\,dm\) and \(I_{yy} = \int x^2\,dm\). A rectangle whose sides run from \(0\) to \(a\) has \(\int x^2\,dm = \tfrac13 ma^2\), and \(\int xy\,dm = m\bar x\bar y\):</p>
+          <div class="table-wrap">
+          <table class="data">
+            <caption>Parts about \(O\) (kg·m²)</caption>
+            <thead><tr><th>Part</th><th>\(\int y^2\,dm\)</th><th>\(\int x^2\,dm\)</th><th>\(\int xy\,dm\)</th></tr></thead>
+            <tbody>
+              <tr><td>1: \(0.8\ \text{kg}\)</td><td>\(\tfrac13(0.8)(0.1)^2 = 0.00267\)</td><td>\(\tfrac13(0.8)(0.4)^2 = 0.04267\)</td><td>\(0.8(0.2)(0.05) = 0.008\)</td></tr>
+              <tr><td>2: \(0.4\ \text{kg}\)</td><td>\(0.4\,\tfrac{0.3^3 - 0.1^3}{3(0.2)} = 0.01733\)</td><td>\(\tfrac13(0.4)(0.1)^2 = 0.00133\)</td><td>\(0.4(0.05)(0.2) = 0.004\)</td></tr>
+              <tr><td><strong>Total</strong></td><td>\(I_{xx} = 0.020\)</td><td>\(I_{yy} = 0.044\)</td><td>\(I_{xy} = 0.012\)</td></tr>
+            </tbody>
+          </table>
+          </div>
+          <p>With \(\theta = 30^\circ\), \(\cos 2\theta = 0.5\) and \(\sin 2\theta = 0.8660\):</p>
+          \[ I_{x'x'} = 0.032 + (-0.012)(0.5) - 0.012(0.8660) = 0.01561\ \text{kg·m}^2 \]
+          \[ I_{y'y'} = 0.032 - (-0.012)(0.5) + 0.012(0.8660) = 0.04839\ \text{kg·m}^2 \]
+          \[ I_{x'y'} = (-0.012)(0.8660) + 0.012(0.5) = -0.00439\ \text{kg·m}^2 \]
+          <p>Check: \(I_{x'x'} + I_{y'y'} = 0.064 = I_{xx} + I_{yy}\). The product changed sign between \(0^\circ\) and \(30^\circ\), so somewhere in between it is zero: that angle is found in Lesson 8.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection: body axes and stability axes</p>
+      <p>Aircraft inertia is usually tabulated in body axes (\(x\) forward along the fuselage, \(z\) down), where the plane of symmetry makes \(I_{xy} = I_{yz} = 0\) but leaves \(I_{xz}\). Flight-dynamics models often use stability axes, turned through the angle of attack \(\alpha\) about \(y\). The plane transformation, applied about \(y\) instead of \(z\), gives the new \(I_{xx}\), \(I_{zz}\) and \(I_{xz}\); \(I_{yy}\) is unchanged.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>About an axis through \(O\) with unit vector \(\uvec\): \(I_{Oa} = \uvec^\mathsf{T}\Imat_O\,\uvec\), moment terms minus twice the product terms.</li>
+      <li>A whole tensor transforms as \(\Imat' = R\,\Imat R^\mathsf{T}\), with the new unit vectors as the rows of \(R\).</li>
+      <li>For a rotation \(\theta\) about \(z\), the double-angle formulas give \(I_{x'x'}\), \(I_{y'y'}\), \(I_{x'y'}\); they repeat every \(180^\circ\).</li>
+      <li>\(I_{x'x'} + I_{y'y'}\) (plane) and the trace (3D) do not change when the axes rotate.</li>
+      <li>Next: <a href="08-principal-axes.html">Lesson 8</a> finds the axes where every product is zero.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 7.1: an axis through O in any direction; I = uᵀ[I]u ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180;
+  var BODIES = {
+    boxG: { label: 'Block centered at O (Example 7.1)', m: 12, diag: [0.3, 0.2, 0.1],
+      parts: [{ type: 'box', m: 12, d: { a: 0.3, b: 0.2, c: 0.1 }, center: [0, 0, 0] }] },
+    boxC: { label: 'Block with a corner at O', m: 12, diag: [0.3, 0.2, 0.1],
+      parts: [{ type: 'box', m: 12, d: { a: 0.3, b: 0.2, c: 0.1 }, center: [0.15, 0.1, 0.05] }] },
+    bent: { label: 'Bent rod (Example 5.2)', m: 1.8, diag: [0.4, 0.3, 0.2],
+      parts: [{ type: 'rod', m: 0.8, d: { l: 0.4 }, center: [0.2, 0, 0], axis: [1, 0, 0] },
+        { type: 'rod', m: 0.6, d: { l: 0.3 }, center: [0.4, 0.15, 0], axis: [0, 1, 0] },
+        { type: 'rod', m: 0.4, d: { l: 0.2 }, center: [0.4, 0.3, 0.1], axis: [0, 0, 1] }] }
+  };
+  var st = { body: 'boxG', phi: 60, lam: 35, u: null };
+  var stage = document.getElementById('fig71-stage'), panel = document.getElementById('fig71-controls');
+  var v = CYL3D.create(stage, {
+    extent: 0.42, zRange: [-0.35, 0.4], grid: 'cartesian', ui: ['iso', 'top', 'front', 'reset'],
+    camera: { azimuth: -32, elevation: 24, zoom: 1.15 },
+    ariaLabel: 'A 0.3 by 0.2 by 0.1 metre block centered at the origin, with a dashed axis line through the origin and an arrow along the unit vector u.'
+  });
+  var drawn = [];
+  var axisLine = v.line([[0, 0, 0], [0, 0, 1]], { color: 'bad', width: 2, dashed: true });
+  var uArrow = v.arrow([0, 0, 0], [0, 0, 0.3], { color: 'bad', label: '\\uvec', width: 0.007, headLength: 0.045, headRadius: 0.018 });
+
+  var sel = CYL.select({ label: 'Body', value: st.body,
+    options: Object.keys(BODIES).map(function (k) { return { value: k, label: BODIES[k].label }; }),
+    onChange: function (k) { st.body = k; rebuild(); } });
+  var sP = CYL.slider({ label: 'Azimuth \\(\\phi\\)', min: -180, max: 180, step: 1, value: st.phi, unit: '°', onInput: function (x) { st.phi = x; st.u = null; schedule(); } });
+  var sL = CYL.slider({ label: 'Elevation \\(\\lambda\\)', min: -90, max: 90, step: 1, value: st.lam, unit: '°', onInput: function (x) { st.lam = x; st.u = null; schedule(); } });
+  function snap(u) {
+    var n = Math.sqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
+    st.u = [u[0] / n, u[1] / n, u[2] / n];
+    st.phi = Math.abs(st.u[0]) + Math.abs(st.u[1]) < 1e-9 ? 0 : Math.atan2(st.u[1], st.u[0]) / D;
+    st.lam = Math.asin(Math.max(-1, Math.min(1, st.u[2]))) / D;
+    sP.set(Math.round(st.phi), true); sL.set(Math.round(st.lam), true);
+    schedule();
+  }
+  var bx = CYL.button('Along \\(x\\)', function () { snap([1, 0, 0]); }, { small: true });
+  var by = CYL.button('Along \\(y\\)', function () { snap([0, 1, 0]); }, { small: true });
+  var bz = CYL.button('Along \\(z\\)', function () { snap([0, 0, 1]); }, { small: true });
+  var bd = CYL.button('Diagonal', function () { snap(BODIES[st.body].diag); }, { small: true });
+  var matBox = CYL.el('div', { class: 'mat-box', 'aria-live': 'off' });
+  var roU = CYL.readout('\\(\\uvec\\)', { color: 'bad' });
+  var roMom = CYL.readout('Moment terms');
+  var roProd = CYL.readout('Product terms');
+  var roI = CYL.readout('\\(I_{Oa} = \\uvec^\\mathsf{T}\\Imat_O\\uvec\\)');
+  var roK = CYL.readout('\\(k = \\sqrt{I_{Oa}/m}\\)');
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Axis through O' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(sP.el);
+  panel.appendChild(sL.el);
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [bx, by, bz, bd]));
+  panel.appendChild(CYL.el('p', { class: 'mat-label', html: '\\(\\Imat_O\\) (kg·m²)' }));
+  panel.appendChild(matBox);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roU.el, roMom.el, roProd.el, roI.el, roK.el]));
+  CYL.renderMath(panel);
+
+  var IO = null;
+  function rebuild() {
+    var B = BODIES[st.body];
+    drawn.forEach(function (d) { v.remove(d.group); });
+    drawn = B.parts.map(function (p) { return INERT.draw(v, p, { rodRadius: 0.009, color: 'accent', opacity: st.body === 'bent' ? 0.9 : 0.4 }); });
+    IO = INERT.assemble(B.parts).IO;
+    CYL.setTex(matBox, INERT.texMatrix(IO, 4), true);
+    schedule();
+  }
+  function update() {
+    var u = st.u || [Math.cos(st.lam * D) * Math.cos(st.phi * D), Math.cos(st.lam * D) * Math.sin(st.phi * D), Math.sin(st.lam * D)];
+    axisLine.setPoints([[-0.5 * u[0], -0.5 * u[1], -0.5 * u[2]], [0.5 * u[0], 0.5 * u[1], 0.5 * u[2]]]);
+    uArrow.set([0, 0, 0], [0.3 * u[0], 0.3 * u[1], 0.3 * u[2]]);
+    var P = INERT.parts(IO);
+    var mom = P.Ixx * u[0] * u[0] + P.Iyy * u[1] * u[1] + P.Izz * u[2] * u[2];
+    var prod = -2 * (P.Ixy * u[0] * u[1] + P.Iyz * u[1] * u[2] + P.Izx * u[2] * u[0]);
+    var I = INERT.aboutAxis(IO, u);
+    roU.set(INERT.texVec(u.map(function (x) { return Math.abs(x) < 5e-5 ? 0 : x; }), 4), { tex: true });
+    roMom.set(CYL.fmt(mom, 4) + ' kg·m²');
+    roProd.set(CYL.fmt(Math.abs(prod) < 5e-9 ? 0 : prod, 4) + ' kg·m²');
+    roI.set(CYL.fmt(I, 4) + ' kg·m²');
+    roK.set(CYL.fmt(Math.sqrt(Math.max(I, 0) / BODIES[st.body].m), 4) + ' m');
+    v.render();
+  }
+  var schedule = CYL.throttleRAF(update);
+  rebuild();
+});
+
+/* ---------- Figure 7.2: the L-plate with axes rotated about z; the transformation curves ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180, IXX = 0.02, IYY = 0.044, IXY = 0.012, SC = 0.05;   // plot scale: I / SC
+  var st = { th: 30 };
+  function tr(th) {
+    var c2 = Math.cos(2 * th * D), s2 = Math.sin(2 * th * D), a = (IXX + IYY) / 2, b = (IXX - IYY) / 2;
+    return { xx: a + b * c2 - IXY * s2, yy: a - b * c2 + IXY * s2, xy: b * s2 + IXY * c2 };
+  }
+  var p = CYL2D.plane(document.getElementById('fig72-stage'), {
+    xRange: [-0.32, 0.5], yRange: [-0.2, 0.45], grid: 'cartesian', gridStep: 0.1, height: 380, axisLabels: ['x', 'y'],
+    ariaLabel: 'An L-shaped plate with its corner at the origin: a long leg along x and a short leg up the y-axis. Rotated axes x prime and y prime turn about the corner.'
+  });
+  p.polyline([[0, 0], [0.4, 0], [0.4, 0.1], [0.1, 0.1], [0.1, 0.3], [0, 0.3]], { color: 'accent', width: 2, closed: true, fill: 'accent', fillOpacity: 0.22 });
+  var ax = p.line([0, 0], [0.4, 0], { color: 'x', width: 2.5, arrow: 'end' });
+  var ay = p.line([0, 0], [0, 0.4], { color: 'y', width: 2.5, arrow: 'end' });
+  var lx = p.label([0.4, 0], "x'", { color: 'x', anchor: 'ne' });
+  var ly = p.label([0, 0.4], "y'", { color: 'y', anchor: 'ne' });
+  var arc = p.arc({ center: [0, 0], r: 0.16, theta0: 0, theta1: 0.5, color: 'muted', width: 1.5, arrow: true, label: '\\theta' });
+
+  var panel = document.getElementById('fig72-controls');
+  var sT = CYL.slider({ label: 'Rotation \\(\\theta\\) about \\(z\\)', min: 0, max: 180, step: 1, value: st.th, unit: '°', onInput: function (x) { st.th = x; schedule(); } });
+  var plotBox = CYL.el('div', { class: 'fig-plot' });
+  var roXX = CYL.readout("\\(I_{x'x'}\\)", { color: 'x' });
+  var roYY = CYL.readout("\\(I_{y'y'}\\)", { color: 'y' });
+  var roXY = CYL.readout("\\(I_{x'y'}\\)");
+  var roSum = CYL.readout("\\(I_{x'x'} + I_{y'y'}\\)");
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Rotate the axes' }));
+  panel.appendChild(sT.el);
+  panel.appendChild(plotBox);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roXX.el, roYY.el, roXY.el, roSum.el]));
+  panel.appendChild(CYL.el('p', { class: 'fig-note', html: 'About \\(O\\): \\(I_{xx} = 0.020\\), \\(I_{yy} = 0.044\\), \\(I_{xy} = 0.012\\ \\text{kg·m}^2\\).' }));
+  CYL.renderMath(panel);
+
+  // θ from 0 to 180° mapped to 0…2; moments and product scaled by 1/SC
+  var q = CYL2D.plane(plotBox, { xRange: [0, 2], yRange: [-0.4, 1.05], grid: 'none', ticks: false, axisLabels: ['\\theta', 'I'], height: 190, pad: 16,
+    ariaLabel: "Plot of I x'x', I y'y' and I x'y' against theta from 0 to 180 degrees: two out-of-phase waves for the moments and a wave crossing zero for the product." });
+  q.fn(function (x) { return tr(x * 90).xx / SC; }, { color: 'x', width: 2.2, domain: [0, 2] });
+  q.fn(function (x) { return tr(x * 90).yy / SC; }, { color: 'y', width: 2.2, domain: [0, 2] });
+  q.fn(function (x) { return tr(x * 90).xy / SC; }, { color: 'ink', width: 1.8, domain: [0, 2], dashed: true });
+  q.label([1, 0], '90°', { color: 'muted', anchor: 's' });
+  q.label([2, 0], '180°', { color: 'muted', anchor: 'sw' });
+  var cursor = q.line([0, -0.4], [0, 1.05], { color: 'muted', width: 1, dashed: true });
+  var dX = q.point([0, 0], { color: 'x', r: 4 }), dY = q.point([0, 0], { color: 'y', r: 4 }), dP = q.point([0, 0], { color: 'ink', r: 4 });
+
+  function update() {
+    var th = st.th * D, c = Math.cos(th), s = Math.sin(th), L = 0.4, T = tr(st.th);
+    ax.set([0, 0], [L * c, L * s]); ay.set([0, 0], [-L * s, L * c]);
+    lx.set([L * c, L * s]); ly.set([-L * s, L * c]);
+    arc.set({ theta0: 0, theta1: Math.max(th, 1e-3) }); arc.setVisible(st.th > 2);
+    var X = st.th / 90;
+    cursor.set([X, -0.4], [X, 1.05]);
+    dX.set([X, T.xx / SC]); dY.set([X, T.yy / SC]); dP.set([X, T.xy / SC]);
+    roXX.set(CYL.fmt(T.xx, 4) + ' kg·m²'); roYY.set(CYL.fmt(T.yy, 4) + ' kg·m²');
+    roXY.set(CYL.fmt(Math.abs(T.xy) < 5e-9 ? 0 : T.xy, 4) + ' kg·m²'); roSum.set(CYL.fmt(T.xx + T.yy, 4) + ' kg·m²');
+  }
+  var schedule = CYL.throttleRAF(update);
+  update();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1', type: 'numeric',
+    prompt: 'About \\(O\\), a body has \\(I_{xx} = 0.5\\), \\(I_{yy} = 0.8\\), \\(I_{zz} = 1.0\\), \\(I_{xy} = 0.1\\), \\(I_{yz} = 0\\), \\(I_{zx} = 0.2\\ \\text{kg·m}^2\\). Find its moment of inertia about the axis through \\(O\\) along \\(2\\ihat + \\jhat + 2\\khat\\).',
+    label: '\\(I_{Oa} =\\)', answer: 0.5333, unit: 'kg·m²',
+    hints: ['Normalise first: \\(\\uvec = \\tfrac13(2,\\ 1,\\ 2)\\).', '\\(I_{Oa} = I_{xx}u_x^2 + I_{yy}u_y^2 + I_{zz}u_z^2 - 2I_{xy}u_xu_y - 2I_{yz}u_yu_z - 2I_{zx}u_zu_x\\).'],
+    explain: '\\(I_{Oa} = \\uvec^\\mathsf{T}\\Imat_O\\,\\uvec\\) with a unit vector.',
+    solution: '\\[ I_{Oa} = \\tfrac19\\left[0.5(4) + 0.8(1) + 1.0(4)\\right] - \\tfrac29\\left[0.1(2) + 0 + 0.2(4)\\right] = 0.7556 - 0.2222 = 0.5333\\ \\text{kg·m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2', type: 'mc',
+    prompt: 'What is the moment of inertia of a uniform solid cube (mass \\(m\\), side \\(a\\)) about a body diagonal?',
+    choices: [
+      { html: '\\(\\tfrac16 ma^2\\)', correct: true },
+      { html: '\\(\\tfrac13 ma^2\\)', feedback: 'Too large. For comparison, about an edge the cube has \\(\\tfrac23 ma^2\\); through the center it is much smaller.' },
+      { html: '\\(\\tfrac12 ma^2\\)', feedback: 'Use \\(\\uvec = \\tfrac{1}{\\sqrt3}(1,1,1)\\) with the centroidal tensor of the cube.' },
+      { html: '\\(\\tfrac{1}{12} ma^2\\)', feedback: 'That is a slender rod about its center, not a cube.' }
+    ],
+    hints: ['The body diagonal passes through \\(G\\).', 'The centroidal tensor of a cube is \\(\\tfrac16 ma^2\\,\\mathbf{1}\\).'],
+    explain: 'A cube has the same moment of inertia about every axis through its center.',
+    solution: '<p>\\(\\Imat_G = \\tfrac16 ma^2\\,\\mathbf{1}\\), so \\(\\uvec^\\mathsf{T}\\Imat_G\\uvec = \\tfrac16 ma^2\\) for every unit vector, the diagonal included.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3', type: 'fields',
+    prompt: 'A thin plate in the \\(xy\\)-plane has \\(I_{xx} = 0.3\\), \\(I_{yy} = 0.1\\) and \\(I_{xy} = -0.05\\ \\text{kg·m}^2\\) about \\(O\\). The axes are turned \\(45^\\circ\\) about \\(z\\). Find \\(I_{x\'x\'}\\) and \\(I_{x\'y\'}\\).',
+    fields: [
+      { name: 'ixx', label: '\\(I_{x\'x\'} =\\)', answer: 0.25, unit: 'kg·m²' },
+      { name: 'ixy', label: '\\(I_{x\'y\'} =\\)', answer: 0.1, unit: 'kg·m²' }
+    ],
+    hints: ['At \\(45^\\circ\\): \\(\\cos 2\\theta = 0\\), \\(\\sin 2\\theta = 1\\).', '\\(I_{x\'x\'} = \\tfrac{I_{xx} + I_{yy}}2 - I_{xy}\\) and \\(I_{x\'y\'} = \\tfrac{I_{xx} - I_{yy}}2\\) at this angle.'],
+    explain: 'Plane transformation with \\(2\\theta = 90^\\circ\\).',
+    solution: '\\[ I_{x\'x\'} = 0.2 + 0.1(0) - (-0.05)(1) = 0.250\\ \\text{kg·m}^2, \\qquad I_{x\'y\'} = 0.1(1) + (-0.05)(0) = 0.100\\ \\text{kg·m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l07-q4', type: 'mc',
+    prompt: 'The \\(x\\)- and \\(y\\)-axes are turned through an angle \\(\\theta\\) about \\(z\\). Which quantity is the same for every \\(\\theta\\)?',
+    choices: [
+      { html: '\\(I_{x\'x\'} + I_{y\'y\'}\\)', correct: true },
+      { html: '\\(I_{x\'x\'}\\)', feedback: 'It varies with \\(\\cos 2\\theta\\) and \\(\\sin 2\\theta\\) unless the body is symmetric enough.' },
+      { html: '\\(I_{x\'y\'}\\)', feedback: 'The product changes with \\(\\theta\\); it is zero at the principal angle.' },
+      { html: '\\(I_{x\'x\'} - I_{y\'y\'}\\)', feedback: 'The difference swings between \\(\\pm 2\\sqrt{((I_{xx}-I_{yy})/2)^2 + I_{xy}^2}\\).' }
+    ],
+    hints: ['Add the formulas for \\(I_{x\'x\'}\\) and \\(I_{y\'y\'}\\).'],
+    explain: 'The \\(\\theta\\) terms cancel in the sum.',
+    solution: '<p>Adding the two moment formulas, the \\(\\cos 2\\theta\\) and \\(\\sin 2\\theta\\) terms cancel: \\(I_{x\'x\'} + I_{y\'y\'} = I_{xx} + I_{yy}\\). Physically, it equals \\(I_{zz} + 2\\int z^2\\,dm\\), which does not depend on how \\(x\\) and \\(y\\) are turned.</p>'
+  });
+});
+</script>
+</body>
+</html>

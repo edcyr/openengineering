@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion Explorer · Cylindrical Coordinates</title>
+<meta name="description" content="Pick a motion or type your own r(t), θ(t) and z(t), and watch the velocity, the acceleration and every one of their terms live, in a top view or in 3D.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/polar-motion.js"></script>
+<style>
+  /* ---- Motion Explorer: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .field select, .ex-setup .field input { width: 100%; }
+  .ex-desc { margin: 8px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-custom { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px 16px; margin: 12px 0 0; padding: 14px 16px; border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--bg-sunken); }
+  .ex-custom[hidden] { display: none; }
+  .ex-custom .field input { width: 100%; font-family: var(--font-mono); }
+  .ex-custom .ex-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .ex-msg { margin: 0; font-size: 0.88rem; }
+  .ex-msg.is-bad { color: var(--c-bad); }
+  .ex-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 16px; }
+  .ex-row .field { flex: 1 1 8rem; }
+  .ex-fig .viz[hidden] { display: none; }
+  .ex-extra { margin-top: 4px; }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Motion Explorer</h1>
+    <p class="lede">Pick a motion, or type your own \(r(t)\), \(\theta(t)\) and \(z(t)\). Play it, scrub it, and watch the velocity, the acceleration and every one of their terms, in a top view or in 3D.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a motion</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label">Motion</p>
+        <div id="ex-preset"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+      <div>
+        <p class="ex-label">View and mass</p>
+        <div class="chip-row" id="ex-view" role="group" aria-label="View"></div>
+        <div class="ex-row" style="margin-top: 12px">
+          <div class="field">
+            <label for="ex-mass">Mass \(m\) (kg), for the force readouts</label>
+            <input type="text" class="q-input" id="ex-mass" value="1" inputmode="decimal" autocomplete="off">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ex-custom" id="ex-custom" hidden>
+      <div class="field"><label for="ex-r">\(r(t)\) in m</label><input type="text" class="q-input" id="ex-r" value="1 + 0.2t" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="ex-th">\(\theta(t)\) in rad</label><input type="text" class="q-input" id="ex-th" value="1.5t" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="ex-z">\(z(t)\) in m</label><input type="text" class="q-input" id="ex-z" value="0" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="ex-T">from \(t = 0\) to \(t =\) (s)</label><input type="text" class="q-input" id="ex-T" value="4" inputmode="decimal" autocomplete="off"></div>
+      <div class="ex-actions">
+        <button type="button" class="btn primary" id="ex-apply">Show this motion</button>
+        <p class="ex-msg" id="ex-msg" aria-live="polite">Use <code>t</code> for time. Examples: <code>0.5 + 0.1t^2</code>, <code>2 - 0.3t</code>, <code>pi t/4</code>, <code>0.8cos(t)</code>, <code>exp(-t)</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide ex-fig" aria-labelledby="ex-cap">
+      <div class="viz mf-viz" id="ex2d">
+        <div class="viz-stage" id="ex2d-stage"></div>
+        <div class="viz-controls" id="ex2d-controls"></div>
+        <div class="mf-readouts" id="ex2d-readouts" aria-live="off"></div>
+      </div>
+      <div class="viz mf-viz" id="ex3d" hidden>
+        <div class="viz-stage" id="ex3d-stage"></div>
+        <div class="viz-controls" id="ex3d-controls"></div>
+        <div class="mf-readouts" id="ex3d-readouts" aria-live="off"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure E.1</strong> The chosen motion. Press <em>Play</em> or drag the time slider; in the top view you can also drag \(P\) along its path. Green is the velocity \(\vvec\) and red the acceleration \(\avec\); orange and violet are their components along \(\er\) and \(\et\) (and blue along \(\ez\) in 3D). The live numbers list every term of the acceleration and the resultant force \(\sum\Fvec = m\avec\) that the motion needs.</figcaption>
+    </figure>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>Collar sliding out on a spinning rod.</strong> Both rates are constant, yet \(\avec \ne \mathbf{0}\). Pause and check \(a_r = -r\dot\theta^2\) and \(a_\theta = 2\dot r\dot\theta\) against the live numbers. <button type="button" class="btn small" data-load="rod">Load</button></li>
+      <li><strong>Free collar on a driven rod.</strong> With nothing pushing along the rod, \(\sum F_r = 0\), so \(a_r = 0\) at every instant: \(\ddot r\) exactly cancels \(-r\dot\theta^2\). The rod still pushes sideways. <button type="button" class="btn small" data-load="free">Load</button></li>
+      <li><strong>Straight line at constant speed.</strong> \(\vvec\) never changes, yet \(v_r\) and \(v_\theta\) do, and so do the individual acceleration terms. They cancel exactly, so \(\avec = \mathbf{0}\). <button type="button" class="btn small" data-load="line">Load</button></li>
+      <li><strong>Puck pulled in on a cord.</strong> The only horizontal force points at \(O\), so \(a_\theta = 0\) and \(r^2\dot\theta\) stays at \(1.28\ \text{m}^2/\text{s}\) while the puck spins faster and faster. <button type="button" class="btn small" data-load="puck">Load</button></li>
+      <li><strong>Pin on a cardioid cam.</strong> Turn on the angle \(\psi\) and watch it change around the cam; near the cusp the pin slows right down. <button type="button" class="btn small" data-load="cardioid">Load</button></li>
+      <li><strong>Robot arm in 3D.</strong> Switch to <em>Top view</em> and back: \(z\) adds a component \(v_z\) but no acceleration, because \(\dot z\) is constant. <button type="button" class="btn small" data-load="robot">Load</button></li>
+      <li><strong>Your own motion.</strong> Choose <em>Custom</em> and try a circle \(r = 1\), \(\theta = t\); then make it speed up with \(\theta = 0.5t^2\); then let it spiral out with \(r = 1 + 0.2t\).</li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the explorer works</h2>
+    <p>For every motion the explorer evaluates \(r(t)\), \(\theta(t)\) and \(z(t)\), finds the rates \(\dot r\), \(\ddot r\), \(\dot\theta\), \(\ddot\theta\), \(\dot z\), \(\ddot z\) by numerical differentiation (central differences), and then applies the formulas of Lessons 4 and 5:</p>
+    \[ \vvec = \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez, \qquad \avec = \left(\ddot r - r\dot\theta^2\right)\er + \left(r\ddot\theta + 2\dot r\dot\theta\right)\et + \ddot z\,\ez \]
+    <p>The resultant force is \(\sum\Fvec = m\avec\) (Lesson 7). Values smaller than about \(10^{-6}\) are shown as 0, because numerical derivatives carry tiny rounding errors. Arrow lengths are scaled to fit; the note under the controls gives the scale.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Keep \(r \ge 0\): a negative \(r\) is drawn on the opposite side of \(O\), which is how polar plots work, but the module's convention (and the meaning of \(\er\)) assumes \(r \ge 0\). Angles are in radians: type <code>pi t/4</code> for a quarter turn every second.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ---------- Motion Explorer: presets, custom expressions, the 2D and 3D figures ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  var $ = function (id) { return document.getElementById(id); };
+  var PRESETS = [
+    { id: 'rod', label: 'Collar sliding out on a spinning rod', view: '2d', r: '0.3 + 0.15t', th: 't', z: '0', T: 6, arm: true,
+      desc: 'A rod turns at a constant \\(\\dot\\theta = 1\\ \\text{rad/s}\\) while a collar slides out along it at a constant \\(\\dot r = 0.15\\ \\text{m/s}\\).' },
+    { id: 'free', label: 'Free collar on a driven rod', view: '2d', r: '0.1(exp(2t) + exp(-2t))', th: '2t', z: '0', T: 1.2, arm: true,
+      desc: 'A motor turns a smooth rod at a constant \\(2\\ \\text{rad/s}\\), and the collar slides freely: \\(r = 0.2\\cosh 2t\\) solves \\(\\ddot r = r\\dot\\theta^2\\), so \\(a_r = 0\\).' },
+    { id: 'robot', label: 'Robot arm: turn, extend and rise', view: '3d', r: '0.5 + 0.5t', th: '2t', z: '1.5 + 0.3t', T: 3, scenery: 'arm',
+      desc: 'A cylindrical robot: every joint runs at a constant rate (Examples 4.1 and 5.1 at \\(t = 1\\ \\text{s}\\)).' },
+    { id: 'helix', label: 'Spiral slide (helix)', view: '3d', r: '2', th: '0.8t', z: '4 - 0.5t', T: 8, scenery: 'helix',
+      desc: 'Round a pole at a constant rate while descending at a constant rate (Example 5.2): the acceleration is purely centripetal.' },
+    { id: 'cardioid', label: 'Pin on a cardioid cam', view: '2d', r: '0.6(1 + cos(t))', th: 't', z: '0', T: 6, arm: true, tStart: 1,
+      desc: 'A pin follows the groove \\(r = 0.6(1 + \\cos\\theta)\\ \\text{m}\\), pushed by an arm turning at \\(1\\ \\text{rad/s}\\) (Lesson 6).' },
+    { id: 'line', label: 'Straight line at constant speed', view: '2d', r: 'sqrt((t - 3)^2 + 1)', th: 'atan2(1, t - 3)', z: '0', T: 6,
+      desc: 'A point moves along the line \\(y = 1\\ \\text{m}\\) at \\(1\\ \\text{m/s}\\), seen from \\(O\\): a radar or camera tracking it (Lesson 4).' },
+    { id: 'puck', label: 'Puck pulled in on a cord', view: '2d', r: '0.8 - 0.1t', th: '12.8(1/(0.8 - 0.1t) - 1.25)', z: '0', T: 5.5,
+      desc: 'A cord through a hole at \\(O\\) is pulled in at \\(0.1\\ \\text{m/s}\\); the puck started at \\(r = 0.8\\ \\text{m}\\) with \\(\\dot\\theta = 2\\ \\text{rad/s}\\) (Lesson 8).' },
+    { id: 'speedup', label: 'Speeding up on a circle', view: '2d', r: '1', th: '0.5t^2', z: '0', T: 3.5,
+      desc: 'A point on a circle of radius \\(1\\ \\text{m}\\) with a constant angular acceleration \\(\\ddot\\theta = 1\\ \\text{rad/s}^2\\).' },
+    { id: 'custom', label: 'Custom: type your own r(t), \u03b8(t), z(t)', view: '2d', custom: true,
+      desc: 'Type the three coordinates as functions of \\(t\\) below, then press <em>Show this motion</em>.' }
+  ];
+  var BY_ID = {};
+  PRESETS.forEach(function (p) { BY_ID[p.id] = p; });
+
+  var st = { preset: 'rod', view: '2d', mass: 1, motion: null, T: 6, z3: false };
+  var custom = { r: $('ex-r').value, th: $('ex-th').value, z: $('ex-z').value, T: 4 };
+
+  /* ----- compile r(t), θ(t), z(t) ----- */
+  function compile(src) {
+    var f = CYLExpr.compile(String(src || '0'), ['t']);
+    return function (t) { return f(t); };
+  }
+  function build(def) {
+    var rf = compile(def.r), thf = compile(def.th), zf = compile(def.z);
+    var T = +def.T, zmin = Infinity, zmax = -Infinity, rmax = 0, zVaries = false, z0 = zf(0), bad = null;
+    for (var i = 0; i <= 200; i++) {
+      var t = T * i / 200, r = rf(t), th = thf(t), z = zf(t);
+      if (!isFinite(r) || !isFinite(th) || !isFinite(z)) { bad = 'is not defined at t = ' + CYL.fmt(t) + ' s'; break; }
+      rmax = Math.max(rmax, Math.abs(r)); zmin = Math.min(zmin, z); zmax = Math.max(zmax, z);
+      if (Math.abs(z - z0) > 1e-9) zVaries = true;
+    }
+    if (bad) throw new Error('The motion ' + bad + '.');
+    return { m: { r: rf, th: thf, z: zf }, T: T, rmax: rmax, zmin: zmin, zmax: zmax, zVaries: zVaries };
+  }
+
+  /* ----- the figures (rebuilt whenever the motion, the view or the mass changes) ----- */
+  var fig2 = null, fig3 = null, hRo = null;
+  var READ_2D = ['t', 'r', 'th', 'rd', 'thd', 'rdd', 'thdd', 'psi', 'vr', 'vt', 'v', 'ar', 'ar_rdd', 'ar_cent', 'at', 'at_ang', 'at_cor', 'a', 'Fr', 'Ft', 'F'];
+  var READ_3D = ['t', 'r', 'th', 'z', 'rd', 'thd', 'zd', 'vr', 'vt', 'vz', 'v', 'ar', 'ar_rdd', 'ar_cent', 'at', 'at_ang', 'at_cor', 'az', 'a', 'Fr', 'Ft', 'Fz', 'F'];
+  function clear(prefix) {
+    $(prefix + '-controls').innerHTML = '';
+    $(prefix + '-readouts').innerHTML = '';
+    $(prefix + '-stage').innerHTML = '';
+  }
+  function addH(panel) {                                   // r²θ̇ (constant under a central force)
+    hRo = CYL.readout('\\(r^2\\dot\\theta\\) (twice the rate of sweeping area)');
+    panel.appendChild(CYL.el('div', { class: 'readout-grid ex-extra', 'aria-live': 'off' }, [hRo.el]));
+  }
+  function onUpdate(s) { if (hRo) hRo.set(CYL.fmt(Math.abs(s.r * s.r * s.thd) < 1e-6 ? 0 : s.r * s.r * s.thd, 4) + '\u00a0m\u00b2/s'); }
+  function show() {
+    var B = st.motion, P = BY_ID[st.preset];
+    if (fig2) { fig2.destroy(); fig2.plane.destroy(); fig2 = null; }
+    if (fig3) { fig3.pause(); fig3.viewer.dispose(); fig3 = null; }
+    clear('ex2d'); clear('ex3d');
+    hRo = null;
+    $('ex2d').hidden = st.view !== '2d';
+    $('ex3d').hidden = st.view !== '3d';
+    var t0 = Math.min(B.T, P.tStart || 0);
+    if (st.view === '2d') {
+      var R = Math.max(0.5, 1.15 * B.rmax);
+      fig2 = POLAR.figure({
+        stage: $('ex2d-stage'), controls: $('ex2d-controls'), readoutsEl: $('ex2d-readouts'),
+        motion: B.m, t0: 0, t1: B.T, t: t0, speed: 1, loop: true, mass: st.mass,
+        xRange: [-R, R], yRange: [-R, R],
+        arm: P.arm ? { length: 1.08 * R, width: 7 } : null,
+        show: { v: true, a: true, comps: 'rt', trace: true, radial: !P.arm, psi: false },
+        toggles: ['v', 'a', 'comps', 'frame', 'radial', 'psi', 'trace'],
+        readouts: READ_2D, onUpdate: onUpdate,
+        aria: 'Top view of the chosen motion. The particle P moves on its path with a green velocity arrow and a red acceleration arrow, and their components along u_r and u_theta. Live numbers list the coordinates, their rates and every term of the acceleration.'
+      });
+      addH($('ex2d-controls'));
+      fig2.update();
+    } else {
+      var E = Math.max(1, 1.1 * B.rmax), z0 = Math.min(0, B.zmin), z1 = Math.max(B.zmax, z0 + 1);
+      fig3 = POLAR.figure3d({
+        stage: $('ex3d-stage'), controls: $('ex3d-controls'), readoutsEl: $('ex3d-readouts'),
+        motion: B.m, t0: 0, t1: B.T, t: t0, speed: B.T > 4 ? 1 : 0.5, loop: true, mass: st.mass,
+        extent: E, zRange: [z0 - 0.15 * (z1 - z0), z1 + 0.15 * (z1 - z0)], arrowMax: 0.7 * E,
+        show: { v: true, a: true, vc: false, ac: true, radial: P.scenery !== 'arm', drop: !P.scenery },
+        toggles: ['path', 'v', 'a', 'vc', 'ac', 'frame'],
+        readouts: READ_3D, onUpdate: onUpdate,
+        decorate: function (v) {
+          if (P.scenery === 'arm') return POLAR.robotArm(v);
+          if (P.scenery === 'helix') return POLAR.helixSlide(v, { r: 2, th0: 0, thd: 0.8, z0: 4, zd: -0.5, t1: 8 });
+          return null;
+        },
+        aria: '3D view of the chosen motion. The particle moves on its path with a green velocity arrow, a red acceleration arrow and their components along u_r, u_theta and u_z. Live numbers list every term.'
+      });
+      addH($('ex3d-controls'));
+      fig3.update();
+    }
+    CYL.renderMath($(st.view === '2d' ? 'ex2d-controls' : 'ex3d-controls'));
+  }
+
+  /* ----- controls: preset, view, mass, custom ----- */
+  var viewChips = {};
+  function setView(v, rebuild) {
+    st.view = v;
+    Object.keys(viewChips).forEach(function (k) { viewChips[k].setAttribute('aria-pressed', String(k === v)); });
+    if (rebuild && st.motion) show();
+  }
+  [['2d', 'Top view (2D)'], ['3d', '3D view']].forEach(function (d) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: d[1] });
+    b.addEventListener('click', function () { if (st.view !== d[0]) setView(d[0], true); });
+    viewChips[d[0]] = b;
+    $('ex-view').appendChild(b);
+  });
+  var presetSel = CYL.select({
+    label: 'Motion', value: st.preset,
+    options: PRESETS.map(function (p) { return { value: p.id, label: p.label }; }),
+    onChange: function (id) { choose(id); }
+  });
+  $('ex-preset').appendChild(presetSel.el);
+  function msg(text, bad) { var m = $('ex-msg'); m.className = 'ex-msg' + (bad ? ' is-bad' : ''); m.innerHTML = text; CYL.renderMath(m); }
+  function choose(id) {
+    var P = BY_ID[id];
+    st.preset = id;
+    presetSel.set(id, true);
+    $('ex-desc').innerHTML = P.desc;
+    CYL.renderMath($('ex-desc'));
+    $('ex-custom').hidden = !P.custom;
+    var def = P.custom ? { r: $('ex-r').value, th: $('ex-th').value, z: $('ex-z').value, T: CYLExpr.parseNumber($('ex-T').value) } : P;
+    try {
+      st.motion = build(def);
+      setView(P.custom ? (st.motion.zVaries ? '3d' : '2d') : P.view, false);
+      show();
+      if (P.custom) msg('Showing \\(r = ' + (CYLExpr.toTex(def.r) || def.r) + '\\), \\(\\theta = ' + (CYLExpr.toTex(def.th) || def.th) + '\\), \\(z = ' + (CYLExpr.toTex(def.z) || def.z) + '\\) for \\(0 \\le t \\le ' + CYL.fmtTex(def.T) + '\\ \\text{s}\\).', false);
+    } catch (e) {
+      msg(CYL.escapeHtml(e && e.message ? e.message : String(e)), true);
+    }
+  }
+  $('ex-apply').addEventListener('click', function () {
+    var T = CYLExpr.parseNumber($('ex-T').value);
+    if (!(T > 0 && T <= 60)) { msg('The end time must be a number of seconds between 0 and 60.', true); return; }
+    choose('custom');
+  });
+  ['ex-r', 'ex-th', 'ex-z', 'ex-T'].forEach(function (id) {
+    $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('ex-apply').click(); } });
+  });
+  $('ex-mass').addEventListener('change', function () {
+    var mval = CYLExpr.parseNumber($('ex-mass').value);
+    if (mval > 0) { st.mass = mval; if (st.motion) show(); }
+    else $('ex-mass').value = String(st.mass);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (b) {
+    b.addEventListener('click', function () {
+      choose(b.getAttribute('data-load'));
+      var f = document.querySelector('.ex-fig');
+      try { f.scrollIntoView({ behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' }); } catch (e) { f.scrollIntoView(); }
+    });
+  });
+  window.__explorer = { choose: choose, state: function () { return st; }, figure: function () { return fig2 || fig3; } };   // for QA scripts
+  choose('rod');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spin Lab · Angular Momentum</title>
+<meta name="description" content="A live rigid-body simulator: launch a block or cylinder spinning in free space, or a top on a pivot, and watch its angular velocity, angular momentum, energy, precession and nutation as Euler's equations are integrated.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/angmom.js"></script>
+<script src="../assets/js/spin.js"></script>
+<style>
+/* ---------- Spin Lab: page-specific layout (tokens from module.css only) ---------- */
+.xp-fig { margin-top: 0; }
+.xp-viz { --stage-h: 380px; --controls-w: 370px; margin: 0; }
+.xp-viz > .viz-stage { container: xpstage / inline-size; }
+.xp-viz > .viz-stage .cyl3d { height: var(--stage-h); }
+@container cylmain (min-width: 560px) { .xp-viz { --stage-h: 460px; } }
+@container cylmain (min-width: 880px) {
+  .xp-viz { --stage-h: 640px; grid-template-columns: minmax(0, 1fr) var(--controls-w); }
+  .xp-viz > .viz-stage { border-bottom: 0; border-right: 1px solid var(--line); }
+  .xp-viz > .xp-panel { height: var(--stage-h); }
+  .xp-panel .xp-tabs { height: 100%; }
+  .xp-panel .xp-pane { overflow-y: auto; overscroll-behavior: contain; }
+}
+.xp-panel.viz-controls { gap: 0; min-width: 0; padding: 0; }
+.xp-tabs.tabs { display: flex; flex-direction: column; min-height: 0; margin: 0; }
+.xp-tabs > [role="tablist"] { flex: none; gap: 0; padding: 4px 8px 0; }
+.xp-tabs [role="tab"] { flex: 1 1 auto; padding: 10px 6px 9px; font-size: 0.84rem; }
+.xp-tabs > .xp-pane[role="tabpanel"] { display: flex; flex: 1 1 auto; flex-direction: column; gap: 12px; min-height: 0; padding: 14px 16px 18px; }
+.xp-pane > * { flex-shrink: 0; margin: 0; }
+.xp-pane p { margin: 0; }
+.xp-sub { display: flex; flex-direction: column; gap: 9px; padding-top: 12px; border-top: 1px solid var(--line); }
+.xp-note { color: var(--ink-muted); font-size: 0.84rem; line-height: 1.45; }
+.xp-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; max-width: var(--content-max); margin: 10px auto 0; color: var(--ink-muted); font-size: 0.9rem; }
+.xp-status:empty { display: none; }
+.xp-ideas .card { display: flex; flex-direction: column; gap: 8px; }
+.xp-ideas .card h3, .xp-ideas .card p { margin: 0; }
+.xp-ideas .card .btn-row { margin-top: auto; padding-top: 2px; }
+.xp-note:empty { display: none; }
+.xp-pane [hidden] { display: none !important; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page xp-page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Simulator</p>
+    <h1>Spin Lab</h1>
+    <p class="lede">A rigid-body simulator that integrates Euler's equations live. Choose a block or a cylinder, launch it spinning in free space or as a top on a pivot, and watch \(\wvec\), \(\Hvec\) and the energy as it tumbles, wobbles, precesses and nods.</p>
+  </header>
+
+  <figure class="figure wide xp-fig" id="xp-figure" aria-labelledby="xp-cap">
+    <div class="viz stacked xp-viz">
+      <div class="viz-stage" id="xp-stage"></div>
+      <div class="viz-controls xp-panel">
+        <div class="tabs xp-tabs" id="xp-tabs">
+          <div role="tablist" aria-label="Spin Lab tools">
+            <button role="tab" aria-controls="xp-pane-body">Body</button>
+            <button role="tab" aria-controls="xp-pane-launch">Launch</button>
+            <button role="tab" aria-controls="xp-pane-read">Readouts</button>
+          </div>
+
+          <div role="tabpanel" id="xp-pane-body" class="xp-pane">
+            <div class="field"><label for="xp-preset">Load a preset</label><select id="xp-preset"></select></div>
+            <p class="xp-note" id="xp-preset-note"></p>
+            <div class="xp-sub">
+              <p class="viz-title">Mode</p>
+              <div class="chip-row" id="xp-mode"></div>
+            </div>
+            <div class="xp-sub">
+              <p class="viz-title">Body</p>
+              <div class="chip-row" id="xp-shape"></div>
+              <div id="xp-dims"></div>
+              <div class="readout-grid" id="xp-ro-I" aria-live="off"></div>
+            </div>
+          </div>
+
+          <div role="tabpanel" id="xp-pane-launch" class="xp-pane">
+            <div id="xp-launch-free">
+              <p class="viz-title">Initial angular velocity (body axes)</p>
+              <div id="xp-wsliders"></div>
+              <div class="btn-row" id="xp-wbtns"></div>
+            </div>
+            <div id="xp-launch-top">
+              <p class="viz-title">Top on a pivot</p>
+              <div id="xp-tsliders"></div>
+              <div class="chip-row" id="xp-tmode"></div>
+            </div>
+            <div class="xp-sub">
+              <div id="xp-speed"></div>
+              <div class="btn-row" id="xp-run"></div>
+              <div class="chip-row" id="xp-show"></div>
+            </div>
+          </div>
+
+          <div role="tabpanel" id="xp-pane-read" class="xp-pane">
+            <div class="readout-grid" id="xp-ro" aria-live="off"></div>
+            <p class="viz-title" id="xp-plot-title">Angular velocity in body axes</p>
+            <div class="fig-plot" id="xp-plot"></div>
+            <p class="xp-note" id="xp-plot-free">The plot shows \(\colX{\omega_x}\), \(\colY{\omega_y}\), \(\colZ{\omega_z}\) over the last 10 s of simulated time. For free motion \(|\Hvec_G|\) and \(T\) stay constant; the relative drift is a check that the equations are integrated accurately.</p>
+            <p class="xp-note" id="xp-plot-top">The plot shows the tilt \(\theta\) of the axis over the last 2 s, scaled about its mean so that small nodding shows. A flat line is steady precession. The precession rate is the average rate at which the axis circles the vertical.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="xp-status" id="xp-status" role="status" aria-live="polite" tabindex="-1"></div>
+    <figcaption id="xp-cap"><strong>The Spin Lab.</strong> Drag the view to rotate it; hold Ctrl (or ⌘) and scroll, or pinch, to zoom. Red: angular momentum \(\colH{\Hvec}\); green: angular velocity \(\colW{\wvec}\); the dashed curve traces the tip of the body's \(z\)-axis. The amber stripe marks one edge of the body so you can see it turn.</figcaption>
+  </figure>
+
+  <section id="how-to">
+    <h2>How to use the Spin Lab</h2>
+    <p>In <strong>free</strong> mode the body floats in space with no forces, turning about its center of mass: \(\Hvec_G\) is fixed in space and the kinetic energy is constant (Lesson 7). Set the initial angular velocity in body axes, where \(x\), \(y\), \(z\) are the body's principal axes, and press Launch.</p>
+    <p>In <strong>top</strong> mode a cylinder stands on a pivot below its center of mass, and gravity supplies a moment. Choose its tilt and spin, and release it from rest (it nutates) or launch it at the steady-precession rate of Lesson 8 (it glides).</p>
+    <p>The simulator integrates Euler's equations \(I_x\dot\omega_x = M_x + (I_y - I_z)\omega_y\omega_z\) (and cyclically) with a fourth-order Runge–Kutta method, and tracks the body's orientation with a quaternion. The readouts show how well \(|\Hvec|\) and the energy are conserved.</p>
+  </section>
+
+  <section id="ideas" class="xp-ideas">
+    <h2>Ideas to try</h2>
+    <p>Each idea loads a preset and launches it.</p>
+    <div class="grid-cards">
+      <div class="card">
+        <h3>The tennis-racket flip</h3>
+        <p>A book-shaped block spun about its intermediate axis flips over and over, although \(\Hvec_G\) never moves (Lesson 7). Compare with the maximum and minimum axes.</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="racket">Try it</button></div>
+      </div>
+      <div class="card">
+        <h3>A wobbling coin</h3>
+        <p>A flat cylinder (\(I_z > I\)) spun with a small wobble precesses about \(\Hvec_G\) in the retrograde sense: its spin \(\dot\psi\) relative to the circling axis is opposite to the precession \(\dot\phi = H_G/I\) (Lesson 8).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="coin">Try it</button></div>
+      </div>
+      <div class="card">
+        <h3>A football spiral</h3>
+        <p>A long cylinder (\(I > I_z\)) with the same kind of wobble precesses in the direct sense. Compare the precession rate with \(\dot\phi = H_G/I\).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="football">Try it</button></div>
+      </div>
+      <div class="card">
+        <h3>A nodding top</h3>
+        <p>Released from rest at a tilt, a top drops a little and then precesses while nodding: the axis tip traces a scalloped path with a cusp at each high point. Lower the spin and the nutation grows (Lesson 8).</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="nutate">Try it</button></div>
+      </div>
+      <div class="card">
+        <h3>Steady precession</h3>
+        <p>Launch the same top at the slow steady-precession rate from the quadratic of Lesson 8, and it glides round at constant tilt.</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="steady">Try it</button></div>
+      </div>
+      <div class="card">
+        <h3>A sleeping top</h3>
+        <p>Spun fast and nearly upright, a top barely moves: its large angular momentum makes gravity's moment a slow sideways drift.</p>
+        <div class="btn-row"><button type="button" class="btn small" data-idea="sleep">Try it</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Spin Lab: SPIN (spin.js) integrates Euler's equations for a block or a cylinder, torque-free about G or
+   as a top on a pivot. The view shows the body, H (red), ω (green) and the trace of the body z-axis tip.
+   ============================================================================================== */
+CYL.ready(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var D = Math.PI / 180, G = 9.81;
+  var st = { mode: 'free', shape: 'block', m: 1, a: 0.3, b: 0.2, c: 0.05, r: 0.1, h: 0.3, w: [0.1, 8, 0.1], tilt: 30, spin: 150, tmode: 'release', speed: 1, showH: true, showW: true, trace: true };
+  var tipLen = 0.1, sim = null, trace = [], hist = [], azAcc = 0, lastAz = null, tAcc = 0, thMin = 9, thMax = 0, E0 = 0, H0 = 0;
+  var PRESETS = {
+    racket: { label: 'Tennis-racket flip (block, intermediate axis)', note: 'A 30 × 20 × 5 cm block spun about y, its intermediate axis, with a 1% wobble.', s: { mode: 'free', shape: 'block', m: 1, a: 0.3, b: 0.2, c: 0.05, w: [0.08, 8, 0.08] } },
+    maxaxis: { label: 'Stable spin (block, maximum axis)', note: 'The same block spun about z, its maximum axis: the wobble stays small.', s: { mode: 'free', shape: 'block', m: 1, a: 0.3, b: 0.2, c: 0.05, w: [0.3, 0.3, 8] } },
+    coin: { label: 'Wobbling coin (retrograde)', note: 'A flat cylinder (r = 10 cm, 2 cm thick) spun about its axis with a wobble.', s: { mode: 'free', shape: 'cyl', m: 1, r: 0.1, h: 0.02, w: [2, 0, 10] } },
+    football: { label: 'Football spiral (direct)', note: 'A long cylinder (r = 5 cm, 28 cm long) spun about its axis with a wobble.', s: { mode: 'free', shape: 'cyl', m: 0.4, r: 0.05, h: 0.28, w: [1.5, 0, 15] } },
+    nutate: { label: 'Nodding top (released from rest)', note: 'A top tilted 30° and released with 120 rad/s of spin.', s: { mode: 'top', shape: 'cyl', m: 0.5, r: 0.035, h: 0.01, tilt: 30, spin: 120, tmode: 'release' } },
+    steady: { label: 'Steady precession', note: 'The same top launched at its slow steady-precession rate.', s: { mode: 'top', shape: 'cyl', m: 0.5, r: 0.035, h: 0.01, tilt: 30, spin: 120, tmode: 'steady' } },
+    sleep: { label: 'Sleeping top', note: 'Nearly upright (4°) and spinning at 500 rad/s.', s: { mode: 'top', shape: 'cyl', m: 0.5, r: 0.035, h: 0.01, tilt: 4, spin: 500, tmode: 'release' } }
+  };
+
+  /* ---------------- body properties ---------------- */
+  function props() {
+    var m = st.m, I, stem = 0;
+    if (st.shape === 'block') I = [m * (st.b * st.b + st.c * st.c) / 12, m * (st.a * st.a + st.c * st.c) / 12, m * (st.a * st.a + st.b * st.b) / 12];
+    else I = [m * (3 * st.r * st.r + st.h * st.h) / 12, m * (3 * st.r * st.r + st.h * st.h) / 12, 0.5 * m * st.r * st.r];
+    var l = st.mode === 'top' ? Math.max(0.04, st.h / 2 + 0.03) : 0;       // pivot to G along the axis
+    return { I: I, l: l, Ip: st.mode === 'top' ? [I[0] + m * l * l, I[1] + m * l * l, I[2]] : I, size: st.shape === 'block' ? Math.max(st.a, st.b, st.c) : Math.max(2 * st.r, st.h) + 2 * l };
+  }
+
+  /* ---------------- the view ---------------- */
+  var stage = $('xp-stage'), v = null, body = null, bodyMesh = null, hA, wA, tr, pivot;
+  function makeViewer() {
+    if (v) { v.dispose(); stage.innerHTML = ''; }
+    var P = props(), E = st.mode === 'top' ? Math.max(0.06, 1.3 * (P.l + st.h / 2 + st.r)) : Math.max(0.12, 0.8 * P.size);
+    tipLen = st.mode === 'top' ? 0.85 * E : 0.6 * P.size;
+    v = CYL3D.create(stage, {
+      extent: E, zRange: st.mode === 'top' ? [-0.3 * E, E] : [-E, E], grid: st.mode === 'top' ? 'polar' : 'none', axes: st.mode === 'top',
+      ui: ['iso', 'top', 'front', 'reset'], camera: { azimuth: 30, elevation: 20, zoom: 1.1 },
+      ariaLabel: 'The simulated body with arrows for its angular momentum and angular velocity, and a dashed trace of the tip of its axis.'
+    });
+    body = v.group();
+    buildBody();
+    hA = v.arrow([0, 0, 0], [0, 0, 0.1], { color: 'bad', label: '\\Hvec', width: 0.012 * E, headLength: 0.07 * E, headRadius: 0.03 * E });
+    wA = v.arrow([0, 0, 0], [0, 0, 0.1], { color: 'good', label: '\\wvec', width: 0.012 * E, headLength: 0.07 * E, headRadius: 0.03 * E });
+    tr = v.line([[0, 0, 0], [0, 0, 0]], { color: 'bad', width: 1.4, dashed: true });
+    if (st.mode === 'top') v.solid({ shape: 'cone', r: 0.08 * E, h: 0.2 * E, center: [0, 0, -0.15 * E], axis: [0, 0, 1], color: 'muted', opacity: 0.5, edges: false });
+  }
+  function buildBody() {
+    v.clear(body);
+    var P = props(), E = v.extent;
+    var off = [0, 0, P.l];
+    if (st.shape === 'block') {
+      v.solid({ shape: 'box', size: [st.a, st.b, st.c], center: off, color: 'accent', opacity: 0.6, parent: body });
+      v.line([[st.a / 2, -st.b / 2, off[2] + st.c / 2 + 0.001], [st.a / 2, st.b / 2, off[2] + st.c / 2 + 0.001]], { color: 'warn', width: 4, parent: body });
+    } else {
+      v.solid({ shape: 'cylinder', r: st.r, h: st.h, center: off, color: 'accent', opacity: 0.6, parent: body });
+      v.line([[-st.r, 0, off[2] + st.h / 2 + 0.001], [st.r, 0, off[2] + st.h / 2 + 0.001]], { color: 'warn', width: 4, parent: body });
+      if (st.mode === 'top') v.solid({ shape: 'cylinder', r: Math.max(0.0015, 0.08 * st.r), h: P.l + st.h / 2, center: [0, 0, (P.l + st.h / 2) / 2], color: 'ink', opacity: 1, edges: false, parent: body });
+    }
+    var L = st.mode === 'top' ? 1.35 * st.r : 0.55 * P.size;
+    [['x', [1, 0, 0]], ['y', [0, 1, 0]], ['z', [0, 0, 1]]].forEach(function (a) {
+      var e = a[0] === 'z' ? [0, 0, tipLen] : [off[0] + L * a[1][0], off[1] + L * a[1][1], off[2] + L * a[1][2]];
+      v.line([off, e], { color: a[0], width: 1.6, parent: body });
+      v.label(e, a[0], { color: a[0], parent: body });
+    });
+  }
+
+  /* ---------------- simulation ---------------- */
+  function launch() {
+    var P = props();
+    if (st.mode === 'free') {
+      sim = SPIN.create({ I: P.I, w: st.w.slice(), q: SPIN.quat.fromAxisAngle([1, 0.3, 0.1], 0.4), maxStep: 0.001 });
+    } else {
+      var th = st.tilt * D, ph = 0;
+      if (st.tmode === 'steady') { var r = SPIN.steadyPrecession({ m: st.m, g: G, l: P.l, It: P.Ip[0], Iz: P.Ip[2], theta: th, wz: st.spin }); ph = r ? r.slow : 0; }
+      sim = SPIN.top({ m: st.m, g: G, l: P.l, I: P.Ip, theta: th, phiDot: ph, psiDot: st.spin - ph * Math.cos(th), maxStep: 0.0005 });
+    }
+    trace = []; hist = []; azAcc = 0; lastAz = null; tAcc = 0; thMin = 9; thMax = 0;
+    E0 = energy(); H0 = AM.norm(sim.H());
+    update();
+  }
+  function energy() { return sim.T() + (sim.V ? sim.V() : 0); }
+  function advance(dt) {
+    var n = st.mode === 'top' ? 6 : 3, h = dt * st.speed / n;
+    for (var i = 0; i < n; i++) {
+      sim.step(h);
+      var R = sim.R(), z = [R[0][2], R[1][2], R[2][2]], s = tipLen;
+      trace.push([s * z[0], s * z[1], s * z[2]]);
+      if (st.mode === 'top') {
+        var az = Math.atan2(z[1], z[0]);
+        if (lastAz !== null) { var d = az - lastAz; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; azAcc += d; tAcc += h; }
+        lastAz = az;
+        var t = sim.tilt(); thMin = Math.min(thMin, t); thMax = Math.max(thMax, t);
+      }
+    }
+    while (trace.length > 1500) trace.shift();
+    hist.push([sim.state.t, sim.state.w.slice(), st.mode === 'top' ? sim.tilt() : 0]);
+    while (hist.length && hist[0][0] < sim.state.t - span()) hist.shift();
+  }
+  function rel(x) {                                    // 3.2e-14 → "3.2 × 10⁻¹⁴"
+    if (x < 1e-13) return '< 10⁻¹³';
+    var p = x.toExponential(1).split('e');
+    return p[0] + ' × 10' + p[1].replace('+', '').replace(/./g, function (c) { return c === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(+c); });
+  }
+  var roW, roH, roT, roA, roX, plot, lx, ly, lz;
+  function update() {
+    var q = sim.state.q, E = v.extent;
+    body.quaternion.set(q[1], q[2], q[3], q[0]);
+    var H = sim.H(), Hn = AM.norm(H), ww = sim.wWorld(), wn = AM.norm(ww);
+    hA.set([0, 0, 0], AM.scale(H, 0.8 * E / Math.max(Hn, 1e-12))); hA.visible = st.showH;
+    wA.set([0, 0, 0], AM.scale(ww, 0.65 * E / Math.max(wn, 1e-12))); wA.visible = st.showW;
+    tr.setPoints(trace.length > 1 ? trace : [[0, 0, 0], [0, 0, 0]]); tr.visible = st.trace;
+    var w = sim.state.w, wm = AM.norm(w);
+    roW.set(AM.vecTex(w.map(function (x) { return Math.abs(x) < 1e-4 * wm ? 0 : x; }), 3) + '\\ \\text{rad/s}', { tex: true });
+    roH.set(CYL.fmt(Hn, 6) + ' kg·m²/s');
+    roT.set(CYL.fmt(energy(), 6) + ' J');
+    var ang = Hn > 0 && wn > 0 ? Math.acos(Math.max(-1, Math.min(1, AM.dot(H, ww) / (Hn * wn)))) / D : 0;
+    roA.set(CYL.fmt(ang, 3) + '°');
+    if (st.mode === 'top') roX.set((tAcc > 0.3 ? CYL.fmt(azAcc / tAcc, 4) + ' rad/s' : '—') + (thMax > 0 ? '; tilt ' + CYL.fmt(thMin / D, 3) + '° to ' + CYL.fmt(thMax / D, 3) + '°' : ''));
+    else roX.set('|H| ' + rel(Math.abs(Hn - H0) / Math.max(H0, 1e-12)) + '; T ' + rel(Math.abs(energy() - E0) / Math.max(Math.abs(E0), 1e-12)));
+    var t0 = Math.max(0, sim.state.t - span()), k = 4 / span();
+    if (st.mode === 'top') {
+      // the tilt, auto-scaled about its mean so that the nodding shows
+      var mid = (thMin + thMax) / 2, half = Math.max((thMax - thMin) / 2, 2 * D);
+      lx.set([]); ly.set([]);
+      lz.set(hist.map(function (h) { return [(h[0] - t0) * k, (h[2] - mid) / half]; }));
+    } else {
+      var W = Math.max(1e-6, AM.norm(st.w));
+      [lx, ly, lz].forEach(function (ln, i) { ln.set(hist.map(function (h) { return [(h[0] - t0) * k, h[1][i] / W]; })); });
+    }
+    v.render();
+  }
+
+  /* ---------------- controls ---------------- */
+  var presetSel = $('xp-preset');
+  presetSel.appendChild(CYL.el('option', { value: '', text: 'Choose a preset…' }));
+  Object.keys(PRESETS).forEach(function (k) { presetSel.appendChild(CYL.el('option', { value: k, text: PRESETS[k].label })); });
+  presetSel.addEventListener('change', function () { if (presetSel.value) loadPreset(presetSel.value); });
+
+  var tFree = CYL.toggle({ label: 'Free (no forces)', value: true, onChange: function () { setMode('free'); } });
+  var tTop = CYL.toggle({ label: 'Top on a pivot', value: false, onChange: function () { setMode('top'); } });
+  $('xp-mode').appendChild(tFree.el); $('xp-mode').appendChild(tTop.el);
+  var tBlock = CYL.toggle({ label: 'Block', value: true, onChange: function () { setShape('block'); } });
+  var tCyl = CYL.toggle({ label: 'Cylinder', value: false, onChange: function () { setShape('cyl'); } });
+  $('xp-shape').appendChild(tBlock.el); $('xp-shape').appendChild(tCyl.el);
+  var roI = CYL.readout('Principal \\((I_x, I_y, I_z)\\) about ' + '\\(G\\)');
+  var roP = CYL.readout('Pivot to \\(G\\), \\(r\\); transverse \\(I\\) about the pivot');
+  $('xp-ro-I').appendChild(roI.el); $('xp-ro-I').appendChild(roP.el);
+
+  function slider(label, key, min, max, step, unit, color, after) {
+    return CYL.slider({ label: label, min: min, max: max, step: step, value: st[key], unit: unit, color: color, format: function (x) { return CYL.fmt(x, 3); }, onInput: function (x) { st[key] = x; (after || rebuild)(); } });
+  }
+  var dims = {
+    m: slider('Mass \\(m\\)', 'm', 0.1, 5, 0.1, 'kg'),
+    a: slider('Length \\(a\\) along \\(x\\)', 'a', 0.05, 0.6, 0.01, 'm'), b: slider('Width \\(b\\) along \\(y\\)', 'b', 0.05, 0.6, 0.01, 'm'), c: slider('Thickness \\(c\\) along \\(z\\)', 'c', 0.01, 0.6, 0.01, 'm'),
+    r: slider('Radius \\(r\\)', 'r', 0.02, 0.3, 0.005, 'm'), h: slider('Length \\(h\\) along \\(z\\)', 'h', 0.005, 0.6, 0.005, 'm')
+  };
+  Object.keys(dims).forEach(function (k) { $('xp-dims').appendChild(dims[k].el); });
+  var ws = [0, 1, 2].map(function (i) {
+    return CYL.slider({ label: '\\(\\omega_' + 'xyz'[i] + '\\)', min: -20, max: 20, step: 0.1, value: st.w[i], unit: 'rad/s', color: 'xyz'[i], format: function (x) { return CYL.fmt(x, 3); }, onInput: function (x) { st.w[i] = x; launch(); } });
+  });
+  ws.forEach(function (s) { $('xp-wsliders').appendChild(s.el); });
+  [['About \\(x\\)', [8, 0.08, 0.08]], ['About \\(y\\)', [0.08, 8, 0.08]], ['About \\(z\\)', [0.08, 0.08, 8]]].forEach(function (b) {
+    $('xp-wbtns').appendChild(CYL.button(b[0] + ' + 1% wobble', function () { st.w = b[1].slice(); ws.forEach(function (s, i) { s.set(st.w[i], true); }); launch(); }, { small: true }));
+  });
+  var sTilt = slider('Tilt \\(\\theta_0\\)', 'tilt', 1, 85, 1, '°', null, launch), sSpin = slider('Spin \\(\\omega_z\\)', 'spin', 30, 800, 10, 'rad/s', 'good', launch);
+  $('xp-tsliders').appendChild(sTilt.el); $('xp-tsliders').appendChild(sSpin.el);
+  var tRel = CYL.toggle({ label: 'Released from rest', value: true, onChange: function () { setTmode('release'); } });
+  var tSte = CYL.toggle({ label: 'Steady precession', value: false, onChange: function () { setTmode('steady'); } });
+  $('xp-tmode').appendChild(tRel.el); $('xp-tmode').appendChild(tSte.el);
+  var sSpeed = CYL.slider({ label: 'Simulation speed', min: 0.1, max: 2, step: 0.05, value: st.speed, unit: '×', format: function (x) { return CYL.fmt(x, 3); }, onInput: function (x) { st.speed = x; } });
+  $('xp-speed').appendChild(sSpeed.el);
+  var loop = AM.loop(function (dt) { advance(dt); update(); }, { label: 'Run' });
+  $('xp-run').appendChild(loop.btn);
+  $('xp-run').appendChild(AM.resetButton('Launch again', function () { launch(); }));
+  [['showH', '\\(\\Hvec\\)', 'bad'], ['showW', '\\(\\wvec\\)', 'good'], ['trace', 'Axis trace', null]].forEach(function (c) {
+    $('xp-show').appendChild(CYL.toggle({ label: c[1], color: c[2], value: st[c[0]], onChange: function (on) { st[c[0]] = on; update(); } }).el);
+  });
+  roW = CYL.readout('\\(\\wvec\\) (body axes)', { color: 'good' }); roH = CYL.readout('\\(|\\Hvec|\\)', { color: 'bad' }); roT = CYL.readout('Energy \\(T + V\\)');
+  roA = CYL.readout('Angle between \\(\\Hvec\\) and \\(\\wvec\\)'); roX = CYL.readout('Check');
+  [roW, roH, roT, roA, roX].forEach(function (r) { $('xp-ro').appendChild(r.el); });
+  CYL.renderMath($('xp-figure'));
+  function span() { return st.mode === 'top' ? 2 : 10; }        // seconds of history in the plot
+  var plotMode = null;
+  function makePlot() {
+    if (plotMode === st.mode) return;
+    plotMode = st.mode; $('xp-plot').innerHTML = '';
+    var top = st.mode === 'top';
+    plot = CYL2D.plane($('xp-plot'), { xRange: [0, 4], yRange: [-1.15, 1.15], grid: 'none', ticks: false, axisLabels: ['t', top ? '\\theta' : '\\omega'], height: 150, pad: 12,
+      ariaLabel: top ? 'Plot of the tilt of the top\'s axis over the last two seconds.' : 'Plot of the three body-axis components of the angular velocity over the last ten seconds.' });
+    lx = plot.polyline([], { color: 'x', width: 1.8 }); ly = plot.polyline([], { color: 'y', width: 1.8 }); lz = plot.polyline([], { color: 'z', width: 1.8 });
+  }
+
+  function syncControls() {
+    if (st.mode === 'top' && st.shape === 'block') st.shape = 'cyl';
+    tFree.set(st.mode === 'free', true); tTop.set(st.mode === 'top', true);
+    tBlock.set(st.shape === 'block', true); tCyl.set(st.shape === 'cyl', true);
+    tRel.set(st.tmode === 'release', true); tSte.set(st.tmode === 'steady', true);
+    tBlock.el.disabled = st.mode === 'top';
+    ['a', 'b', 'c'].forEach(function (k) { dims[k].el.hidden = st.shape !== 'block'; dims[k].set(st[k], true); });
+    ['r', 'h'].forEach(function (k) { dims[k].el.hidden = st.shape !== 'cyl'; dims[k].set(st[k], true); });
+    dims.m.set(st.m, true);
+    ws.forEach(function (s, i) { s.set(st.w[i], true); });
+    sTilt.set(st.tilt, true); sSpin.set(st.spin, true);
+    $('xp-launch-free').hidden = st.mode !== 'free'; $('xp-launch-top').hidden = st.mode !== 'top';
+    var P = props();
+    roI.set(AM.vecTex(P.I, 4) + '\\ \\text{kg·m}^2', { tex: true });
+    roP.el.hidden = st.mode !== 'top';
+    if (st.mode === 'top') roP.set(CYL.fmtTex(P.l * 1000, 3) + '\\ \\text{mm};\\ ' + CYL.fmtTex(P.Ip[0], 4) + '\\ \\text{kg·m}^2', { tex: true });
+    roT.label.innerHTML = st.mode === 'top' ? 'Energy \\(T + V\\)' : 'Kinetic energy \\(T\\)'; CYL.renderMath(roT.label);
+    roX.label.textContent = st.mode === 'top' ? 'Precession rate; nutation' : 'Relative drift';
+    $('xp-plot-title').textContent = st.mode === 'top' ? 'Tilt of the axis' : 'Angular velocity in body axes';
+    makePlot();
+    $('xp-plot-free').hidden = st.mode === 'top'; $('xp-plot-top').hidden = st.mode !== 'top';
+  }
+  function rebuild() { syncControls(); makeViewer(); launch(); }
+  function setMode(mo) { st.mode = mo; if (mo === 'top') { st.shape = 'cyl'; if (st.h > 0.1) { st.r = 0.035; st.h = 0.01; st.m = 0.5; } } rebuild(); }
+  function setShape(s) { st.shape = s; rebuild(); }
+  function setTmode(tm) { st.tmode = tm; syncControls(); launch(); }
+  function status(html) { var s = $('xp-status'); s.innerHTML = html; CYL.renderMath(s); }
+  function loadPreset(k, running) {
+    var pr = PRESETS[k]; if (!pr) return;
+    Object.assign(st, pr.s); if (pr.s.w) st.w = pr.s.w.slice();
+    $('xp-preset-note').textContent = pr.note; presetSel.value = k;
+    rebuild();
+    status('Loaded “' + CYL.escapeHtml(pr.label) + '”.' + (running || loop.playing() ? '' : ' Press Run to start it.'));
+  }
+  var IDEAS = { racket: 'racket', coin: 'coin', football: 'football', nutate: 'nutate', steady: 'steady', sleep: 'sleep' };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-idea]'), function (b) {
+    b.setAttribute('aria-label', 'Try it: ' + b.closest('.card').querySelector('h3').textContent);
+    b.addEventListener('click', function () {
+      loadPreset(IDEAS[b.getAttribute('data-idea')], true);
+      if (!loop.playing()) loop.play();
+      var fig = $('xp-figure'), r = fig.getBoundingClientRect();
+      if (r.top < 0 || r.top > window.innerHeight * 0.5) fig.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+  window.__spinlab = { state: st, sim: function () { return sim; }, loadPreset: loadPreset, advance: function (t) { var n = Math.round(t / 0.02); for (var i = 0; i < n; i++) advance(0.02); update(); } };
+  loadPreset('racket');
+});
+</script>
+</body>
+</html>

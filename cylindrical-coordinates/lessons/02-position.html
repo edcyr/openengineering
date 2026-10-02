@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Position in Polar and Cylindrical Coordinates · Cylindrical Coordinates</title>
+<meta name="description" content="Locate a particle with (r, θ) and (r, θ, z), convert to and from x, y, z, write the position vector r = r u_r + z u_z, and describe a motion as r(t), θ(t), z(t).">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/polar-motion.js"></script>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 30 min</p>
+    <h1>Position in Polar and Cylindrical Coordinates</h1>
+    <p class="lede">Before you can find a velocity or an acceleration you need the position. In polar coordinates it is a distance \(\colR{r}\) from a fixed point and an angle \(\colT{\theta}\); in space, add a height \(\colZ{z}\). A moving particle is then three functions of time.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Locate a point by its polar coordinates \((r, \theta)\), and convert to and from \((x, y)\) in every quadrant.</li>
+      <li>Extend polar coordinates to cylindrical coordinates \((r, \theta, z)\) for motion in space.</li>
+      <li>Write the position vector as \(\rvec = r\,\er + z\,\ez\) and explain why it has no \(\et\) term.</li>
+      <li>Evaluate the position of a particle whose motion is given as \(r(t)\), \(\theta(t)\) and \(z(t)\).</li>
+    </ul>
+  </section>
+
+  <section id="polar">
+    <h2>Polar coordinates in a plane</h2>
+    <p>Choose a fixed point \(O\), the <strong>origin</strong> (or pole), and a fixed reference line through it, usually the \(+x\) axis. A point \(P\) in the plane is then located by two numbers:</p>
+    <div class="two-col">
+      <div class="card card-r"><h3>\(r\): the radial coordinate</h3><p>The distance from \(O\) to \(P\), in meters. It is never negative.</p></div>
+      <div class="card card-t"><h3>\(\theta\): the angular coordinate</h3><p>The angle from the reference line to the line \(OP\), positive counter-clockwise, in radians.</p></div>
+    </div>
+
+    <figure class="figure" aria-labelledby="fig21-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig21-stage"></div>
+        <div class="viz-controls" id="fig21-controls"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> Drag \(P\), or set \(\colR{r}\) and \(\colT{\theta}\) with the sliders. The orange segment is \(r\) and the violet arc is \(\theta\). The gray leg along the \(x\)-axis is \(x\) and the dashed olive leg is \(y\). Visit all four quadrants: the signs of \(x\) and \(y\) change, while \(r\) stays positive. While you drag, \(P\) snaps to steps of \(0.5\) in \(r\) and \(15^\circ\) in \(\theta\); turn off <em>Snap</em> to move freely.</figcaption>
+    </figure>
+
+    <p>The right triangle in Figure 2.1 gives the conversions. They hold in every quadrant, because \(\cos\theta\) and \(\sin\theta\) carry the signs of \(x\) and \(y\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Polar ↔ rectangular</p>
+      \[ x = r\cos\theta, \qquad y = r\sin\theta \]
+      \[ r = \sqrt{x^2 + y^2}, \qquad \theta = \atantwo(y, x) \]
+    </div>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: the quadrant of \(\theta\)</p>
+      <p>A calculator's \(\tan^{-1}(y/x)\) only returns angles between \(-90^\circ\) and \(90^\circ\), so it is wrong whenever \(x \lt 0\): the points \((3, 4)\) and \((-3, -4)\) give the same \(y/x\). Either use the two-argument function \(\atantwo(y, x)\) (on spreadsheets and in Python and MATLAB), or sketch the point and add \(180^\circ\) when it lies to the left of the \(y\)-axis.</p>
+    </aside>
+
+    <div class="example">
+      <p class="example-title">Example 2.1 — Radar to map coordinates</p>
+      <p>A radar at \(O\) detects an aircraft at a horizontal range \(r = 8\ \text{km}\), at \(\theta = 135^\circ\) from the \(x\)-axis (east), measured counter-clockwise. Find its \(x\) and \(y\) coordinates.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \begin{aligned}
+            x &= r\cos\theta = 8\cos 135^\circ = -4\sqrt{2} \approx -5.657\ \text{km} \\
+            y &= r\sin\theta = 8\sin 135^\circ = 4\sqrt{2} \approx 5.657\ \text{km}
+          \end{aligned} \]
+          <p>The aircraft is northwest of the radar: \(x \lt 0\) and \(y \gt 0\), as expected for an angle between \(90^\circ\) and \(180^\circ\).</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 2.2 — Rectangular to polar, in quadrant III</p>
+      <p>A particle is at \((x, y) = (-3, -4)\ \text{m}\). Find \(r\) and \(\theta\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ r = \sqrt{(-3)^2 + (-4)^2} = 5\ \text{m} \]
+          <p>A calculator gives \(\tan^{-1}\!\big((-4)/(-3)\big) = \tan^{-1}(1.333) = 53.13^\circ\), which points into quadrant I. The particle is in quadrant III (both coordinates negative), so add \(180^\circ\):</p>
+          \[ \theta = 53.13^\circ + 180^\circ = 233.13^\circ \approx 4.069\ \text{rad} \]
+          <p>\(\atantwo(-4, -3)\) gives \(-126.87^\circ\), the same direction measured clockwise; add \(360^\circ\) to get \(233.13^\circ\).</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout note">
+      <p class="callout-title">Angles beyond a full turn</p>
+      <p>For a point at rest, \(\theta\) and \(\theta + 2\pi\) are the same direction. For a moving particle, keep the angle that the motion actually gives: an arm that turns at \(2\ \text{rad/s}\) for \(5\ \text{s}\) has \(\theta = 10\ \text{rad}\), about 1.6 turns. The formulas of this module work with any \(\theta\), and its rates \(\dot\theta\) and \(\ddot\theta\) do not care about whole turns.</p>
+    </aside>
+  </section>
+
+  <section id="cylindrical">
+    <h2>Adding the height: cylindrical coordinates</h2>
+    <p>For motion in space, make the origin's reference line part of a right-handed \(x\), \(y\), \(z\) frame and add the height:</p>
+    <div class="grid-cards">
+      <div class="card card-r"><h3>\(r\)</h3><p>Distance from the \(z\)-axis (not from \(O\)), measured horizontally.</p></div>
+      <div class="card card-t"><h3>\(\theta\)</h3><p>Angle around the \(z\)-axis from the \(+x\) axis, counter-clockwise as seen from above (\(+z\)).</p></div>
+      <div class="card card-z"><h3>\(z\)</h3><p>Height along the axis, the same \(z\) as in rectangular coordinates.</p></div>
+    </div>
+    <p>So \(x = r\cos\theta\), \(y = r\sin\theta\) and \(z = z\). The point \(P'\) directly below \(P\) on the floor \(z = 0\) has the polar coordinates \((r, \theta)\) of \(P\).</p>
+
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> Move the sliders. <span class="c-r">\(r\)</span> is the orange segment in the floor plane, <span class="c-t">\(\theta\)</span> the violet arc from the \(+x\) axis, and <span class="c-z">\(z\)</span> the blue rise from \(P'\) to \(P\). Turn on <em>Position vector</em> to see \(\rvec\) from \(O\) to \(P\) as the sum of a horizontal part \(r\,\er\) and a vertical part \(z\,\ez\). Drag the view to rotate it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="position-vector">
+    <h2>The position vector</h2>
+    <p>Define the <strong>radial unit vector</strong> \(\er\) at \(P\): the horizontal unit vector pointing from the \(z\)-axis toward \(P\). Then the vector from \(O\) to \(P\) is a horizontal step of length \(r\) along \(\er\) followed by a vertical step \(z\) along \(\ez\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Position vector</p>
+      \[ \rvec_P = r\,\colR{\er} + z\,\colZ{\ez} \qquad \text{(in a plane: } \rvec_P = r\,\er\text{)} \]
+      <p>Its magnitude is the distance from \(O\): \(|\rvec_P| = \sqrt{r^2 + z^2}\).</p>
+    </div>
+    <p>There is no \(\theta\) term: the angle is hidden in the <em>direction</em> of \(\er\), which depends on \(\theta\). That is the source of every new term in the velocity and acceleration. When the particle moves round, \(\er\) turns, and <a href="03-unit-vectors.html">Lesson 3</a> shows how fast.</p>
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: \(r\,\er + \theta\,\et\)</p>
+      <p>The position vector is not \(r\,\er + \theta\,\et\). An angle is not a length, so it cannot be a component of a position, and the units would not even match (m and rad).</p>
+    </aside>
+  </section>
+
+  <section id="motion">
+    <h2>A moving particle: \(r(t)\), \(\theta(t)\), \(z(t)\)</h2>
+    <p>A motion is described by giving the three coordinates as functions of time. Often each one comes straight from a part of the machine: the arm angle \(\theta(t)\) from the motor, the extension \(r(t)\) from a slider or a cord, the height \(z(t)\) from a lift. To find where the particle is at a given instant, evaluate the three functions and, if needed, convert to \(x\), \(y\), \(z\).</p>
+
+    <figure class="figure wide" aria-labelledby="fig23-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig23-stage"></div>
+        <div class="viz-controls" id="fig23-controls"></div>
+      </div>
+      <figcaption id="fig23-cap"><strong>Figure 2.3</strong> Choose a motion and press <em>Play</em>, or drag the time slider. The particle \(P\) moves with the given \(r(t)\) and \(\theta(t)\), seen from above; the orange segment is \(r\) and the violet arc is \(\theta\) (shown between 0 and \(360^\circ\)). The live values list \(r\), \(\theta\) and the rectangular position \((x, y)\). Velocity and acceleration arrows are switched off until Lesson 4.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 2.3 — Where is the gripper?</p>
+      <p>The gripper of a cylindrical robot moves with \(r = (0.5 + 0.5t)\ \text{m}\), \(\theta = 2t\ \text{rad}\) and \(z = (1.5 + 0.3t)\ \text{m}\), where \(t\) is in seconds. Find its cylindrical and rectangular coordinates at \(t = 1\ \text{s}\) and at \(t = 3\ \text{s}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>At \(t = 1\ \text{s}\):</strong> \(r = 1\ \text{m}\), \(\theta = 2\ \text{rad}\ (114.6^\circ)\), \(z = 1.8\ \text{m}\). Then</p>
+          \[ \begin{aligned} x &= 1\cos 2 \approx -0.4161\ \text{m} \\ y &= 1\sin 2 \approx 0.9093\ \text{m} \end{aligned} \]
+          <p><strong>At \(t = 3\ \text{s}\):</strong> \(r = 2\ \text{m}\), \(\theta = 6\ \text{rad}\ (343.8^\circ)\), \(z = 2.4\ \text{m}\). Then</p>
+          \[ \begin{aligned} x &= 2\cos 6 \approx 1.920\ \text{m} \\ y &= 2\sin 6 \approx -0.5588\ \text{m} \end{aligned} \]
+          <p>Between the two instants the arm has turned through \(4\ \text{rad}\), about \(229^\circ\). Set your calculator to radians: \(\cos 2\) in degree mode gives \(0.9994\), which is wrong here.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">Tip: rpm to rad/s</p>
+      <p>Motor speeds are quoted in revolutions per minute. Convert before you use them: \(N\) rpm is <span class="nowrap">\(\dot\theta = 2\pi N/60\ \text{rad/s}\),</span> so \(60\ \text{rpm}\) is \(2\pi \approx 6.283\ \text{rad/s}\).</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Polar coordinates: \(r \ge 0\) is the distance from \(O\), and \(\theta\) the angle from the \(+x\) axis, counter-clockwise, in radians.</li>
+      <li>\(x = r\cos\theta\), \(y = r\sin\theta\); \(r = \sqrt{x^2 + y^2}\) and \(\theta = \atantwo(y, x)\). Check the quadrant whenever \(x \lt 0\).</li>
+      <li>Cylindrical coordinates add the height \(z\); \(r\) is then measured from the \(z\)-axis.</li>
+      <li>The position vector is \(\rvec = r\,\er + z\,\ez\). The angle is hidden in the direction of \(\er\).</li>
+      <li>A motion is \(r(t)\), \(\theta(t)\), \(z(t)\). Next, <a href="03-unit-vectors.html">Lesson 3</a> shows how the unit vectors turn as \(\theta\) changes.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 2.1: the polar plane with a draggable point ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  var st = { r: 3, th: PI / 3, snap: true };
+  var p = CYL2D.plane(document.getElementById('fig21-stage'), {
+    xRange: [-4.5, 4.5], yRange: [-4.5, 4.5], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 440,
+    ariaLabel: 'A polar grid with the origin O. A draggable point P is joined to O by an orange segment of length r; a violet arc from the positive x-axis shows the angle theta. A gray leg along the x-axis and a dashed olive leg parallel to the y-axis show the rectangular coordinates x and y.'
+  });
+  var xLeg = p.line([0, 0], [1, 0], { color: 'x', width: 3, label: 'x', labelSide: 'right' });
+  var yLeg = p.line([1, 0], [1, 1], { color: 'y', width: 2.5, dashed: true, label: 'y', labelSide: 'right' });
+  var seg = p.line([0, 0], [1, 1], { color: 'r', width: 3, label: 'r', labelSide: 'left' });
+  var arc = p.arc({ center: [0, 0], rPx: 34, theta0: 0, theta1: st.th, color: 't', width: 2, arrow: true, label: '\\theta' });
+  p.point([0, 0], { color: 'ink', r: 3.5, label: 'O', labelAnchor: 'sw' });
+  var snapFn = CYL2D.snapPolar(0.5, PI / 12);
+  var P = p.point([0, 0], {
+    color: 'point', r: 7, label: 'P', labelAnchor: 'ne', draggable: true, ariaLabel: 'Point P',
+    snap: function (q) {
+      if (st.snap) q = snapFn(q);
+      var rr = Math.min(4.2, Math.hypot(q[0], q[1]));
+      var a = Math.atan2(q[1], q[0]);
+      return [rr * Math.cos(a), rr * Math.sin(a)];
+    },
+    onDrag: function (q) {
+      st.r = Math.hypot(q[0], q[1]);
+      st.th = st.r < 1e-9 ? 0 : CYL.math.wrap2pi(Math.atan2(q[1], q[0]));
+      sR.set(st.r, true); sT.set(st.th, true);
+      draw(false);
+    },
+    ariaFormat: function () { return 'r = ' + CYL.fmt(st.r) + ', theta = ' + CYL.fmt(st.th * 180 / PI) + ' degrees'; }
+  });
+  var panel = document.getElementById('fig21-controls');
+  var sR = CYL.slider({ label: '\\(r\\) distance from \\(O\\)', min: 0, max: 4.2, step: 0.1, value: st.r, color: 'r', unit: 'm', onInput: function (v) { st.r = v; draw(true); } });
+  var sT = CYL.angleSlider({ label: '\\(\\theta\\) angle', min: 0, max: 2 * PI - PI / 36, snap: PI / 36, value: st.th, onInput: function (v) { st.th = v; draw(true); } });
+  var roPol = CYL.readout('Polar \\((r, \\theta)\\)');
+  var roCart = CYL.readout('Rectangular \\((x, y)\\)');
+  var roQ = CYL.readout('Quadrant');
+  var tSnap = CYL.toggle({ label: 'Snap', value: true, onChange: function (on) { st.snap = on; } });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The point P' }));
+  panel.appendChild(sR.el);
+  panel.appendChild(sT.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roPol.el, roCart.el, roQ.el]));
+  panel.appendChild(CYL.el('p', { class: 'small muted', text: 'Lengths in m.' }));
+  panel.appendChild(CYL.el('div', { class: 'chip-row' }, [tSnap.el]));
+  CYL.renderMath(panel);
+  function draw(moveP) {
+    var x = st.r * Math.cos(st.th), y = st.r * Math.sin(st.th);
+    if (Math.abs(x) < 1e-9) x = 0;
+    if (Math.abs(y) < 1e-9) y = 0;
+    if (moveP) P.set([x, y]);
+    seg.set([0, 0], [x, y]);
+    xLeg.set([0, 0], [x, 0]); yLeg.set([x, 0], [x, y]);
+    xLeg.setVisible(Math.abs(x) > 0.05); yLeg.setVisible(Math.abs(y) > 0.05);
+    arc.set({ theta1: st.r < 1e-9 || st.th < 1e-6 ? NaN : st.th });
+    roPol.set('(' + CYL.fmtTex(st.r, 3) + '\\ \\text{m},\\ ' + CYL.fmtTex(st.th * 180 / PI, 4) + '^\\circ)', { tex: true });
+    roCart.set('(' + CYL.fmtTex(x, 3) + ',\\ ' + CYL.fmtTex(y, 3) + ')\\ \\text{m}', { tex: true });
+    var q = (Math.abs(x) < 1e-9 || Math.abs(y) < 1e-9) ? 'on an axis' : x > 0 ? (y > 0 ? 'I' : 'IV') : (y > 0 ? 'II' : 'III');
+    roQ.set(q);
+  }
+  draw(true);
+});
+
+/* ---------- Figure 2.2: a point in cylindrical coordinates (3D) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  var st = { r: 2, th: PI / 4, z: 1.5 };
+  var v = CYL3D.create(document.getElementById('fig22-stage'), {
+    extent: 3, zRange: [-0.2, 3.2], camera: { azimuth: 35, elevation: 24, zoom: 1.15, target: [0.4, 0.4, 0.9] },
+    ariaLabel: 'A 3D view of x, y and z axes with a point P at cylindrical coordinates r, theta and z. Construction lines show r as an orange segment in the floor plane from the z-axis to the point P prime below P, the angle theta as a violet arc from the positive x-axis, and z as a blue vertical segment from P prime up to P. An optional teal arrow is the position vector from the origin to P, with a horizontal orange part along u_r and a vertical blue part along u_z.'
+  });
+  var P = v.cylPoint({ r: st.r, theta: st.th, z: st.z, label: 'P' });
+  var gVec = v.group();
+  var big = { width: 0.03, headLength: 0.18, headRadius: 0.07 };
+  var aR = v.arrow([0, 0, 0], [1, 0, 0], Object.assign({ color: 'r', label: 'r\\,\\er', parent: gVec }, big));
+  var aZ = v.arrow([1, 0, 0], [1, 0, 1], Object.assign({ color: 'z', label: 'z\\,\\ez', parent: gVec }, big));
+  var aP = v.arrow([0, 0, 0], [1, 0, 1], Object.assign({ color: 'accent', label: '\\rvec_P', parent: gVec }, big));
+  gVec.visible = false;
+  var panel = document.getElementById('fig22-controls');
+  function set(k) { return function (x) { st[k] = x; draw(); }; }
+  var sR = CYL.slider({ label: '\\(r\\) from the axis', min: 0, max: 2.8, step: 0.1, value: st.r, color: 'r', unit: 'm', onInput: set('r') });
+  var sT = CYL.angleSlider({ label: '\\(\\theta\\) angle', min: 0, max: 2 * PI - PI / 36, snap: PI / 36, value: st.th, onInput: set('th') });
+  var sZ = CYL.slider({ label: '\\(z\\) height', min: 0, max: 3, step: 0.1, value: st.z, color: 'z', unit: 'm', onInput: set('z') });
+  var roCyl = CYL.readout('Cylindrical \\((r, \\theta, z)\\)');
+  var roCart = CYL.readout('Rectangular \\((x, y, z)\\)');
+  var roMag = CYL.readout('\\(|\\rvec_P| = \\sqrt{r^2 + z^2}\\)');
+  var tVec = CYL.toggle({ label: 'Position vector', value: false, onChange: function (on) { gVec.visible = on; P.setVisible({ construction: !on }); v.render(); } });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The point P' }));
+  [sR, sT, sZ].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roCyl.el, roCart.el, roMag.el]));
+  panel.appendChild(CYL.el('p', { class: 'small muted', text: 'Lengths in m.' }));
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Show' }));
+  panel.appendChild(CYL.el('div', { class: 'chip-row' }, [tVec.el]));
+  CYL.renderMath(panel);
+  function tf(t) { return String(t).replace(/\\frac/g, '\\tfrac'); }
+  function draw() {
+    var c = Math.cos(st.th), s = Math.sin(st.th), x = st.r * c, y = st.r * s;
+    P.set({ r: st.r, theta: st.th, z: st.z });
+    aR.set([0, 0, 0], [x, y, 0]); aZ.set([x, y, 0], [x, y, st.z]); aP.set([0, 0, 0], [x, y, st.z]);
+    aR.visible = st.r > 0.05; aZ.visible = st.z > 0.05;
+    roCyl.set('(' + CYL.fmtTex(st.r, 3) + ',\\ ' + tf(CYL.angleTex(st.th, { deg: false })) + ',\\ ' + CYL.fmtTex(st.z, 3) + ')', { tex: true });
+    roCart.set('(' + CYL.fmtTex(x, 3) + ',\\ ' + CYL.fmtTex(y, 3) + ',\\ ' + CYL.fmtTex(st.z, 3) + ')', { tex: true });
+    roMag.set(CYL.fmt(Math.sqrt(st.r * st.r + st.z * st.z), 4) + ' m');
+    v.render();
+  }
+  draw();
+});
+
+/* ---------- Figure 2.3: motion given as r(t) and θ(t) (top view, position only) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+  var MOTIONS = {
+    rod: {
+      label: 'Collar on a spinning rod', t1: 6,
+      desc: '\\(r = 0.3 + 0.15t\\ \\text{m}\\), \\(\\theta = t\\ \\text{rad}\\)',
+      m: { r: function (t) { return 0.3 + 0.15 * t; }, th: function (t) { return t; } }
+    },
+    robot: {
+      label: 'Robot gripper, seen from above', t1: 3,
+      desc: '\\(r = 0.5 + 0.5t\\ \\text{m}\\), \\(\\theta = 2t\\ \\text{rad}\\) (Example 2.3)',
+      m: { r: function (t) { return 0.5 + 0.5 * t; }, th: function (t) { return 2 * t; } }
+    },
+    cam: {
+      label: 'Follower on a heart-shaped cam', t1: 2 * PI,
+      desc: '\\(r = 0.9(1 + \\cos\\theta)/2 + 0.2\\ \\text{m}\\), \\(\\theta = t\\ \\text{rad}\\)',
+      m: { r: function (t) { return 0.45 * (1 + Math.cos(t)) + 0.2; }, th: function (t) { return t; } }
+    }
+  };
+  var panel = document.getElementById('fig23-controls');
+  var sel = CYL.select({
+    label: 'Motion', value: 'robot',
+    options: Object.keys(MOTIONS).map(function (k) { return { value: k, label: MOTIONS[k].label }; }),
+    onChange: function (k) { choose(k); }
+  });
+  var desc = CYL.el('div', { class: 'mf-desc' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Choose a motion' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(desc);
+  var fig = POLAR.figure({
+    stage: document.getElementById('fig23-stage'), controls: panel,
+    motion: MOTIONS.robot.m, t0: 0, t1: MOTIONS.robot.t1, t: 1, speed: 0.5, loop: true,
+    xRange: [-2.2, 2.2], yRange: [-2.2, 2.2], polarStep: { r: 0.5, thetaDeg: 30 },
+    show: { v: false, a: false, comps: 'none', trace: true, radial: true },
+    toggles: ['trace'], readouts: ['t', 'r', 'th', 'pos'],
+    aria: 'Top view of a particle P moving in the plane with the chosen r(t) and theta(t). An orange segment joins the origin O to P and a violet arc shows theta. The full path is dashed and the part already traveled is solid.'
+  });
+  function choose(k) {
+    var M = MOTIONS[k];
+    desc.innerHTML = '<p>' + M.desc + ', for \\(0 \\le t \\le ' + CYL.fmtTex(M.t1, 3) + '\\ \\text{s}\\).</p>';
+    CYL.renderMath(desc);
+    fig.setMotion(M.m, 0, M.t1, k === 'robot' ? 1 : 0);
+  }
+  choose('robot');
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var PI = Math.PI;
+
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1',
+    type: 'fields',
+    prompt: 'A point has polar coordinates \\(r = 5\\ \\text{m}\\) and \\(\\theta = 210^\\circ\\). Find its rectangular coordinates.',
+    fields: [
+      { name: 'x', label: '\\(x =\\)', answer: 5 * Math.cos(7 * PI / 6), unit: 'm', answerTex: '-\\tfrac{5\\sqrt{3}}{2} \\approx -4.330' },
+      { name: 'y', label: '\\(y =\\)', answer: -2.5, unit: 'm' }
+    ],
+    hints: ['\\(x = r\\cos\\theta\\) and \\(y = r\\sin\\theta\\).', '\\(210^\\circ\\) is in quadrant III, so both \\(x\\) and \\(y\\) are negative.'],
+    explain: 'The signs of \\(\\cos\\theta\\) and \\(\\sin\\theta\\) put the point in the right quadrant automatically.',
+    solution: '\\[ \\begin{aligned} x &= 5\\cos 210^\\circ = -\\tfrac{5\\sqrt{3}}{2} \\approx -4.330\\ \\text{m} \\\\ y &= 5\\sin 210^\\circ = -2.5\\ \\text{m} \\end{aligned} \\]'
+  });
+
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2',
+    type: 'fields',
+    prompt: 'A particle is at \\((x, y) = (-2,\\ 3.5)\\ \\text{m}\\). Find \\(r\\) and \\(\\theta\\) (in radians or in degrees with °).',
+    fields: [
+      { name: 'r', label: '\\(r =\\)', answer: Math.sqrt(16.25), unit: 'm', answerTex: '\\sqrt{16.25} \\approx 4.031' },
+      { name: 'th', label: '\\(\\theta =\\)', answer: Math.atan2(3.5, -2), angle: true, answerTex: '2.090\\ \\text{rad}\\ (119.7^\\circ)' }
+    ],
+    hints: ['\\(r = \\sqrt{x^2 + y^2}\\).', 'The point is in quadrant II (\\(x \\lt 0\\), \\(y \\gt 0\\)). \\(\\tan^{-1}(3.5/(-2)) = -60.26^\\circ\\) points into quadrant IV: add \\(180^\\circ\\).'],
+    explain: 'With \\(x \\lt 0\\), the calculator\'s \\(\\tan^{-1}(y/x)\\) is off by \\(180^\\circ\\); \\(\\atantwo(y, x)\\) is not.',
+    solution: '\\[ \\begin{aligned} r &= \\sqrt{(-2)^2 + 3.5^2} = \\sqrt{16.25} \\approx 4.031\\ \\text{m} \\\\ \\theta &= \\atantwo(3.5, -2) = 180^\\circ - 60.26^\\circ = 119.74^\\circ \\approx 2.090\\ \\text{rad} \\end{aligned} \\]'
+  });
+
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3',
+    type: 'fields',
+    prompt: 'A particle moves with \\(r = (1 + 0.5t^2)\\ \\text{m}\\), \\(\\theta = (\\pi t/4)\\ \\text{rad}\\) and \\(z = 0.4t\\ \\text{m}\\), with \\(t\\) in seconds. Find its rectangular coordinates at \\(t = 2\\ \\text{s}\\).',
+    fields: [
+      { name: 'x', label: '\\(x =\\)', answer: 0, unit: 'm' },
+      { name: 'y', label: '\\(y =\\)', answer: 3, unit: 'm' },
+      { name: 'z', label: '\\(z =\\)', answer: 0.8, unit: 'm' }
+    ],
+    hints: ['First evaluate \\(r\\), \\(\\theta\\) and \\(z\\) at \\(t = 2\\ \\text{s}\\).', 'At \\(t = 2\\ \\text{s}\\), \\(\\theta = \\pi/2\\): the particle is on the \\(+y\\) side.'],
+    explain: 'Evaluate the three functions at the instant, then convert with \\(x = r\\cos\\theta\\), \\(y = r\\sin\\theta\\).',
+    solution: '<p>At \\(t = 2\\ \\text{s}\\): \\(r = 1 + 0.5(4) = 3\\ \\text{m}\\), \\(\\theta = \\pi/2\\) and \\(z = 0.8\\ \\text{m}\\). So</p>' +
+      '\\[ x = 3\\cos\\tfrac{\\pi}{2} = 0, \\qquad y = 3\\sin\\tfrac{\\pi}{2} = 3\\ \\text{m}, \\qquad z = 0.8\\ \\text{m} \\]'
+  });
+});
+</script>
+</body>
+</html>

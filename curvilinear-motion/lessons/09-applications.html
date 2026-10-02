@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choosing a System: Engineering Applications · Curvilinear Motion</title>
+<meta name="description" content="How to choose between rectangular and path coordinates, a problem-solving procedure, and engineering applications: highway curves, crests and sags, roller coasters and aircraft pull-outs.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+<style>
+  /* status box, styled like the verdict boxes of the Cylindrical Coordinates module */
+  .app-status { padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--c-good) 38%, transparent); border-radius: 10px; background: var(--c-good-soft); color: var(--c-good); font-weight: 650; font-size: 0.9rem; line-height: 1.4; }
+  .app-status.is-bad { border-color: color-mix(in srgb, var(--c-bad) 38%, transparent); background: var(--c-bad-soft); color: var(--c-bad); }
+</style>
+</head>
+<body data-page="l09" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 9 · 35 min</p>
+    <h1>Choosing a System: Engineering Applications</h1>
+    <p class="lede">You now have two complete toolkits. This lesson is about judgement: recognizing which one a problem is asking for, setting it up cleanly, and using the answers to make engineering decisions about roads, rides and aircraft.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Choose rectangular or path coordinates from what a problem gives and asks, and justify the choice.</li>
+      <li>Follow a consistent procedure for curvilinear-motion problems.</li>
+      <li>Apply \(a_n = v^2/\rho\) to design limits: minimum curve radius, maximum speed over a crest, and \(g\)-loads.</li>
+      <li>Combine tangential and normal accelerations in realistic braking and cornering situations.</li>
+    </ul>
+  </section>
+
+  <section id="choosing">
+    <h2>Which system?</h2>
+    <p>Both systems always give the same vectors, so a "wrong" choice is never incorrect, only longer. Let the information in the problem decide:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Choosing a coordinate system</caption>
+        <thead><tr><th scope="col">The problem gives or asks for…</th><th scope="col">Use</th><th scope="col">Because</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">\(x(t)\) and \(y(t)\), or \(a_x\) and \(a_y\) separately</th><td>\(x\)–\(y\)</td><td>differentiate or integrate each coordinate on its own</td></tr>
+          <tr><th scope="row">Gravity only (a projectile)</th><td>\(x\)–\(y\)</td><td>\(a_x = 0\), \(a_y = -g\): two independent, simple motions</td></tr>
+          <tr><th scope="row">A path \(y = f(x)\) with \(v_x\) or \(v_y\) known (guides, slots, cams)</th><td>\(x\)–\(y\) with the chain rule</td><td>\(v_y = f'v_x\), \(a_y = f''v_x^2 + f'a_x\)</td></tr>
+          <tr><th scope="row">A known path and the speed along it (vehicles, trains, rides)</th><td>\(n\)–\(t\)</td><td>\(a_t = \dot v\) and \(a_n = v^2/\rho\) come straight from the data</td></tr>
+          <tr><th scope="row">Circular motion with \(\omega\), \(\alpha\)</th><td>\(n\)–\(t\)</td><td>\(a_t = \alpha r\), \(a_n = \omega^2 r\)</td></tr>
+          <tr><th scope="row">"How sharply does the path bend?", "is it speeding up?", "normal force / friction needed"</th><td>\(n\)–\(t\), often converted from \(x\)–\(y\)</td><td>\(\rho\), \(a_t\) and \(a_n\) are path quantities (Lesson 8)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>A procedure that always works</h3>
+    <ol>
+      <li><strong>Sketch</strong> the path, the particle and the axes or the \(\et\), \(\en\) directions at the instant of interest.</li>
+      <li><strong>Choose the system</strong> with the table above, and write down what is known in that system (with signs).</li>
+      <li><strong>Relate</strong> the unknowns with the kinematic equations: differentiate, integrate, or use \(a_t\), \(a_n\), \(\rho\).</li>
+      <li><strong>Convert</strong> if the question asks for the other system (Lesson 8).</li>
+      <li><strong>Check</strong>: units, signs, \(|\avec|\) the same in both systems, and whether the size makes physical sense (compare with \(g = 9.81\ \text{m/s}^2\)).</li>
+    </ol>
+  </section>
+
+  <section id="roads">
+    <h2>Roads: curves, crests and sags</h2>
+    <p>Road designers limit the normal acceleration so that drivers stay comfortable and tyres keep their grip. On a flat curve at steady speed, \(a_n = v^2/\rho\) must stay below a chosen limit \(a_{n,\max}\), which sets the smallest radius allowed for a given design speed:</p>
+    \[ \rho_\text{min} = \frac{v^2}{a_{n,\max}} \]
+
+    <div class="example">
+      <p class="example-title">Example 9.1 — Designing a highway curve</p>
+      <p>A highway is designed for \(100\ \text{km/h}\) with a comfort limit of \(0.15g\) on the sideways acceleration. (a) Find the minimum curve radius. (b) A car on that curve at the design speed brakes at \(3\ \text{m/s}^2\). What is its total acceleration?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>(a)</strong> \(v = 100/3.6 = 27.78\ \text{m/s}\) and \(a_{n,\max} = 0.15(9.81) = 1.472\ \text{m/s}^2\):</p>
+          \[ \rho_\text{min} = \frac{27.78^2}{1.472} = 524.4\ \text{m} \]
+          <p><strong>(b)</strong> \(a_t = -3\ \text{m/s}^2\) and \(a_n = 1.472\ \text{m/s}^2\):</p>
+          \[ |\avec| = \sqrt{3^2 + 1.472^2} = 3.341\ \text{m/s}^2 \]
+          <p>Real highways also bank (superelevate) their curves so that part of \(m v^2/\rho\) comes from the normal force of the road; that is a Newton's-law refinement of the same kinematics.</p>
+        </div>
+      </details>
+    </div>
+
+    <p>Over a <strong>crest</strong>, \(\en\) points down. Gravity can supply at most \(g\) of downward acceleration, so if \(v^2/\rho\) exceeds \(g\) the road would have to pull the car down, which it cannot do: the wheels lift off. The limiting speed is</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Speed limit over a crest of radius \(\rho\)</p>
+      \[ \frac{v^2}{\rho} \le g \quad\Rightarrow\quad v_\text{max} = \sqrt{g\rho} \]
+      <p>In a <strong>sag</strong>, \(\en\) points up, the road pushes harder than usual, and occupants feel heavier: there is no speed at which contact is lost, only a comfort limit.</p>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig91-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig91-stage"></div>
+        <div class="viz-controls" id="fig91-controls"></div>
+      </div>
+      <figcaption id="fig91-cap"><strong>Figure 9.1</strong> A car at <em>constant speed</em> over a hilly track \(y = 6\cos(2\pi x/60)\) (metres). The crest radius is \(\rho = 15.2\ \text{m}\), so the car stays in contact only while \(v \le \sqrt{g\rho} = 12.2\ \text{m/s}\). Raise the speed and watch the status box at the crest. With constant speed \(a_t = 0\): the acceleration is all normal, \(v^2/\rho\), largest where the track bends most sharply.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 9.2 — Airtime over a hill</p>
+      <p>A rural road goes over a hump whose crest has a radius of curvature of \(30\ \text{m}\). Above what speed do the wheels of a car leave the road at the crest?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ v_\text{max} = \sqrt{g\rho} = \sqrt{9.81(30)} = 17.16\ \text{m/s} \approx 61.8\ \text{km/h} \]
+          <p>Notice that the answer does not depend on the car's mass: it is pure kinematics. This is why "humpback" bridges carry low speed limits.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="aircraft">
+    <h2>Rides and aircraft: \(g\)-loads</h2>
+    <p>Pilots and ride designers describe normal accelerations in multiples of \(g\). At the bottom of a pull-out from a dive, the aircraft is on a curve with the center of curvature above it, \(a_n = v^2/\rho\) points up, and the pilot is pressed into the seat.</p>
+
+    <div class="example">
+      <p class="example-title">Example 9.3 — Pulling out of a dive</p>
+      <p>A jet at \(150\ \text{m/s}\) pulls out of a dive along a vertical arc. The pilot's normal acceleration must not exceed \(5g\). What is the smallest radius of the pull-out?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \rho_\text{min} = \frac{v^2}{a_{n,\max}} = \frac{150^2}{5(9.81)} = 458.7\ \text{m} \]
+          <p>Doubling the speed would need four times the radius: fast aircraft need a lot of sky to turn.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection: roller-coaster loops are not circles</p>
+      <p>A car entering a circular loop at the bottom would feel \(v^2/\rho\) at its largest speed and smallest-possible radius, a dangerous spike. Modern loops use a teardrop (clothoid-like) shape whose radius is large at the bottom, where the car is fast, and small at the top, where it is slow, so \(a_n\) stays within a few \(g\) all the way round. That is Lesson 7's \(\rho\) put to work.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+    <div class="check" id="check-5"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Use \(x\)–\(y\) when the coordinates or their accelerations are known separately (projectiles, \(x(t), y(t)\), guides); use \(n\)–\(t\) when the path and the speed along it are known.</li>
+      <li>Design limits come from \(a_n = v^2/\rho\): \(\rho_\text{min} = v^2/a_{n,\max}\) for curves, \(v_\text{max} = \sqrt{g\rho}\) over a crest.</li>
+      <li>Braking or accelerating on a curve adds \(a_t\): \(|\avec| = \sqrt{a_t^2 + a_n^2}\).</li>
+      <li>You have finished the lessons. Next: the <a href="../practice/practice-lab.html">Practice Lab</a> for unlimited problems, the <a href="../practice/quiz.html">Self-Check Quiz</a> to test yourself, and the <a href="../reference/cheat-sheet.html">Formula Sheet</a> for revision.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 9.1: constant speed over a hilly track ---------- */
+CYL.ready(function () {
+  'use strict';
+  var A = 6, L = 60, k = 2 * Math.PI / L, g = 9.81, X0 = -30, X1 = 30;
+  function f(x) { return A * Math.cos(k * x); }
+  function f1(x) { return -A * k * Math.sin(k * x); }
+  function f2(x) { return -A * k * k * Math.cos(k * x); }
+  // arc-length table s(x), so the car can move at a constant speed along the track
+  var N = 3000, XS = [], SS = [0];
+  for (var i = 0; i <= N; i++) XS.push(X0 + (X1 - X0) * i / N);
+  for (i = 1; i <= N; i++) {
+    var a = XS[i - 1], b = XS[i], m1 = f1(a), m2 = f1(b);
+    SS.push(SS[i - 1] + (b - a) * (Math.sqrt(1 + m1 * m1) + Math.sqrt(1 + m2 * m2)) / 2);
+  }
+  var LEN = SS[N];
+  function xAt(s) {
+    if (s <= 0) return X0;
+    if (s >= LEN) return X1;
+    var lo = 0, hi = N;
+    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (SS[mid] <= s) lo = mid; else hi = mid; }
+    return XS[lo] + (XS[hi] - XS[lo]) * (s - SS[lo]) / (SS[hi] - SS[lo]);
+  }
+  function motion(v) {
+    function q(t) { var x = xAt(v * t), m = f1(x), c = f2(x), w = 1 + m * m; return { x: x, m: m, c: c, w: w }; }
+    return {
+      x: function (t) { return q(t).x; }, y: function (t) { return f(q(t).x); },
+      vx: function (t) { var z = q(t); return v / Math.sqrt(z.w); }, vy: function (t) { var z = q(t); return z.m * v / Math.sqrt(z.w); },
+      ax: function (t) { var z = q(t); return -v * v * z.c * z.m / (z.w * z.w); }, ay: function (t) { var z = q(t); return v * v * z.c / (z.w * z.w); }
+    };
+  }
+  var speed = 10;
+  var panel = document.getElementById('fig91-controls');
+  var sV = CYL.slider({ label: 'Constant speed \\(v\\)', min: 4, max: 20, step: 0.5, value: speed, unit: 'm/s', color: 'good',
+    onInput: function (v) { var frac = fig.t() * speed / LEN; speed = v; fig.setMotion(motion(v), 0, LEN / v, frac * LEN / v); } });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Hilly track' }));
+  panel.appendChild(sV.el);
+  var roG = CYL.readout('\\(a_n / g\\)', { color: 'n' });
+  var status = CYL.el('p', { class: 'app-status', 'aria-live': 'polite' }), lastMsg = null;
+  var fig = CURV.figure({
+    stage: document.getElementById('fig91-stage'), controls: panel,
+    motion: motion(speed), t0: 0, t1: LEN / speed, t: 0.4 * LEN / speed, xRange: [-31, 31], yRange: [-8, 9], gridStep: 5,
+    aScale: 2, vScale: 4, show: { comps: 'nt', frame: false, circle: true, trace: false }, toggles: ['v', 'a', 'circle'],
+    readouts: ['v', 'at', 'an', 'rho'],
+    decorate: function (p) {
+      var pts = [];
+      for (var j = 0; j <= 200; j++) { var x = X0 + (X1 - X0) * j / 200; pts.push([x, f(x)]); }
+      pts.push([X1, -8]); pts.push([X0, -8]);
+      p.polyline(pts, { color: 'surface', width: 1.5, closed: true, fill: 'surface', fillOpacity: 0.18 });
+    },
+    onUpdate: function (s) {
+      roG.set(CYL.fmt(s.an / g, 3));
+      var crestSide = s.en && s.en[1] < 0;               // center of curvature below: a crest
+      var bad = crestSide && s.an > g;
+      status.classList.toggle('is-bad', bad);
+      var msg = !crestSide ? '\u2713 Sag: the track pushes up harder than usual. Contact is never lost here.'
+        : bad ? '\u2717 Crest: \\(v^2/\\rho \\gt g\\). Gravity cannot bend the path this sharply, so the car leaves the track.'
+          : '\u2713 Crest: \\(v^2/\\rho \\le g\\), so gravity can supply the normal acceleration. The car stays on the track.';
+      if (msg !== lastMsg) { lastMsg = msg; status.innerHTML = msg; CYL.renderMath(status); }
+    },
+    aria: 'Side view of a hilly track with one crest in the middle and a sag at each end. A car moves along it at constant speed. ' +
+      'The acceleration points toward the center of the dashed osculating circle: down at the crest and up in the sags. A status box says whether the car stays on the track.'
+  });
+  var grid = panel.querySelector('.readout-grid');
+  if (grid) grid.appendChild(roG.el);
+  panel.appendChild(status);
+  fig.update();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var g = 9.81;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l09-q1', type: 'numeric', unit: 'm',
+    prompt: 'A ramp on a new interchange is designed for \\(80\\ \\text{km/h}\\), with the sideways acceleration limited to \\(0.12g\\). What is the smallest allowed radius?',
+    label: '\\(\\rho_\\text{min} =\\)', answer: Math.pow(80 / 3.6, 2) / (0.12 * g),
+    hints: ['Convert: \\(80\\ \\text{km/h} = 22.22\\ \\text{m/s}\\).', '\\(\\rho_\\text{min} = v^2/a_{n,\\max}\\) with \\(a_{n,\\max} = 0.12(9.81)\\).'],
+    explain: 'At steady speed the only acceleration is \\(a_n = v^2/\\rho\\), so a cap on \\(a_n\\) sets a minimum radius.',
+    solution: '\\[ \\rho_\\text{min} = \\frac{22.22^2}{0.12(9.81)} = \\frac{493.8}{1.177} = 419.5\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l09-q2', type: 'mc',
+    prompt: 'A motocross bike leaves the lip of a jump at \\(15\\ \\text{m/s}\\), \\(25^\\circ\\) above the horizontal. You must find where it lands. Which approach is most direct?',
+    choices: [
+      { html: 'Rectangular coordinates: \\(a_x = 0\\), \\(a_y = -g\\), then solve for the landing time', correct: true },
+      { html: 'Path coordinates: find \\(a_t\\) and \\(a_n\\) along the flight', feedback: 'In the air the path is not known in advance, and \\(a_t\\), \\(a_n\\) change continually. Gravity is simplest in \\(x\\)–\\(y\\).' },
+      { html: 'Path coordinates with \\(\\rho\\) equal to the jump\'s radius', feedback: 'Once airborne, the bike no longer follows the ramp: its path is set by gravity alone.' },
+      { html: 'Either system needs the radius of curvature first', feedback: 'Landing position needs no curvature at all: two independent constant-acceleration motions give it.' }
+    ],
+    hints: ['Once airborne, what is the only acceleration?'],
+    explain: 'Projectile motion: gravity acts in \\(y\\) only, so \\(x\\)–\\(y\\) splits the problem into two easy parts.',
+    solution: '<p>After take-off the bike is a projectile: \\(a_x = 0\\), \\(a_y = -g\\). Write \\(x(t)\\) and \\(y(t)\\), solve \\(y(t) = y_\\text{landing}\\) for \\(t\\), then find \\(x\\). Path coordinates would be useful only for questions about curvature or \\(a_t\\), \\(a_n\\).</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l09-q3', type: 'numeric', unit: 'm/s',
+    prompt: 'A roller-coaster train goes over a hill whose crest has a radius of curvature of \\(25\\ \\text{m}\\). Without the safety wheels under the track, above what speed would the train leave the rails at the crest?',
+    label: '\\(v_\\text{max} =\\)', answer: Math.sqrt(g * 25),
+    hints: ['At the crest \\(\\en\\) points down; gravity can supply at most \\(g\\).', 'Set \\(v^2/\\rho = g\\).'],
+    explain: 'Over a crest, \\(v_\\text{max} = \\sqrt{g\\rho}\\).',
+    solution: '\\[ v_\\text{max} = \\sqrt{9.81(25)} = 15.66\\ \\text{m/s} \\approx 56.4\\ \\text{km/h} \\]<p>Real coasters exceed this on purpose ("airtime"), and the up-stop wheels under the rail hold the train down.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l09-q4', type: 'fields',
+    prompt: 'A car at \\(25\\ \\text{m/s}\\) on a curve of radius \\(200\\ \\text{m}\\) brakes at \\(4\\ \\text{m/s}^2\\). Find its normal acceleration and the magnitude of its total acceleration.',
+    fields: [
+      { name: 'an', label: '\\(a_n =\\)', answer: 3.125, unit: 'm/s²' },
+      { name: 'a', label: '\\(|\\avec| =\\)', answer: Math.sqrt(16 + 3.125 * 3.125), unit: 'm/s²' }
+    ],
+    hints: ['\\(a_n = v^2/\\rho\\); \\(a_t = -4\\ \\text{m/s}^2\\).'],
+    explain: 'Braking and cornering add as perpendicular components.',
+    solution: '\\[ a_n = \\frac{25^2}{200} = 3.125\\ \\text{m/s}^2, \\qquad |\\avec| = \\sqrt{4^2 + 3.125^2} = 5.076\\ \\text{m/s}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-5'), {
+    id: 'l09-q5', type: 'numeric',
+    prompt: 'An aerobatic plane at \\(180\\ \\text{m/s}\\) flies through the bottom of a vertical arc of radius \\(600\\ \\text{m}\\). What is its normal acceleration, in multiples of \\(g\\)?',
+    label: '\\(a_n/g =\\)', answer: 54 / g,
+    hints: ['\\(a_n = v^2/\\rho\\), then divide by \\(9.81\\).'],
+    explain: 'Express \\(v^2/\\rho\\) as a multiple of \\(g\\) to compare with human limits.',
+    solution: '\\[ a_n = \\frac{180^2}{600} = 54\\ \\text{m/s}^2 = \\frac{54}{9.81}g = 5.50g \\]'
+  });
+});
+</script>
+</body>
+</html>

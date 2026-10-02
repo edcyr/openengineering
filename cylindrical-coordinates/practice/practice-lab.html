@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Cylindrical Coordinates</title>
+<meta name="description" content="Unlimited randomized practice on particle motion in cylindrical coordinates: positions, unit vectors, velocity, acceleration, paths r = f(θ), equations of motion and central forces, each with hints, a worked solution and a 3D view.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like: positions, unit vectors, velocity, acceleration, guided paths, equations of motion and central forces. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it you can see it in 3D.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The 3D view of the current problem: the point, force or motion it describes, with its velocity, acceleration and forces. It stays hidden until you solve the problem or open its solution, so it never gives the answer away. Then drag to rotate, and use <em>Top</em> and <em>Front</em> to check angles and heights.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>cart2cyl-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. cart2cyl-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type exact values instead of hunting for decimals. Each box shows how it read your input (for example <q>= 2.356</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>3pi/4</code> or <code>3π/4</code></td><td>\(\tfrac{3\pi}{4} \approx 2.356\)</td></tr>
+          <tr><td><code>135°</code> or <code>135 deg</code> (angle boxes)</td><td>\(135^\circ = \tfrac{3\pi}{4}\)</td></tr>
+          <tr><td><code>2sqrt(3)</code> or <code>2√3</code></td><td>\(2\sqrt{3} \approx 3.464\)</td></tr>
+          <tr><td><code>sqrt(2)/2</code></td><td>\(\tfrac{\sqrt{2}}{2} \approx 0.7071\)</td></tr>
+          <tr><td><code>-3/2 + 2sqrt(3)</code></td><td>\(-\tfrac{3}{2} + 2\sqrt{3} \approx 1.964\)</td></tr>
+          <tr><td><code>2.83</code></td><td>\(2.83\), a decimal: accepted when it is within about 1% of the exact value (for angles, within 0.01 rad)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Angles are compared modulo \(2\pi\), so \(\tfrac{7\pi}{4}\), \(-\tfrac{\pi}{4}\) and \(315^\circ\) all count as the same answer. A number with no unit in an angle box is read as radians. For a point on the \(z\)-axis (\(r = 0\)) any \(\theta\) is accepted.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Exact input is faster and safer: typing <code>2sqrt(3)</code> is quicker than working out 3.464, and it can never be marked wrong for rounding. If you use decimals, three or four significant figures are plenty.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Exact numbers  2. TeX helpers  3. Angles  4. Generators (one per topic)  5. Registry
+   6. Self-test (window.__practiceSelfTest)  7. The shared 3D view  8. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same exact numbers (a + b√2 + c√3 + d√6 with rational a, b, c, d),
+   so nothing is typed per instance.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var PI = Math.PI;
+  var T = String.raw;
+
+  /* ---------------------------------------------------------------- 1. Exact numbers */
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a; }
+  function Q(n, d) {
+    if (d === undefined) d = 1;
+    if (!Number.isSafeInteger(n) || !Number.isSafeInteger(d) || d === 0) throw new Error('bad rational ' + n + '/' + d);
+    if (d < 0) { n = -n; d = -d; }
+    var g = gcd(n, d);
+    if (g > 1) { n /= g; d /= g; }
+    if (n === 0) d = 1;
+    return { n: n === 0 ? 0 : n, d: d };
+  }
+  function qdec(x) {                                      // a short decimal → exact rational
+    for (var k = 0, p = 1; k <= 9; k++, p *= 10) {
+      var v = Math.round(x * p);
+      if (Math.abs(x * p - v) < 1e-6) return Q(v, p);
+    }
+    throw new Error('qdec: ' + x);
+  }
+  function qadd(a, b) { return Q(a.n * b.d + b.n * a.d, a.d * b.d); }
+  function qsub(a, b) { return Q(a.n * b.d - b.n * a.d, a.d * b.d); }
+  function qmul(a, b) { return Q(a.n * b.n, a.d * b.d); }
+  function qneg(a) { return Q(-a.n, a.d); }
+  function qval(a) { return a.n / a.d; }
+  function qeq(a, b) { return a.n === b.n && a.d === b.d; }
+  function qpow(a, k) { var r = Q(1); for (var i = 0; i < k; i++) r = qmul(r, a); return r; }
+  function isSq(n) { var s = Math.round(Math.sqrt(n)); return s * s === n ? s : -1; }
+  function qsqrt(a) { if (a.n < 0) return null; var s = isSq(a.n), t = isSq(a.d); return s >= 0 && t >= 0 ? Q(s, t) : null; }
+  function isTerm(d) { while (d % 2 === 0) d /= 2; while (d % 5 === 0) d /= 5; return d === 1; }
+  function decStr(n, d) {                                 // n ≥ 0, d has only factors 2 and 5
+    var k = 0, p = 1;
+    while ((n * p) % d !== 0 && k < 12) { k++; p *= 10; }
+    if (n * p > 9e15) return String(parseFloat((n / d).toPrecision(12)));
+    var s = String((n * p) / d);
+    if (k === 0) return s;
+    while (s.length <= k) s = '0' + s;
+    return s.slice(0, s.length - k) + '.' + s.slice(s.length - k);
+  }
+  function signedDec(q) { return (q.n < 0 ? '-' : '') + decStr(Math.abs(q.n), q.d); }
+
+  // Ex = a + b√2 + c√3 + d√6 (a, b, c, d rational): closed under +, −, ×; covers every value here.
+  var ZQ = Q(0);
+  function E(a, b, c, d) { return { a: a || ZQ, b: b || ZQ, c: c || ZQ, d: d || ZQ }; }
+  function eQ(q) { return E(q); }
+  function eN(n, d) { return E(Q(n, d === undefined ? 1 : d)); }
+  function eS(s, n, d) {                                  // (n/d)·√s, s ∈ {1, 2, 3, 6}
+    var q = Q(n, d === undefined ? 1 : d);
+    return s === 2 ? E(ZQ, q) : s === 3 ? E(ZQ, ZQ, q) : s === 6 ? E(ZQ, ZQ, ZQ, q) : E(q);
+  }
+  function eD(x) { return E(qdec(x)); }
+  function eadd(x, y) { return E(qadd(x.a, y.a), qadd(x.b, y.b), qadd(x.c, y.c), qadd(x.d, y.d)); }
+  function eneg(x) { return E(qneg(x.a), qneg(x.b), qneg(x.c), qneg(x.d)); }
+  function esub(x, y) { return eadd(x, eneg(y)); }
+  function escale(x, q) { return E(qmul(x.a, q), qmul(x.b, q), qmul(x.c, q), qmul(x.d, q)); }
+  function emul(x, y) {
+    var m = qmul, two = Q(2), three = Q(3), six = Q(6);
+    function s() { var r = ZQ; for (var i = 0; i < arguments.length; i++) r = qadd(r, arguments[i]); return r; }
+    return E(
+      s(m(x.a, y.a), m(two, m(x.b, y.b)), m(three, m(x.c, y.c)), m(six, m(x.d, y.d))),
+      s(m(x.a, y.b), m(x.b, y.a), m(three, m(x.c, y.d)), m(three, m(x.d, y.c))),   // √3·√6 = 3√2
+      s(m(x.a, y.c), m(x.c, y.a), m(two, m(x.b, y.d)), m(two, m(x.d, y.b))),       // √2·√6 = 2√3
+      s(m(x.a, y.d), m(x.d, y.a), m(x.b, y.c), m(x.c, y.b))                         // √2·√3 = √6
+    );
+  }
+  var R3 = Math.sqrt(3), R6 = Math.sqrt(6);
+  function eVal(x) { return qval(x.a) + qval(x.b) * Math.SQRT2 + qval(x.c) * R3 + qval(x.d) * R6; }
+  function eIsQ(x) { return x.b.n === 0 && x.c.n === 0 && x.d.n === 0; }
+  function eIsZero(x) { return eIsQ(x) && x.a.n === 0; }
+  function eIsInt(x) { return eIsQ(x) && x.a.d === 1; }
+  function eEq(x, y) { return qeq(x.a, y.a) && qeq(x.b, y.b) && qeq(x.c, y.c) && qeq(x.d, y.d); }
+  function eAbs(x) { return eVal(x) < 0 ? eneg(x) : x; }
+  function eSq(x) { return emul(x, x); }
+
+  /* ---------------------------------------------------------------- 2. TeX helpers */
+  var TF = { frac: '\\tfrac' };                // compact fractions
+  var TFD = { frac: '\\tfrac', dec: true };    // …and terminating rationals as decimals (SI data)
+  var ROOTS = [['a', 1], ['b', 2], ['c', 3], ['d', 6]];
+  function eTerms(x) {
+    var out = [];
+    ROOTS.forEach(function (rt) { var q = x[rt[0]]; if (q.n !== 0) out.push({ q: q, s: rt[1] }); });
+    return out;
+  }
+  function magTex(n, d, s, o) {
+    var rt = s === 1 ? '' : '\\sqrt{' + s + '}';
+    if (d === 1) return s === 1 ? String(n) : (n === 1 ? '' : String(n)) + rt;
+    if (o.dec && isTerm(d)) return decStr(n, d) + rt;
+    return (o.frac || '\\frac') + '{' + (s !== 1 && n === 1 ? '' : String(n)) + rt + '}{' + d + '}';
+  }
+  function eTex(x, o) {
+    o = o || TF;
+    var ts = eTerms(x);
+    if (!ts.length) return '0';
+    return ts.map(function (t, i) {
+      var neg = t.q.n < 0, body = magTex(Math.abs(t.q.n), t.q.d, t.s, o);
+      return i === 0 ? (neg ? '-' : '') + body : (neg ? ' - ' : ' + ') + body;
+    }).join('');
+  }
+  function qTex(q, o) { return eTex(eQ(q), o || TF); }
+  function exact(x) { return eTex(x, TF); }
+  function eExpr(x) {                                    // what a student could type (CYLExpr syntax)
+    var ts = eTerms(x);
+    if (!ts.length) return '0';
+    return ts.map(function (t) { return '(' + t.q.n + '/' + t.q.d + ')' + (t.s === 1 ? '' : '*sqrt(' + t.s + ')'); }).join('+');
+  }
+  function qExpr(q) { return q.d === 1 ? String(q.n) : '(' + q.n + '/' + q.d + ')'; }
+  function dec4(v) { return CYL.fmtTex(v, 4); }
+  /** dec4, except that 10 000 and up is rounded to a whole number (25132.7 → 25\,133, not 25130, whose
+      trailing zero would look like a significant digit) */
+  function decBig(v) {
+    if (Math.abs(v) < 1e4) return dec4(v);
+    return (v < 0 ? '-' : '') + String(Math.round(Math.abs(v))).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,');
+  }
+  /** 4 significant figures in scientific notation: 1.257 \times 10^{-4} */
+  function sciTex(v) {
+    var e = Math.floor(Math.log10(Math.abs(v))), s = CYL.fmtTex(v / Math.pow(10, e), 4);
+    if (/^-?10$/.test(s)) { e++; s = s.replace('10', '1'); }
+    return s + ' \\times 10^{' + e + '}';
+  }
+  function typed4(v) { return CYL.fmt(v, 4).replace(/\u2212/g, '-'); }
+  function isTermQ(x) { return eIsQ(x) && isTerm(x.a.d); }
+  function decOf(x) { return isTermQ(x) ? signedDec(x.a) : dec4(eVal(x)); }
+  /** exact value, then "= 1.5" (exact decimal) or "≈ 2.828" (rounded) when that adds information */
+  function approx(x, o) {
+    o = o || TF;
+    var t = eTex(x, o);
+    if (eIsQ(x)) {
+      var q = x.a;
+      if (q.d === 1) return t;
+      if (isTerm(q.d)) return o.dec ? t : t + ' = ' + signedDec(q);
+      return t + ' \\approx ' + dec4(qval(q));
+    }
+    return t + ' \\approx ' + dec4(eVal(x));
+  }
+  /** "(a, b, c)" plus "≈ (…)" or "= (…)" decimals when any entry is not an integer */
+  function tupleApprox(list, exactTuple) {
+    if (list.every(eIsInt)) return '';
+    var exactDec = list.every(isTermQ), dec = tuple(list.map(decOf));
+    if (exactTuple && dec === exactTuple) return '';      // e.g. (3, -3, 1.5): the decimals add nothing
+    return (exactDec ? ' = ' : ' \\approx ') + dec;
+  }
+  function tuple(parts) { return '(' + parts.join(',\\ ') + ')'; }
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function par(t) { return '\\left(' + t + '\\right)'; }
+  function sgnTex(v) { return Math.abs(v) < 1e-12 ? '= 0' : v > 0 ? '\\gt 0' : '\\lt 0'; }
+  function coef(q, s) {                                  // q·s, e.g. 2r, -r, ½r²
+    if (q.d === 1 && q.n === 1) return s;
+    if (q.d === 1 && q.n === -1) return '-' + s;
+    return qTex(q, TF) + s;
+  }
+  function coefP(q, inner) {                             // q·(inner), without "1·"
+    if (q.d === 1 && q.n === 1) return inner;
+    if (q.d === 1 && q.n === -1) return '-(' + inner + ')';
+    return qTex(q, TF) + '(' + inner + ')';
+  }
+  function plusTex(a, b) {                               // "a + b" / "a - |b|" for two TeX-able Ex values
+    return eTex(a, TFD) + (eVal(b) < 0 ? ' - ' + eTex(eneg(b), TFD) : ' + ' + eTex(b, TFD));
+  }
+  /** c₁ s₁ + c₂ s₂ + … for Ex (or number) coefficients: "3\,\ihat - \tfrac{\sqrt3}{2}\,\jhat" */
+  function vecTex(cs, syms, o) {
+    o = o || TF;
+    var out = '';
+    cs.forEach(function (c, i) {
+      var e = typeof c === 'number' ? eD(c) : c;
+      if (eIsZero(e)) return;
+      var simple = eTerms(e).length === 1, neg = simple && eVal(e) < 0, mag = neg ? eneg(e) : e;
+      var body = simple ? (eIsQ(mag) && qeq(mag.a, Q(1)) ? '' : eTex(mag, o) + '\\,') : par(eTex(mag, o));
+      body += syms[i];
+      out += out ? (neg ? ' - ' : ' + ') + body : (neg ? '-' : '') + body;
+    });
+    return out || '\\mathbf{0}';
+  }
+  var UNIT_TEX = {
+    m: '\\text{m}', cm: '\\text{cm}', mm: '\\text{mm}', N: '\\text{N}', 'N·m': '\\text{N}\\cdot\\text{m}',
+    'cm^3': '\\text{cm}^3', 'mm^3': '\\text{mm}^3', 'm^3': '\\text{m}^3', g: '\\text{g}', 'kg·m^2': '\\text{kg}\\cdot\\text{m}^2',
+    'm/s': '\\text{m/s}', 'm/s^2': '\\text{m/s}^2', 'rad/s': '\\text{rad/s}', 'rad/s^2': '\\text{rad/s}^2'
+  };
+  function uT(u) { return u ? '\\ ' + UNIT_TEX[u] : ''; }
+
+  /* ---------------------------------------------------------------- 3. Angles (k = multiples of π/12) */
+  function kn(k) { return ((k % 24) + 24) % 24; }
+  var TRIG_BASE = {
+    0: [eN(1), eN(0)], 2: [eS(3, 1, 2), eN(1, 2)], 3: [eS(2, 1, 2), eS(2, 1, 2)],
+    4: [eN(1, 2), eS(3, 1, 2)], 6: [eN(0), eN(1)]
+  };
+  function base(k) { var b = TRIG_BASE[k]; if (!b) throw new Error('angle ' + k + 'π/12 is not a multiple of π/6 or π/4'); return b; }
+  function trig(k) {                                     // exact [cos, sin] of kπ/12
+    k = kn(k);
+    var b;
+    if (k <= 6) { b = base(k); return [b[0], b[1]]; }
+    if (k <= 12) { b = base(12 - k); return [eneg(b[0]), b[1]]; }
+    if (k <= 18) { b = base(k - 12); return [eneg(b[0]), eneg(b[1])]; }
+    b = base(24 - k); return [b[0], eneg(b[1])];
+  }
+  function angTex(k) {
+    var t = CYL.piFrac(k * PI / 12);
+    if (t == null) throw new Error('piFrac failed for k = ' + k);
+    return t.replace(/\\frac/g, '\\tfrac');
+  }
+  function angDeg(k) { return (k * 15) + '^\\circ'; }
+  function angFull(k) { return angTex(k) + '\\ (' + angDeg(k) + ')'; }
+  function angExpr(k) {
+    if (k === 0) return '0';
+    var g = gcd(k, 12), n = k / g, d = 12 / g;
+    return (n === 1 ? '' : n === -1 ? '-' : String(n)) + 'pi' + (d === 1 ? '' : '/' + d);
+  }
+  function fnArg(k) { return kn(k) === 0 ? ' 0' : angTex(k); }
+  function quadOf(k) { k = kn(k); return k % 6 === 0 ? 0 : Math.floor(k / 6) + 1; }
+  function refK(k) { k = kn(k); var q = quadOf(k); return q === 1 ? k : q === 2 ? 12 - k : q === 3 ? k - 12 : q === 4 ? 24 - k : 0; }
+  var QN = ['', 'I', 'II', 'III', 'IV'];
+  var AXIS_NAME = { 0: T`positive \(x\)-axis`, 6: T`positive \(y\)-axis`, 12: T`negative \(x\)-axis`, 18: T`negative \(y\)-axis` };
+  var ALLK = [0, 2, 3, 4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22];
+  var K_AXIS = [0, 6, 12, 18], K_QUARTER = [3, 9, 15, 21], K_SIXTH = [2, 4, 8, 10, 14, 16, 20, 22];
+
+  /* ---------------------------------------------------------------- random helpers */
+  function pickW(rng, pairs) {
+    var tot = 0, i;
+    for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var x = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { x -= pairs[i][1]; if (x < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function pickCtx(rng, list) { return pickW(rng, list.map(function (c) { return [c, c.w]; })); }
+  function nz(rng, lo, hi) { var v; do { v = rng.int(lo, hi); } while (v === 0); return v; }
+  function randZ(rng, lo, hi) {                           // integer, or (1 in 5) a half-integer, in [lo, hi]
+    if (rng.next() < 0.2) { var h = rng.int(2 * lo, 2 * hi - 1); if (h % 2 === 0) h += 1; return Q(h, 2); }
+    return Q(rng.int(lo, hi));
+  }
+  function pickD(rng, list) { return qdec(rng.pick(list)); }
+  function bump(v) { return v + 1 + Math.abs(v); }         // a clearly wrong value, for the self-test
+
+  /* ================================================================ 4. Generators */
+
+  /* ---------- 4.1 Cylindrical → Cartesian (point) ---------- */
+  var CTX_C2X = [
+    { w: 5, unit: '', zmin: -2, text: function (P) { return 'Convert ' + m('(r, \\theta, z) = ' + P.tuple) + ' to Cartesian coordinates ' + m('(x, y, z).'); } },
+    { w: 2, unit: 'm', zmin: 1, text: function (P) { return T`A level sensor is mounted on the wall of a vertical storage tank whose axis is the \(z\)-axis. It sits at \(r = ${P.r}\ \text{m}\), \(\theta = ${P.th}\), \(z = ${P.z}\ \text{m}.\) Find its Cartesian coordinates \((x, y, z).\)`; } },
+    { w: 2, unit: 'm', zmin: 1, text: function (P) { return T`A drone hovers at \((r, \theta, z) = ${P.tuple}\) (lengths in m), measured from the foot of a vertical antenna mast on the \(z\)-axis. Where is it in Cartesian coordinates?`; } },
+    { w: 2, unit: 'm', zmin: -1, text: function (P) { return T`A cylindrical robot (a rotating column with a telescoping arm) holds its gripper at the joint values \((r, \theta, z) = ${P.tuple}\) (lengths in m). Find the gripper’s Cartesian coordinates.`; } }
+  ];
+  function dirHint(k, cs) {
+    var q = quadOf(k);
+    if (q === 0) {
+      var xy = { 0: T`\(x = r\) and \(y = 0\)`, 6: T`\(x = 0\) and \(y = r\)`, 12: T`\(x = -r\) and \(y = 0\)`, 18: T`\(x = 0\) and \(y = -r\)` }[kn(k)];
+      return m('\\theta = ' + angFull(k)) + ' points along the ' + AXIS_NAME[kn(k)] + ', so ' + xy + '.';
+    }
+    return m('\\theta = ' + angFull(k)) + ' lies in quadrant ' + QN[q] + ', so expect ' + m('x ' + sgnTex(eVal(cs[0]))) + ' and ' + m('y ' + sgnTex(eVal(cs[1])) + '.');
+  }
+  function trigHint(k, cs) {
+    var q = quadOf(k);
+    return m('\\cos' + fnArg(k) + ' = ' + exact(cs[0])) + ' and ' + m('\\sin' + fnArg(k) + ' = ' + exact(cs[1])) +
+      (q ? ' (the reference angle is ' + m(angTex(refK(k))) + ').' : '.');
+  }
+  function locCheck(x, y, k) {
+    var q = quadOf(k), s = m('x ' + sgnTex(eVal(x))) + ' and ' + m('y ' + sgnTex(eVal(y)));
+    return s + ' put the shadow ' + m('(x, y)') + (q ? ' in quadrant ' + QN[q] : ' on the ' + AXIS_NAME[kn(k)]) + ', which matches ' + m(angDeg(k) + '.');
+  }
+  function genCyl2Cart(rng) {
+    var fam = pickW(rng, [['axis', 15], ['quarter', 40], ['sixth', 45]]);
+    var k, r;
+    if (fam === 'axis') { k = rng.pick(K_AXIS); r = eN(rng.int(1, 6)); }
+    else if (fam === 'quarter') { k = rng.pick(K_QUARTER); r = rng.pick([eN(2), eN(3), eN(4), eN(5), eN(6), eS(2, 1), eS(2, 2), eS(2, 3)]); }
+    else { k = rng.pick(K_SIXTH); r = rng.pick([eN(2), eN(3), eN(4), eN(5), eN(6), eS(3, 2)]); }
+    var ctx = pickCtx(rng, CTX_C2X);
+    var zq = randZ(rng, ctx.zmin, 4), z = eQ(zq);
+    var cs = trig(k), x = emul(r, cs[0]), y = emul(r, cs[1]);
+    var U = uT(ctx.unit);
+    var rT = exact(r), thT = angTex(k), zT = qTex(zq, TFD);
+    var P = { r: rT, th: thT, z: zT, tuple: tuple([rT, thT, zT]) };
+    var x2 = eSq(x).a, y2 = eSq(y).a, r2 = eSq(r).a;
+    var sqrtR2 = '\\sqrt{' + qTex(r2) + '}';                // √8 = 2√2, but √2 is already r
+    var solution =
+      T`<p>Substitute \(r = ${rT}\) and \(\theta = ${thT}\) into the conversion formulas; \(z\) carries over unchanged.</p>` +
+      M(T`\begin{aligned}
+x &= r\cos\theta = ${rT}\cos${fnArg(k)} \\
+  &= ${rT}${par(exact(cs[0]))} = ${approx(x)}${U} \\[4pt]
+y &= r\sin\theta = ${rT}\sin${fnArg(k)} \\
+  &= ${rT}${par(exact(cs[1]))} = ${approx(y)}${U} \\[4pt]
+z &= ${zT}${U}
+\end{aligned}`) +
+      '<p>So ' + m('(x, y, z) = ' + tuple([exact(x), exact(y), zT]) + tupleApprox([x, y, z], tuple([exact(x), exact(y), zT])) + U + '.') + '</p>' +
+      '<p>Check: ' + m(T`\sqrt{x^2 + y^2} = \sqrt{${qTex(x2)} + ${qTex(y2)}} = ${sqrtR2}${sqrtR2 === rT ? '' : ' = ' + rT} = r,`) + ' and ' + locCheck(x, y, k) + '</p>';
+    return {
+      spec: {
+        type: 'point', system: 'cart', unit: ctx.unit || undefined,
+        prompt: ctx.text(P),
+        answerPoint: [eVal(x), eVal(y), qval(zq)],
+        hints: [T`Use \(x = r\cos\theta\) and \(y = r\sin\theta\). The height \(z\) carries over unchanged.`, dirHint(k, cs), trigHint(k, cs)],
+        explain: T`Cylindrical to Cartesian: \(x = r\cos\theta\), \(y = r\sin\theta\), \(z = z\). The quadrant of \(\theta\) fixes the signs of \(x\) and \(y\).`,
+        solution: solution
+      },
+      view: {
+        kind: 'point', r: eVal(r), theta: k * PI / 12, z: qval(zq), title: 'The point P',
+        readouts: [{ label: T`Cylindrical \((r, \theta, z)\)`, tex: tuple([rT, thT, zT]) }, { label: T`Cartesian \((x, y, z)\)`, tex: tuple([exact(x), exact(y), zT]) }],
+        note: T`The orange segment is \(r\), the violet arc is \(\theta\) and the blue rise is \(z\). The dashed legs are \(x\) and \(y\).`,
+        aria: '3D view of the point P at r = ' + CYL.fmt(eVal(r)) + ', theta = ' + (k * 15) + ' degrees, z = ' + CYL.fmt(qval(zq)) + ', with its construction lines and its x and y legs.'
+      },
+      test: {
+        right: [{ x: eExpr(x), y: eExpr(y), z: qExpr(zq) }, { x: typed4(eVal(x)), y: typed4(eVal(y)), z: typed4(qval(zq)) }],
+        wrong: [{ x: typed4(-eVal(x)), y: typed4(-eVal(y)), z: typed4(qval(zq)) }],
+        check: function () {
+          var errs = [], c = CYL.math.toCyl(eVal(x), eVal(y), qval(zq));
+          if (Math.abs(c.r - eVal(r)) > 1e-9) errs.push('round trip: r');
+          if (!CYL.math.sameAngle(c.theta, k * PI / 12, 1e-9)) errs.push('round trip: theta');
+          if (!eEq(eadd(eSq(x), eSq(y)), eSq(r))) errs.push('exact x^2 + y^2 != r^2');
+          if (Math.abs(eVal(x) - eVal(r) * Math.cos(k * PI / 12)) > 1e-9 || Math.abs(eVal(y) - eVal(r) * Math.sin(k * PI / 12)) > 1e-9) errs.push('float x, y mismatch');
+          return errs;
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.2 Cartesian → cylindrical (point; quadrant traps and on-axis points) ---------- */
+  var ZERO_TO_2PI = '0 \\le \\theta \\lt 2\\pi';
+  var CTX_X2C = [
+    { w: 5, unit: '', zmin: -2, text: function (P) { return 'Convert ' + m('(x, y, z) = ' + P.tuple) + ' to cylindrical coordinates ' + m('(r, \\theta, z)') + ' with ' + m(ZERO_TO_2PI + '.'); } },
+    { w: 2, unit: 'm', zmin: -1, text: function (P) { return T`A camera finds a part at \((x, y, z) = ${P.tuple}\) (in m), measured from the base of a cylindrical robot whose rotating column is the \(z\)-axis. Which joint values \((r, \theta, z)\) put the gripper on the part? Use \(${ZERO_TO_2PI}.\)`; } },
+    { w: 2, unit: 'm', zmin: 1, text: function (P) { return T`The inlet nozzle of a vertical tank is at \((x, y, z) = ${P.tuple}\) (in m), measured from the center of the tank floor. Give its cylindrical coordinates with \(${ZERO_TO_2PI}.\)`; } },
+    { w: 2, unit: 'm', zmin: 1, text: function (P) { return T`A small jib crane slews about the \(z\)-axis. A load must be set down at \((x, y, z) = ${P.tuple}\) (in m). Which trolley radius \(r\), slew angle \(\theta\) and hook height \(z\) does that take? Use \(${ZERO_TO_2PI}.\)`; } }
+  ];
+  function sqTex(e) { return eIsInt(e) && e.a.n >= 0 ? exact(e) + '^2' : par(exact(e)) + '^2'; }
+  function genCart2Cyl(rng) {
+    var fam = pickW(rng, [['axis', 15], ['origin', 5], ['quarter', 35], ['sixth', 45]]);
+    var k = 0, r;
+    if (fam === 'origin') r = eN(0);
+    else if (fam === 'axis') { k = rng.pick([0, 6, 12, 12, 18, 18]); r = eN(rng.int(1, 6)); }
+    else if (fam === 'quarter') { k = rng.pick(K_QUARTER); r = rng.pick([eS(2, 1), eS(2, 2), eS(2, 3), eS(2, 4), eN(2), eN(4)]); }
+    else { k = rng.pick(K_SIXTH); r = rng.pick([eN(2), eN(4), eN(6), eS(3, 2)]); }
+    // a robot gripper or crane hook cannot sit on its own column: on-axis points use the plain or tank wording
+    var ctx = pickCtx(rng, fam === 'origin' ? [CTX_X2C[0], CTX_X2C[2]] : CTX_X2C);
+    var zq = randZ(rng, ctx.zmin, 4);
+    var cs = trig(k), x = emul(r, cs[0]), y = emul(r, cs[1]);
+    var U = uT(ctx.unit), q = quadOf(k), onAxis = eIsZero(r);
+    var xT = exact(x), yT = exact(y), zT = qTex(zq, TFD), rT = exact(r), thT = angTex(k);
+    var P = { tuple: tuple([xT, yT, zT]) };
+    var x2 = eSq(x).a, y2 = eSq(y).a, r2 = qadd(x2, y2);
+    var sqrtR2 = '\\sqrt{' + qTex(r2) + '}';                // √8 = 2√2, but √2 is already simplest
+    var rBlock = onAxis ? M(T`r = \sqrt{x^2 + y^2} = \sqrt{0^2 + 0^2} = 0${U}`) : M(T`\begin{aligned}
+r &= \sqrt{x^2 + y^2} \\
+  &= \sqrt{${sqTex(x)} + ${sqTex(y)}} \\
+  &= \sqrt{${qTex(x2)} + ${qTex(y2)}}${exact(r) === sqrtR2 ? '' : ' = ' + sqrtR2} \\
+  &= ${approx(r)}${U}
+\end{aligned}`);
+    var thBlock, hint2, hint3;
+    if (onAxis) {
+      thBlock = T`<p>Here \(x = y = 0\): the point is on the \(z\)-axis itself, so \(r = 0\) and every angle describes the same point. \(\theta\) is arbitrary: any value is accepted, and \(\theta = 0\) is the usual choice.</p>`;
+      hint2 = T`\(x = 0\) and \(y = 0\): where is this point relative to the \(z\)-axis?`;
+      hint3 = T`When \(r = 0\), every \(\theta\) gives the same point.`;
+    } else if (q === 0) {
+      var ax = {
+        0: T`\(x \gt 0\) and \(y = 0\): the shadow \((x, y)\) lies on the positive \(x\)-axis, so \(\theta = 0\).`,
+        6: T`\(x = 0\) and \(y \gt 0\): the shadow \((x, y)\) lies on the positive \(y\)-axis, a quarter turn from \(+x\): \(\theta = \tfrac{\pi}{2}\ (90^\circ).\)`,
+        12: T`\(x \lt 0\) and \(y = 0\): the shadow \((x, y)\) lies on the negative \(x\)-axis, half a turn from \(+x\): \(\theta = \pi\ (180^\circ).\)`,
+        18: T`\(x = 0\) and \(y \lt 0\): the shadow \((x, y)\) lies on the negative \(y\)-axis, three quarters of a turn from \(+x\): \(\theta = \tfrac{3\pi}{2}\ (270^\circ).\)`
+      }[k];
+      var trap = (k === 6 || k === 18) ? T` Here \(y/x\) does not exist (\(x = 0\)), so \(\arctan(y/x)\) cannot help: read \(\theta\) from the axis direction, or use \(\atantwo(y, x)\).`
+        : k === 12 ? T` Careful: \(\arctan(y/x) = \arctan 0 = 0\) would be off by \(\pi\); \(\atantwo(0,\ ${xT}) = \pi\) gets it right.` : '';
+      thBlock = '<p>' + ax + trap + '</p>';
+      hint2 = m('x ' + sgnTex(eVal(x))) + ' and ' + m('y ' + sgnTex(eVal(y))) + ': the point’s shadow ' + m('(x, y)') + ' lies on one of the axes.';
+      hint3 = T`Read \(\theta\) as the counter-clockwise turn from \(+x\) to that axis direction.` + {
+        0: '',
+        6: T` (\(\arctan(y/x)\) cannot help here: \(x = 0\).)`,
+        12: T` (Careful: \(\arctan(y/x) = 0\) here, which is off by \(\pi\).)`,
+        18: T` (\(\arctan(y/x)\) cannot help here: \(x = 0\).)`
+      }[k];
+    } else {
+      var rk = refK(k), aT = angTex(rk), ratioT = { 2: '\\tfrac{1}{\\sqrt{3}}', 3: '1', 4: '\\sqrt{3}' }[rk];
+      var thLine = { 1: T`\theta = \alpha = ${thT}`, 2: T`\theta = \pi - \alpha = \pi - ${aT} = ${thT}`, 3: T`\theta = \pi + \alpha = \pi + ${aT} = ${thT}`, 4: T`\theta = 2\pi - \alpha = 2\pi - ${aT} = ${thT}` }[q];
+      var trapQ = {
+        1: T`Here \(x \gt 0\), so \(\arctan(y/x)\) gives the right angle directly.`,
+        2: T`A calculator’s \(\arctan(y/x) = -${aT}\) points into quadrant IV, the opposite direction: it is off by \(\pi\). \(\atantwo(y, x)\) picks the correct quadrant.`,
+        3: T`A calculator’s \(\arctan(y/x) = ${aT}\) points into quadrant I, the opposite direction: it is off by \(\pi\). \(\atantwo(y, x)\) picks the correct quadrant.`,
+        4: T`\(\arctan(y/x) = -${aT}\) is the right direction but lies outside \(${ZERO_TO_2PI}\): add \(2\pi\).`
+      }[q];
+      thBlock = '<p>The shadow ' + m('(x, y) = ' + tuple([xT, yT])) + ' has ' + m('x ' + sgnTex(eVal(x))) + ' and ' + m('y ' + sgnTex(eVal(y))) +
+        ', so it is in quadrant ' + QN[q] + '. Find the reference angle from the absolute values:</p>' +
+        M(T`\begin{aligned}
+\alpha &= \arctan\left|\frac{y}{x}\right| = \arctan\frac{${exact(eAbs(y))}}{${exact(eAbs(x))}} \\
+       &= \arctan ${ratioT} = ${aT}
+\end{aligned}`) +
+        '<p>In quadrant ' + QN[q] + ': ' + m(thLine + '\\ (' + angDeg(k) + ').') + '</p>' +
+        '<p class="small">' + trapQ + '</p>';
+      hint2 = m('x ' + sgnTex(eVal(x))) + ' and ' + m('y ' + sgnTex(eVal(y))) + ', so the point’s shadow ' + m('(x, y)') + ' is in quadrant ' + QN[q] + ', where ' +
+        m({ 1: '0 \\lt \\theta \\lt \\tfrac{\\pi}{2}', 2: '\\tfrac{\\pi}{2} \\lt \\theta \\lt \\pi', 3: '\\pi \\lt \\theta \\lt \\tfrac{3\\pi}{2}', 4: '\\tfrac{3\\pi}{2} \\lt \\theta \\lt 2\\pi' }[q] + '.');
+      hint3 = T`Find the reference angle \(\alpha = \arctan\left|\tfrac{y}{x}\right|\), then ` +
+        { 1: T`\(\theta = \alpha\).`, 2: T`\(\theta = \pi - \alpha\) in quadrant II.`, 3: T`\(\theta = \pi + \alpha\) in quadrant III.`, 4: T`\(\theta = 2\pi - \alpha\) in quadrant IV.` }[q] +
+        (q === 2 || q === 3 ? T` A calculator’s \(\arctan(y/x)\) alone would point the opposite way.` : '');
+    }
+    var ansT = onAxis
+      ? m('(r, \\theta, z) = (0,\\ \\theta,\\ ' + zT + ')') + ' for any ' + m('\\theta') + ', for example ' + m('(0,\\ 0,\\ ' + zT + ')' + U + '.')
+      : m('(r, \\theta, z) = ' + tuple([rT, thT, zT]) + (k === 0 ? tupleApprox([r, eN(0), eQ(zq)], tuple([rT, thT, zT])) : ' \\approx ' + tuple([decOf(r), dec4(k * PI / 12), decOf(eQ(zq))])) + '.');
+    var checkT = onAxis ? '' : '<p>Check: ' + m(T`r\cos\theta = ${rT}\cos${fnArg(k)} = ${xT}`) + ' and ' + m(T`r\sin\theta = ${rT}\sin${fnArg(k)} = ${yT},`) + ' as given.</p>';
+    var solution = '<p>Distance from the \\(z\\)-axis:</p>' + rBlock + '<p>Angle:</p>' + thBlock + '<p>Height: ' + m('z = ' + zT + U) + ' is unchanged.</p><p>So ' + ansT + '</p>' + checkT;
+    var th = k * PI / 12;
+    var right = [
+      { r: eExpr(r), theta: angExpr(k), z: qExpr(zq) },
+      { r: typed4(eVal(r)), theta: typed4(th), z: typed4(qval(zq)) },
+      { r: typed4(eVal(r)), theta: (k * 15) + '°', z: typed4(qval(zq)) }
+    ];
+    if (k > 0) right.push({ r: eExpr(r), theta: angExpr(k - 24), z: qExpr(zq) });
+    if (onAxis) right.push({ r: '0', theta: '', z: qExpr(zq) }, { r: '0', theta: '1.234', z: qExpr(zq) });
+    var wrong = onAxis ? [{ r: '1', theta: '0', z: qExpr(zq) }] : [{ r: eExpr(r), theta: typed4(th + PI), z: qExpr(zq) }, { r: typed4(eVal(r) * eVal(r)), theta: angExpr(k), z: qExpr(zq) }];
+    if (!onAxis && Math.abs(eVal(r) * eVal(r) - eVal(r)) < 0.05) wrong.pop();
+    return {
+      spec: {
+        type: 'point', system: 'cyl', unit: ctx.unit || undefined,
+        prompt: ctx.text(P),
+        answerPoint: [eVal(r), th, qval(zq)],
+        hints: [T`\(r = \sqrt{x^2 + y^2}\), and \(z\) is unchanged.`, hint2, hint3],
+        explain: T`Use \(r = \sqrt{x^2 + y^2}\), and choose \(\theta\) from the quadrant of \((x, y)\) (or with \(\atantwo(y, x)\)), adding \(2\pi\) if it comes out negative.`,
+        solution: solution
+      },
+      view: {
+        kind: 'point', r: eVal(r), theta: th, z: qval(zq), title: 'The point P',
+        readouts: [{ label: T`Cartesian \((x, y, z)\)`, tex: tuple([xT, yT, zT]) }, { label: T`Cylindrical \((r, \theta, z)\)`, tex: onAxis ? tuple(['0', '\\text{any } \\theta', zT]) : tuple([rT, thT, zT]) }],
+        note: onAxis ? T`\(P\) is on the \(z\)-axis, so there is no \(r\) segment and no \(\theta\) arc.` : T`Read \(\theta\) as the violet arc from \(+x\) round to the orange \(r\) segment. Press Top to see it at true size.`,
+        aria: '3D view of the point P at x = ' + CYL.fmt(eVal(x)) + ', y = ' + CYL.fmt(eVal(y)) + ', z = ' + CYL.fmt(qval(zq)) + (onAxis ? ', on the z-axis.' : ', with the r segment, the theta arc of ' + (k * 15) + ' degrees and the z rise.')
+      },
+      test: {
+        right: right, wrong: wrong,
+        check: function () {
+          var errs = [], c = CYL.math.toCart(eVal(r), th, qval(zq));
+          if (Math.abs(c.x - eVal(x)) > 1e-9 || Math.abs(c.y - eVal(y)) > 1e-9) errs.push('round trip: x, y');
+          if (!(th >= 0 && th < 2 * PI)) errs.push('theta out of [0, 2pi)');
+          if (!qeq(r2, eSq(r).a) || !eIsQ(eSq(r))) errs.push('exact r^2 mismatch');
+          var cc = CYL.math.toCyl(eVal(x), eVal(y), 0);
+          if (Math.abs(cc.r - eVal(r)) > 1e-9) errs.push('toCyl r mismatch');
+          if (!onAxis && !CYL.math.sameAngle(cc.theta, th, 1e-9)) errs.push('toCyl theta mismatch');
+          return errs;
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.3 Unit vectors and component conversion ---------- */
+  var IJK = ['\\ihat', '\\jhat', '\\khat'], ERTZ = ['\\er', '\\et', '\\ez'];
+  var TOL2 = { abs: 0.01, rel: 0.01 };
+  // The 3D view draws the force F_LEN units long and skips a component arrow shorter than COMP_MIN units.
+  // The figure note is built with the same rule, so it only mentions arrows that are really drawn.
+  var F_LEN = 2.6, COMP_MIN = 0.08;
+  function compDrawn(F, comp) {
+    var kk = F_LEN / (Math.hypot(F[0], F[1], F[2]) || 1);
+    return comp.map(function (c) { return Math.abs(c) * kk >= COMP_MIN; });
+  }
+  function andList(a) { return a.length === 1 ? a[0] : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+  function compAria(F, comp) {                            // the drawn component arrows, in words
+    var on = compDrawn(F, comp);
+    return andList(['e_r', 'e_theta', 'e_z'].filter(function (n, i) { return on[i]; }));
+  }
+  function compNote(F, comp, what) {                      // what: 'its parts' or 'its given components'
+    var COL = ['orange', 'violet', 'blue'], on = compDrawn(F, comp), shown = [], small = [], zero = [];
+    ERTZ.forEach(function (e, i) {
+      if (on[i]) shown.push(i);
+      else if (Math.abs(comp[i]) > 1e-9) small.push(m(e));
+      else if (i < 2) zero.push(m(e));
+    });
+    var one = shown.length === 1, s = 'The ' + andList(shown.map(function (i) { return COL[i]; })) + (one ? ' arrow is ' : ' arrows are ') +
+      (one ? what.replace(/s$/, '') : what) + ' along ' + andList(shown.map(function (i) { return m(ERTZ[i]); })) + '.';
+    if (zero.length) s += ' It has no part along ' + andList(zero) + '.';
+    if (small.length) s += (small.length > 1 ? ' Its parts along ' + andList(small) + ' are' : ' Its part along ' + small[0] + ' is') + ' too short to draw at this scale.';
+    return s;
+  }
+  function unitLines(k, cs) {
+    return M(T`\begin{aligned}
+\er &= \cos\theta\,\ihat + \sin\theta\,\jhat \\
+    &= ${vecTex([cs[0], cs[1]], IJK)} \\[4pt]
+\et &= -\sin\theta\,\ihat + \cos\theta\,\jhat \\
+    &= ${vecTex([eneg(cs[1]), cs[0]], IJK)}
+\end{aligned}`);
+  }
+  function genVectors(rng) {
+    var type = pickW(rng, [['c2cyl', 35], ['cyl2c', 25], ['unit', 20], ['weight', 20]]);
+    var k = rng.pick(ALLK), cs = trig(k), c = cs[0], s = cs[1], th = k * PI / 12;
+    var thT = angTex(k), cT = exact(c), sT = exact(s);
+    var r0 = rng.int(1, 4), z0 = rng.int(0, 3);
+    var posT = tuple([String(r0), thT, String(z0)]);
+    var trigLine = T`At \(\theta = ${thT}\): \(\cos\theta = ${cT}\) and \(\sin\theta = ${sT}\).`;
+    var out;
+    if (type === 'c2cyl') {
+      var Fx = nz(rng, -6, 6), Fy = nz(rng, -6, 6), Fz = rng.int(-4, 4);
+      var Fr = eadd(escale(c, Q(Fx)), escale(s, Q(Fy))), Ft = eadd(escale(s, Q(-Fx)), escale(c, Q(Fy)));
+      var FT = vecTex([Fx, Fy, Fz], IJK), sum = eadd(eSq(Fr), eSq(Ft));
+      var ctx = rng.pick([
+        T`A force \(\Fvec = ${FT}\ \text{N}\) acts at the point \((r, \theta, z) = ${posT}\) (lengths in m).`,
+        T`A cable pulls on an eyebolt on a turntable. The eyebolt is at \((r, \theta, z) = ${posT}\) (in m), and the cable force is \(\Fvec = ${FT}\ \text{N}\).`,
+        T`Wind load on a sign attached to a pole (the \(z\)-axis) acts at \((r, \theta, z) = ${posT}\) (in m) with force \(\Fvec = ${FT}\ \text{N}\).`
+      ]);
+      out = {
+        spec: {
+          type: 'fields', prompt: ctx + T` Find its cylindrical components \(F_r\), \(F_\theta\) and \(F_z\) at that point.`,
+          fields: [
+            { name: 'Fr', label: '\\(F_r =\\)', answer: eVal(Fr), unit: 'N', tol: TOL2 },
+            { name: 'Ft', label: '\\(F_\\theta =\\)', answer: eVal(Ft), unit: 'N', tol: TOL2 },
+            { name: 'Fz', label: '\\(F_z =\\)', answer: Fz, unit: 'N', tol: TOL2 }
+          ],
+          hints: [T`\(F_r = \Fvec\cdot\er = F_x\cos\theta + F_y\sin\theta\) and \(F_\theta = \Fvec\cdot\et = -F_x\sin\theta + F_y\cos\theta\).`,
+            T`Only \(\theta\) matters: the unit vectors, and so the components, do not depend on \(r\) or \(z\). ` + trigLine,
+            T`\(\ez = \khat\), so \(F_z\) is the same in both systems.`],
+          explain: T`\(F_r\) and \(F_\theta\) are the projections of \(\Fvec\) onto \(\er\) and \(\et\) at the point’s angle; \(F_z\) carries over unchanged.`,
+          solution: T`<p>At \(\theta = ${thT}\) the cylindrical unit vectors are</p>` + unitLines(k, cs) +
+            T`<p>Project \(\Fvec\) onto them (dot products):</p>` +
+            M(T`\begin{aligned}
+F_r &= F_x\cos\theta + F_y\sin\theta \\
+    &= (${Fx})${par(cT)} + (${Fy})${par(sT)} \\
+    &= ${approx(Fr)}\ \text{N} \\[4pt]
+F_\theta &= -F_x\sin\theta + F_y\cos\theta \\
+    &= -(${Fx})${par(sT)} + (${Fy})${par(cT)} \\
+    &= ${approx(Ft)}\ \text{N} \\[4pt]
+F_z &= ${Fz}\ \text{N}
+\end{aligned}`) +
+            T`<p>Check: turning the axes cannot change the length of the horizontal part, and indeed \(F_r^2 + F_\theta^2 = ${qTex(sum.a)} = (${Fx})^2 + (${Fy})^2.\)</p>`
+        },
+        view: { kind: 'vector', r: r0, theta: th, z: z0, F: [Fx, Fy, Fz], comp: [eVal(Fr), eVal(Ft), Fz], title: 'The force at P',
+          readouts: [{ label: 'Cartesian', tex: '\\Fvec = ' + FT }, { label: 'Cylindrical', tex: eIsQ(Fr) && eIsQ(Ft) ? '\\Fvec = ' + vecTex([Fr, Ft, Fz], ERTZ) : '\\Fvec \\approx ' + vecTex([eD(+eVal(Fr).toFixed(3)), eD(+eVal(Ft).toFixed(3)), Fz], ERTZ, TFD) }],
+          note: T`The teal arrow is \(\Fvec\). ` + compNote([Fx, Fy, Fz], [eVal(Fr), eVal(Ft), Fz], 'its parts') + ' Arrow lengths are scaled to fit.',
+          aria: '3D view of the force F at the point P, with its components along ' + compAria([Fx, Fy, Fz], [eVal(Fr), eVal(Ft), Fz]) + '.' },
+        test: {
+          right: [{ Fr: eExpr(Fr), Ft: eExpr(Ft), Fz: String(Fz) }, { Fr: typed4(eVal(Fr)), Ft: typed4(eVal(Ft)), Fz: String(Fz) }],
+          wrong: [{ Fr: typed4(bump(eVal(Fr))), Ft: typed4(eVal(Ft)), Fz: String(Fz) }].concat(Math.abs(eVal(Ft)) > 0.05 ? [{ Fr: typed4(eVal(Fr)), Ft: typed4(-eVal(Ft)), Fz: String(Fz) }] : []),
+          check: function () {
+            var e = [];
+            if (!eIsQ(sum) || !qeq(sum.a, Q(Fx * Fx + Fy * Fy))) e.push('exact Fr^2 + Ft^2 != Fx^2 + Fy^2');
+            if (Math.abs(eVal(Fr) - (Fx * Math.cos(th) + Fy * Math.sin(th))) > 1e-9) e.push('Fr float mismatch');
+            if (Math.abs(eVal(Ft) - (-Fx * Math.sin(th) + Fy * Math.cos(th))) > 1e-9) e.push('Ft float mismatch');
+            return e;
+          }
+        }
+      };
+    } else if (type === 'cyl2c') {
+      var Gr = nz(rng, -6, 6), Gt = nz(rng, -6, 6), Gz = rng.int(-4, 4);
+      var Gx = esub(escale(c, Q(Gr)), escale(s, Q(Gt))), Gy = eadd(escale(s, Q(Gr)), escale(c, Q(Gt)));
+      var GT = vecTex([Gr, Gt, Gz], ERTZ), gsum = eadd(eSq(Gx), eSq(Gy));
+      out = {
+        spec: {
+          type: 'fields',
+          prompt: T`At the point \((r, \theta, z) = ${posT}\) (lengths in m), a force has cylindrical components \(\Fvec = ${GT}\ \text{N}\). Find its Cartesian components \(F_x\), \(F_y\) and \(F_z\).`,
+          fields: [
+            { name: 'Fx', label: '\\(F_x =\\)', answer: eVal(Gx), unit: 'N', tol: TOL2 },
+            { name: 'Fy', label: '\\(F_y =\\)', answer: eVal(Gy), unit: 'N', tol: TOL2 },
+            { name: 'Fz', label: '\\(F_z =\\)', answer: Gz, unit: 'N', tol: TOL2 }
+          ],
+          hints: [T`Replace \(\er = \cos\theta\,\ihat + \sin\theta\,\jhat\) and \(\et = -\sin\theta\,\ihat + \cos\theta\,\jhat\), then collect the \(\ihat\) and \(\jhat\) parts.`,
+            trigLine, T`\(F_x = F_r\cos\theta - F_\theta\sin\theta\), \(F_y = F_r\sin\theta + F_\theta\cos\theta\), and \(F_z\) is unchanged.`],
+          explain: T`Write \(\er\) and \(\et\) in terms of \(\ihat\) and \(\jhat\) at the point’s angle and collect terms; \(\ez = \khat\).`,
+          solution: T`<p>At \(\theta = ${thT}\):</p>` + unitLines(k, cs) +
+            T`<p>Substitute into \(\Fvec = F_r\,\er + F_\theta\,\et + F_z\,\ez\) and collect the \(\ihat\) and \(\jhat\) parts:</p>` +
+            M(T`\begin{aligned}
+F_x &= F_r\cos\theta - F_\theta\sin\theta \\
+    &= (${Gr})${par(cT)} - (${Gt})${par(sT)} \\
+    &= ${approx(Gx)}\ \text{N} \\[4pt]
+F_y &= F_r\sin\theta + F_\theta\cos\theta \\
+    &= (${Gr})${par(sT)} + (${Gt})${par(cT)} \\
+    &= ${approx(Gy)}\ \text{N} \\[4pt]
+F_z &= ${Gz}\ \text{N}
+\end{aligned}`) +
+            T`<p>Check: \(F_x^2 + F_y^2 = ${qTex(gsum.a)} = (${Gr})^2 + (${Gt})^2\), so the horizontal part keeps its length.</p>`
+        },
+        view: { kind: 'vector', r: r0, theta: th, z: z0, F: [eVal(Gx), eVal(Gy), Gz], comp: [Gr, Gt, Gz], title: 'The force at P',
+          readouts: [{ label: 'Cylindrical', tex: '\\Fvec = ' + GT }, { label: 'Cartesian', tex: '\\Fvec = ' + vecTex([Gx, Gy, Gz], IJK) }],
+          note: T`The teal arrow is \(\Fvec\). ` + compNote([eVal(Gx), eVal(Gy), Gz], [Gr, Gt, Gz], 'its given components') + ' Arrow lengths are scaled to fit.',
+          aria: '3D view of the force F at the point P, built from its components along ' + compAria([eVal(Gx), eVal(Gy), Gz], [Gr, Gt, Gz]) + '.' },
+        test: {
+          right: [{ Fx: eExpr(Gx), Fy: eExpr(Gy), Fz: String(Gz) }, { Fx: typed4(eVal(Gx)), Fy: typed4(eVal(Gy)), Fz: String(Gz) }],
+          wrong: [{ Fx: typed4(bump(eVal(Gx))), Fy: typed4(eVal(Gy)), Fz: String(Gz) }],
+          check: function () {
+            var e = [];
+            if (!eIsQ(gsum) || !qeq(gsum.a, Q(Gr * Gr + Gt * Gt))) e.push('exact Fx^2 + Fy^2 != Fr^2 + Ft^2');
+            // independent: rotate back to (Fr, Ft)
+            var br = eVal(Gx) * Math.cos(th) + eVal(Gy) * Math.sin(th), bt = -eVal(Gx) * Math.sin(th) + eVal(Gy) * Math.cos(th);
+            if (Math.abs(br - Gr) > 1e-9 || Math.abs(bt - Gt) > 1e-9) e.push('round trip to (Fr, Ft) failed');
+            return e;
+          }
+        }
+      };
+    } else if (type === 'unit') {
+      var isR = rng.next() < 0.5, vec = isR ? [c, s, eN(0)] : [eneg(s), c, eN(0)], other = isR ? [eneg(s), c, eN(0)] : [c, s, eN(0)];
+      var name = isR ? '\\er' : '\\et';
+      var line = isR ? T`\begin{aligned} \er &= \cos\theta\,\ihat + \sin\theta\,\jhat \\ &= \cos${fnArg(k)}\,\ihat + \sin${fnArg(k)}\,\jhat \\ &= ${vecTex(vec, IJK)} \end{aligned}`
+        : T`\begin{aligned} \et &= -\sin\theta\,\ihat + \cos\theta\,\jhat \\ &= -\sin${fnArg(k)}\,\ihat + \cos${fnArg(k)}\,\jhat \\ &= ${vecTex(vec, IJK)} \end{aligned}`;
+      var sq1 = eSq(vec[0]).a, sq2 = eSq(vec[1]).a;
+      out = {
+        spec: {
+          type: 'fields',
+          prompt: T`Write the unit vector \(${name}\) at the point \((r, \theta, z) = ${posT}\) in Cartesian form: enter its \(\ihat\), \(\jhat\) and \(\khat\) components.`,
+          fields: [
+            { name: 'i', label: '\\(\\ihat\\)', ariaLabel: 'i-hat component', answer: eVal(vec[0]), tol: TOL2 },
+            { name: 'j', label: '\\(\\jhat\\)', ariaLabel: 'j-hat component', answer: eVal(vec[1]), tol: TOL2 },
+            { name: 'k', label: '\\(\\khat\\)', ariaLabel: 'k-hat component', answer: 0, tol: TOL2 }
+          ],
+          hints: [T`\(\er = \cos\theta\,\ihat + \sin\theta\,\jhat\), \(\et = -\sin\theta\,\ihat + \cos\theta\,\jhat\), \(\ez = \khat\).`,
+            T`Only \(\theta\) matters: the unit vectors do not depend on \(r\) or \(z\). ` + trigLine,
+            isR ? T`\(\er\) is horizontal and points away from the \(z\)-axis, so it has no \(\khat\) part.` : T`\(\et\) is horizontal and tangent to the circle through the point, so it has no \(\khat\) part.`],
+          explain: T`\(\er\) and \(\et\) depend only on \(\theta\): \(\er = \cos\theta\,\ihat + \sin\theta\,\jhat\), \(\et = -\sin\theta\,\ihat + \cos\theta\,\jhat\).`,
+          solution: '<p>' + (isR ? T`\(\er\) points horizontally away from the \(z\)-axis, in the direction of increasing \(r\).` : T`\(\et\) is horizontal and tangent to the circle through the point, pointing the way \(\theta\) increases (counter-clockwise seen from above).`) +
+            T` It depends only on \(\theta\), not on \(r\) or \(z\):</p>` + M(line) +
+            T`<p>So the components are \((${exact(vec[0])},\ ${exact(vec[1])},\ 0)\)${eIsQ(vec[0]) && eIsQ(vec[1]) ? '' : T` \(\approx (${decOf(vec[0])},\ ${decOf(vec[1])},\ 0)\)`}. Check: \(${sqTex(vec[0])} + ${sqTex(vec[1])} = ${qTex(sq1)} + ${qTex(sq2)} = 1\), a unit vector.</p>`
+        },
+        view: { kind: 'vector', r: r0, theta: th, z: z0, F: null, unit: true, title: 'Unit vectors at P',
+          readouts: [{ label: T`\(${name}\) at \(\theta = ${thT}\)`, tex: name + ' = ' + vecTex(vec, IJK) }],
+          note: T`Orange \(\er\) points away from the axis, violet \(\et\) points the way \(\theta\) increases, and blue \(\ez\) points up. At a different \(\theta\), \(\er\) and \(\et\) would turn with the point; \(\ez\) always points up.`,
+          aria: '3D view of the unit vectors e_r, e_theta and e_z at the point P, at theta = ' + (k * 15) + ' degrees.' },
+        test: {
+          right: [{ i: eExpr(vec[0]), j: eExpr(vec[1]), k: '0' }, { i: typed4(eVal(vec[0])), j: typed4(eVal(vec[1])), k: '0' }],
+          wrong: [{ i: typed4(eVal(other[0])), j: typed4(eVal(other[1])), k: '0' }],
+          check: function () {
+            var e = [];
+            if (!qeq(qadd(sq1, sq2), Q(1))) e.push('unit vector does not have length 1');
+            var fi = isR ? Math.cos(th) : -Math.sin(th), fj = isR ? Math.sin(th) : Math.cos(th);
+            if (Math.abs(eVal(vec[0]) - fi) > 1e-9 || Math.abs(eVal(vec[1]) - fj) > 1e-9) e.push('unit vector float mismatch');
+            return e;
+          }
+        }
+      };
+    } else {
+      // the weight of a particle on an arm (or in a groove) in a vertical plane: x horizontal, y up
+      var mW = pickD(rng, [0.5, 1, 2, 2.5, 4, 5]), mgW = qmul(mW, GQ);
+      var Wr = escale(s, qneg(mgW)), Wt = escale(c, qneg(mgW));
+      var ctxW = rng.pick([
+        T`A \(${dq(mW)}\ \text{kg}\) collar rides on an arm that turns in a vertical plane about \(O\). The arm is at \(\theta = ${thT}\ (${angDeg(k)})\), measured counter-clockwise from the horizontal \(x\)-axis, with \(y\) pointing up.`,
+        T`A \(${dq(mW)}\ \text{kg}\) ball moves in a vertical circular groove centered on \(O\), with \(x\) horizontal and \(y\) pointing up. At the instant shown, its position angle is \(\theta = ${thT}\ (${angDeg(k)})\).`
+      ]);
+      var wrongW = [{ Wr: typed4(eVal(Wt)), Wt: typed4(eVal(Wr)) }, { Wr: typed4(-eVal(Wr)), Wt: typed4(-eVal(Wt)) }].filter(function (x) {
+        return Math.abs(parseFloat(x.Wr) - eVal(Wr)) > 0.02 + 0.01 * Math.abs(eVal(Wr)) || Math.abs(parseFloat(x.Wt) - eVal(Wt)) > 0.02 + 0.01 * Math.abs(eVal(Wt));
+      });
+      out = {
+        spec: {
+          type: 'fields',
+          prompt: ctxW + T` Use \(g = 9.81\ \text{m/s}^2\). Find the radial and transverse components \(W_r\) and \(W_\theta\) of its weight.`,
+          fields: [
+            { name: 'Wr', label: '\\(W_r =\\)', answer: eVal(Wr), unit: 'N', tol: TOL2 },
+            { name: 'Wt', label: '\\(W_\\theta =\\)', answer: eVal(Wt), unit: 'N', tol: TOL2 }
+          ],
+          hints: [T`The weight is \(\mathbf{W} = -mg\,\jhat\): \(W_x = 0\) and \(W_y = -mg\).`,
+            T`\(W_r = W_x\cos\theta + W_y\sin\theta = -mg\sin\theta\) and \(W_\theta = -W_x\sin\theta + W_y\cos\theta = -mg\cos\theta\).`,
+            trigLine],
+          explain: T`Resolve \(-mg\,\jhat\) along \(\er\) and \(\et\) at the particle's angle: \(W_r = -mg\sin\theta\), \(W_\theta = -mg\cos\theta\).`,
+          solution: T`<p>The weight is \(\mathbf{W} = -mg\,\jhat\) with \(mg = (${dq(mW)})(9.81) = ${dq(mgW)}\ \text{N}\). Project it onto \(\er\) and \(\et\) at \(\theta = ${thT}\):</p>` +
+            M(T`\begin{aligned}
+W_r &= W_x\cos\theta + W_y\sin\theta = -mg\sin\theta = -(${dq(mgW)})${par(sT)} = ${approx(Wr, TFD)}\ \text{N} \\
+W_\theta &= -W_x\sin\theta + W_y\cos\theta = -mg\cos\theta = -(${dq(mgW)})${par(cT)} = ${approx(Wt, TFD)}\ \text{N}
+\end{aligned}`) +
+            T`<p>Check: \(W_r^2 + W_\theta^2 = (mg)^2\), since resolving never changes the magnitude. You will use these components in the equations of motion for arms in vertical planes (Lesson 7).</p>`
+        },
+        view: { kind: 'vector', r: r0, theta: th, z: 0, F: [0, -qval(mgW), 0], comp: [eVal(Wr), eVal(Wt), 0], title: 'The weight at P', camera: 'top',
+          readouts: [{ label: 'Rectangular', tex: '\\mathbf{W} = -' + dq(mgW) + '\\,\\jhat\\ \\text{N}' }, { label: 'Radial and transverse', tex: (eIsQ(Wr) && eIsQ(Wt) ? '\\mathbf{W} = ' : '\\mathbf{W} \\approx ') + vecTex([eD(+eVal(Wr).toFixed(3)), eD(+eVal(Wt).toFixed(3))], VEC_RT, TFD) }],
+          note: T`Seen face-on: the plane is vertical, \(y\) points up. The teal arrow is the weight. ` + compNote([0, -qval(mgW), 0], [eVal(Wr), eVal(Wt), 0], 'its parts') + ' Arrow lengths are scaled to fit.',
+          aria: 'View of the vertical plane with the particle P at the given angle and its weight, split into radial and transverse components.' },
+        test: {
+          right: [{ Wr: eExpr(Wr), Wt: eExpr(Wt) }, { Wr: typed4(eVal(Wr)), Wt: typed4(eVal(Wt)) }],
+          wrong: wrongW.length ? wrongW : [{ Wr: typed4(bump(eVal(Wr))), Wt: typed4(eVal(Wt)) }],
+          check: function () {
+            var e = [], W = qval(mgW);
+            if (Math.abs(eVal(Wr) + W * Math.sin(th)) > 1e-9 || Math.abs(eVal(Wt) + W * Math.cos(th)) > 1e-9) e.push('weight components mismatch');
+            if (!eIsQ(eadd(eSq(Wr), eSq(Wt))) || Math.abs(eVal(eadd(eSq(Wr), eSq(Wt))) - W * W) > 1e-9) e.push('|W| changed');
+            return e;
+          }
+        }
+      };
+    }
+    return out;
+  }
+
+  /* ---------- 4.4 Motion helpers (velocity, acceleration, time functions, paths, kinetics) ---------- */
+  var GQ = Q(981, 100), G_NUM = 9.81;                  // g = 9.81 m/s²
+  function dq(q) { return qTex(q, TFD); }               // a rational as TeX (terminating decimals as decimals)
+  function qdiv(a, b) { return Q(a.n * b.d, a.d * b.n); }
+  function andJoin(a) { return a.length === 1 ? a[0] : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+  function fx(v) { return dec4(Math.abs(v) < 5e-12 ? 0 : v); }   // a float as TeX, 4 significant figures
+  function fxp(v) { return v < 0 ? '(' + fx(v) + ')' : fx(v); }   // …in parentheses when negative (for products)
+  function farr(v) { return Math.abs(v) < 5e-12 ? 0 : v; }
+  function sumTex(a, b) { return fx(a) + (b < 0 ? ' - ' + fx(-b) : ' + ' + fx(b)); }
+  // Independent check of v and a: differentiate the Cartesian position numerically, project on u_r, u_θ, u_z.
+  // pos(τ) → [x, y, z] about the instant τ = 0; want = [vr, vt, vz, ar, at, az] (null entries are skipped).
+  function fdCheck(pos, th, want, h) {
+    h = h || 1e-4;
+    var p0 = pos(0), pp = pos(h), pm = pos(-h), vel = [], ac = [], e = [];
+    for (var i = 0; i < 3; i++) { vel.push((pp[i] - pm[i]) / (2 * h)); ac.push((pp[i] - 2 * p0[i] + pm[i]) / (h * h)); }
+    var er = [Math.cos(th), Math.sin(th), 0], et = [-Math.sin(th), Math.cos(th), 0];
+    function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+    var got = [dot(vel, er), dot(vel, et), vel[2], dot(ac, er), dot(ac, et), ac[2]];
+    for (var j = 0; j < 6; j++) {
+      if (want[j] == null) continue;
+      if (Math.abs(got[j] - want[j]) > 3e-4 * Math.max(1, Math.abs(want[j]))) e.push('finite-difference check failed for component ' + j + ': ' + got[j] + ' vs ' + want[j]);
+    }
+    return e;
+  }
+  function polarPos(rf, thf, zf) { return function (t) { var R = rf(t), A = thf(t); return [R * Math.cos(A), R * Math.sin(A), zf ? zf(t) : 0]; }; }
+  function quadPath(r, rd, rdd, th, td, tdd, z, zd, zdd, T) {   // the motion about the instant, with constant second derivatives
+    return { r: r, rd: rd, rdd: rdd, th: th, td: td, tdd: tdd, z: z, zd: zd, zdd: zdd, T: T };
+  }
+  function viewScale(r) { return r < 1 ? 3 / r : r > 5 ? 4 / r : 1; }
+  function scaledNote(sc) { return sc === 1 ? '' : 'Drawn ' + (sc > 1 ? 'enlarged' : 'reduced') + ' to fit (grid hidden). '; }
+  var VEC_RT = ['\\er', '\\et'];
+
+  /* ---------- 4.5 Velocity ---------- */
+  function genVelocity(rng) {
+    var type = pickW(rng, [['comps', 40], ['speed', 30], ['track', 30]]);
+    if (type === 'track') return genTrack(rng);
+    var scen = pickW(rng, [['robot', 35], ['helix', 15], ['collar', 25], ['radar', 25]]);
+    var Z = Q(0), p;
+    if (scen === 'robot') p = { r: pickD(rng, [0.8, 1, 1.2, 1.5, 2]), rd: pickD(rng, [0.2, 0.3, 0.4, 0.5, -0.2, -0.4]), td: pickD(rng, [0.5, 1, 1.5, 2, -1]), zd: pickD(rng, [0.3, -0.3, 0.2, 0.5, -0.25]), z: pickD(rng, [0.5, 0.8, 1, 1.2]) };
+    else if (scen === 'helix') p = { r: pickD(rng, [1.5, 2, 2.5, 3]), rd: Z, td: pickD(rng, [0.4, 0.5, 0.8, 1, 1.2]), zd: pickD(rng, [-0.5, -0.4, -0.3, -0.6]), z: pickD(rng, [2, 2.5, 3]) };
+    else if (scen === 'collar') p = { r: pickD(rng, [0.2, 0.3, 0.4, 0.5, 0.6]), rd: pickD(rng, [0.1, 0.2, 0.3, 0.5, -0.2, -0.3]), td: pickD(rng, [2, 3, 4, 5, 6]), zd: Z, z: Z };
+    else p = { r: Q(1000 * rng.pick([4, 5, 6, 8, 10, 12])), rd: Q(10 * nz(rng, -20, 20)), td: pickD(rng, [0.01, 0.015, 0.02, 0.025, 0.03, -0.02, -0.015]), zd: Z, z: Z };
+    var planar = scen === 'collar' || scen === 'radar';
+    var vr = p.rd, vt = qmul(p.r, p.td), vz = p.zd;
+    var s2 = qadd(qadd(qmul(vr, vr), qmul(vt, vt)), qmul(vz, vz)), speed = Math.sqrt(qval(s2)), sExact = qsqrt(s2);
+    var rTex = scen === 'radar' ? dq(Q(p.r.n / 1000)) + '\\ \\text{km}' : dq(p.r) + '\\ \\text{m}';
+    var GV = { rd: T`\(\dot r = ${dq(p.rd)}\ \text{m/s}\)`, td: T`\(\dot\theta = ${dq(p.td)}\ \text{rad/s}\)`, zd: T`\(\dot z = ${dq(p.zd)}\ \text{m/s}\)` };
+    var intro;
+    if (scen === 'robot') intro = T`A cylindrical robot (a rotating column with a telescoping arm) is moving its gripper. At this instant \(r = ${rTex}\), ` + andJoin([GV.rd, GV.td, GV.zd]) + '.';
+    else if (scen === 'helix') intro = T`A child slides down a helical slide of radius \(${rTex}\) around a vertical pole (the \(z\)-axis), going round at ${GV.td} and descending at ${GV.zd}, both steady.`;
+    else if (scen === 'collar') intro = T`A collar slides along a rod that turns in a horizontal plane about a fixed vertical axis through \(O\). At the instant shown, \(r = ${rTex}\), ` + andJoin([GV.rd, GV.td]) + '.';
+    else intro = T`A radar at \(O\) tracks an aircraft in level flight. At one instant the range is \(r = ${rTex}\), ` + (p.rd.n > 0 ? 'increasing' : 'decreasing') + T` at \(${dq(Q(Math.abs(p.rd.n), p.rd.d))}\ \text{m/s}\), and the line of sight turns at ${GV.td}.`;
+    var named = scen === 'helix' ? T`The radius is fixed, so \(\dot r = 0\).` : scen === 'radar' ? T`Work in meters: \(r = ${dq(p.r)}\ \text{m}\), and \(\dot r ${p.rd.n > 0 ? '\\gt' : '\\lt'} 0\) because the range is ${p.rd.n > 0 ? 'increasing' : 'decreasing'}.` : '';
+    var vH = planar ? T`\(\vvec = \dot r\,\er + r\dot\theta\,\et\).` : T`\(\vvec = \dot r\,\er + r\dot\theta\,\et + \dot z\,\ez\).`;
+    var vBlock = M(T`\begin{aligned}
+v_r &= \dot r = ${dq(vr)}\ \text{m/s} \\
+v_\theta &= r\dot\theta = (${dq(p.r)})(${dq(p.td)}) = ${dq(vt)}\ \text{m/s}` + (planar ? '' : T` \\
+v_z &= \dot z = ${dq(vz)}\ \text{m/s}`) + T`
+\end{aligned}`);
+    var vList = planar ? [eQ(vr), eQ(vt)] : [eQ(vr), eQ(vt), eQ(vz)];
+    var spec, right, wrong;
+    if (type === 'comps') {
+      var fields = [{ name: 'vr', label: '\\(v_r =\\)', answer: qval(vr), unit: 'm/s', tol: TOL2 }, { name: 'vt', label: '\\(v_\\theta =\\)', answer: qval(vt), unit: 'm/s', tol: TOL2 }];
+      if (!planar) fields.push({ name: 'vz', label: '\\(v_z =\\)', answer: qval(vz), unit: 'm/s', tol: TOL2 });
+      spec = {
+        type: 'fields', prompt: intro + (planar ? T` Find the velocity components \(v_r\) and \(v_\theta\).` : T` Find the velocity components \(v_r\), \(v_\theta\) and \(v_z\).`),
+        fields: fields,
+        hints: [vH, T`The transverse component is \(r\dot\theta\), a length times an angular rate, not \(\dot\theta\) alone.`].concat(named ? [named] : []),
+        explain: planar ? T`\(v_r = \dot r\) and \(v_\theta = r\dot\theta\).` : T`\(v_r = \dot r\), \(v_\theta = r\dot\theta\), \(v_z = \dot z\).`,
+        solution: (named ? '<p>' + named + '</p>' : '') + '<p>Use ' + vH.replace(/\.$/, '') + ':</p>' + vBlock + '<p>So ' + m('\\vvec = ' + vecTex(vList, ERTZ, TFD) + '\\ \\text{m/s}.') + '</p>'
+      };
+      var R0 = { vr: qExpr(vr), vt: qExpr(vt) }, R1 = { vr: typed4(qval(vr)), vt: typed4(qval(vt)) };
+      var W0 = { vr: typed4(qval(vr)), vt: typed4(qval(p.td)) }, W1 = { vr: typed4(bump(qval(vr))), vt: typed4(qval(vt)) };
+      if (!planar) { R0.vz = qExpr(vz); R1.vz = typed4(qval(vz)); W0.vz = typed4(qval(vz)); W1.vz = typed4(qval(vz)); }
+      right = [R0, R1];
+      wrong = [W0, W1].filter(function (w) { return Math.abs(parseFloat(w.vt) - qval(vt)) > 0.02 * Math.max(1, Math.abs(qval(vt))) || Math.abs(parseFloat(w.vr) - qval(vr)) > 0.02 * Math.max(1, Math.abs(qval(vr))); });
+    } else {
+      var sT = sExact ? dq(sExact) : '\\sqrt{' + dq(s2) + '} \\approx ' + dec4(speed);
+      var sumSq = planar ? T`\sqrt{(${dq(vr)})^2 + (${dq(vt)})^2}` : T`\sqrt{(${dq(vr)})^2 + (${dq(vt)})^2 + (${dq(vz)})^2}`;
+      spec = {
+        type: 'numeric', prompt: intro + T` Find the speed \(v = |\vvec|\).`,
+        label: '\\(v =\\)', answer: speed, unit: 'm/s', tol: TOL2, answerTex: sT + '\\ \\text{m/s}',
+        hints: [vH, planar ? T`\(\er\) and \(\et\) are perpendicular, so \(v = \sqrt{v_r^2 + v_\theta^2}\).` : T`\(\er\), \(\et\) and \(\ez\) are perpendicular, so \(v = \sqrt{v_r^2 + v_\theta^2 + v_z^2}\).`].concat(named ? [named] : []),
+        explain: planar ? T`Find \(v_r = \dot r\) and \(v_\theta = r\dot\theta\), then \(v = \sqrt{v_r^2 + v_\theta^2}\).` : T`Find \(v_r = \dot r\), \(v_\theta = r\dot\theta\), \(v_z = \dot z\), then \(v = \sqrt{v_r^2 + v_\theta^2 + v_z^2}\).`,
+        solution: (named ? '<p>' + named + '</p>' : '') + '<p>First the components:</p>' + vBlock +
+          '<p>The unit vectors are perpendicular, so</p>' + M(T`v = ${sumSq} = ${sT}\ \text{m/s}`)
+      };
+      right = [typed4(speed), 'sqrt(' + qExpr(s2) + ')'];
+      var wv = Math.sqrt(qval(vr) * qval(vr) + qval(p.td) * qval(p.td) + qval(vz) * qval(vz));
+      wrong = [typed4(bump(speed))].concat(Math.abs(wv - speed) > 0.02 * speed ? [typed4(wv)] : []);
+    }
+    var k = rng.pick(ALLK), th = k * PI / 12, R = qval(p.r), sc = viewScale(R);
+    var Tspan = Math.min(1.5, 0.6 * R / Math.max(1e-9, speed), (PI / 2) / Math.abs(qval(p.td)));
+    return {
+      spec: spec,
+      view: {
+        kind: 'motion', r: R, theta: th, z: qval(p.z), scale: sc, title: 'Velocity', camera: planar ? 'top' : null,
+        v: [qval(vr), qval(vt), qval(vz)], a: null,
+        path: quadPath(R, qval(p.rd), 0, th, qval(p.td), 0, qval(p.z), qval(p.zd), 0, Tspan),
+        readouts: [{ label: '\\(\\vvec\\) (m/s)', tex: vecTex(vList, ERTZ, TFD) }, { label: 'Speed', tex: (sExact ? dq(sExact) : '\\approx ' + dec4(speed)) + '\\ \\text{m/s}' }],
+        note: scaledNote(sc) + (planar ? 'Seen from above (Top view). ' : '') + T`The dashed curve is the path near this instant. The green arrow is \(\vvec\), tangent to the path; its length is scaled to fit.`,
+        aria: (planar ? 'Top view' : '3D view') + ' of the moving point with its nearby path and its velocity vector.'
+      },
+      test: {
+        right: right, wrong: wrong,
+        check: function () {
+          var pos = polarPos(function (t) { return qval(p.r) + qval(p.rd) * t; }, function (t) { return th + qval(p.td) * t; }, function (t) { return qval(p.z) + qval(p.zd) * t; });
+          var e = fdCheck(pos, th, [qval(vr), qval(vt), qval(vz), null, null, null], scen === 'radar' ? 1e-2 : 1e-4);
+          if (Math.abs(Math.hypot(qval(vr), qval(vt), qval(vz)) - speed) > 1e-9 * Math.max(1, speed)) e.push('speed mismatch');
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.5a Tracking: from a known velocity to ṙ and θ̇ ---------- */
+  function genTrack(rng) {
+    var ctx = pickW(rng, [['radar', 50], ['camera', 50]]);
+    var r = ctx === 'radar' ? 1000 * rng.pick([2, 3, 4, 5, 6]) : rng.pick([8, 10, 12, 15, 20, 25]);
+    var k, cs, vx, vy, vr, vt, guard = 0;
+    do {
+      k = rng.pick(K_SIXTH.concat(K_QUARTER)); cs = trig(k);
+      vx = ctx === 'radar' ? 10 * nz(rng, -25, 25) : nz(rng, -12, 12);
+      vy = ctx === 'radar' ? 10 * rng.int(-25, 25) : rng.int(-12, 12);
+      vr = eadd(escale(cs[0], Q(vx)), escale(cs[1], Q(vy)));
+      vt = eadd(escale(cs[1], Q(-vx)), escale(cs[0], Q(vy)));
+    } while (++guard < 60 && (Math.abs(eVal(vr)) < 0.15 * Math.hypot(vx, vy) || Math.abs(eVal(vt)) < 0.15 * Math.hypot(vx, vy)));
+    var thd = escale(vt, Q(1, r)), th = k * PI / 12, thT = angTex(k), cT = exact(cs[0]), sT = exact(cs[1]);
+    var VT = vecTex([vx, vy], IJK), rTex = ctx === 'radar' ? (r / 1000) + '\\ \\text{km}' : r + '\\ \\text{m}';
+    var prompt = ctx === 'radar'
+      ? T`A radar at \(O\) tracks a helicopter flying horizontally with a constant velocity \(\vvec = (${VT})\ \text{m/s}\). At the instant when the helicopter is at \(r = ${rTex}\) and \(\theta = ${thT}\ (${angDeg(k)})\), find the rate \(\dot r\) at which its range changes and the rate \(\dot\theta\) at which the radar must turn.`
+      : T`A camera at \(O\) films a cyclist crossing a plaza with a constant velocity \(\vvec = (${VT})\ \text{m/s}\). When the cyclist is at \(r = ${rTex}\) and \(\theta = ${thT}\ (${angDeg(k)})\), how fast is the distance to the camera changing (\(\dot r\)), and how fast must the camera turn (\(\dot\theta\))?`;
+    var rM = ctx === 'radar' ? T` (with \(r = ${r}\ \text{m}\))` : '';
+    var solution = T`<p>Resolve the known velocity along \(\er\) and \(\et\) at \(\theta = ${thT}\), where \(\cos\theta = ${cT}\) and \(\sin\theta = ${sT}\):</p>` +
+      M(T`\begin{aligned}
+v_r &= v_x\cos\theta + v_y\sin\theta = (${vx})${par(cT)} + (${vy})${par(sT)} = ${approx(vr, TFD)}\ \text{m/s} \\
+v_\theta &= -v_x\sin\theta + v_y\cos\theta = -(${vx})${par(sT)} + (${vy})${par(cT)} = ${approx(vt, TFD)}\ \text{m/s}
+\end{aligned}`) +
+      T`<p>Then \(\dot r = v_r\) and \(\dot\theta = v_\theta/r\)${rM}:</p>` +
+      M(T`\dot r \approx ${decOf(vr)}\ \text{m/s}, \qquad \dot\theta = \frac{${decOf(vt)}}{${r}} \approx ${decOf(thd)}\ \text{rad/s}`) +
+      '<p>' + (eVal(thd) > 0 ? T`Positive \(\dot\theta\): the line of sight turns counter-clockwise.` : T`Negative \(\dot\theta\): the line of sight turns clockwise.`) +
+      (eVal(vr) > 0 ? ' The distance is growing.' : ' The distance is shrinking.') + '</p>';
+    var speed = Math.hypot(vx, vy), sc = viewScale(r), Tspan = 0.5 * r / speed;
+    var x0 = r * Math.cos(th), y0 = r * Math.sin(th);
+    return {
+      spec: {
+        type: 'fields', prompt: prompt,
+        fields: [
+          { name: 'rd', label: '\\(\\dot r =\\)', answer: eVal(vr), unit: 'm/s', tol: TOL2 },
+          { name: 'thd', label: '\\(\\dot\\theta =\\)', answer: eVal(thd), unit: 'rad/s', tol: { abs: 1e-4, rel: 0.01 } }   // small rates: a relative test
+        ],
+        hints: [T`\(\dot r = v_r\) and \(\dot\theta = v_\theta/r\): first find the radial and transverse components of the known velocity.`,
+          T`\(v_r = v_x\cos\theta + v_y\sin\theta\) and \(v_\theta = -v_x\sin\theta + v_y\cos\theta\), with \(\theta\) the angle of the position.`,
+          ctx === 'radar' ? T`Use \(r\) in meters when you divide: \(r = ${r}\ \text{m}\).` : T`Keep the signs: a negative \(\dot\theta\) means the camera turns clockwise.`],
+        explain: T`Velocity components in polar coordinates are \(v_r = \dot r\) and \(v_\theta = r\dot\theta\), so a tracker reads \(\dot r = v_r\) and \(\dot\theta = v_\theta/r\).`,
+        solution: solution
+      },
+      view: {
+        kind: 'motion', r: r, theta: th, z: 0, scale: sc, title: 'The tracked target', camera: 'top',
+        v: [eVal(vr), eVal(vt), 0], a: null,
+        curve: { fn: function (u) { return [x0 + vx * u, y0 + vy * u, 0]; }, u0: -Tspan, u1: Tspan },
+        readouts: [{ label: '\\(\\dot r\\)', tex: '\\approx ' + decOf(vr) + '\\ \\text{m/s}' }, { label: '\\(\\dot\\theta\\)', tex: '\\approx ' + decOf(thd) + '\\ \\text{rad/s}' }],
+        note: scaledNote(sc) + T`Seen from above. The dashed line is the straight path; the green arrow is the constant velocity \(\vvec\). Its radial and transverse components change as the target moves, because \(\er\) and \(\et\) turn.`,
+        aria: 'Top view of a target moving along a straight line past the observer at the origin, with its velocity vector.'
+      },
+      test: {
+        right: [{ rd: eExpr(vr), thd: eExpr(thd) }, { rd: typed4(eVal(vr)), thd: typed4(eVal(thd)) }],
+        wrong: [{ rd: typed4(eVal(vr)), thd: typed4(eVal(vt)) }, { rd: typed4(-eVal(vr)), thd: typed4(eVal(thd)) }],
+        check: function () {
+          var e = [], h = 1e-3, pos = function (t) { return [x0 + vx * t, y0 + vy * t]; };
+          var a = pos(h), b = pos(-h);
+          var rdot = (Math.hypot(a[0], a[1]) - Math.hypot(b[0], b[1])) / (2 * h);
+          var tdot = CYL.math.angleDiff(Math.atan2(a[1], a[0]), Math.atan2(b[1], b[0])) / (2 * h);
+          if (Math.abs(rdot - eVal(vr)) > 1e-4 * Math.max(1, Math.abs(eVal(vr)))) e.push('rdot finite difference mismatch');
+          if (Math.abs(tdot - eVal(thd)) > 1e-5 * Math.max(1e-3, Math.abs(eVal(thd))) + 1e-9) e.push('thetadot finite difference mismatch');
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.6 Acceleration (instantaneous rates) ---------- */
+  function genAccel(rng) {
+    var scen = pickW(rng, [['robot', 40], ['helix', 20], ['bead', 25], ['spinup', 15]]);
+    var type = pickW(rng, [['acc', 70], ['amag', 30]]);
+    var Z = Q(0), p;
+    if (scen === 'robot') p = { r: pickD(rng, [0.8, 1, 1.2, 1.5, 2]), rd: pickD(rng, [0.2, 0.3, 0.4, 0.5, -0.2, -0.4]), rdd: pickD(rng, [0, 0.1, -0.1, 0.2]), td: pickD(rng, [0.5, 1, 1.5, 2, -1]), tdd: pickD(rng, [0, 0.5, -0.5, 1]), zd: pickD(rng, [0.3, -0.3, 0.2, 0, 0.5]), zdd: pickD(rng, [0, 0.1, -0.2]), z: pickD(rng, [0.5, 0.8, 1, 1.2]) };
+    else if (scen === 'helix') p = { r: pickD(rng, [1.5, 2, 2.5, 3]), rd: Z, rdd: Z, td: pickD(rng, [0.4, 0.5, 0.8, 1, 1.2]), tdd: Z, zd: pickD(rng, [-0.5, -0.4, -0.3, -0.6]), zdd: Z, z: pickD(rng, [2, 2.5, 3]) };
+    else if (scen === 'bead') p = { r: pickD(rng, [0.2, 0.3, 0.4, 0.5]), rd: pickD(rng, [0.1, 0.2, 0.3]), rdd: pickD(rng, [0, 0.1, 0.2, 0.4]), td: pickD(rng, [2, 3, 4, 5]), tdd: Z, zd: Z, zdd: Z, z: Z };
+    else p = { r: pickD(rng, [0.5, 1, 1.5, 2]), rd: Z, rdd: Z, td: pickD(rng, [2, 3, 4, 5]), tdd: pickD(rng, [0.5, 1, 2]), zd: Z, zdd: Z, z: Z };
+    var k = rng.pick(ALLK), th = k * PI / 12;
+    var vr = p.rd, vt = qmul(p.r, p.td), vz = p.zd;
+    var rtd2 = qmul(p.r, qmul(p.td, p.td)), cor = qmul(Q(2), qmul(p.rd, p.td)), rtdd = qmul(p.r, p.tdd);
+    var ar = qsub(p.rdd, rtd2), at = qadd(rtdd, cor), az = p.zdd;
+    var a2 = qadd(qadd(qmul(ar, ar), qmul(at, at)), qmul(az, az)), amag = Math.sqrt(qval(a2)), aExact = qsqrt(a2);
+    var GA = {
+      r: T`\(r = ${dq(p.r)}\ \text{m}\)`, rd: T`\(\dot r = ${dq(p.rd)}\ \text{m/s}\)`, rdd: T`\(\ddot r = ${dq(p.rdd)}\ \text{m/s}^2\)`,
+      td: T`\(\dot\theta = ${dq(p.td)}\ \text{rad/s}\)`, tdd: T`\(\ddot\theta = ${dq(p.tdd)}\ \text{rad/s}^2\)`,
+      zd: T`\(\dot z = ${dq(p.zd)}\ \text{m/s}\)`, zdd: T`\(\ddot z = ${dq(p.zdd)}\ \text{m/s}^2\)`
+    };
+    var intro;
+    if (scen === 'robot') intro = T`A cylindrical robot (a rotating column with a telescoping arm) is moving its gripper. At this instant \(r = ${dq(p.r)}\ \text{m}\), with ` + andJoin([GA.rd, GA.rdd, GA.td, GA.tdd, GA.zd, GA.zdd]) + '.';
+    else if (scen === 'helix') intro = T`A child goes down a helical slide of radius \(${dq(p.r)}\ \text{m}\) whose central pole is the \(z\)-axis. The rates ${GA.td} and ${GA.zd} are constant, and \(r\) stays \(${dq(p.r)}\ \text{m}\).`;
+    else if (scen === 'bead') intro = T`A collar slides outward along a straight rod that turns in a horizontal plane about the \(z\)-axis at the constant rate ${GA.td}. At the instant shown, ` + andJoin([GA.r, GA.rd, GA.rdd]) + '.';
+    else intro = T`A test sample sits \(${dq(p.r)}\ \text{m}\) from the axis of a centrifuge that is speeding up. At this instant ${GA.td} and ${GA.tdd}; the sample’s \(r\) and \(z\) stay fixed.`;
+    var planar = scen === 'bead' || scen === 'spinup';
+    var named = scen === 'helix' ? T`Constant rates mean \(\dot r = \ddot r = \ddot\theta = \ddot z = 0\) here.` : scen === 'bead' ? T`The rod stays in a horizontal plane and turns at a constant rate, so \(\dot z = \ddot z = 0\) and \(\ddot\theta = 0\).` : scen === 'spinup' ? T`\(r\) and \(z\) are fixed, so \(\dot r = \ddot r = \dot z = \ddot z = 0\).` : '';
+    var aBlock = M(T`\begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = ${dq(p.rdd)} - (${dq(p.r)})(${dq(p.td)})^2 = ${dq(ar)}\ \text{m/s}^2 \\
+a_\theta &= r\ddot\theta + 2\dot r\dot\theta = (${dq(p.r)})(${dq(p.tdd)}) + 2(${dq(p.rd)})(${dq(p.td)}) = ${dq(at)}\ \text{m/s}^2 \\
+a_z &= \ddot z = ${dq(az)}\ \text{m/s}^2
+\end{aligned}`);
+    var terms = [T`Here \(-r\dot\theta^2 = -${dq(rtd2)}\ \text{m/s}^2\) is the centripetal term; it points toward the axis.`];
+    terms.push(cor.n !== 0 ? T`\(2\dot r\dot\theta = ${dq(cor)}\ \text{m/s}^2\) is the Coriolis term.` : T`There is no Coriolis term, because \(\dot r = 0\).`);
+    if (rtdd.n !== 0) terms.push(T`\(r\ddot\theta = ${dq(rtdd)}\ \text{m/s}^2\) comes from the angular acceleration.`);
+    var aH = T`\(\avec = (\ddot r - r\dot\theta^2)\,\er + (r\ddot\theta + 2\dot r\dot\theta)\,\et + \ddot z\,\ez\).`;
+    var spec, right, wrong;
+    if (type === 'acc') {
+      spec = {
+        type: 'fields', prompt: intro + T` Find the acceleration components \(a_r\), \(a_\theta\) and \(a_z\).`,
+        fields: [{ name: 'ar', label: '\\(a_r =\\)', answer: qval(ar), unit: 'm/s²', tol: TOL2 }, { name: 'at', label: '\\(a_\\theta =\\)', answer: qval(at), unit: 'm/s²', tol: TOL2 }, { name: 'az', label: '\\(a_z =\\)', answer: qval(az), unit: 'm/s²', tol: TOL2 }],
+        hints: [aH, T`Two terms are easy to forget: the centripetal \(-r\dot\theta^2\) (present even when \(\ddot r = 0\)) and the Coriolis \(2\dot r\dot\theta\).`].concat(named ? [named] : []),
+        explain: T`\(a_r = \ddot r - r\dot\theta^2\), \(a_\theta = r\ddot\theta + 2\dot r\dot\theta\), \(a_z = \ddot z\).`,
+        solution: (named ? '<p>' + named + '</p>' : '') + '<p>Use ' + aH.replace(/\.$/, '') + ':</p>' + aBlock +
+          '<p>So ' + m('\\avec = ' + vecTex([eQ(ar), eQ(at), eQ(az)], ERTZ, TFD) + '\\ \\text{m/s}^2.') + ' ' + terms.join(' ') + '</p>'
+      };
+      right = [{ ar: qExpr(ar), at: qExpr(at), az: qExpr(az) }, { ar: typed4(qval(ar)), at: typed4(qval(at)), az: typed4(qval(az)) }];
+      wrong = [{ ar: typed4(qval(p.rdd)), at: typed4(qval(at)), az: typed4(qval(az)) }, { ar: typed4(qval(ar)), at: typed4(qval(rtdd)), az: typed4(qval(az)) }, { ar: typed4(bump(qval(ar))), at: typed4(qval(at)), az: typed4(qval(az)) }]
+        .filter(function (w) { return Math.abs(parseFloat(w.ar) - qval(ar)) > 0.02 + 0.01 * Math.abs(qval(ar)) || Math.abs(parseFloat(w.at) - qval(at)) > 0.02 + 0.01 * Math.abs(qval(at)); });
+    } else {
+      var mT = aExact ? dq(aExact) : '\\sqrt{' + dq(a2) + '} \\approx ' + dec4(amag);
+      spec = {
+        type: 'numeric', prompt: intro + T` Find the magnitude of the acceleration, \(a = |\avec|\).`,
+        label: '\\(a =\\)', answer: amag, unit: 'm/s²', tol: TOL2, answerTex: mT + '\\ \\text{m/s}^2',
+        hints: [aH, T`The components are perpendicular, so \(a = \sqrt{a_r^2 + a_\theta^2 + a_z^2}\). Do not forget the centripetal and Coriolis terms.`].concat(named ? [named] : []),
+        explain: T`Find \(a_r\), \(a_\theta\), \(a_z\), then combine them with Pythagoras.`,
+        solution: (named ? '<p>' + named + '</p>' : '') + '<p>First the components:</p>' + aBlock +
+          M(T`a = \sqrt{(${dq(ar)})^2 + (${dq(at)})^2 + (${dq(az)})^2} = ${mT}\ \text{m/s}^2`) + '<p>' + terms.join(' ') + '</p>'
+      };
+      right = [typed4(amag), 'sqrt(' + qExpr(a2) + ')'];
+      var wa = Math.sqrt(qval(p.rdd) * qval(p.rdd) + qval(rtdd) * qval(rtdd) + qval(az) * qval(az));
+      wrong = [typed4(bump(amag))].concat(Math.abs(wa - amag) > 0.02 * amag + 0.02 ? [typed4(wa)] : []);
+    }
+    var R = qval(p.r), sc = viewScale(R), Tspan = Math.min(1.5, (PI / 2) / Math.abs(qval(p.td)));
+    return {
+      spec: spec,
+      view: {
+        kind: 'motion', r: R, theta: th, z: qval(p.z), scale: sc, title: 'Velocity and acceleration', camera: planar ? 'top' : null,
+        v: [qval(vr), qval(vt), qval(vz)], a: [qval(ar), qval(at), qval(az)],
+        path: quadPath(R, qval(p.rd), qval(p.rdd), th, qval(p.td), qval(p.tdd), qval(p.z), qval(p.zd), qval(p.zdd), Tspan),
+        readouts: [{ label: '\\(\\vvec\\) (m/s)', tex: vecTex([eQ(vr), eQ(vt), eQ(vz)], ERTZ, TFD) }, { label: '\\(\\avec\\) (m/s²)', tex: vecTex([eQ(ar), eQ(at), eQ(az)], ERTZ, TFD) }],
+        note: scaledNote(sc) + (planar ? 'Seen from above (Top view): the motion is in a horizontal plane. ' : '') + T`The dashed curve is the path near this instant. Green is \(\vvec\) (tangent to the path) and red is \(\avec\); arrow lengths are scaled to fit.`,
+        aria: '3D view of the moving point with its nearby path, its velocity vector and its acceleration vector.'
+      },
+      test: {
+        right: right, wrong: wrong,
+        check: function () {
+          var pos = polarPos(function (t) { return qval(p.r) + qval(p.rd) * t + qval(p.rdd) * t * t / 2; },
+            function (t) { return th + qval(p.td) * t + qval(p.tdd) * t * t / 2; },
+            function (t) { return qval(p.z) + qval(p.zd) * t + qval(p.zdd) * t * t / 2; });
+          var e = fdCheck(pos, th, [qval(vr), qval(vt), qval(vz), qval(ar), qval(at), qval(az)]);
+          if (Math.abs(Math.hypot(qval(ar), qval(at), qval(az)) - amag) > 1e-9 * Math.max(1, amag)) e.push('|a| mismatch');
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.7 Motion given as functions of time: r(t) = r0 + r1 t + r2 t², θ(t) = a1 t + a2 t² ---------- */
+  function polyTex(cs) {                                // c0 + c1 t + c2 t² (rationals) as TeX, zero terms dropped
+    var out = '';
+    cs.forEach(function (c, i) {
+      if (!c || c.n === 0) return;
+      var neg = c.n < 0, a = neg ? qneg(c) : c, mag = dq(a);
+      var term = i === 0 ? mag : ((a.n === a.d ? '' : mag) + 't' + (i === 2 ? '^2' : ''));
+      out += out ? (neg ? ' - ' : ' + ') + term : (neg ? '-' : '') + term;
+    });
+    return out || '0';
+  }
+  function drawPoly(rng) {
+    var c, guard = 0;
+    do {
+      c = {
+        r0: pickD(rng, [0, 0.2, 0.3, 0.5, 1, 1.5, 2]), r1: pickD(rng, [0, 0, 0.1, 0.2, 0.4, 0.5, -0.1]), r2: pickD(rng, [0, 0.05, 0.1, 0.2, 0.25, 0.5]),
+        a1: pickD(rng, [0, 0.5, 1, 1.5, 2, 3]), a2: pickD(rng, [0, 0, 0.25, 0.5, 1]), t: pickD(rng, [0.5, 1, 1.5, 2, 3])
+      };
+      var bad = (c.r1.n === 0 && c.r2.n === 0) || (c.a1.n === 0 && c.a2.n === 0);
+      for (var i = 0; i <= 10 && !bad; i++) {                // r stays positive over the whole motion up to t
+        var tt = qval(c.t) * i / 10;
+        if (qval(c.r0) + qval(c.r1) * tt + qval(c.r2) * tt * tt < 0.1) bad = true;
+      }
+    } while (bad && ++guard < 100);
+    var t = c.t, t2 = qmul(t, t);
+    c.r = qadd(qadd(c.r0, qmul(c.r1, t)), qmul(c.r2, t2));
+    c.rd = qadd(c.r1, qmul(Q(2), qmul(c.r2, t)));
+    c.rdd = qmul(Q(2), c.r2);
+    c.th = qadd(qmul(c.a1, t), qmul(c.a2, t2));
+    c.thd = qadd(c.a1, qmul(Q(2), qmul(c.a2, t)));
+    c.thdd = qmul(Q(2), c.a2);
+    c.rTex = polyTex([c.r0, c.r1, c.r2]);
+    c.thTex = polyTex([Q(0), c.a1, c.a2]);
+    c.rf = function (x) { return qval(c.r0) + qval(c.r1) * x + qval(c.r2) * x * x; };
+    c.thf = function (x) { return qval(c.a1) * x + qval(c.a2) * x * x; };
+    return c;
+  }
+  function polyDerivBlock(c) {
+    var tT = dq(c.t);
+    return M(T`\begin{aligned}
+r &= ${c.rTex} = ${dq(c.r)}\ \text{m}, & \dot r &= ${polyTex([c.r1, qmul(Q(2), c.r2)])} = ${dq(c.rd)}\ \text{m/s}, & \ddot r &= ${dq(c.rdd)}\ \text{m/s}^2 \\
+\theta &= ${c.thTex} = ${dq(c.th)}\ \text{rad}, & \dot\theta &= ${polyTex([c.a1, qmul(Q(2), c.a2)])} = ${dq(c.thd)}\ \text{rad/s}, & \ddot\theta &= ${dq(c.thdd)}\ \text{rad/s}^2
+\end{aligned}`) + T`<p class="small">(each value at \(t = ${tT}\ \text{s}\))</p>`;
+  }
+  function polyKin(c) {
+    var vr = c.rd, vt = qmul(c.r, c.thd);
+    var rtd2 = qmul(c.r, qmul(c.thd, c.thd)), cor = qmul(Q(2), qmul(c.rd, c.thd)), rtdd = qmul(c.r, c.thdd);
+    return { vr: vr, vt: vt, ar: qsub(c.rdd, rtd2), at: qadd(rtdd, cor), rtd2: rtd2, cor: cor, rtdd: rtdd };
+  }
+  function polyView(c, K, title, extra) {
+    var R = qval(c.r), th = qval(c.th), sc = viewScale(R);
+    var v = {
+      kind: 'motion', r: R, theta: th, z: 0, scale: sc, title: title, camera: 'top',
+      v: [qval(K.vr), qval(K.vt), 0], a: [qval(K.ar), qval(K.at), 0],
+      path: quadPath(R, qval(c.rd), qval(c.rdd), th, qval(c.thd), qval(c.thdd), 0, 0, 0, Math.min(qval(c.t), 1.5)),
+      readouts: [{ label: '\\(\\vvec\\) (m/s)', tex: vecTex([eQ(K.vr), eQ(K.vt)], VEC_RT, TFD) }, { label: '\\(\\avec\\) (m/s²)', tex: vecTex([eQ(K.ar), eQ(K.at)], VEC_RT, TFD) }],
+      note: scaledNote(sc) + T`Seen from above. The dashed curve is the path from the start of the motion; green is \(\vvec\) and red is \(\avec\), scaled to fit.`,
+      aria: 'Top view of the particle on its path at the given instant, with its velocity and acceleration vectors.'
+    };
+    return Object.assign(v, extra || {});
+  }
+  function genTimeFn(rng) {
+    var c = drawPoly(rng), K = polyKin(c), type = pickW(rng, [['v', 25], ['a', 45], ['both', 30]]);
+    var tT = dq(c.t);
+    var ctx = pickW(rng, [['rod', 40], ['particle', 35], ['robot', 25]]);
+    var intro = ctx === 'rod'
+      ? T`A rod \(OA\) turns in a horizontal plane so that \(\theta = (${c.thTex})\ \text{rad}\), while a collar slides along it so that \(r = (${c.rTex})\ \text{m}\), where \(t\) is in seconds.`
+      : ctx === 'particle' ? T`A particle moves in a horizontal plane with \(r = (${c.rTex})\ \text{m}\) and \(\theta = (${c.thTex})\ \text{rad}\), where \(t\) is in seconds.`
+        : T`A pick-and-place robot moves its gripper in a horizontal plane with \(r = (${c.rTex})\ \text{m}\) and \(\theta = (${c.thTex})\ \text{rad}\) (\(t\) in seconds).`;
+    var ask = type === 'v' ? T` Find \(v_r\) and \(v_\theta\) at \(t = ${tT}\ \text{s}\).` : type === 'a' ? T` Find \(a_r\) and \(a_\theta\) at \(t = ${tT}\ \text{s}\).` : T` Find \(v_r\), \(v_\theta\), \(a_r\) and \(a_\theta\) at \(t = ${tT}\ \text{s}\).`;
+    var fv = [{ name: 'vr', label: '\\(v_r =\\)', answer: qval(K.vr), unit: 'm/s', tol: TOL2 }, { name: 'vt', label: '\\(v_\\theta =\\)', answer: qval(K.vt), unit: 'm/s', tol: TOL2 }];
+    var fa = [{ name: 'ar', label: '\\(a_r =\\)', answer: qval(K.ar), unit: 'm/s²', tol: TOL2 }, { name: 'at', label: '\\(a_\\theta =\\)', answer: qval(K.at), unit: 'm/s²', tol: TOL2 }];
+    var fields = type === 'v' ? fv : type === 'a' ? fa : fv.concat(fa);
+    var vBlock = M(T`v_r = \dot r = ${dq(K.vr)}\ \text{m/s}, \qquad v_\theta = r\dot\theta = (${dq(c.r)})(${dq(c.thd)}) = ${dq(K.vt)}\ \text{m/s}`);
+    var aBlock = M(T`\begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = ${dq(c.rdd)} - (${dq(c.r)})(${dq(c.thd)})^2 = ${dq(K.ar)}\ \text{m/s}^2 \\
+a_\theta &= r\ddot\theta + 2\dot r\dot\theta = (${dq(c.r)})(${dq(c.thdd)}) + 2(${dq(c.rd)})(${dq(c.thd)}) = ${dq(K.at)}\ \text{m/s}^2
+\end{aligned}`);
+    var solution = T`<p>Differentiate both coordinates with respect to time and evaluate at \(t = ${tT}\ \text{s}\):</p>` + polyDerivBlock(c) +
+      (type !== 'a' ? '<p>Velocity:</p>' + vBlock : '') + (type !== 'v' ? '<p>Acceleration:</p>' + aBlock : '');
+    function resp(fn) { var o = {}; if (type !== 'a') { o.vr = fn(K.vr); o.vt = fn(K.vt); } if (type !== 'v') { o.ar = fn(K.ar); o.at = fn(K.at); } return o; }
+    var right = [resp(qExpr), resp(function (q) { return typed4(qval(q)); })];
+    var w1 = resp(function (q) { return typed4(qval(q)); }), w2 = resp(function (q) { return typed4(qval(q)); });
+    if (type !== 'a') w1.vt = typed4(qval(c.thd)); else w1.ar = typed4(qval(c.rdd));
+    if (type !== 'v') w2.at = typed4(qval(K.rtdd)); else w2.vr = typed4(bump(qval(K.vr)));
+    var wrong = [w1, w2].filter(function (w) {
+      return Object.keys(w).some(function (key) { var tv = qval(K[key]); return Math.abs(parseFloat(w[key]) - tv) > 0.02 + 0.01 * Math.abs(tv); });
+    });
+    if (!wrong.length) wrong = [resp(function (q) { return typed4(bump(qval(q))); })];
+    return {
+      spec: {
+        type: 'fields', prompt: intro + ask, fields: fields,
+        hints: [T`Differentiate: \(\dot r\), \(\ddot r\), \(\dot\theta\) and \(\ddot\theta\) as functions of \(t\), then put \(t = ${tT}\ \text{s}\).`,
+          type === 'v' ? T`\(v_r = \dot r\) and \(v_\theta = r\dot\theta\).` : T`\(a_r = \ddot r - r\dot\theta^2\) and \(a_\theta = r\ddot\theta + 2\dot r\dot\theta\).`,
+          T`At \(t = ${tT}\ \text{s}\): \(r = ${dq(c.r)}\ \text{m}\), \(\dot r = ${dq(c.rd)}\ \text{m/s}\), \(\dot\theta = ${dq(c.thd)}\ \text{rad/s}\).`],
+        explain: T`Differentiate twice, evaluate at the instant, then substitute into the component formulas.`,
+        solution: solution
+      },
+      view: polyView(c, K, 'The motion at t = ' + CYL.fmt(qval(c.t)) + ' s'),
+      test: {
+        right: right, wrong: wrong,
+        check: function () {
+          var t0 = qval(c.t);
+          var pos = polarPos(function (x) { return c.rf(t0 + x); }, function (x) { return c.thf(t0 + x); });
+          return fdCheck(pos, qval(c.th), [qval(K.vr), qval(K.vt), 0, qval(K.ar), qval(K.at), 0]);
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.8 Paths given as r = f(θ) (chain rule; tangent angle ψ) ---------- */
+  function drawPath(rng, opts) {
+    opts = opts || {};
+    var kind = pickW(rng, opts.kinds || [['spiral', 35], ['cardioid', 35], ['circle', 30]]), P;
+    if (kind === 'spiral') {
+      var b = pickD(rng, [0.05, 0.1, 0.15, 0.2, 0.25]), bv = qval(b);
+      P = { kind: kind, k: rng.pick(opts.spiralK || [4, 6, 8, 12, 18, 24]), tex: 'r = ' + dq(b) + '\\theta', name: 'the spiral',
+        f: function (q) { return bv * q; }, f1: function () { return bv; }, f2: function () { return 0; },
+        fTex: dq(b) + '\\theta', f1Tex: dq(b), f2Tex: '0', range: [0.05, 0] };
+    } else if (kind === 'cardioid') {
+      var a = pickD(rng, [0.2, 0.25, 0.4, 0.5, 0.6, 0.8]), av = qval(a);
+      P = { kind: kind, k: rng.pick([2, 3, 4, 6, 8, 9]), tex: 'r = ' + dq(a) + '(1 + \\cos\\theta)', name: 'the cardioid',
+        f: function (q) { return av * (1 + Math.cos(q)); }, f1: function (q) { return -av * Math.sin(q); }, f2: function (q) { return -av * Math.cos(q); },
+        fTex: dq(a) + '(1 + \\cos\\theta)', f1Tex: '-' + dq(a) + '\\sin\\theta', f2Tex: '-' + dq(a) + '\\cos\\theta', range: [-PI + 0.05, PI - 0.05] };
+    } else {
+      var d = pickD(rng, [0.4, 0.5, 0.6, 0.8, 1, 1.2]), dv = qval(d);
+      P = { kind: kind, k: rng.pick([2, 3, 4, -2, -3]), tex: 'r = ' + dq(d) + '\\cos\\theta', name: 'the circular slot',
+        f: function (q) { return dv * Math.cos(q); }, f1: function (q) { return -dv * Math.sin(q); }, f2: function (q) { return -dv * Math.cos(q); },
+        fTex: dq(d) + '\\cos\\theta', f1Tex: '-' + dq(d) + '\\sin\\theta', f2Tex: '-' + dq(d) + '\\cos\\theta', range: [-PI / 2 + 0.02, PI / 2 - 0.02] };
+    }
+    P.th = P.k * PI / 12;
+    if (P.kind === 'spiral') P.range = [0.05, Math.max(P.th + 1.2, 2 * PI)];
+    P.thT = P.k < 0 ? '-' + angTex(-P.k) : angTex(P.k);
+    P.degT = (P.k * 15) + '^\\circ';
+    P.r = P.f(P.th); P.r1 = P.f1(P.th); P.r2 = P.f2(P.th);
+    return P;
+  }
+  function pathKin(P, w, al) {
+    var rd = P.r1 * w, rdd = P.r2 * w * w + P.r1 * al;
+    var K = { rd: rd, rdd: rdd, vr: rd, vt: P.r * w, ar: rdd - P.r * w * w, at: P.r * al + 2 * rd * w };
+    K.psi = Math.abs(P.r1) < 1e-12 ? PI / 2 : Math.atan(P.r / P.r1);
+    return K;
+  }
+  function pathView(P, w, al, K, title, extra) {
+    var sc = viewScale(Math.max(P.r, 0.2)), f = P.f;
+    var v = {
+      kind: 'motion', r: P.r, theta: P.th, z: 0, scale: sc, title: title, camera: 'top',
+      v: [K.vr, K.vt, 0], a: [K.ar, K.at, 0],
+      curve: { fn: function (u) { var R = f(u); return [R * Math.cos(u), R * Math.sin(u), 0]; }, u0: P.range[0], u1: P.range[1] },
+      readouts: [{ label: '\\(\\vvec\\) (m/s)', tex: vecTex([eD(+K.vr.toFixed(4)), eD(+K.vt.toFixed(4))], VEC_RT, TFD) }, { label: '\\(\\avec\\) (m/s²)', tex: vecTex([eD(+K.ar.toFixed(4)), eD(+K.at.toFixed(4))], VEC_RT, TFD) }],
+      note: scaledNote(sc) + T`Seen from above. The dashed curve is the whole path \(${P.tex}\); green is \(\vvec\) and red is \(\avec\), scaled to fit.`,
+      aria: 'Top view of the path ' + P.name + ' with the particle at the given angle and its velocity and acceleration vectors.'
+    };
+    return Object.assign(v, extra || {});
+  }
+  function pathIntro(rng, P, w, al) {
+    var rate = al === 0 ? T`turns at a constant \(\dot\theta = ${fx(w)}\ \text{rad/s}\)` : T`turns at \(\dot\theta = ${fx(w)}\ \text{rad/s}\) and ${al > 0 ? 'speeds up' : 'slows down'} at \(\ddot\theta = ${fx(al)}\ \text{rad/s}^2\)`;
+    return rng.next() < 0.5
+      ? T`A pin \(P\) moves in a fixed slot shaped as \(${P.tex}\ \text{m}\) (\(\theta\) in radians), pushed by an arm that turns about \(O\). At the instant when \(\theta = ${P.thT}\ (${P.degT})\), the arm ${rate}.`
+      : T`A cam follower rides in a groove \(${P.tex}\ \text{m}\) (\(\theta\) in radians) and is carried round by a slotted arm pivoted at \(O\). When \(\theta = ${P.thT}\ (${P.degT})\), the arm ${rate}.`;
+  }
+  function pathRatesBlock(P, w, al, K) {
+    return M(T`\begin{aligned}
+r &= ${P.fTex} = ${fx(P.r)}\ \text{m} \\
+\frac{dr}{d\theta} &= ${P.f1Tex} = ${fx(P.r1)}\ \text{m/rad}, \qquad \frac{d^2r}{d\theta^2} = ${P.f2Tex} = ${fx(P.r2)}\ \text{m/rad}^2 \\
+\dot r &= \frac{dr}{d\theta}\,\dot\theta = ${fxp(P.r1)}(${fx(w)}) = ${fx(K.rd)}\ \text{m/s} \\
+\ddot r &= \frac{d^2r}{d\theta^2}\,\dot\theta^2 + \frac{dr}{d\theta}\,\ddot\theta = ${fxp(P.r2)}(${fx(w)})^2 + ${fxp(P.r1)}(${fx(al)}) = ${fx(K.rdd)}\ \text{m/s}^2
+\end{aligned}`);
+  }
+  function genPath(rng) {
+    var P = drawPath(rng), type = pickW(rng, [['rates', 25], ['v', 20], ['a', 35], ['psi', 20]]);
+    var w = qval(pickD(rng, [1, 1.5, 2, 2.5, 3, 4, 5])), al = rng.next() < 0.6 ? 0 : qval(pickD(rng, [1, 2, -1, 0.5, -2]));
+    var K = pathKin(P, w, al), intro = pathIntro(rng, P, w, al);
+    var spec, right, wrong, block = pathRatesBlock(P, w, al, K);
+    var chain = T`Chain rule: \(\dot r = \dfrac{dr}{d\theta}\,\dot\theta\) and \(\ddot r = \dfrac{d^2r}{d\theta^2}\,\dot\theta^2 + \dfrac{dr}{d\theta}\,\ddot\theta\).`;
+    var derivs = T`For \(${P.tex}\): \(dr/d\theta = ${P.f1Tex}\) and \(d^2r/d\theta^2 = ${P.f2Tex}\). Evaluate them at \(\theta = ${P.thT}\).`;
+    if (type === 'psi') {
+      var psiDeg = K.psi * 180 / PI;
+      spec = {
+        type: 'numeric', prompt: intro + T` Find the tangent angle \(\psi\) between the extended radial line and the tangent to the path (between \(-90^\circ\) and \(90^\circ\); in degrees with °, or in radians).`,
+        label: '\\(\\psi =\\)', answer: K.psi, angle: true, answerTex: fx(psiDeg) + '^\\circ',
+        hints: [T`\(\tan\psi = \dfrac{r}{dr/d\theta}\). The angle depends only on the shape of the path, not on \(\dot\theta\).`, derivs],
+        explain: T`\(\tan\psi = r/(dr/d\theta)\), from \(\tan\psi = v_\theta/v_r = r\dot\theta/(\dot\theta\,dr/d\theta)\).`,
+        solution: M(T`\begin{aligned} r &= ${P.fTex} = ${fx(P.r)}\ \text{m}, \qquad \frac{dr}{d\theta} = ${P.f1Tex} = ${fx(P.r1)}\ \text{m/rad} \\ \tan\psi &= \frac{r}{dr/d\theta} = \frac{${fx(P.r)}}{${fx(P.r1)}} = ${fx(P.r / P.r1)} \quad\Rightarrow\quad \psi = ${fx(psiDeg)}^\circ \end{aligned}`) +
+          '<p>' + (K.psi >= 0 ? T`Positive: the tangent is turned counter-clockwise from the extended radial line, toward \(\et\).` : T`Negative: the tangent is turned clockwise from the extended radial line, away from \(\et\).`) + ' The rate ' + m('\\dot\\theta') + ' does not enter.</p>'
+      };
+      right = [typed4(K.psi), fx(psiDeg).replace(/\s/g, '') + '°'];
+      wrong = [typed4(K.psi + PI / 2)];
+    } else {
+      var F = type === 'rates' ? [['rd', '\\(\\dot r =\\)', K.rd, 'm/s'], ['rdd', '\\(\\ddot r =\\)', K.rdd, 'm/s²']]
+        : type === 'v' ? [['vr', '\\(v_r =\\)', K.vr, 'm/s'], ['vt', '\\(v_\\theta =\\)', K.vt, 'm/s']]
+          : [['ar', '\\(a_r =\\)', K.ar, 'm/s²'], ['at', '\\(a_\\theta =\\)', K.at, 'm/s²']];
+      var ask = type === 'rates' ? T` Find \(\dot r\) and \(\ddot r\).` : type === 'v' ? T` Find the velocity components \(v_r\) and \(v_\theta\).` : T` Find the acceleration components \(a_r\) and \(a_\theta\).`;
+      var tail = type === 'rates' ? '' : type === 'v'
+        ? M(T`v_r = \dot r = ${fx(K.vr)}\ \text{m/s}, \qquad v_\theta = r\dot\theta = (${fx(P.r)})(${fx(w)}) = ${fx(K.vt)}\ \text{m/s}`)
+        : M(T`\begin{aligned} a_r &= \ddot r - r\dot\theta^2 = ${fx(K.rdd)} - (${fx(P.r)})(${fx(w)})^2 = ${fx(K.ar)}\ \text{m/s}^2 \\ a_\theta &= r\ddot\theta + 2\dot r\dot\theta = (${fx(P.r)})(${fx(al)}) + 2${fxp(K.rd)}(${fx(w)}) = ${fx(K.at)}\ \text{m/s}^2 \end{aligned}`);
+      spec = {
+        type: 'fields', prompt: intro + ask,
+        fields: F.map(function (f) { return { name: f[0], label: f[1], answer: farr(f[2]), unit: f[3], tol: TOL2 }; }),
+        hints: [chain, derivs].concat(type === 'a' ? [T`Then \(a_r = \ddot r - r\dot\theta^2\) and \(a_\theta = r\ddot\theta + 2\dot r\dot\theta\).`] : type === 'v' ? [T`Then \(v_r = \dot r\) and \(v_\theta = r\dot\theta\).`] : []),
+        explain: T`On a path \(r = f(\theta)\), the chain rule gives \(\dot r\) and \(\ddot r\) from \(\dot\theta\) and \(\ddot\theta\).`,
+        solution: T`<p>Evaluate the path and its derivatives at \(\theta = ${P.thT}\), then apply the chain rule (\(\dot\theta = ${fx(w)}\ \text{rad/s}\), \(\ddot\theta = ${fx(al)}\ \text{rad/s}^2\)):</p>` + block + tail
+      };
+      var rOk = {}, rTyped = {}, w1 = {};
+      F.forEach(function (f) { rOk[f[0]] = typed4(farr(f[2])); rTyped[f[0]] = CYL.fmt(farr(f[2]), 3).replace(/\u2212/g, '-'); w1[f[0]] = typed4(farr(f[2])); });
+      if (type === 'rates') w1.rdd = typed4(P.r2 * al); else if (type === 'v') w1.vt = typed4(w); else w1.ar = typed4(K.rdd);
+      right = [rOk, rTyped];
+      wrong = [w1].filter(function (x) { return F.some(function (f) { return Math.abs(parseFloat(x[f[0]]) - f[2]) > 0.02 + 0.01 * Math.abs(f[2]); }); });
+      if (!wrong.length) { var w2 = {}; F.forEach(function (f) { w2[f[0]] = typed4(bump(f[2])); }); wrong = [w2]; }
+    }
+    return {
+      spec: spec,
+      view: pathView(P, w, al, K, 'The guided particle'),
+      test: {
+        right: right, wrong: wrong,
+        check: function () {
+          var e = fdCheck(polarPos(function (x) { return P.f(P.th + w * x + al * x * x / 2); }, function (x) { return P.th + w * x + al * x * x / 2; }), P.th, [K.vr, K.vt, 0, K.ar, K.at, 0]);
+          var h = 1e-5, d1 = (P.f(P.th + h) - P.f(P.th - h)) / (2 * h);
+          if (Math.abs(d1 - P.r1) > 1e-6) e.push('dr/dtheta mismatch');
+          if (!(P.r > 0)) e.push('r not positive');
+          var tp = Math.tan(K.psi), want = P.r / P.r1;
+          if (Math.abs(P.r1) > 1e-12 && Math.abs(tp - want) > 1e-9 * Math.max(1, Math.abs(want))) e.push('tan psi mismatch');
+          if (Math.abs(K.psi) > PI / 2 + 1e-12) e.push('psi out of range');
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 4.9 Equations of motion ---------- */
+  function forceView(base, forces) { base.forces = forces; return base; }
+  function genKinetics(rng) {
+    var type = pickW(rng, [['rod', 30], ['circle', 15], ['vertical', 25], ['time', 15], ['helix', 15]]);
+    var mass, spec, right, wrong, view, check;
+    if (type === 'rod') {
+      mass = pickD(rng, [0.2, 0.25, 0.4, 0.5, 1, 2]);
+      var w = pickD(rng, [2, 3, 4, 5, 6]), r = pickD(rng, [0.3, 0.4, 0.5, 0.6, 0.8]), rd = pickD(rng, [0.2, 0.4, 0.5, 0.6, 0.8, 1, -0.5]);
+      var spring = rng.next() < 0.45, kS = spring ? Q(rng.pick([20, 40, 50, 80, 100])) : null, r0 = spring ? pickD(rng, [0.1, 0.15, 0.2, 0.25]) : null;
+      var rw2 = qmul(r, qmul(w, w)), Fs = spring ? qneg(qmul(kS, qsub(r, r0))) : Q(0);
+      var rdd = qadd(rw2, qdiv(Fs, mass)), N = qmul(Q(2), qmul(mass, qmul(rd, w)));
+      var ctxR = T`A \(${dq(mass)}\ \text{kg}\) collar slides on a smooth rod that a motor turns in a horizontal plane at a constant \(\dot\theta = ${dq(w)}\ \text{rad/s}\)` +
+        (spring ? T`. A spring of stiffness \(${dq(kS)}\ \text{N/m}\) and unstretched length \(${dq(r0)}\ \text{m}\) joins the collar to the pivot \(O\)` : '') +
+        T`. At the instant when \(r = ${dq(r)}\ \text{m}\) and \(\dot r = ${dq(rd)}\ \text{m/s}\), find \(\ddot r\) and the horizontal force \(N\) of the rod on the collar (perpendicular to the rod).`;
+      spec = {
+        type: 'fields', prompt: ctxR,
+        fields: [{ name: 'rdd', label: '\\(\\ddot r =\\)', answer: qval(rdd), unit: 'm/s²', tol: TOL2 }, { name: 'N', label: '\\(N =\\)', answer: qval(N), unit: 'N', tol: TOL2 }],
+        hints: [spring ? T`The only force along the rod is the spring, \(F_s = -k(r - r_0)\) (toward \(O\) when stretched): \(\sum F_r = -k(r - r_0) = m(\ddot r - r\dot\theta^2)\).` : T`The rod is smooth and nothing else acts along it, so \(\sum F_r = 0 = m(\ddot r - r\dot\theta^2)\).`,
+          T`Across the rod: \(\sum F_\theta = N = m(r\ddot\theta + 2\dot r\dot\theta)\), with \(\ddot\theta = 0\).`],
+        explain: T`Radial equation for \(\ddot r\); transverse equation for the rod's push \(N\).`,
+        solution: '<p>' + (spring ? T`Along the rod only the spring acts: \(F_s = -k(r - r_0) = -(${dq(kS)})(${dq(r)} - ${dq(r0)}) = ${dq(Fs)}\ \text{N}\).` : T`The rod is smooth, so it cannot push along itself: \(\sum F_r = 0\).`) + '</p>' +
+          M(T`\begin{aligned}
+\textstyle\sum F_r = m(\ddot r - r\dot\theta^2): &\quad ${dq(Fs)} = ${dq(mass)}\left(\ddot r - (${dq(r)})(${dq(w)})^2\right) &&\Rightarrow\quad \ddot r = ${dq(rdd)}\ \text{m/s}^2 \\
+\textstyle\sum F_\theta = m(r\ddot\theta + 2\dot r\dot\theta): &\quad N = ${dq(mass)}\left(0 + 2(${dq(rd)})(${dq(w)})\right) &&\Rightarrow\quad N = ${dq(N)}\ \text{N}
+\end{aligned}`) +
+          '<p>' + (qval(N) >= 0 ? T`The rod pushes the collar forward, in the direction of rotation: that is the Coriolis term at work.` : T`\(N \lt 0\): the collar is moving inward, so the rod holds it back against the rotation.`) + ' Vertically, the rod also supports the weight.</p>'
+      };
+      right = [{ rdd: qExpr(rdd), N: qExpr(N) }, { rdd: typed4(qval(rdd)), N: typed4(qval(N)) }];
+      wrong = [{ rdd: typed4(qval(rdd)), N: typed4(qval(mass) * qval(rd) * qval(w)) }, { rdd: typed4(-qval(rw2)), N: typed4(qval(N)) }].filter(function (x) {
+        return Math.abs(parseFloat(x.N) - qval(N)) > 0.02 + 0.01 * Math.abs(qval(N)) || Math.abs(parseFloat(x.rdd) - qval(rdd)) > 0.02 + 0.01 * Math.abs(qval(rdd));
+      });
+      var thR = rng.pick(ALLK) * PI / 12, ar = qval(rdd) - qval(rw2), at = 2 * qval(rd) * qval(w);
+      view = forceView({
+        kind: 'motion', r: qval(r), theta: thR, z: 0, scale: viewScale(qval(r)), title: 'Forces on the collar', camera: 'top',
+        v: [qval(rd), qval(r) * qval(w), 0], a: [ar, at, 0], arm: true,
+        path: quadPath(qval(r), qval(rd), qval(rdd), thR, qval(w), 0, 0, 0, 0, Math.min(0.4, 0.8 / qval(w))),
+        readouts: [{ label: '\\(\\ddot r\\)', tex: dq(rdd) + '\\ \\text{m/s}^2' }, { label: 'Rod force \\(N\\)', tex: dq(N) + '\\ \\text{N}' }],
+        note: scaledNote(viewScale(qval(r))) + T`Seen from above, with the rod drawn through \(O\) and \(P\). Violet is the rod's push \(N\,\et\)` + (spring ? T`, orange the spring force along \(\er\)` : '') + '; red is the acceleration. Forces and acceleration are scaled separately to fit.',
+        aria: 'Top view of the collar on the rotating rod with the force of the rod across it' + (spring ? ', the spring force along it' : '') + ' and its acceleration.'
+      }, [{ c: [0, qval(N), 0], color: 't', label: 'N' }].concat(spring ? [{ c: [qval(Fs), 0, 0], color: 'r', label: 'F_s' }] : []));
+      check = function () {
+        var e = [];
+        if (Math.abs(qval(mass) * (qval(rdd) - qval(rw2)) - qval(Fs)) > 1e-9) e.push('radial equation not satisfied');
+        if (Math.abs(qval(N) - qval(mass) * 2 * qval(rd) * qval(w)) > 1e-9) e.push('transverse equation not satisfied');
+        return e;
+      };
+    } else if (type === 'circle') {
+      mass = pickD(rng, [0.5, 1, 2, 3, 5]);
+      var R = pickD(rng, [0.4, 0.5, 0.8, 1, 1.2, 1.5]), td = pickD(rng, [2, 3, 4, 5]), tdd = pickD(rng, [-2, -1, 0.5, 1, 2, 3]);
+      var Fr = qneg(qmul(mass, qmul(R, qmul(td, td)))), Ft = qmul(mass, qmul(R, tdd));
+      var mag = Math.hypot(qval(Fr), qval(Ft));
+      spec = {
+        type: 'fields',
+        prompt: T`An arm pivoted at \(O\) drives a \(${dq(mass)}\ \text{kg}\) block round a horizontal circular track of radius \(${dq(R)}\ \text{m}\) centered on \(O\). At one instant \(\dot\theta = ${dq(td)}\ \text{rad/s}\) and \(\ddot\theta = ${dq(tdd)}\ \text{rad/s}^2\). Find the radial and transverse components of the resultant horizontal force on the block.`,
+        fields: [{ name: 'Fr', label: '\\(\\sum F_r =\\)', answer: qval(Fr), unit: 'N', tol: TOL2 }, { name: 'Ft', label: '\\(\\sum F_\\theta =\\)', answer: qval(Ft), unit: 'N', tol: TOL2 }],
+        hints: [T`On a circle about \(O\), \(\dot r = \ddot r = 0\).`, T`\(\sum F_r = m(\ddot r - r\dot\theta^2)\) and \(\sum F_\theta = m(r\ddot\theta + 2\dot r\dot\theta)\).`],
+        explain: T`With \(r\) constant only the centripetal term \(-r\dot\theta^2\) and the term \(r\ddot\theta\) remain.`,
+        solution: M(T`\begin{aligned}
+\textstyle\sum F_r &= m(\ddot r - r\dot\theta^2) = ${dq(mass)}\left(0 - (${dq(R)})(${dq(td)})^2\right) = ${dq(Fr)}\ \text{N} \\
+\textstyle\sum F_\theta &= m(r\ddot\theta + 2\dot r\dot\theta) = ${dq(mass)}(${dq(R)})(${dq(tdd)}) = ${dq(Ft)}\ \text{N}
+\end{aligned}`) + T`<p>The resultant force has magnitude \(\approx ${dec4(mag)}\ \text{N}\): mostly toward \(O\), plus a ${qval(Ft) > 0 ? 'forward part that speeds the block up' : 'backward part that slows it down'}.</p>`
+      };
+      right = [{ Fr: qExpr(Fr), Ft: qExpr(Ft) }, { Fr: typed4(qval(Fr)), Ft: typed4(qval(Ft)) }];
+      wrong = [{ Fr: typed4(-qval(Fr)), Ft: typed4(qval(Ft)) }, { Fr: typed4(qval(Fr)), Ft: typed4(qval(mass) * qval(tdd)) }].filter(function (x) {
+        return Math.abs(parseFloat(x.Ft) - qval(Ft)) > 0.02 + 0.01 * Math.abs(qval(Ft)) || Math.abs(parseFloat(x.Fr) - qval(Fr)) > 0.02 + 0.01 * Math.abs(qval(Fr));
+      });
+      var thC = rng.pick(ALLK) * PI / 12;
+      view = forceView({
+        kind: 'motion', r: qval(R), theta: thC, z: 0, scale: viewScale(qval(R)), title: 'Resultant force', camera: 'top',
+        v: [0, qval(R) * qval(td), 0], a: [-qval(R) * qval(td) * qval(td), qval(R) * qval(tdd), 0], arm: true,
+        curve: { fn: function (u) { return [qval(R) * Math.cos(u), qval(R) * Math.sin(u), 0]; }, u0: 0, u1: 2 * PI },
+        readouts: [{ label: '\\(\\sum\\Fvec\\) (N)', tex: vecTex([eQ(Fr), eQ(Ft)], VEC_RT, TFD) }],
+        note: scaledNote(viewScale(qval(R))) + T`Seen from above. The teal arrow is the resultant force \(\sum\Fvec = m\avec\); it points mostly toward \(O\).`,
+        aria: 'Top view of the block on its circular track with the resultant force on it.'
+      }, [{ c: [qval(Fr), qval(Ft), 0], color: 'accent', label: '\\Sigma\\Fvec' }]);
+      check = function () {
+        var pos = polarPos(function () { return qval(R); }, function (x) { return thC + qval(td) * x + qval(tdd) * x * x / 2; });
+        return fdCheck(pos, thC, [0, qval(R) * qval(td), 0, qval(Fr) / qval(mass), qval(Ft) / qval(mass), 0]);
+      };
+    } else if (type === 'vertical') {
+      var guard = 0, mV, rV, rdV, wV, kV, cs, Tq, Nq;
+      do {
+        mV = pickD(rng, [0.2, 0.25, 0.4, 0.5]); rV = pickD(rng, [0.5, 0.6, 0.8, 1]); rdV = pickD(rng, [0, -0.2, -0.4, -0.5, 0.3]); wV = pickD(rng, [3, 4, 5, 6]);
+        kV = rng.pick([0, 2, 3, 4, 6, 8, 9, 10, 12, 18, 20, 21]); cs = trig(kV);
+        var mg = qmul(mV, GQ);
+        Tq = eadd(eQ(qmul(mV, qmul(rV, qmul(wV, wV)))), escale(cs[1], qneg(mg)));          // T = m r θ̇² − mg sin θ  (r̈ = 0)
+        Nq = eadd(eQ(qmul(mV, qmul(Q(2), qmul(rdV, wV)))), escale(cs[0], mg));            // N = 2m ṙ θ̇ + mg cos θ
+      } while (++guard < 80 && (eVal(Tq) < 0.2 || Math.abs(eVal(Nq)) < 0.05));
+      mass = mV;
+      var thV = kV * PI / 12, thVT = angTex(kV);
+      var how = rdV.n === 0 ? T`holds it at a fixed radius \(r = ${dq(rV)}\ \text{m}\)` : rdV.n < 0 ? T`pulls it in at a steady \(${dq(qneg(rdV))}\ \text{m/s}\)` : T`lets it out at a steady \(${dq(rdV)}\ \text{m/s}\)`;
+      spec = {
+        type: 'fields',
+        prompt: T`A \(${dq(mV)}\ \text{kg}\) collar rides on a smooth arm that turns in a vertical plane about \(O\) at a constant \(\dot\theta = ${dq(wV)}\ \text{rad/s}\) (\(\theta\) measured from the horizontal, \(y\) up). A cord through \(O\) ${how}. At the instant when \(\theta = ${thVT}\ (${angDeg(kV)})\)` + (rdV.n === 0 ? '' : T` and \(r = ${dq(rV)}\ \text{m}\)`) + T`, find the cord tension \(T\) and the force \(N\) of the arm on the collar (perpendicular to the arm, positive in the \(+\et\) direction). Use \(g = 9.81\ \text{m/s}^2\).`,
+        fields: [{ name: 'T', label: '\\(T =\\)', answer: eVal(Tq), unit: 'N', tol: TOL2 }, { name: 'N', label: '\\(N =\\)', answer: eVal(Nq), unit: 'N', tol: TOL2 }],
+        hints: [T`Forces: the cord \(-T\,\er\), the arm \(N\,\et\), and the weight \(-mg\sin\theta\,\er - mg\cos\theta\,\et\).`,
+          T`Kinematics: \(\ddot r = 0\) and \(\ddot\theta = 0\), so \(a_r = -r\dot\theta^2\) and \(a_\theta = 2\dot r\dot\theta\).`,
+          T`\(\sum F_r = m a_r\): \(-T - mg\sin\theta = m a_r\). \(\sum F_\theta = m a_\theta\): \(N - mg\cos\theta = m a_\theta\).`],
+        explain: T`Resolve the weight along \(\er\) and \(\et\), then use the two in-plane equations of motion.`,
+        solution: M(T`\begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = 0 - (${dq(rV)})(${dq(wV)})^2 = ${dq(qneg(qmul(rV, qmul(wV, wV))))}\ \text{m/s}^2 \\
+a_\theta &= r\ddot\theta + 2\dot r\dot\theta = 0 + 2(${dq(rdV)})(${dq(wV)}) = ${dq(qmul(Q(2), qmul(rdV, wV)))}\ \text{m/s}^2
+\end{aligned}`) +
+          T`<p>With \(mg = ${dq(qmul(mV, GQ))}\ \text{N}\), \(\sin\theta = ${exact(cs[1])}\) and \(\cos\theta = ${exact(cs[0])}\):</p>` +
+          M(T`\begin{aligned}
+\textstyle\sum F_r = m a_r: &\quad -T - mg\sin\theta = m a_r &&\Rightarrow\quad T = m r\dot\theta^2 - mg\sin\theta = ${approx(Tq, TFD)}\ \text{N} \\
+\textstyle\sum F_\theta = m a_\theta: &\quad N - mg\cos\theta = m a_\theta &&\Rightarrow\quad N = 2m\dot r\dot\theta + mg\cos\theta = ${approx(Nq, TFD)}\ \text{N}
+\end{aligned}`) +
+          '<p>' + (eVal(Nq) >= 0 ? T`\(N \gt 0\): the arm pushes in the \(+\et\) direction.` : T`\(N \lt 0\): the arm pushes in the \(-\et\) direction.`) + ' A cord can only pull, so the motion is possible only while ' + m('T \\ge 0') + '.</p>'
+      };
+      right = [{ T: eExpr(Tq), N: eExpr(Nq) }, { T: typed4(eVal(Tq)), N: typed4(eVal(Nq)) }];
+      wrong = [{ T: typed4(qval(qmul(mV, qmul(rV, qmul(wV, wV))))), N: typed4(eVal(Nq)) }, { T: typed4(eVal(Tq)), N: typed4(eVal(Nq) - 2 * qval(mV) * qval(rdV) * qval(wV) * 2 + 0.5) }].filter(function (x) {
+        return Math.abs(parseFloat(x.T) - eVal(Tq)) > 0.02 + 0.01 * Math.abs(eVal(Tq)) || Math.abs(parseFloat(x.N) - eVal(Nq)) > 0.02 + 0.01 * Math.abs(eVal(Nq));
+      });
+      var WV = qval(mV) * G_NUM;
+      view = forceView({
+        kind: 'motion', r: qval(rV), theta: thV, z: 0, scale: viewScale(qval(rV)), title: 'Forces on the collar', camera: 'top',
+        v: [qval(rdV), qval(rV) * qval(wV), 0], a: [-qval(rV) * qval(wV) * qval(wV), 2 * qval(rdV) * qval(wV), 0], arm: true, showA: false,
+        path: quadPath(qval(rV), qval(rdV), 0, thV, qval(wV), 0, 0, 0, 0, Math.min(0.3, 0.6 / qval(wV))),
+        readouts: [{ label: 'Cord tension \\(T\\)', tex: '\\approx ' + decOf(Tq) + '\\ \\text{N}' }, { label: 'Arm force \\(N\\)', tex: '\\approx ' + decOf(Nq) + '\\ \\text{N}' }],
+        note: scaledNote(viewScale(qval(rV))) + T`The plane of the arm is vertical: \(y\) points up. Orange is the cord tension (toward \(O\)), violet the arm's push \(N\,\et\), and ink the weight.`,
+        aria: 'The vertical plane of the arm, with the collar, the cord tension toward the pivot, the push of the arm and the weight.'
+      }, [{ c: [-eVal(Tq), 0, 0], color: 'r', label: 'T' }, { c: [0, eVal(Nq), 0], color: 't', label: 'N' }, { c: [-WV * Math.sin(thV), -WV * Math.cos(thV), 0], color: 'ink', label: 'W' }]);
+      check = function () {
+        var e = [], m0 = qval(mV), ar0 = -qval(rV) * qval(wV) * qval(wV), at0 = 2 * qval(rdV) * qval(wV);
+        if (Math.abs(-eVal(Tq) - WV * Math.sin(thV) - m0 * ar0) > 1e-9) e.push('radial equation fails');
+        if (Math.abs(eVal(Nq) - WV * Math.cos(thV) - m0 * at0) > 1e-9) e.push('transverse equation fails');
+        return e;
+      };
+    } else if (type === 'time') {
+      var c = drawPoly(rng), K = polyKin(c);
+      mass = pickD(rng, [0.2, 0.5, 1, 2, 4]);
+      var FrT = qmul(mass, K.ar), FtT = qmul(mass, K.at);
+      spec = {
+        type: 'fields',
+        prompt: T`A \(${dq(mass)}\ \text{kg}\) particle moves in a horizontal plane with \(r = (${c.rTex})\ \text{m}\) and \(\theta = (${c.thTex})\ \text{rad}\), where \(t\) is in seconds. Find the radial and transverse components of the resultant horizontal force on it at \(t = ${dq(c.t)}\ \text{s}\).`,
+        fields: [{ name: 'Fr', label: '\\(\\sum F_r =\\)', answer: qval(FrT), unit: 'N', tol: TOL2 }, { name: 'Ft', label: '\\(\\sum F_\\theta =\\)', answer: qval(FtT), unit: 'N', tol: TOL2 }],
+        hints: [T`First the kinematics: differentiate \(r(t)\) and \(\theta(t)\) twice and evaluate at \(t = ${dq(c.t)}\ \text{s}\).`,
+          T`Then \(\sum F_r = m(\ddot r - r\dot\theta^2)\) and \(\sum F_\theta = m(r\ddot\theta + 2\dot r\dot\theta)\).`],
+        explain: T`The equations of motion turn the acceleration components into force components: multiply by \(m\).`,
+        solution: T`<p>Kinematics at \(t = ${dq(c.t)}\ \text{s}\):</p>` + polyDerivBlock(c) +
+          M(T`\begin{aligned}
+\textstyle\sum F_r &= m(\ddot r - r\dot\theta^2) = ${dq(mass)}\left(${dq(c.rdd)} - (${dq(c.r)})(${dq(c.thd)})^2\right) = ${dq(FrT)}\ \text{N} \\
+\textstyle\sum F_\theta &= m(r\ddot\theta + 2\dot r\dot\theta) = ${dq(mass)}\left((${dq(c.r)})(${dq(c.thdd)}) + 2(${dq(c.rd)})(${dq(c.thd)})\right) = ${dq(FtT)}\ \text{N}
+\end{aligned}`)
+      };
+      right = [{ Fr: qExpr(FrT), Ft: qExpr(FtT) }, { Fr: typed4(qval(FrT)), Ft: typed4(qval(FtT)) }];
+      wrong = [{ Fr: typed4(qval(mass) * qval(c.rdd)), Ft: typed4(qval(FtT)) }, { Fr: typed4(qval(FrT)), Ft: typed4(qval(mass) * qval(K.rtdd)) }].filter(function (x) {
+        return Math.abs(parseFloat(x.Fr) - qval(FrT)) > 0.02 + 0.01 * Math.abs(qval(FrT)) || Math.abs(parseFloat(x.Ft) - qval(FtT)) > 0.02 + 0.01 * Math.abs(qval(FtT));
+      });
+      if (!wrong.length) wrong = [{ Fr: typed4(bump(qval(FrT))), Ft: typed4(qval(FtT)) }];
+      view = forceView(polyView(c, K, 'Resultant force', { readouts: [{ label: '\\(\\sum\\Fvec\\) (N)', tex: vecTex([eQ(FrT), eQ(FtT)], VEC_RT, TFD) }] }),
+        [{ c: [qval(FrT), qval(FtT), 0], color: 'accent', label: '\\Sigma\\Fvec' }]);
+      check = function () {
+        var t0 = qval(c.t);
+        var pos = polarPos(function (x) { return c.rf(t0 + x); }, function (x) { return c.thf(t0 + x); });
+        return fdCheck(pos, qval(c.th), [null, null, null, qval(FrT) / qval(mass), qval(FtT) / qval(mass), null]);
+      };
+    } else {
+      mass = pickD(rng, [5, 8, 10, 20, 25, 30]);
+      var RH = pickD(rng, [1.5, 2, 2.5, 3]), wH = pickD(rng, [0.5, 0.6, 0.8, 1]), zdH = pickD(rng, [-0.3, -0.4, -0.5, -0.6]);
+      var FcR = qneg(qmul(mass, qmul(RH, qmul(wH, wH)))), FcZ = qmul(mass, GQ);
+      var what = qval(mass) >= 20 ? 'child' : 'parcel';
+      spec = {
+        type: 'fields',
+        prompt: T`A \(${dq(mass)}\ \text{kg}\) ${what} slides down a helical chute of radius \(${dq(RH)}\ \text{m}\) around a vertical axis, going round at a constant \(\dot\theta = ${dq(wH)}\ \text{rad/s}\) and descending at a constant \(\dot z = ${dq(zdH)}\ \text{m/s}\). Find the radial and vertical components of the total force the chute exerts on it (normal force plus friction). Use \(g = 9.81\ \text{m/s}^2\).`,
+        fields: [{ name: 'Fr', label: '\\(F_r =\\)', answer: qval(FcR), unit: 'N', tol: TOL2 }, { name: 'Fz', label: '\\(F_z =\\)', answer: qval(FcZ), unit: 'N', tol: TOL2 }],
+        hints: [T`All rates are constant and \(r\) is fixed: \(\avec = -r\dot\theta^2\,\er\).`, T`The forces are the chute force \(\mathbf{F}\) and the weight \(-mg\,\ez\): \(\mathbf{F} - mg\,\ez = m\avec\).`],
+        explain: T`At constant rates on a helix the acceleration is purely centripetal; the chute supplies it and also holds up the weight.`,
+        solution: M(T`\begin{aligned}
+a_r &= -r\dot\theta^2 = -(${dq(RH)})(${dq(wH)})^2 = ${dq(qneg(qmul(RH, qmul(wH, wH))))}\ \text{m/s}^2, \qquad a_\theta = 0, \qquad a_z = 0 \\
+\textstyle\sum F_r = m a_r: &\quad F_r = (${dq(mass)})(${dq(qneg(qmul(RH, qmul(wH, wH))))}) = ${dq(FcR)}\ \text{N} \\
+\textstyle\sum F_z = m a_z: &\quad F_z - (${dq(mass)})(9.81) = 0 \quad\Rightarrow\quad F_z = ${dq(FcZ)}\ \text{N}
+\end{aligned}`) + T`<p>The chute pushes inward (from its outer wall) and holds the ${what} up. \(F_\theta = 0\): friction along the path and the normal force combine so that there is no net force around the axis.</p>`
+      };
+      right = [{ Fr: qExpr(FcR), Fz: qExpr(FcZ) }, { Fr: typed4(qval(FcR)), Fz: typed4(qval(FcZ)) }];
+      wrong = [{ Fr: typed4(-qval(FcR)), Fz: typed4(qval(FcZ)) }, { Fr: typed4(qval(FcR)), Fz: '0' }];
+      var thH = rng.pick(ALLK) * PI / 12;
+      view = forceView({
+        kind: 'motion', r: qval(RH), theta: thH, z: 2.5, scale: 1, title: 'Forces on the rider',
+        v: [0, qval(RH) * qval(wH), qval(zdH)], a: [-qval(RH) * qval(wH) * qval(wH), 0, 0], showA: false,
+        path: quadPath(qval(RH), 0, 0, thH, qval(wH), 0, 2.5, qval(zdH), 0, 2),
+        readouts: [{ label: 'Chute force (N)', tex: vecTex([eQ(FcR), eQ(Q(0)), eQ(FcZ)], ERTZ, TFD) }],
+        note: T`Teal is the chute's force, ink the weight; they are drawn to the same scale. Their sum, \(m\avec\), points straight at the axis.`,
+        aria: '3D view of the rider on the helical chute, with the chute force and the weight.'
+      }, [{ c: [qval(FcR), 0, qval(FcZ)], color: 'accent', label: '\\mathbf{F}' }, { c: [0, 0, -qval(FcZ)], color: 'ink', label: 'W' }]);
+      check = function () {
+        var e = [];
+        if (Math.abs(qval(FcR) + qval(mass) * qval(RH) * qval(wH) * qval(wH)) > 1e-9) e.push('Fr mismatch');
+        if (Math.abs(qval(FcZ) - qval(mass) * 9.81) > 1e-9) e.push('Fz mismatch');
+        return e;
+      };
+    }
+    return { spec: spec, view: view, test: { right: right, wrong: wrong, check: check } };
+  }
+
+  /* ---------- 4.10 Guided particles and central forces ---------- */
+  var GM_EARTH = 3.986e14;   // m³/s²
+  function genApps(rng) {
+    var type = pickW(rng, [['puck', 35], ['orbit', 25], ['guide', 40]]);
+    var spec, right, wrong, view, check;
+    if (type === 'puck') {
+      var mP = pickD(rng, [0.2, 0.25, 0.3, 0.5]), r1, r2, guard = 0;
+      do { r1 = pickD(rng, [0.5, 0.6, 0.8, 1]); r2 = pickD(rng, [0.2, 0.25, 0.3, 0.4, 0.5]); } while (++guard < 40 && qval(r2) >= qval(r1) - 0.05);
+      var w1 = pickD(rng, [1, 1.5, 2, 2.5, 3]), pull = rng.next() < 0.5;
+      var h = qmul(qmul(r1, r1), w1), w2 = qdiv(h, qmul(r2, r2)), vt2 = qdiv(h, r2), T2 = qdiv(qmul(mP, qmul(h, h)), qmul(r2, qmul(r2, r2)));
+      var fields = [{ name: 'thd', label: '\\(\\dot\\theta_2 =\\)', answer: qval(w2), unit: 'rad/s', tol: TOL2 }, { name: 'vt', label: '\\(v_{\\theta 2} =\\)', answer: qval(vt2), unit: 'm/s', tol: TOL2 }];
+      if (pull) fields.push({ name: 'T', label: '\\(T_2 =\\)', answer: qval(T2), unit: 'N', tol: TOL2 });
+      spec = {
+        type: 'fields',
+        prompt: T`A \(${dq(mP)}\ \text{kg}\) puck slides on a frictionless horizontal table, tied to a cord that passes down through a hole \(O\) in the table. It moves on a circle of radius \(${dq(r1)}\ \text{m}\) at \(\dot\theta = ${dq(w1)}\ \text{rad/s}\); then the cord is pulled down` + (pull ? ' at a steady rate' : '') + T` until \(r = ${dq(r2)}\ \text{m}\). Find the new angular rate \(\dot\theta_2\) and the transverse velocity \(v_{\theta 2}\)` + (pull ? T`, and the cord tension \(T_2\) at that radius (the pull rate is steady, so \(\ddot r = 0\))` : '') + '.',
+        fields: fields,
+        hints: [T`The cord force points at \(O\), so \(\sum F_\theta = 0\) and \(r^2\dot\theta\) stays constant.`, T`\(\dot\theta_2 = \dot\theta_1(r_1/r_2)^2\) and \(v_{\theta 2} = r_2\dot\theta_2\).`]
+          .concat(pull ? [T`Radial equation with \(\ddot r = 0\): \(-T = m(0 - r\dot\theta^2)\), so \(T = m r_2\dot\theta_2^2\).`] : []),
+        explain: T`A central force keeps \(r^2\dot\theta\) constant; the radial equation gives the cord tension.`,
+        solution: M(T`\begin{aligned}
+h &= r_1^2\dot\theta_1 = (${dq(r1)})^2(${dq(w1)}) = ${dq(h)}\ \text{m}^2/\text{s} \\
+\dot\theta_2 &= \frac{h}{r_2^2} = \frac{${dq(h)}}{(${dq(r2)})^2} = ${approx(eQ(w2), TFD)}\ \text{rad/s} \\
+v_{\theta 2} &= r_2\dot\theta_2 = \frac{h}{r_2} = ${approx(eQ(vt2), TFD)}\ \text{m/s}` + (pull ? T` \\
+T_2 &= m r_2\dot\theta_2^2 = \frac{m h^2}{r_2^3} = ${approx(eQ(T2), TFD)}\ \text{N}` : '') + T`
+\end{aligned}`) + T`<p>The puck turns faster as it comes in: \(\dot\theta\) grows as \(1/r^2\).</p>`
+      };
+      var rr = { thd: qExpr(w2), vt: qExpr(vt2) }, rt = { thd: typed4(qval(w2)), vt: typed4(qval(vt2)) };
+      var wr = { thd: typed4(qval(w1) * qval(r1) / qval(r2)), vt: typed4(qval(vt2)) };
+      if (pull) { rr.T = qExpr(T2); rt.T = typed4(qval(T2)); wr.T = typed4(qval(T2)); }
+      right = [rr, rt]; wrong = [wr];
+      var thP = rng.pick(ALLK) * PI / 12, rP = qval(r2), wP = qval(w2);
+      view = forceView({
+        kind: 'motion', r: rP, theta: thP, z: 0, scale: viewScale(rP), title: 'The puck at r = ' + CYL.fmt(rP) + ' m', camera: 'top',
+        v: [0, qval(vt2), 0], a: [-rP * wP * wP, 0, 0], showA: false,
+        curve: { fn: function (u) { return [rP * Math.cos(u), rP * Math.sin(u), 0]; }, u0: 0, u1: 2 * PI },
+        readouts: [{ label: '\\(r^2\\dot\\theta\\)', tex: dq(h) + '\\ \\text{m}^2/\\text{s}' }, { label: '\\(\\dot\\theta_2\\)', tex: '\\approx ' + dec4(qval(w2)) + '\\ \\text{rad/s}' }],
+        note: scaledNote(viewScale(rP)) + T`Seen from above at the new radius. Orange is the cord's pull toward \(O\), the only horizontal force; green is the velocity.`,
+        aria: 'Top view of the puck on the table at the new radius, with the cord force toward the hole and the velocity.'
+      }, [{ c: [-qval(mP) * rP * wP * wP, 0, 0], color: 'r', label: 'T' }]);
+      check = function () {
+        var e = [];
+        if (Math.abs(qval(r2) * qval(r2) * qval(w2) - qval(r1) * qval(r1) * qval(w1)) > 1e-9) e.push('r^2 thetadot not conserved');
+        if (Math.abs(qval(T2) - qval(mP) * qval(r2) * qval(w2) * qval(w2)) > 1e-9) e.push('tension mismatch');
+        return e;
+      };
+    } else if (type === 'orbit') {
+      var rp = rng.pick([6800, 7000, 7200, 7500]), ra = rng.pick([9000, 10000, 12000, 15000, 20000]);
+      var aO = (rp + ra) / 2 * 1000, vpExact = Math.sqrt(GM_EARTH * (2 / (rp * 1000) - 1 / aO)) / 1000;   // km/s
+      var vp = +vpExact.toFixed(3), va = vp * rp / ra, apo = rng.next() < 0.6;
+      var ask = apo ? 'va' : 'tha';
+      var thdA = va / ra;   // rad/s (km/s / km)
+      spec = {
+        type: 'numeric',
+        prompt: T`A satellite moves on an elliptical orbit around the Earth. At perigee it is \(${rp}\ \text{km}\) from the Earth's center and moves at \(${vp}\ \text{km/s}\), perpendicular to the radial line. At apogee it is \(${ra}\ \text{km}\) from the center, again moving perpendicular to the radial line. ` + (ask === 'va' ? T`Find its speed at apogee.` : T`Find its angular rate \(\dot\theta\) at apogee, in rad/s.`),
+        label: ask === 'va' ? '\\(v_a =\\)' : '\\(\\dot\\theta_a =\\)', answer: ask === 'va' ? va : thdA, unit: ask === 'va' ? 'km/s' : 'rad/s', tol: ask === 'va' ? TOL2 : { abs: 1e-7, rel: 0.01 },
+        answerTex: ask === 'va' ? fx(va) + '\\ \\text{km/s}' : fx(thdA) + '\\ \\text{rad/s}',
+        hints: [T`Gravity points at the Earth's center: a central force, so \(r\,v_\theta = r^2\dot\theta\) is the same at every point of the orbit.`,
+          T`At perigee and apogee \(v_r = 0\), so the speed is \(v_\theta\): \(r_p v_p = r_a v_a\).`].concat(ask === 'tha' ? [T`Then \(\dot\theta_a = v_a/r_a\), with \(r_a\) and \(v_a\) in consistent units (km and km/s, or m and m/s).`] : []),
+        explain: T`\(r\,v_\theta\) is constant under a central force.`,
+        solution: M(T`v_a = \frac{r_p}{r_a}\,v_p = \frac{${rp}}{${ra}}(${vp}) = ${fx(va)}\ \text{km/s}`) +
+          (ask === 'tha' ? M(T`\dot\theta_a = \frac{v_a}{r_a} = \frac{${fx(va)}\ \text{km/s}}{${ra}\ \text{km}} = ${fx(thdA)}\ \text{rad/s}`) : '') +
+          T`<p>The satellite is slowest where it is farthest out. Its angular rate changes even more, as \(1/r^2\).</p>`
+      };
+      right = [typed4(ask === 'va' ? va : thdA)];
+      wrong = [typed4(ask === 'va' ? vp * ra / rp : thdA * 2 + 1e-3)];
+      var e = (ra - rp) / (ra + rp), pO = rp * (1 + e), sc = 4 / ra;
+      view = forceView({
+        kind: 'motion', r: ra, theta: PI, z: 0, scale: sc, title: 'The orbit', camera: 'top',
+        v: [0, va, 0], a: null,
+        curve: { fn: function (u) { var R = pO / (1 + e * Math.cos(u)); return [R * Math.cos(u), R * Math.sin(u), 0]; }, u0: 0, u1: 2 * PI },
+        readouts: [{ label: '\\(r_p v_p = r_a v_a\\)', tex: decBig(rp * vp) + '\\ \\text{km}^2/\\text{s}' }, { label: 'Apogee speed', tex: fx(va) + '\\ \\text{km/s}' }],
+        note: T`Drawn reduced to fit (grid hidden). The Earth's center is at the origin \(O\), a focus of the dashed ellipse. The satellite is shown at apogee, with gravity (orange, toward \(O\)) and its velocity (green).`,
+        aria: 'Top view of an elliptical orbit with the Earth at a focus and the satellite at apogee, with its velocity and the gravitational force.'
+      }, [{ c: [-1, 0, 0], color: 'r', label: '\\mathbf{F}' }]);
+      check = function () {
+        var errs = [];
+        if (Math.abs(va * ra - vp * rp) > 1e-9 * vp * rp) errs.push('angular momentum not conserved');
+        var vaEnergy = Math.sqrt(GM_EARTH * (2 / (ra * 1000) - 1 / aO)) / 1000;
+        if (Math.abs(vaEnergy - va) > 0.002 * va) errs.push('orbit data inconsistent with gravity');
+        return errs;
+      };
+    } else {
+      var P = drawPath(rng, { kinds: [['spiral', 40], ['cardioid', 30], ['circle', 30]], spiralK: [6, 8, 12, 18, 24] });
+      var mG = qval(pickD(rng, [0.2, 0.25, 0.4, 0.5, 1])), wG = qval(pickD(rng, [1, 1.5, 2, 3, 4, 5]));
+      var KG = pathKin(P, wG, 0), sp = Math.sin(KG.psi), cp = Math.cos(KG.psi);
+      var NG = -mG * KG.ar / sp, FG = mG * KG.at - NG * cp;
+      spec = {
+        type: 'fields',
+        prompt: T`A \(${fx(mG)}\ \text{kg}\) pin moves in a smooth fixed groove \(${P.tex}\ \text{m}\) (\(\theta\) in radians) in a horizontal plane, pushed by a smooth slotted arm that turns about \(O\) at a constant \(\dot\theta = ${fx(wG)}\ \text{rad/s}\). At \(\theta = ${P.thT}\ (${P.degT})\), find the tangent angle \(\psi\), the force \(N\) of the groove on the pin, and the force \(F\) of the arm on the pin.`,
+        fields: [
+          { name: 'psi', label: '\\(\\psi =\\)', answer: KG.psi, angle: true, answerTex: fx(KG.psi * 180 / PI) + '^\\circ' },
+          { name: 'N', label: '\\(N =\\)', answer: NG, unit: 'N', tol: TOL2 },
+          { name: 'F', label: '\\(F =\\)', answer: FG, unit: 'N', tol: TOL2 }
+        ],
+        hints: [T`Kinematics first: \(\dot r = (dr/d\theta)\dot\theta\), \(\ddot r = (d^2r/d\theta^2)\dot\theta^2\), then \(a_r\) and \(a_\theta\). And \(\tan\psi = r/(dr/d\theta)\).`,
+          T`The groove pushes along \(-\sin\psi\,\er + \cos\psi\,\et\) (perpendicular to the path); the arm pushes along \(\et\).`,
+          T`\(\sum F_r\): \(-N\sin\psi = m a_r\). \(\sum F_\theta\): \(F + N\cos\psi = m a_\theta\).`],
+        explain: T`Only the groove has a radial component, so the radial equation gives \(N\); the transverse equation then gives \(F\).`,
+        solution: T`<p>Kinematics at \(\theta = ${P.thT}\), with \(\dot\theta = ${fx(wG)}\ \text{rad/s}\) and \(\ddot\theta = 0\):</p>` + pathRatesBlock(P, wG, 0, KG) +
+          M(T`\begin{aligned}
+a_r &= \ddot r - r\dot\theta^2 = ${fx(KG.ar)}\ \text{m/s}^2, \qquad a_\theta = 2\dot r\dot\theta = ${fx(KG.at)}\ \text{m/s}^2 \\
+\tan\psi &= \frac{r}{dr/d\theta} = \frac{${fx(P.r)}}{${fx(P.r1)}} \quad\Rightarrow\quad \psi = ${fx(KG.psi * 180 / PI)}^\circ \\
+N &= -\frac{m a_r}{\sin\psi} = -\frac{(${fx(mG)})${fxp(KG.ar)}}{${fx(sp)}} = ${fx(NG)}\ \text{N} \\
+F &= m a_\theta - N\cos\psi = (${fx(mG)})${fxp(KG.at)} - ${fxp(NG)}(${fx(cp)}) = ${fx(FG)}\ \text{N}
+\end{aligned}`) +
+          '<p>' + (NG >= 0 ? T`\(N \gt 0\): the groove pushes along \(-\sin\psi\,\er + \cos\psi\,\et\).` : T`\(N \lt 0\): the groove's push is along \(+\sin\psi\,\er - \cos\psi\,\et\) (the other wall).`) + ' ' +
+          (FG >= 0 ? T`\(F \gt 0\): the arm pushes the pin forward.` : T`\(F \lt 0\): the arm holds the pin back.`) + '</p>'
+      };
+      right = [{ psi: typed4(KG.psi), N: typed4(NG), F: typed4(FG) }, { psi: fx(KG.psi * 180 / PI).replace(/\s/g, '') + '°', N: typed4(NG), F: typed4(FG) }];
+      wrong = [{ psi: typed4(KG.psi), N: typed4(-mG * KG.ar), F: typed4(mG * KG.at) }].filter(function (x) {
+        return Math.abs(parseFloat(x.N) - NG) > 0.02 + 0.01 * Math.abs(NG) || Math.abs(parseFloat(x.F) - FG) > 0.02 + 0.01 * Math.abs(FG);
+      });
+      if (!wrong.length) wrong = [{ psi: typed4(KG.psi + PI / 2), N: typed4(NG), F: typed4(FG) }];
+      var nDir = [-sp, cp, 0];
+      view = forceView(pathView(P, wG, 0, KG, 'Forces on the pin', { arm: true, showA: false,
+        readouts: [{ label: 'Groove \\(N\\)', tex: '\\approx ' + fx(NG) + '\\ \\text{N}' }, { label: 'Arm \\(F\\)', tex: '\\approx ' + fx(FG) + '\\ \\text{N}' }, { label: '\\(\\psi\\)', tex: fx(KG.psi * 180 / PI) + '^\\circ' }],
+        note: scaledNote(viewScale(Math.max(P.r, 0.2))) + T`Seen from above, with the arm through \(O\) and the pin. Teal is the groove's force (perpendicular to the path), violet the arm's force \(F\,\et\).`,
+        aria: 'Top view of the groove and the slotted arm, with the force of the groove perpendicular to the path and the force of the arm perpendicular to the arm.' }),
+        [{ c: [NG * nDir[0], NG * nDir[1], 0], color: 'accent', label: '\\mathbf{N}' }, { c: [0, FG, 0], color: 't', label: 'F' }]);
+      check = function () {
+        var e = fdCheck(polarPos(function (x) { return P.f(P.th + wG * x); }, function (x) { return P.th + wG * x; }), P.th, [KG.vr, KG.vt, 0, KG.ar, KG.at, 0]);
+        if (Math.abs(-NG * sp - mG * KG.ar) > 1e-9 * Math.max(1, Math.abs(mG * KG.ar))) e.push('radial equation fails');
+        if (Math.abs(FG + NG * cp - mG * KG.at) > 1e-9 * Math.max(1, Math.abs(mG * KG.at))) e.push('transverse equation fails');
+        if (Math.abs(sp) < 0.2) e.push('psi too close to 0 (N blows up)');
+        return e;
+      };
+    }
+    return { spec: spec, view: view, test: { right: right, wrong: wrong, check: check } };
+  }
+
+  /* ================================================================ 5. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l02: L(2, '02-position.html', 'Position in Polar and Cylindrical Coordinates'), l03: L(3, '03-unit-vectors.html', 'Unit Vectors That Turn'),
+    l04: L(4, '04-velocity.html', 'Velocity'), l05: L(5, '05-acceleration.html', 'Acceleration'),
+    l06: L(6, '06-paths-r-theta.html', 'Paths Given as r = f(θ)'), l07: L(7, '07-equations-of-motion.html', 'Equations of Motion'),
+    l08: L(8, '08-applications.html', 'Kinetics Applications')
+  };
+  var CATS = [
+    { id: 'cyl2cart', label: 'Cylindrical → Cartesian', gen: genCyl2Cart, lessons: [LES.l02] },   //  : the arrow never starts a line
+    { id: 'cart2cyl', label: 'Cartesian → cylindrical', gen: genCart2Cyl, lessons: [LES.l02] },
+    { id: 'vectors', label: 'Unit vectors & components', gen: genVectors, lessons: [LES.l03] },
+    { id: 'velocity', label: 'Velocity', gen: genVelocity, lessons: [LES.l04] },
+    { id: 'accel', label: 'Acceleration', gen: genAccel, lessons: [LES.l05] },
+    { id: 'time', label: 'r(t) and θ(t)', gen: genTimeFn, lessons: [LES.l05] },
+    { id: 'path', label: 'Paths r = f(θ)', gen: genPath, lessons: [LES.l06] },
+    { id: 'kinetics', label: 'Equations of motion', gen: genKinetics, lessons: [LES.l07] },
+    { id: 'apps', label: 'Guides & central forces', gen: genApps, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 6. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      if (v.note) out.push(['view note', v.note]);
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.label) out.push(['view label', '\\(' + v.label.tex + '\\)']);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|sec|csc|arctan|left|right|Longrightarrow|quad|dot|ddot|ihat|jhat|khat|er|et|ez|Fvec|vvec|avec|int|iiint|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'point') return spec.answerPoint.every(isFinite);
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {}, kinds = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        kinds[p.view && p.view.kind] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['mc', 'numeric', 'fields', 'point'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          if (s.type === 'point' && s.system === 'cyl' && !(s.answerPoint[0] >= 0 && s.answerPoint[1] >= 0 && s.answerPoint[1] < 2 * PI)) f('cylindrical answer out of range');
+          if (s.type === 'mc') {
+            if (s.choices.length < 4) f('fewer than 4 choices');
+            if (s.choices.filter(function (c) { return c.correct; }).length !== 1) f('not exactly one correct choice');
+            var hs = s.choices.map(function (c) { return c.html; });
+            if (hs.some(function (h, j) { return hs.indexOf(h) !== j; })) f('duplicate choices');
+            if (s.choices.some(function (c) { return !c.correct && !c.feedback; })) f('distractor without feedback');
+          }
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || ['point', 'vector', 'motion'].indexOf(vw.kind) < 0) f('bad view');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      st.viewKinds = Object.keys(kinds);
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec, view: { kind: sp.view.kind, readouts: sp.view.readouts } }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 7. The shared 3D view (one viewer for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var IDLE = '3D axes and a polar grid. The picture for the current problem appears here after you solve it or open its solution.';
+    var v = CYL3D.create(stage, { extent: 6, zRange: [-2.5, 4.5], ui: ['iso', 'top', 'front', 'reset'], ariaLabel: IDLE });
+    var G = v.group();
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it here in 3D.' })]);
+    stage.appendChild(veil);
+    var cur = null, revealed = false;
+    function hint(text) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: '3D view' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: text }));
+    }
+    function add3(a, b, k) { return [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k]; }
+    // Camera azimuth (deg) for a close-up at elevation FOCUS_EL: the one (in 5 deg steps) that shows the drawn arrows
+    // best, i.e. maximizes the smallest on-screen length fraction sin(angle to the line of sight) over `dirs`, so no
+    // arrow is seen end-on. Ties go to the azimuth nearest the usual 3D view (32 deg).
+    var FOCUS_EL = 35;
+    function bestAz(dirs) {
+      var el = FOCUS_EL * Math.PI / 180, best = null;
+      for (var a = 0; a < 360; a += 5) {
+        var az = a * Math.PI / 180, los = [Math.cos(el) * Math.cos(az), Math.cos(el) * Math.sin(az), Math.sin(el)], score = 1;
+        dirs.forEach(function (w) {
+          var n = Math.hypot(w[0], w[1], w[2]);
+          if (n < 1e-9) return;
+          var c = (w[0] * los[0] + w[1] * los[1] + w[2] * los[2]) / n;
+          score = Math.min(score, Math.sqrt(Math.max(0, 1 - c * c)));
+        });
+        score -= 1e-4 * Math.abs((((a - 32) % 360) + 540) % 360 - 180);
+        if (!best || score > best.s) best = { s: score, a: a };
+      }
+      return best.a;
+    }
+    // Azimuth (deg) for the usual 3D view (elevation 25 deg) turned as little as possible from 32 deg so that each
+    // horizontal direction in `reqs` ([direction in deg, minimum on-screen angle from the vertical in deg]) is
+    // drawn well away from the z-axis. From the usual view, a direction such as theta = 30 or 210 deg points
+    // straight along the line of sight and is drawn on top of the z-axis (a half-plane there is seen edge-on).
+    var ISO_AZ = 32, ISO_EL = 25;
+    function clearAz(reqs) {
+      var sEl = Math.sin(ISO_EL * Math.PI / 180);
+      function ok(az) {
+        return reqs.every(function (q) {
+          var d = (q[0] - az) * Math.PI / 180;
+          return Math.atan2(Math.abs(Math.sin(d)), sEl * Math.abs(Math.cos(d))) * 180 / Math.PI >= q[1];
+        });
+      }
+      for (var d = 0; d <= 180; d++) { if (ok(ISO_AZ + d)) return ISO_AZ + d; if (ok(ISO_AZ - d)) return ISO_AZ - d; }
+      return ISO_AZ;
+    }
+    function isoTurned(az) { return az === ISO_AZ ? null : { azimuth: az, elevation: ISO_EL, zoom: 1 }; }
+    function cylToCart(vec, th) { var c = Math.cos(th), s = Math.sin(th); return [vec[0] * c - vec[1] * s, vec[0] * s + vec[1] * c, vec[2]]; }
+    function build(vw) {
+      var sc = vw.scale || 1, toggles = [];
+      vw.gridOn = sc === 1;                              // applied on reveal: the idle view always shows the grid
+      if (vw.kind === 'point') {
+        // θ and the x and y legs must not be drawn along the z-axis
+        if (vw.r > 1e-9) vw.camera = isoTurned(clearAz([[vw.theta * 180 / Math.PI, 40], [0, 30], [90, 30]]));
+        var P = v.cylPoint({ r: vw.r, theta: vw.theta, z: vw.z, label: 'P', showCartesian: true, parent: G });
+        toggles.push(CYL.toggle({ label: 'Construction', value: true, onChange: function (on) { P.setVisible({ construction: on }); } }));
+        toggles.push(CYL.toggle({ label: '\\(x, y\\) legs', value: true, onChange: function (on) { P.setVisible({ cartesian: on }); } }));
+      } else if (vw.kind === 'vector') {
+        var r = vw.r * sc, th = vw.theta, z = vw.z;
+        var Q2 = v.cylPoint({ r: r, theta: th, z: z, label: 'P', construction: false, parent: G });
+        var p0 = [r * Math.cos(th), r * Math.sin(th), z];
+        var U = v.unitVectors({ r: r, theta: th, z: z, length: 1.3, parent: G });
+        U.visible = !!vw.unit;
+        if (vw.F) {
+          var mag = Math.hypot(vw.F[0], vw.F[1], vw.F[2]) || 1, kk = F_LEN / mag;
+          v.arrow(p0, add3(p0, vw.F, kk), { color: 'accent', label: '\\Fvec', parent: G });
+          var comps = v.group(G), er = [Math.cos(th), Math.sin(th), 0], et = [-Math.sin(th), Math.cos(th), 0];
+          var w = 0.016 * 6 / 4;
+          // a component too short to see gets no arrow; one too short to label gets no label
+          var drawn = compDrawn(vw.F, vw.comp);          // the same rule builds the figure note
+          var compArrow = function (dir, c, color, tex, i) {
+            var len = Math.abs(c) * kk;
+            if (!drawn[i]) return;
+            v.arrow(p0, add3(p0, dir, c * kk), { color: color, width: w, headLength: Math.min(0.27, 0.6 * len), label: len >= 0.3 ? tex : null, parent: comps });
+          };
+          compArrow(er, vw.comp[0], 'r', 'F_r', 0);
+          compArrow(et, vw.comp[1], 't', 'F_\\theta', 1);
+          compArrow([0, 0, 1], vw.comp[2], 'z', 'F_z', 2);
+          toggles.push(CYL.toggle({ label: 'Components', value: true, onChange: function (on) { comps.visible = on; v.render(); } }));
+        }
+        // frame P and its arrows (the whole scene is only a Reset away)
+        if (!vw.camera) {
+          var ers = [Math.cos(th), Math.sin(th), 0], ets = [-Math.sin(th), Math.cos(th), 0], shown = [];
+          if (vw.F) {
+            shown.push(vw.F);
+            if (Math.abs(vw.comp[0]) > 1e-9) shown.push(ers);
+            if (Math.abs(vw.comp[1]) > 1e-9) shown.push(ets);
+          } else shown.push(ers, ets);
+          vw.focus = { azimuth: bestAz(shown), elevation: FOCUS_EL, zoom: vw.F ? 1.6 : 2, target: [p0[0], p0[1], z] };
+        }
+        else if (vw.camera === 'top') vw.focus = { azimuth: -90, elevation: 89.95, zoom: 1.7, target: [p0[0] / 2, p0[1] / 2, 0] };   // axis and P both in frame
+        toggles.push(CYL.toggle({ label: 'Unit vectors', value: !!vw.unit, onChange: function (on) { U.visible = on; v.render(); } }));
+        toggles.push(CYL.toggle({ label: 'Construction', value: false, onChange: function (on) { Q2.setVisible({ construction: on }); } }));
+      } else if (vw.kind === 'motion') {
+        var zP = vw.z, rS = vw.r * sc, q0 = [rS * Math.cos(vw.theta), rS * Math.sin(vw.theta), zP];
+        var Pm = v.cylPoint({ r: rS, theta: vw.theta, z: zP, label: 'P', parent: G });
+        var path;
+        if (vw.curve) {
+          var cvd = vw.curve;   // scaled by sc about (0, 0, z_P), like the point, so v stays tangent to the drawn path
+          path = v.curve(function (u) { var pp = cvd.fn(u); return [pp[0] * sc, pp[1] * sc, zP + (pp[2] - zP) * sc]; }, cvd.u0, cvd.u1, { color: 'muted', width: 2, dashed: true, segments: 240, parent: G });
+        } else {
+          var pa = vw.path;
+          path = v.curve(function (t) {
+            var R = pa.r + pa.rd * t + pa.rdd * t * t / 2;
+            if (R < 0) return [NaN, NaN, NaN];
+            var TH = pa.th + pa.td * t + pa.tdd * t * t / 2;
+            return [R * Math.cos(TH) * sc, R * Math.sin(TH) * sc, pa.z + sc * (pa.zd * t + pa.zdd * t * t / 2)];
+          }, -pa.T, pa.T, { color: 'muted', width: 2, dashed: true, segments: 160, parent: G });
+        }
+        if (vw.arm) {                                       // the rod or slotted arm through O and P
+          var Larm = Math.max(rS * 1.35, rS + 1.2);
+          v.arrow([0, 0, zP], [Larm * Math.cos(vw.theta), Larm * Math.sin(vw.theta), zP], { color: 'surface', width: 0.06, headLength: 1e-4, headRadius: 0, parent: G });
+        }
+        var vcm = cylToCart(vw.v, vw.theta), acm = vw.a && vw.showA !== false ? cylToCart(vw.a, vw.theta) : null;
+        var vm = Math.hypot(vcm[0], vcm[1], vcm[2]), am = acm ? Math.hypot(acm[0], acm[1], acm[2]) : 0;
+        var va = vm > 1e-9 ? v.arrow(q0, add3(q0, vcm, 2.2 / vm), { color: 'good', label: '\\vvec', parent: G }) : null;
+        var aa = am > 1e-9 ? v.arrow(q0, add3(q0, acm, 2.2 / am), { color: 'bad', label: '\\avec', parent: G }) : null;
+        var gF = null, fdirs = [];
+        if (vw.forces && vw.forces.length) {
+          gF = v.group(G);
+          var fcs = vw.forces.map(function (f) { return cylToCart(f.c, vw.theta); });
+          var fmax = Math.max.apply(null, fcs.map(function (f) { return Math.hypot(f[0], f[1], f[2]); }));
+          vw.forces.forEach(function (f, i) {
+            var len = Math.hypot(fcs[i][0], fcs[i][1], fcs[i][2]);
+            if (!(fmax > 0) || len < 0.02 * fmax) return;      // too short to draw at this scale
+            fdirs.push(fcs[i]);
+            v.arrow(q0, add3(q0, fcs[i], 2.4 / fmax), { color: f.color, label: f.label, parent: gF });
+          });
+        }
+        vw.focus = vw.camera === 'top' ? { azimuth: -90, elevation: 89.95, zoom: 1.5, target: [q0[0], q0[1], zP] }
+          : { azimuth: bestAz([vcm].concat(acm ? [acm] : []).concat(fdirs)), elevation: FOCUS_EL, zoom: 1.5, target: q0 };
+        toggles.push(CYL.toggle({ label: 'Path', value: true, onChange: function (on) { path.visible = on; v.render(); } }));
+        if (va) toggles.push(CYL.toggle({ label: '\\(\\vvec\\)', color: 'good', value: true, onChange: function (on) { va.visible = on; v.render(); } }));
+        if (aa) toggles.push(CYL.toggle({ label: '\\(\\avec\\)', color: 'bad', value: true, onChange: function (on) { aa.visible = on; v.render(); } }));
+        if (gF) toggles.push(CYL.toggle({ label: 'Forces', value: true, onChange: function (on) { gF.visible = on; v.render(); } }));
+        toggles.push(CYL.toggle({ label: 'Construction', value: true, onChange: function (on) { Pm.setVisible({ construction: on }); } }));
+      }
+      return toggles;
+    }
+    function fillPanel(vw, toggles) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || '3D view' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      if (toggles.length) panel.appendChild(CYL.el('div', { class: 'chip-row' }, toggles.map(function (t) { return t.el; })));
+      var note = (vw.note || '') + (vw.focus ? ' The view starts zoomed in; the Reset button (the circular arrow) shows the whole scene.' : '');
+      if (note) { var n = CYL.el('p', { class: 'pl-panel-note', html: note }); panel.appendChild(n); CYL.renderMath(n); }
+    }
+    var pendingToggles = [];
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      v.clear(G);
+      G.visible = false;
+      pendingToggles = build(cur);
+      if (v.grid) v.grid.visible = true;
+      veil.hidden = false;
+      v.setAriaLabel(IDLE);
+      v.setView('reset', false);
+      hint('Hidden until you solve the problem (or open its solution), so it does not give the answer away.');
+      v.render();
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      G.visible = true;
+      if (v.grid) v.grid.visible = cur.gridOn !== false;
+      veil.hidden = true;
+      v.setAriaLabel(cur.aria);
+      fillPanel(cur, pendingToggles);
+      var cam = cur.focus || cur.camera, anim = !CYL.prefersReducedMotion();
+      if (typeof cam === 'string') v.setView(cam, anim);
+      else if (cam) v.setCamera(cam, anim);
+      v.render();
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    VIEW.viewer = v;
+    VIEW.group = G;
+  });
+
+  /* ================================================================ 8. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like cart2cyl-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

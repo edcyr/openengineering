@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open Engineering · Interactive Dynamics Modules</title>
+<meta name="description" content="Free, interactive learning modules for engineering dynamics: curvilinear motion, cylindrical coordinates, mass moments of inertia and angular momentum. Animated figures, worked examples, instant-feedback questions and self-check quizzes that run in your browser and work offline.">
+<link rel="canonical" href="https://openengineering.ca/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b6b86">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Open Engineering · Interactive Dynamics Modules">
+<meta property="og:description" content="Free, interactive learning modules for engineering dynamics that run in your browser and work offline.">
+<meta property="og:url" content="https://openengineering.ca/">
+<style>
+  :root {
+    color-scheme: light dark;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --bg: #f6f7f9;
+    --bg-elev: #ffffff;
+    --bg-sunken: #eef1f5;
+    --ink: #18212b;
+    --ink-muted: #556270;
+    --ink-faint: #66727f;
+    --line: #dde2e8;
+    --line-strong: #c3cbd4;
+    --accent: #0b6b86;
+    --accent-hover: #085870;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3f2f6;
+    --c-v: #b8327a;
+    --c-a: #c2410c;
+    --c-path: #3a4450;
+    --c-good: #23793a;
+    --paper-line: rgba(11, 107, 134, 0.08);
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 18px rgba(16, 24, 40, 0.06);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --gutter: 16px;
+    --max: 1120px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1318;
+      --bg-elev: #161c23;
+      --bg-sunken: #1d242c;
+      --ink: #e5eaf0;
+      --ink-muted: #9ba7b4;
+      --ink-faint: #7f8b98;
+      --line: #2a333d;
+      --line-strong: #3b4652;
+      --accent: #4fc0dc;
+      --accent-hover: #7fd3e8;
+      --accent-ink: #062530;
+      --accent-soft: #15303a;
+      --c-v: #f07ab8;
+      --c-a: #ff8a4c;
+      --c-path: #9ba7b4;
+      --c-good: #5cc77a;
+      --paper-line: rgba(79, 192, 220, 0.07);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+  }
+  @media (min-width: 600px) { :root { --gutter: 24px; } }
+  @media (min-width: 1024px) { :root { --gutter: 40px; } }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--accent-hover); text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3 { line-height: 1.2; letter-spacing: -0.015em; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+  .skip { position: absolute; left: -999px; top: 8px; z-index: 100; padding: 8px 12px; background: var(--bg-elev); border-radius: 8px; }
+  .skip:focus { left: 8px; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .topbar .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
+  .brand { white-space: nowrap; display: inline-flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em; }
+  .brand:hover { color: var(--ink); text-decoration: none; }
+  .brand svg { width: 30px; height: 30px; flex: none; }
+  .brand small { display: block; color: var(--ink-faint); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; }
+  .topnav { display: flex; gap: 4px; margin-left: auto; }
+  .topnav a { white-space: nowrap; padding: 7px 10px; border-radius: 8px; color: var(--ink-muted); font-size: 0.9rem; font-weight: 600; }
+  .topnav a:hover { background: var(--bg-sunken); color: var(--ink); text-decoration: none; }
+  @media (max-width: 559.98px) { .topnav a.opt { display: none; } .brand small { display: none; } }
+  @media (max-width: 419.98px) { .topnav a.opt2 { display: none; } }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; isolation: isolate; padding: 48px 0 40px; border-bottom: 1px solid var(--line); }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(110% 100% at 0% 0%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(110% 100% at 0% 0%, #000 30%, transparent 75%);
+  }
+  .hero .wrap { display: grid; gap: 32px 48px; align-items: center; }
+  @media (min-width: 880px) { .hero .wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .hero { padding: 64px 0 56px; } }
+  .eyebrow { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 12px; color: var(--accent); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+  .hero h1 { margin: 0 0 16px; font-size: clamp(2.1rem, 1.4rem + 2.8vw, 3.2rem); line-height: 1.05; letter-spacing: -0.03em; }
+  .lede { margin: 0 0 24px; max-width: 36em; color: var(--ink-muted); font-size: 1.1rem; }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 10px 18px;
+    border: 1px solid var(--line-strong); border-radius: 10px;
+    background: var(--bg-elev); color: var(--ink);
+    font: inherit; font-size: 0.95rem; font-weight: 650; line-height: 1.2;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--ink); text-decoration: none; }
+  .btn.primary { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-ink); }
+  .btn svg { width: 1.05em; height: 1.05em; flex: none; }
+  .btn.sm { min-height: 38px; padding: 8px 14px; font-size: 0.88rem; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 26px 0 0; padding: 0; list-style: none; color: var(--ink-muted); font-size: 0.9rem; }
+  .facts li { display: inline-flex; align-items: center; gap: 8px; }
+  .facts li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .facts strong { color: var(--ink); }
+
+  .hero-fig { margin: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-elev); box-shadow: var(--shadow); overflow: hidden; }
+  .hero-fig svg { display: block; width: 100%; height: auto; }
+  .hero-fig figcaption { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--ink-muted); font-size: 0.82rem; }
+  .key { display: inline-flex; align-items: center; gap: 6px; }
+  .key i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+  .key i.dash { height: 0; border-top: 2px dashed var(--ink-faint); }
+  .hero-fig .pause { margin-left: auto; padding: 3px 9px; border: 1px solid var(--line); border-radius: 7px; background: none; color: var(--ink-muted); font: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+  .hero-fig .pause:hover { color: var(--ink); border-color: var(--line-strong); }
+
+  /* ---------- Sections ---------- */
+  section { padding: 56px 0; }
+  section + section { border-top: 1px solid var(--line); }
+  .sec-head { max-width: 46em; margin: 0 0 28px; }
+  .sec-head h2 { margin: 0 0 8px; font-size: clamp(1.6rem, 1.3rem + 1vw, 2rem); }
+  .sec-head p { margin: 0; color: var(--ink-muted); }
+
+  .track { margin: 0 0 40px; }
+  .track:last-child { margin-bottom: 0; }
+  .track-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .track-head h3 { margin: 0; font-size: 1.2rem; }
+  .track-head p { margin: 0; color: var(--ink-muted); font-size: 0.92rem; }
+  .cards { display: grid; gap: 20px; }
+  @media (min-width: 860px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* ---------- Module card ---------- */
+  .card {
+    display: flex; flex-direction: column;
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    background: var(--bg-elev); box-shadow: var(--shadow);
+  }
+  .card-top { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+  .mark {
+    display: grid; place-items: center; flex: none;
+    width: 52px; height: 52px; border-radius: 12px;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: "Times New Roman", Times, serif; font-style: italic; font-weight: 700; font-size: 1.3rem; letter-spacing: 0.01em;
+  }
+  .card-kicker { margin: 2px 0 2px; color: var(--ink-faint); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card h4 { margin: 0; font-size: 1.3rem; line-height: 1.2; }
+  .card h4 a { color: var(--ink); }
+  .card h4 a:hover { color: var(--accent); text-decoration: none; }
+  .card-desc { margin: 0 0 14px; color: var(--ink-muted); }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; padding: 0; list-style: none; }
+  .meta li { padding: 3px 10px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.8rem; font-weight: 600; }
+
+  .progress { display: none; margin: 0 0 14px; }
+  .progress.on { display: block; }
+  .progress p { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.84rem; }
+  .progress p strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .bar { height: 6px; border-radius: 99px; background: var(--bg-sunken); overflow: hidden; }
+  .bar span { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--c-good); }
+
+  details.lessons { margin: 0 0 16px; border: 1px solid var(--line); border-radius: var(--radius); }
+  details.lessons summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 14px; cursor: pointer; list-style: none;
+    font-size: 0.92rem; font-weight: 650;
+  }
+  details.lessons summary::-webkit-details-marker { display: none; }
+  details.lessons summary::after {
+    content: ""; width: 9px; height: 9px; flex: none;
+    border-right: 2px solid var(--ink-faint); border-bottom: 2px solid var(--ink-faint);
+    transform: rotate(45deg) translate(-2px, -2px); transition: transform 0.2s;
+  }
+  details.lessons[open] summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+  details.lessons ol { margin: 0; padding: 4px 8px 10px; list-style: none; border-top: 1px solid var(--line); }
+  details.lessons li a {
+    display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: baseline;
+    padding: 6px 8px; border-radius: 8px; color: var(--ink); font-size: 0.92rem; line-height: 1.4;
+  }
+  details.lessons li a:hover { background: var(--bg-sunken); text-decoration: none; }
+  .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.74rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  li.done .num { background: var(--c-good); color: #fff; font-size: 0; }
+  li.done .num::before { content: "\2713"; font-size: 0.78rem; }
+  .min { color: var(--ink-faint); font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .extras { margin: 0 0 18px; color: var(--ink-muted); font-size: 0.86rem; }
+  .extras a { font-weight: 600; }
+  .card-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
+
+  /* ---------- Features ---------- */
+  .features { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+  @media (min-width: 640px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 980px) { .features { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .features li { padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .features svg { width: 26px; height: 26px; color: var(--accent); }
+  .features h3 { margin: 8px 0 4px; font-size: 1.02rem; }
+  .features p { margin: 0; color: var(--ink-muted); font-size: 0.92rem; }
+
+  /* ---------- How to use ---------- */
+  .howto { display: grid; gap: 20px; }
+  @media (min-width: 860px) { .howto { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .panel { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-elev); }
+  .panel h3 { margin: 0 0 10px; font-size: 1.1rem; }
+  .panel ol, .panel ul { margin: 0; padding-left: 1.25em; color: var(--ink-muted); }
+  .panel li + li { margin-top: 6px; }
+  .panel li strong { color: var(--ink); }
+  .panel p { margin: 0 0 10px; color: var(--ink-muted); }
+  .panel p:last-child { margin-bottom: 0; }
+  .dl-list { display: grid; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .dl-list a { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-weight: 600; font-size: 0.92rem; }
+  .dl-list a:hover { border-color: var(--accent); text-decoration: none; }
+  .dl-list span { color: var(--ink-faint); font-weight: 500; white-space: nowrap; }
+
+  footer { padding: 32px 0 40px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 0.86rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+  footer p { margin: 0; }
+</style>
+</head>
+<body>
+<a class="skip" href="#modules">Skip to the modules</a>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Open Engineering home">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#0b6b86"/>
+        <path d="M6 23c3-9 9-14 20-14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+        <circle cx="14.6" cy="13.6" r="2.6" fill="#fff"/>
+        <path d="M14.6 13.6l7.2-3.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M19.6 8.6l2.6 1.4-1.6 2.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Open Engineering<small>Interactive dynamics modules</small></span>
+    </a>
+    <nav class="topnav" aria-label="Site">
+      <a href="#modules">Modules</a>
+      <a class="opt" href="#features">What's inside</a>
+      <a class="opt2" href="#using">Offline use</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow"><span>Free</span><span>Interactive</span><span>Works offline</span></p>
+        <h1>Learn engineering dynamics by watching it move.</h1>
+        <p class="lede">Short, interactive lessons for first- and second-year dynamics. Animated figures draw the vectors as the motion happens, every lesson has worked examples and questions with instant feedback, and each module ends with practice and a self-check quiz.</p>
+        <div class="cta">
+          <a class="btn primary" href="#modules">Browse the modules
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
+          <a class="btn" href="curvilinear-motion/">Start with Curvilinear Motion</a>
+        </div>
+        <ul class="facts">
+          <li><span><strong>4</strong> modules</span></li>
+          <li><span><strong>33</strong> lessons</span></li>
+          <li><span>About <strong>18</strong> hours of study</span></li>
+          <li><span>No account needed</span></li>
+        </ul>
+      </div>
+      <figure class="hero-fig">
+        <svg id="heroSvg" viewBox="0 0 560 380" role="img" aria-labelledby="heroTitle">
+          <title id="heroTitle">A particle moves around a curved path. Its velocity arrow stays tangent to the path, its acceleration arrow points toward the inside of the curve, and a dashed circle shows the local radius of curvature.</title>
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="var(--line)" stroke-width="1"/></pattern>
+            <marker id="ahV" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--c-v)"/></marker>
+            <marker id="ahA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--c-a)"/></marker>
+          </defs>
+          <rect width="560" height="380" fill="url(#grid)" opacity=".6"/>
+          <path id="heroPath" fill="none" stroke="var(--c-path)" stroke-width="2" opacity=".55"/>
+          <circle id="heroCirc" fill="none" stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="5 5"/>
+          <line id="heroRho" stroke="var(--ink-faint)" stroke-width="1.2" stroke-dasharray="3 4"/>
+          <line id="heroA" stroke="var(--c-a)" stroke-width="3" stroke-linecap="round" marker-end="url(#ahA)"/>
+          <line id="heroV" stroke="var(--c-v)" stroke-width="3" stroke-linecap="round" marker-end="url(#ahV)"/>
+          <circle id="heroP" r="7" fill="var(--ink)" stroke="var(--bg-elev)" stroke-width="2.5"/>
+          <text id="heroVt" fill="var(--c-v)" font-family="Times New Roman, serif" font-style="italic" font-weight="700" font-size="20">v</text>
+          <text id="heroAt" fill="var(--c-a)" font-family="Times New Roman, serif" font-style="italic" font-weight="700" font-size="20">a</text>
+          <text id="heroRt" fill="var(--ink-faint)" font-family="Times New Roman, serif" font-style="italic" font-size="17">ρ</text>
+        </svg>
+        <figcaption>
+          <span class="key"><i style="background:var(--c-v)"></i>velocity, tangent to the path</span>
+          <span class="key"><i style="background:var(--c-a)"></i>acceleration</span>
+          <span class="key"><i class="dash"></i>radius of curvature</span>
+          <button class="pause" type="button" id="heroPause" aria-pressed="false">Pause</button>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <section id="modules">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>The modules</h2>
+        <p>Each module is a complete unit: eight or nine lessons, then practice, a quiz, a printable worksheet, an interactive explorer, a formula sheet and a glossary. Take them in the order shown; the second module of each pair builds on the first.</p>
+      </div>
+
+      <div class="track">
+        <div class="track-head">
+          <h3>Particle dynamics</h3>
+          <p>First-year engineering dynamics</p>
+        </div>
+        <div class="cards">
+
+          <article class="card" data-ns="curvmod:" data-href="curvilinear-motion/">
+            <div class="card-top">
+              <span class="mark" aria-hidden="true">nt</span>
+              <div>
+                <p class="card-kicker">Module 1</p>
+                <h4><a href="curvilinear-motion/">Curvilinear Motion</a></h4>
+              </div>
+            </div>
+            <p class="card-desc">Plane curvilinear motion of a particle in rectangular (x–y) and path (n–t) coordinates: motion vectors, projectile motion, tangential and normal acceleration, and the radius of curvature.</p>
+            <ul class="meta"><li>9 lessons</li><li>About 5 hours</li><li>Motion Explorer</li></ul>
+            <div class="progress"><p></p><div class="bar"><span></span></div></div>
+            <details class="lessons">
+              <summary>Lessons</summary>
+              <ol>
+                <li data-id="l01"><a href="curvilinear-motion/lessons/01-straight-to-curved.html"><span class="num">1</span><span>From Straight Lines to Curves</span><span class="min">20 min</span></a></li>
+                <li data-id="l02"><a href="curvilinear-motion/lessons/02-motion-vectors.html"><span class="num">2</span><span>Position, Velocity and Acceleration Vectors</span><span class="min">30 min</span></a></li>
+                <li data-id="l03"><a href="curvilinear-motion/lessons/03-rectangular-components.html"><span class="num">3</span><span>Rectangular (x–y) Components</span><span class="min">35 min</span></a></li>
+                <li data-id="l04"><a href="curvilinear-motion/lessons/04-projectile-motion.html"><span class="num">4</span><span>Projectile Motion</span><span class="min">40 min</span></a></li>
+                <li data-id="l05"><a href="curvilinear-motion/lessons/05-path-coordinates.html"><span class="num">5</span><span>Path Coordinates: Tangential and Normal</span><span class="min">30 min</span></a></li>
+                <li data-id="l06"><a href="curvilinear-motion/lessons/06-nt-acceleration.html"><span class="num">6</span><span>Acceleration in Path Coordinates</span><span class="min">35 min</span></a></li>
+                <li data-id="l07"><a href="curvilinear-motion/lessons/07-radius-of-curvature.html"><span class="num">7</span><span>Radius of Curvature</span><span class="min">30 min</span></a></li>
+                <li data-id="l08"><a href="curvilinear-motion/lessons/08-connecting-systems.html"><span class="num">8</span><span>Connecting x–y and n–t Components</span><span class="min">35 min</span></a></li>
+                <li data-id="l09"><a href="curvilinear-motion/lessons/09-applications.html"><span class="num">9</span><span>Choosing a System: Engineering Applications</span><span class="min">35 min</span></a></li>
+              </ol>
+            </details>
+            <p class="extras"><a href="curvilinear-motion/practice/practice-lab.html">Practice Lab</a> · <a href="curvilinear-motion/practice/quiz.html">Self-Check Quiz</a> · <a href="curvilinear-motion/practice/worksheet.html">Worksheet</a> · <a href="curvilinear-motion/tools/explorer.html">Motion Explorer</a> · <a href="curvilinear-motion/reference/cheat-sheet.html">Formula Sheet</a> · <a href="curvilinear-motion/reference/glossary.html">Glossary</a></p>
+            <div class="card-actions">
+              <a class="btn primary sm js-go" href="curvilinear-motion/">Open the module</a>
+              <a class="btn sm" href="downloads/curvilinear-motion.zip" download>Download for offline use (0.6 MB)</a>
+            </div>
+          </article>
+
+          <article class="card" data-ns="cyldyn:" data-href="cylindrical-coordinates/">
+            <div class="card-top">
+              <span class="mark" aria-hidden="true">rθz</span>
+              <div>
+                <p class="card-kicker">Module 2</p>
+                <h4><a href="cylindrical-coordinates/">Cylindrical Coordinates</a></h4>
+              </div>
+            </div>
+            <p class="card-desc">Kinematics and kinetics of a particle in polar and cylindrical coordinates (r, θ, z): unit vectors that turn, velocity and acceleration components, paths given as r = f(θ), and the equations of motion.</p>
+            <ul class="meta"><li>8 lessons</li><li>About 4.5 hours</li><li>Motion Explorer</li></ul>
+            <div class="progress"><p></p><div class="bar"><span></span></div></div>
+            <details class="lessons">
+              <summary>Lessons</summary>
+              <ol>
+                <li data-id="l01"><a href="cylindrical-coordinates/lessons/01-why-cylindrical.html"><span class="num">1</span><span>Why Cylindrical Coordinates?</span><span class="min">20 min</span></a></li>
+                <li data-id="l02"><a href="cylindrical-coordinates/lessons/02-position.html"><span class="num">2</span><span>Position in Polar and Cylindrical Coordinates</span><span class="min">30 min</span></a></li>
+                <li data-id="l03"><a href="cylindrical-coordinates/lessons/03-unit-vectors.html"><span class="num">3</span><span>Unit Vectors That Turn</span><span class="min">30 min</span></a></li>
+                <li data-id="l04"><a href="cylindrical-coordinates/lessons/04-velocity.html"><span class="num">4</span><span>Velocity</span><span class="min">30 min</span></a></li>
+                <li data-id="l05"><a href="cylindrical-coordinates/lessons/05-acceleration.html"><span class="num">5</span><span>Acceleration</span><span class="min">35 min</span></a></li>
+                <li data-id="l06"><a href="cylindrical-coordinates/lessons/06-paths-r-theta.html"><span class="num">6</span><span>Paths Given as r = f(θ)</span><span class="min">35 min</span></a></li>
+                <li data-id="l07"><a href="cylindrical-coordinates/lessons/07-equations-of-motion.html"><span class="num">7</span><span>Equations of Motion</span><span class="min">40 min</span></a></li>
+                <li data-id="l08"><a href="cylindrical-coordinates/lessons/08-applications.html"><span class="num">8</span><span>Kinetics Applications</span><span class="min">40 min</span></a></li>
+              </ol>
+            </details>
+            <p class="extras"><a href="cylindrical-coordinates/practice/practice-lab.html">Practice Lab</a> · <a href="cylindrical-coordinates/practice/quiz.html">Self-Check Quiz</a> · <a href="cylindrical-coordinates/practice/worksheet.html">Worksheet</a> · <a href="cylindrical-coordinates/tools/explorer.html">Motion Explorer</a> · <a href="cylindrical-coordinates/reference/cheat-sheet.html">Formula Sheet</a> · <a href="cylindrical-coordinates/reference/glossary.html">Glossary</a></p>
+            <div class="card-actions">
+              <a class="btn primary sm js-go" href="cylindrical-coordinates/">Open the module</a>
+              <a class="btn sm" href="downloads/cylindrical-coordinates.zip" download>Download for offline use (0.9 MB)</a>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <div class="track">
+        <div class="track-head">
+          <h3>Rigid-body dynamics</h3>
+          <p>Second-year engineering dynamics</p>
+        </div>
+        <div class="cards">
+
+          <article class="card" data-ns="inertmod:" data-href="mass-moments-of-inertia/">
+            <div class="card-top">
+              <span class="mark" aria-hidden="true">[I]</span>
+              <div>
+                <p class="card-kicker">Module 3</p>
+                <h4><a href="mass-moments-of-inertia/">Mass Moments of Inertia</a></h4>
+              </div>
+            </div>
+            <p class="card-desc">Moments of inertia by integration, the parallel-axis theorem and composite bodies, then products of inertia, the inertia tensor, the moment of inertia about any axis, and principal axes, with 3D figures you can turn.</p>
+            <ul class="meta"><li>8 lessons</li><li>About 4.5 hours</li><li>Inertia Explorer</li></ul>
+            <div class="progress"><p></p><div class="bar"><span></span></div></div>
+            <details class="lessons">
+              <summary>Lessons</summary>
+              <ol>
+                <li data-id="l01"><a href="mass-moments-of-inertia/lessons/01-why-inertia.html"><span class="num">1</span><span>Why Mass Moments of Inertia?</span><span class="min">25 min</span></a></li>
+                <li data-id="l02"><a href="mass-moments-of-inertia/lessons/02-integration.html"><span class="num">2</span><span>Moments of Inertia by Integration</span><span class="min">35 min</span></a></li>
+                <li data-id="l03"><a href="mass-moments-of-inertia/lessons/03-parallel-axis.html"><span class="num">3</span><span>The Parallel-Axis Theorem</span><span class="min">30 min</span></a></li>
+                <li data-id="l04"><a href="mass-moments-of-inertia/lessons/04-composite-bodies.html"><span class="num">4</span><span>Composite Bodies</span><span class="min">35 min</span></a></li>
+                <li data-id="l05"><a href="mass-moments-of-inertia/lessons/05-products-of-inertia.html"><span class="num">5</span><span>Products of Inertia</span><span class="min">35 min</span></a></li>
+                <li data-id="l06"><a href="mass-moments-of-inertia/lessons/06-inertia-tensor.html"><span class="num">6</span><span>The Inertia Tensor and Angular Momentum</span><span class="min">35 min</span></a></li>
+                <li data-id="l07"><a href="mass-moments-of-inertia/lessons/07-any-axis.html"><span class="num">7</span><span>Moment of Inertia About Any Axis</span><span class="min">30 min</span></a></li>
+                <li data-id="l08"><a href="mass-moments-of-inertia/lessons/08-principal-axes.html"><span class="num">8</span><span>Principal Axes and Principal Moments</span><span class="min">40 min</span></a></li>
+              </ol>
+            </details>
+            <p class="extras"><a href="mass-moments-of-inertia/practice/practice-lab.html">Practice Lab</a> · <a href="mass-moments-of-inertia/practice/quiz.html">Self-Check Quiz</a> · <a href="mass-moments-of-inertia/practice/worksheet.html">Worksheet</a> · <a href="mass-moments-of-inertia/tools/explorer.html">Inertia Explorer</a> · <a href="mass-moments-of-inertia/reference/cheat-sheet.html">Formula Sheet</a> · <a href="mass-moments-of-inertia/reference/glossary.html">Glossary</a></p>
+            <div class="card-actions">
+              <a class="btn primary sm js-go" href="mass-moments-of-inertia/">Open the module</a>
+              <a class="btn sm" href="downloads/mass-moments-of-inertia.zip" download>Download for offline use (0.9 MB)</a>
+            </div>
+          </article>
+
+          <article class="card" data-ns="angmod:" data-href="angular-momentum/">
+            <div class="card-top">
+              <span class="mark" aria-hidden="true">H</span>
+              <div>
+                <p class="card-kicker">Module 4</p>
+                <h4><a href="angular-momentum/">Angular Momentum</a></h4>
+              </div>
+            </div>
+            <p class="card-desc">From the angular momentum of a particle to systems of particles and rigid bodies: angular impulse, impact, angular momentum in three dimensions, Euler's equations and gyroscopic motion, with live simulations.</p>
+            <ul class="meta"><li>8 lessons</li><li>About 4.5 hours</li><li>Spin Lab</li></ul>
+            <div class="progress"><p></p><div class="bar"><span></span></div></div>
+            <details class="lessons">
+              <summary>Lessons</summary>
+              <ol>
+                <li data-id="l01"><a href="angular-momentum/lessons/01-particle.html"><span class="num">1</span><span>Angular Momentum of a Particle</span><span class="min">30 min</span></a></li>
+                <li data-id="l02"><a href="angular-momentum/lessons/02-impulse-momentum.html"><span class="num">2</span><span>Angular Impulse and Momentum</span><span class="min">35 min</span></a></li>
+                <li data-id="l03"><a href="angular-momentum/lessons/03-systems.html"><span class="num">3</span><span>Systems of Particles</span><span class="min">30 min</span></a></li>
+                <li data-id="l04"><a href="angular-momentum/lessons/04-plane-motion.html"><span class="num">4</span><span>Rigid Bodies in Plane Motion</span><span class="min">35 min</span></a></li>
+                <li data-id="l05"><a href="angular-momentum/lessons/05-rigid-impulse.html"><span class="num">5</span><span>Impulse, Momentum and Impact of Rigid Bodies</span><span class="min">40 min</span></a></li>
+                <li data-id="l06"><a href="angular-momentum/lessons/06-three-d.html"><span class="num">6</span><span>Angular Momentum in Three Dimensions</span><span class="min">35 min</span></a></li>
+                <li data-id="l07"><a href="angular-momentum/lessons/07-euler.html"><span class="num">7</span><span>Euler's Equations of Motion</span><span class="min">35 min</span></a></li>
+                <li data-id="l08"><a href="angular-momentum/lessons/08-gyroscopes.html"><span class="num">8</span><span>Gyroscopic Motion</span><span class="min">40 min</span></a></li>
+              </ol>
+            </details>
+            <p class="extras"><a href="angular-momentum/practice/practice-lab.html">Practice Lab</a> · <a href="angular-momentum/practice/quiz.html">Self-Check Quiz</a> · <a href="angular-momentum/practice/worksheet.html">Worksheet</a> · <a href="angular-momentum/tools/explorer.html">Spin Lab</a> · <a href="angular-momentum/reference/cheat-sheet.html">Formula Sheet</a> · <a href="angular-momentum/reference/glossary.html">Glossary</a></p>
+            <div class="card-actions">
+              <a class="btn primary sm js-go" href="angular-momentum/">Open the module</a>
+              <a class="btn sm" href="downloads/angular-momentum.zip" download>Download for offline use (0.9 MB)</a>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>What's inside every module</h2>
+        <p>The same layout throughout, so once you know one module you know them all.</p>
+      </div>
+      <ul class="features">
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17c4-8 9-11 18-11"/><circle cx="10" cy="10.4" r="2.2"/><path d="M10 10.4l5.6-2.6"/></svg>
+          <h3>Figures that move</h3>
+          <p>Animated and 3D figures draw velocity, acceleration, momentum and inertia as you change the inputs with sliders.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h8M8 11h6"/></svg>
+          <h3>Worked examples</h3>
+          <p>Step-by-step solutions in textbook notation (Hibbeler), with free-body diagrams and the reasoning behind each step.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M8 12.5l2.8 2.8L16.5 9"/></svg>
+          <h3>Instant feedback</h3>
+          <p>Questions inside every lesson check your answer as you go and explain the common mistakes.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          <h3>Practice and a quiz</h3>
+          <p>A Practice Lab generates fresh problems on demand, and a 15-question Self-Check Quiz tells you where you stand.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>
+          <h3>Print what you need</h3>
+          <p>A two-page formula sheet and a printable worksheet for paper practice, plus a glossary of every term.</p>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>
+          <h3>Works offline</h3>
+          <p>Use the modules here, or download one and open it from your computer with no internet connection at all.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="using">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Using the modules</h2>
+        <p>Nothing to install and no account to create.</p>
+      </div>
+      <div class="howto">
+        <div class="panel">
+          <h3>In your browser</h3>
+          <ul>
+            <li><strong>Open a module</strong> above and start with Lesson 1, or jump straight to any lesson from its list.</li>
+            <li><strong>Your progress is saved</strong> in this browser as you mark lessons complete, and shows on this page. It stays on your device; nothing is sent anywhere.</li>
+            <li><strong>Any current browser works:</strong> Chrome, Edge, Firefox or Safari, on a laptop, tablet or phone. A larger screen is best for the 3D figures.</li>
+            <li><strong>Dark mode</strong> follows your system setting; each module also has its own switch.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Offline</h3>
+          <p>Each download is a small zip of the whole module.</p>
+          <ol>
+            <li>Download the zip and <strong>extract it</strong> (Windows: right-click › Extract All; macOS: double-click).</li>
+            <li>Open the extracted folder and double-click <strong>index.html</strong>.</li>
+          </ol>
+          <ul class="dl-list">
+            <li><a href="downloads/curvilinear-motion.zip" download>Curvilinear Motion <span>zip · 0.6 MB</span></a></li>
+            <li><a href="downloads/cylindrical-coordinates.zip" download>Cylindrical Coordinates <span>zip · 0.9 MB</span></a></li>
+            <li><a href="downloads/mass-moments-of-inertia.zip" download>Mass Moments of Inertia <span>zip · 0.9 MB</span></a></li>
+            <li><a href="downloads/angular-momentum.zip" download>Angular Momentum <span>zip · 0.9 MB</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Open Engineering</strong> · openengineering.ca</p>
+    <p>Notation follows Hibbeler, <em>Engineering Mechanics: Dynamics</em>. SI units throughout.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Progress: each module stores {l01: true, …} under "<namespace>progress" ---------- */
+  function readProgress(ns) {
+    try {
+      var raw = window.localStorage.getItem(ns + 'progress');
+      var p = raw ? JSON.parse(raw) : null;
+      return p && typeof p === 'object' ? p : {};
+    } catch (e) { return {}; }
+  }
+  function renderProgress() {
+    document.querySelectorAll('.card[data-ns]').forEach(function (card) {
+      var p = readProgress(card.getAttribute('data-ns'));
+      var items = card.querySelectorAll('details.lessons li[data-id]');
+      var done = 0, next = null;
+      items.forEach(function (li) {
+        var ok = !!p[li.getAttribute('data-id')];
+        li.classList.toggle('done', ok);
+        var a = li.querySelector('a');
+        if (ok) { done++; a.setAttribute('aria-label', a.textContent.replace(/\s+/g, ' ').trim() + ' (complete)'); }
+        else { a.removeAttribute('aria-label'); if (!next) next = a; }
+      });
+      var box = card.querySelector('.progress');
+      var go = card.querySelector('.js-go');
+      var started = done > 0;
+      box.classList.toggle('on', started);
+      if (started) {
+        box.querySelector('p').innerHTML = '<strong>' + done + ' of ' + items.length + '</strong> lessons complete';
+        box.querySelector('.bar span').style.width = (100 * done / items.length) + '%';
+      }
+      if (started && next) { go.textContent = 'Continue: Lesson ' + next.querySelector('.num').textContent; go.href = next.getAttribute('href'); }
+      else if (started) { go.textContent = 'Review the module'; go.href = card.getAttribute('data-href'); }
+      else { go.textContent = 'Open the module'; go.href = card.getAttribute('data-href'); }
+    });
+  }
+  renderProgress();
+  window.addEventListener('storage', renderProgress);
+  window.addEventListener('pageshow', function (e) { if (e.persisted) renderProgress(); });
+
+  /* ---------- Hero figure: particle on a closed path, v tangent, a inward, osculating circle ---------- */
+  var svg = document.getElementById('heroSvg');
+  if (!svg) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var cx = 280, cy = 196, A = 190, B = 120;
+  function P(t) {   // path point for parameter t (screen coordinates, y down)
+    return [cx + A * Math.cos(t) + 18 * Math.cos(2 * t), cy - B * Math.sin(t) - 22 * Math.sin(2 * t) * 0.5];
+  }
+  function D1(t) { var h = 1e-3, a = P(t + h), b = P(t - h); return [(a[0] - b[0]) / (2 * h), (a[1] - b[1]) / (2 * h)]; }
+  function D2(t) { var h = 1e-3, a = P(t + h), b = P(t), c = P(t - h); return [(a[0] - 2 * b[0] + c[0]) / (h * h), (a[1] - 2 * b[1] + c[1]) / (h * h)]; }
+
+  var d = '';
+  for (var i = 0; i <= 240; i++) { var q = P(2 * Math.PI * i / 240); d += (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1); }
+  $('heroPath').setAttribute('d', d + 'Z');
+
+  function setLine(el, x1, y1, x2, y2) { el.setAttribute('x1', x1); el.setAttribute('y1', y1); el.setAttribute('x2', x2); el.setAttribute('y2', y2); }
+  function place(el, x, y) { el.setAttribute('x', x.toFixed(1)); el.setAttribute('y', y.toFixed(1)); }
+
+  var W = 0.55, K = 0.32;   // t(τ) = Wτ + K sin(Wτ): speed varies, so a has a tangential part too
+  function draw(tau) {
+    var t = W * tau + K * Math.sin(W * tau);
+    var td = W + K * W * Math.cos(W * tau);
+    var tdd = -K * W * W * Math.sin(W * tau);
+    var p = P(t), d1 = D1(t), d2 = D2(t);
+    var v = [d1[0] * td, d1[1] * td];
+    var a = [d2[0] * td * td + d1[0] * tdd, d2[1] * td * td + d1[1] * tdd];
+    var sv = 0.6, sa = 0.9;
+    var vx = p[0] + v[0] * sv, vy = p[1] + v[1] * sv, ax = p[0] + a[0] * sa, ay = p[1] + a[1] * sa;
+    setLine($('heroV'), p[0], p[1], vx, vy);
+    setLine($('heroA'), p[0], p[1], ax, ay);
+    // osculating circle from the path curvature
+    var sp = Math.hypot(d1[0], d1[1]);
+    var cross = d1[0] * d2[1] - d1[1] * d2[0];
+    var rho = Math.pow(sp, 3) / Math.abs(cross);
+    var nx = -d1[1] / sp, ny = d1[0] / sp;
+    if (cross < 0) { nx = -nx; ny = -ny; }
+    var circ = $('heroCirc'), rl = $('heroRho');
+    if (rho < 600) {
+      var ccx = p[0] + nx * rho, ccy = p[1] + ny * rho;
+      circ.setAttribute('cx', ccx); circ.setAttribute('cy', ccy); circ.setAttribute('r', rho);
+      setLine(rl, p[0], p[1], ccx, ccy);
+      place($('heroRt'), p[0] + nx * rho * 0.5 + 6, p[1] + ny * rho * 0.5 - 6);
+      circ.style.display = rl.style.display = $('heroRt').style.display = '';
+    } else {
+      circ.style.display = rl.style.display = $('heroRt').style.display = 'none';
+    }
+    $('heroP').setAttribute('cx', p[0]); $('heroP').setAttribute('cy', p[1]);
+    var lv = Math.hypot(v[0], v[1]) || 1, la = Math.hypot(a[0], a[1]) || 1;
+    place($('heroVt'), vx + v[0] / lv * 14 - 6, vy + v[1] / lv * 14 + 6);
+    place($('heroAt'), ax + a[0] / la * 14 - 6, ay + a[1] / la * 14 + 6);
+  }
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var btn = $('heroPause');
+  var running = !reduce, tau = 1.2, last = null, raf = 0;
+  function frame(now) {
+    if (last != null) tau += Math.min(0.05, (now - last) / 1000);
+    last = now;
+    draw(tau);
+    raf = requestAnimationFrame(frame);
+  }
+  function setRunning(on) {
+    running = on;
+    btn.textContent = on ? 'Pause' : 'Play';
+    btn.setAttribute('aria-pressed', String(!on));
+    cancelAnimationFrame(raf); last = null;
+    if (on) raf = requestAnimationFrame(frame);
+  }
+  btn.addEventListener('click', function () { setRunning(!running); });
+  draw(tau);
+  setRunning(running);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { cancelAnimationFrame(raf); last = null; }
+    else if (running) raf = requestAnimationFrame(frame);
+  });
+})();
+</script>
+</body>
+</html>

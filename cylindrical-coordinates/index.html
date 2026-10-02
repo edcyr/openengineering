@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module Home · Cylindrical Coordinates</title>
+<meta name="description" content="An interactive, offline module on the kinematics and kinetics of a particle in polar and cylindrical coordinates (r, θ, z) for first-year engineering dynamics: eight short lessons with animated figures, worked examples, instant-feedback questions, practice and a self-check quiz.">
+<link rel="stylesheet" href="assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="assets/css/module.css">
+<script src="assets/vendor/katex/katex.min.js"></script>
+<script src="assets/vendor/katex/auto-render.min.js"></script>
+<script src="assets/vendor/three/three.bundle.min.js"></script>
+<script src="assets/js/cyl-core.js"></script>
+<script src="assets/js/cyl-3d.js"></script>
+<script src="assets/js/polar-motion.js"></script>
+<style>
+  /* ---------- Home page only (module.css holds the shared design system) ---------- */
+
+  /* Section headings: the h2 sits inside a <header>, so the shell builds no "On this page" list here */
+  .home-sec-head { margin: 0 0 1.1rem; }
+  .home-sec-head h2 { margin: 0 0 4px; }
+  .home-sec-head p { margin: 0; color: var(--ink-muted); }
+  .home-sec-head .home-prereq { margin: 0 0 10px; }
+  .home-prereq strong { color: var(--ink); }
+
+  /* ---------- Hero ---------- */
+  .home-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px 40px;
+    align-items: center;
+    margin-bottom: 0;
+    padding: 4px 0 34px;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-hero::before {
+    /* faint engineering-paper grid, as on the lesson headers */
+    content: "";
+    position: absolute;
+    z-index: -1;
+    /* never wider than the page gutter (16 px on phones), or the page would scroll sideways */
+    inset: -26px calc(-1 * min(20px, var(--gutter))) 0;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(120% 95% at 0% 0%, #000 25%, transparent 72%);
+    mask-image: radial-gradient(120% 95% at 0% 0%, #000 25%, transparent 72%);
+    pointer-events: none;
+  }
+  @container cylmain (min-width: 800px) {
+    .home-hero { grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr); }
+  }
+  .home-hero .eyebrow { margin-bottom: 10px; }
+  /* Eyebrow separator: each phrase after the first carries its "·" in its left margin. The row is
+     shifted left by that margin and clipped back, so a phrase that wraps to a new line (narrow
+     columns) loses its dot instead of leaving one dangling at the end of the line above. */
+  .home-hero .eyebrow {
+    --sep: 22px;
+    gap: 4px 0;
+    margin-left: calc(-1 * var(--sep));
+    -webkit-clip-path: inset(0 0 0 var(--sep));
+    clip-path: inset(0 0 0 var(--sep));
+  }
+  .home-hero .eyebrow > span { position: relative; margin-left: var(--sep); }
+  .home-hero .eyebrow > span + span::before {
+    content: "·";
+    content: "·" / "";
+    position: absolute;
+    left: calc(-1 * var(--sep));
+    width: var(--sep);
+    text-align: center;
+  }
+  .home-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(2.05rem, 1.35rem + 2.6vw, 2.95rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  .home-hero .lede { margin: 0 0 22px; }
+  .home-cta { gap: 10px; }
+  .home-cta .btn { min-height: 44px; padding: 10px 18px; font-size: 0.95rem; }
+  .home-cta .btn svg { width: 1.05em; height: 1.05em; }
+  .home-cta .btn:not(.primary) svg { display: none; }  /* the arrow marks the main next step only */
+  .home-next { margin: 12px 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.5; }
+  .home-next strong { color: var(--ink); }
+  .home-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+  }
+  .home-facts li { display: inline-flex; align-items: center; gap: 7px; margin: 0; }
+  .home-facts li::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .home-facts li.is-offline::before { background: var(--c-good); }
+  .home-facts strong { color: var(--ink); font-weight: 650; }
+
+  /* Hero figure */
+  .home-fig {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+    box-shadow: var(--shadow);
+  }
+  .home-stage { position: relative; }
+  .home-stage .cyl3d { height: 400px; }
+  @media (max-width: 559.98px) { .home-stage .cyl3d { height: 320px; } }
+  /* No WebGL: let the library's message grow with its text instead of being clipped at the fixed height */
+  .home-stage .cyl3d.cyl3d-unavailable { height: auto; }
+  .home-stage .cyl3d-fallback { min-height: 400px; }
+  @media (max-width: 559.98px) { .home-stage .cyl3d-fallback { min-height: 320px; } }
+  .home-fig-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    padding: 12px 14px 4px;
+    border-top: 1px solid var(--line);
+  }
+  .home-fig-bar .chip-row { flex: 1 1 100%; }
+  .home-fig-bar .mf-note { flex: 1 1 100%; margin: 0 0 6px; }
+  .home-fig-bar .viz-title {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .home-fig figcaption {
+    margin: 0;
+    padding: 6px 14px 13px;
+    color: var(--ink-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  /* ---------- Learning outcomes ---------- */
+  .home-outcomes-box { margin: 0; }
+  .home-outcomes-box ul { margin-bottom: 6px; }
+  .home-outcomes-box li { margin-bottom: 10px; }
+  .home-where { color: var(--ink-faint); font-size: 0.86em; white-space: nowrap; }
+  .home-where a { color: inherit; }
+  .home-where a:hover { color: var(--accent); }
+
+  /* ---------- How to use ---------- */
+  .home-path { list-style: none; margin: 0 0 1rem; padding: 0; counter-reset: homestep; }
+  .home-path > li { position: relative; margin: 0; padding: 3px 0 20px 46px; counter-increment: homestep; }
+  .home-path > li::before {
+    content: counter(homestep);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .home-path > li::after {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 36px;
+    bottom: 5px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--line);
+  }
+  .home-path > li:last-child { padding-bottom: 4px; }
+  .home-path > li:last-child::after { display: none; }
+  .home-path-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0; }
+  .home-path-head strong { font-weight: 700; }
+  .home-path-time { color: var(--ink-faint); font-size: 0.84rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .home-path p { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.95em; }
+  .home-total {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0 0 1.8rem;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+    font-size: 0.95em;
+  }
+  .home-total strong { font-size: 1.05em; }
+  .home-total span { color: var(--ink-muted); }
+
+  .home-tips-title { margin: 0 0 12px; font-size: 1.05em; }
+  .home-tips { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .home-tips > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;                              /* a short card in a tall row keeps its text under its title */
+    gap: 2px 12px;
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .home-tips p { margin: 0; color: var(--ink-muted); font-size: 0.92em; }
+  .home-tips strong { display: block; color: var(--ink); font-size: 1rem; }
+
+  /* mask icons (color from background-color) */
+  .home-icon {
+    grid-row: 1 / span 2;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--accent-soft);
+    position: relative;
+  }
+  .home-icon::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    background: var(--accent);
+    -webkit-mask: var(--icon) center / contain no-repeat;
+    mask: var(--icon) center / contain no-repeat;
+  }
+  .ic-pencil { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l1.1-4.2L15.8 5.1a2.1 2.1 0 0 1 3 3L8.1 18.9 4 20z'/%3E%3Cpath d='M14.2 6.7l3 3'/%3E%3C/svg%3E"); }
+  .ic-check { --icon: var(--i-check-circle); }
+  .ic-repeat { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12a8 8 0 0 1-14.2 5'/%3E%3Cpath d='M4 12a8 8 0 0 1 14.2-5'/%3E%3Cpath d='M18.6 3v4.2h-4.2'/%3E%3Cpath d='M5.4 21v-4.2h4.2'/%3E%3C/svg%3E"); }
+  .ic-quiz { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='4' width='14' height='17' rx='2'/%3E%3Cpath d='M9 4V2.8h6V4'/%3E%3Cpath d='M8.6 11.4l2.1 2.1 4.4-4.4'/%3E%3Cpath d='M8.6 17h6.8'/%3E%3C/svg%3E"); }
+  .ic-flag { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V3.5'/%3E%3Cpath d='M5 4h12l-2.6 4.5L17 13H5'/%3E%3C/svg%3E"); }
+  .ic-print { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 9V3h10v6'/%3E%3Crect x='3' y='9' width='18' height='8' rx='2'/%3E%3Cpath d='M7 14h10v7H7z'/%3E%3C/svg%3E"); }
+  .ic-sheet { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 2.8h8.6L19 7.2v14H6z'/%3E%3Cpath d='M14.2 3v4.6H19'/%3E%3Cpath d='M9 12h7M9 16h7'/%3E%3C/svg%3E"); }
+  .ic-cube { --icon: var(--i-cube); }
+  .ic-book { --icon: var(--i-book); }
+
+  /* ---------- Lesson and resource cards ---------- */
+  .home-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin: 10px 0 0;
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+  }
+  .home-progress strong { color: var(--ink); }
+  .home-progress-bar {
+    flex: 0 1 180px;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--track);
+  }
+  .home-progress-fill { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--c-good); }
+
+  .home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .home-cards > li { display: flex; margin: 0; min-width: 0; }
+  a.card.home-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 3px 14px;
+    width: 100%;
+    padding: 14px 16px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .home-card > :not(.home-num):not(.home-icon) { grid-column: 2; }
+  .home-num {
+    grid-row: 1 / span 3;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--bg-sunken);
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  a.home-card:hover .home-num { border-color: var(--accent); color: var(--accent); }
+  .home-card.is-complete .home-num {
+    border-color: color-mix(in srgb, var(--c-good) 40%, transparent);
+    background: var(--c-good-soft);
+    color: var(--c-good);
+  }
+  .home-card .home-icon { grid-row: 1 / span 3; }
+  .home-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .home-card .card-title { margin: 0; font-size: 1.02rem; line-height: 1.35; }
+  .home-card-sum { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.5; }
+  .home-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--c-good);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .home-done::before {
+    content: "";
+    width: 13px;
+    height: 13px;
+    background: currentColor;
+    -webkit-mask: var(--i-check) center / contain no-repeat;
+    mask: var(--i-check) center / contain no-repeat;
+  }
+  .home-card:not(.is-complete) .home-done { display: none; }
+  .home-instructor { margin: 1.2rem 0 0; color: var(--ink-muted); font-size: 0.95em; }
+
+  /* ---------- Requirements ---------- */
+  .home-req {
+    padding: 18px 20px 12px;
+    border: 1px solid color-mix(in srgb, var(--c-good) 35%, transparent);
+    border-radius: var(--radius);
+    background: var(--c-good-soft);
+  }
+  .home-req-lead { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.08em; font-weight: 700; }
+  .home-req-lead::before {
+    content: "";
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    background: var(--c-good);
+    -webkit-mask: var(--i-check-circle) center / contain no-repeat;
+    mask: var(--i-check-circle) center / contain no-repeat;
+  }
+  .home-req ul { margin: 0 0 8px; padding-left: 1.3em; }
+  .home-req li { margin: 0 0 6px; }
+  .home-req p { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.95em; }
+  .home-req .home-req-lead { color: var(--ink); font-size: 1.08em; }
+
+  .home-noscript {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--c-warn);
+    border-radius: var(--radius);
+    background: var(--c-warn-soft);
+  }
+
+  @media print {
+    .home-fig, .home-cta, .home-next { display: none !important; }
+    .home-hero { grid-template-columns: minmax(0, 1fr) !important; }
+  }
+</style>
+</head>
+<body data-page="home" data-root=".">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page home">
+
+  <noscript>
+    <div class="home-noscript">
+      <p><strong>This module needs JavaScript.</strong> Turn JavaScript on in your browser settings, then reload this page. See README.txt in the module folder for help.</p>
+    </div>
+  </noscript>
+
+  <!-- ================= Hero ================= -->
+  <header class="home-hero wide" aria-labelledby="home-title">
+    <div class="home-hero-text">
+      <p class="eyebrow"><span>Interactive module</span> <span>First-year engineering dynamics</span></p>
+      <h1 id="home-title">Cylindrical Coordinates</h1>
+      <p class="lede">A crane slews, a robot arm extends, a collar slides along a spinning rod, a satellite swings round the Earth. These motions are driven or measured from a point or an axis, so they are simplest in polar and cylindrical coordinates \((r, \theta, z)\). Eight short lessons, with animated figures and questions that check your work, take you from a particle's position to its velocity, its acceleration and the forces that cause it.</p>
+      <div class="btn-row home-cta">
+        <!-- A returning student (any lesson complete) gets "Continue" as the primary button; see refresh() -->
+        <a class="btn primary" id="home-continue" href="lessons/01-why-cylindrical.html" aria-describedby="home-next" hidden>Continue where you left off<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+        <a class="btn primary" id="home-start" href="lessons/01-why-cylindrical.html"><span id="home-start-label">Start Lesson 1</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+      </div>
+      <p class="home-next" id="home-next" aria-live="polite" hidden></p>
+      <ul class="home-facts" aria-label="Module at a glance">
+        <li><span><strong>8</strong> lessons</span></li>
+        <li><span><strong>260 min</strong> of lessons</span></li>
+        <li class="is-offline"><span>Works offline</span></li>
+      </ul>
+    </div>
+
+    <figure class="home-fig" aria-labelledby="home-fig-cap">
+      <div class="home-stage" id="home-stage"></div>
+      <div class="home-fig-bar" id="home-fig-bar"></div>
+      <figcaption id="home-fig-cap">A cylindrical robot turns its arm at a constant \(2\ \text{rad/s}\), extends it at \(0.5\ \text{m/s}\) and lifts it at \(0.3\ \text{m/s}\). Every joint runs steadily, yet the gripper accelerates: the red arrow \(\avec\) points toward the column and tilts forward, in the direction of rotation. <a href="lessons/05-acceleration.html">Lesson 5</a> names the two parts, the centripetal and the Coriolis acceleration.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ================= Learning outcomes ================= -->
+  <section id="outcomes" aria-labelledby="outcomes-h">
+    <header class="home-sec-head">
+      <h2 id="outcomes-h">Learning outcomes</h2>
+      <p>By the end of the module you can:</p>
+    </header>
+    <div class="objectives home-outcomes-box">
+      <ul>
+        <li>Recognize motions that are driven or measured from a point or an axis, and choose rectangular, path or cylindrical components for a problem. <span class="home-where">(<a href="lessons/01-why-cylindrical.html">Lessons 1</a>, <a href="lessons/08-applications.html#choosing">8</a>)</span></li>
+        <li>Locate a particle in polar and cylindrical coordinates, convert to and from \((x, y, z)\) with \(\theta\) in the correct quadrant, and write its position vector. <span class="home-where">(<a href="lessons/02-position.html">Lesson 2</a>)</span></li>
+        <li>Explain how the unit vectors \(\er\) and \(\et\) turn as the particle moves, and resolve a force into radial and transverse components. <span class="home-where">(<a href="lessons/03-unit-vectors.html">Lesson 3</a>)</span></li>
+        <li>Find the velocity and acceleration of a particle from \(r\), \(\theta\), \(z\) and their rates, and interpret the centripetal and Coriolis terms. <span class="home-where">(<a href="lessons/04-velocity.html">Lessons 4–5</a>)</span></li>
+        <li>Analyze a particle that follows a path \(r = f(\theta)\), such as a cam groove or a spiral, and find the angle \(\psi\) of its tangent. <span class="home-where">(<a href="lessons/06-paths-r-theta.html">Lesson 6</a>)</span></li>
+        <li>Draw free-body and kinetic diagrams and apply \(\sum F_r = m a_r\), \(\sum F_\theta = m a_\theta\), \(\sum F_z = m a_z\) to find forces and accelerations. <span class="home-where">(<a href="lessons/07-equations-of-motion.html">Lesson 7</a>)</span></li>
+        <li>Find the forces on a particle pushed along a curved guide, and use \(r^2\dot\theta = \text{constant}\) for central-force motion such as orbits. <span class="home-where">(<a href="lessons/08-applications.html">Lesson 8</a>)</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= How to use ================= -->
+  <section id="how-to-use" aria-labelledby="how-h">
+    <header class="home-sec-head">
+      <h2 id="how-h">How to use this module</h2>
+      <p class="home-prereq"><strong>Before you start:</strong> you should be comfortable with derivatives (the product and chain rules), radians and the sine and cosine of common angles, 2D vectors (components, magnitude and the dot product), and free-body diagrams with \(\sum\Fvec = m\avec\). You do not need to know polar coordinates already: Lesson 2 teaches what you need. The module uses the notation of Hibbeler's <em>Engineering Mechanics: Dynamics</em>; if your book writes \(\mathbf{e}_r\) and \(\mathbf{e}_\theta\), those are the same vectors as \(\er\) and \(\et\).</p>
+      <p>Work through the lessons in order. The times allow for working the examples on paper and doing the checks. A suggested plan in four sittings:</p>
+    </header>
+
+    <ol class="home-path" role="list">
+      <li>
+        <p class="home-path-head"><strong>Lessons 1–3</strong><span class="home-path-time">80 min</span></p>
+        <p>Why polar and cylindrical coordinates, the position of a particle, and the unit vectors that turn with it.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 4–6</strong><span class="home-path-time">100 min</span></p>
+        <p>The kinematics: velocity, acceleration with its centripetal and Coriolis terms, and particles guided along a path \(r = f(\theta)\).</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 7–8</strong><span class="home-path-time">80 min</span></p>
+        <p>The kinetics: equations of motion with free-body diagrams, then guides, cords through a hole and orbits.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Practice Lab and Self-Check Quiz</strong><span class="home-path-time">65 min</span></p>
+        <p>About 30 min of practice on the topics you found hardest, then the 35-minute quiz.</p>
+      </li>
+    </ol>
+    <p class="home-total"><strong>About 5½ h in total:</strong><span><span class="nowrap">260 min of lessons,</span> <span class="nowrap">30 min of practice,</span> <span class="nowrap">35 min for the quiz</span></span></p>
+
+    <h3 class="home-tips-title">Get the most out of it</h3>
+    <ul class="home-tips" role="list">
+      <li><span class="home-icon ic-pencil" aria-hidden="true"></span><strong>Keep pencil and paper handy</strong><p>Try each worked example yourself before you open its solution, and sketch the free-body diagrams.</p></li>
+      <li><span class="home-icon ic-check" aria-hidden="true"></span><strong>Do the checks</strong><p>Every lesson has “Check your understanding” questions with hints and full solutions. You can type answers like <code>3pi/4</code> or <code>2sqrt(3)</code>.</p></li>
+      <li><span class="home-icon ic-repeat" aria-hidden="true"></span><strong>Practice until it is routine</strong><p>The <a href="practice/practice-lab.html">Practice Lab</a> generates unlimited problems, each with a worked solution.</p></li>
+      <li><span class="home-icon ic-quiz" aria-hidden="true"></span><strong>Test yourself at the end</strong><p>The <a href="practice/quiz.html">Self-Check Quiz</a> gives a score, solutions and a results page you can print or save as a PDF.</p></li>
+      <li><span class="home-icon ic-flag" aria-hidden="true"></span><strong>Track your progress</strong><p>Tick “Mark this lesson complete” at the end of each lesson. A ✓ appears here and in Contents; it is saved in this browser only.</p></li>
+      <li><span class="home-icon ic-sheet" aria-hidden="true"></span><strong>Keep the formulas close</strong><p>Print the <a href="reference/cheat-sheet.html">Formula Sheet</a>, and look up terms in the <a href="reference/glossary.html">Glossary</a>.</p></li>
+    </ul>
+  </section>
+
+  <!-- ================= Lessons ================= -->
+  <section id="lessons" aria-labelledby="lessons-h">
+    <header class="home-sec-head">
+      <h2 id="lessons-h">Lessons</h2>
+      <p>Each lesson has interactive figures, worked examples and questions with instant feedback.</p>
+      <p class="home-progress" id="home-progress" hidden>
+        <span id="home-progress-text"></span>
+        <span class="home-progress-bar" aria-hidden="true"><span class="home-progress-fill" id="home-progress-fill"></span></span>
+      </p>
+    </header>
+    <ul class="home-cards" id="home-lesson-list" role="list"></ul>
+  </section>
+
+  <!-- ================= Practice, tools, reference ================= -->
+  <section id="practice-tools" aria-labelledby="pt-h">
+    <header class="home-sec-head">
+      <h2 id="pt-h">Practice, tools and reference</h2>
+      <p>Use these alongside the lessons, or on their own when you revise.</p>
+    </header>
+    <ul class="home-cards" id="home-resource-list" role="list"></ul>
+  </section>
+
+  <!-- ================= Requirements ================= -->
+  <section id="requirements" aria-labelledby="req-h">
+    <header class="home-sec-head">
+      <h2 id="req-h">Requirements</h2>
+    </header>
+    <div class="home-req">
+      <p class="home-req-lead">Any modern browser. Works offline.</p>
+      <ul>
+        <li>A current version of Chrome, Edge, Firefox or Safari, with JavaScript on. A laptop or desktop screen works best; the pages also fit tablets and phones.</li>
+        <li>No internet connection, installation or account. Everything is inside this folder.</li>
+        <li>The 3D figures need WebGL (hardware acceleration), which is on by default in these browsers.</li>
+        <li>Your progress is saved in this browser on this device. Private or incognito windows do not keep it.</li>
+      </ul>
+      <p>Something not working? Read <a href="README.txt">README.txt</a> in the module folder for how to open the module and fix common problems.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- Hero figure: the robot arm of Lessons 4 and 5, with v and a (plays once; still with reduced motion) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var stage = document.getElementById('home-stage');
+  var bar = document.getElementById('home-fig-bar');
+  // r = 0.5 + 0.5t, θ = 2t, z = 1.5 + 0.3t for 0 ≤ t ≤ 3 s: every joint rate is constant (Examples 4.1 and 5.1)
+  var motion = {
+    r: function (t) { return 0.5 + 0.5 * t; }, rd: function () { return 0.5; }, rdd: function () { return 0; },
+    th: function (t) { return 2 * t; }, thd: function () { return 2; }, thdd: function () { return 0; },
+    z: function (t) { return 1.5 + 0.3 * t; }, zd: function () { return 0.3; }, zdd: function () { return 0; }
+  };
+  POLAR.figure3d({
+    stage: stage, controls: bar,
+    motion: motion, t0: 0, t1: 3, t: 0, speed: 0.5, loop: false, autoplay: true, playback: false,
+    extent: 2.5, zRange: [-0.2, 4.2],
+    camera: { azimuth: 38, elevation: 28, zoom: 1.6, target: [0.3, 0.1, 1.15] },
+    show: { v: true, a: true, vc: false, ac: false, radial: false, drop: false },
+    toggles: ['v', 'a', 'ac'],
+    readouts: [],
+    decorate: function (v) { return POLAR.robotArm(v); },
+    aria: 'Animated 3D view of a cylindrical robot. Its arm turns about a vertical column at a constant rate while it extends and rises, so the gripper traces a widening spiral that climbs. A green arrow at the gripper is its velocity, tangent to the path. A red arrow is its acceleration: it points toward the column and tilts forward in the direction of rotation.'
+  });
+});
+
+/* ---------- Lesson and resource cards (from CYL.PAGES), progress, "Continue" ---------- */
+CYL.ready(function () {
+  'use strict';
+  var SUMMARY = {
+    l01: 'Cranes, robot arms, radar and orbits: motion measured from a point or an axis, and why a particle can accelerate while every joint runs steadily.',
+    l02: 'Locate a particle with \\((r, \\theta)\\) or \\((r, \\theta, z)\\), convert to and from \\((x, y, z)\\), and describe a motion as \\(r(t)\\), \\(\\theta(t)\\), \\(z(t)\\).',
+    l03: 'The unit vectors \\(\\er\\) and \\(\\et\\) turn with the particle: their time derivatives, and radial and transverse components of a force.',
+    l04: '\\(\\vvec = \\dot r\\,\\er + r\\dot\\theta\\,\\et + \\dot z\\,\\ez\\): robot arms, radar tracking and the speed of a particle.',
+    l05: 'The centripetal and Coriolis terms, circular motion as a special case, and motions given as functions of time.',
+    l06: 'Spirals, cams and circular slots: the chain rule for \\(\\dot r\\) and \\(\\ddot r\\), and the tangent angle \\(\\psi\\).',
+    l07: '\\(\\sum F_r = m a_r\\) and \\(\\sum F_\\theta = m a_\\theta\\): free-body diagrams for collars, rods, springs and cords.',
+    l08: 'Pins pushed along curved guides, pucks pulled in on a cord, and orbits: forces from \\(\\psi\\), and central-force motion.'
+  };
+  var RESOURCES = {
+    practice: { icon: 'ic-repeat', meta: 'Practice', text: 'Unlimited randomized problems in nine topics, from conversions to guide forces, each with hints, a worked solution and a figure.' },
+    quiz: { icon: 'ic-quiz', meta: 'Practice', text: '15 questions on Lessons 2–8, with a score, full solutions and printable results.' },
+    worksheet: { icon: 'ic-print', meta: 'Practice', text: 'Twelve paper problems from positions to kinetics, with space for your working and answers to check.' },
+    explorer: { icon: 'ic-cube', meta: 'Tool', text: 'Type any \\(r(t)\\), \\(\\theta(t)\\) and \\(z(t)\\), or pick a preset, and watch the velocity, the acceleration and every term.' },
+    cheatsheet: { icon: 'ic-sheet', meta: 'Reference', text: 'Every formula on two printable pages, with check values for your calculator and the common mistakes.' },
+    glossary: { icon: 'ic-book', meta: 'Reference', text: 'Short definitions of the terms and symbols used in the module, with links to the lessons.' }
+  };
+
+  var lessons = CYL.PAGES.filter(function (p) { return p.group === 'lessons'; });
+  var lessonList = document.getElementById('home-lesson-list');
+  var resList = document.getElementById('home-resource-list');
+  var cards = {};                                     // id → card <a>
+
+  function doneTag() {
+    return CYL.el('span', { class: 'home-done' }, ['Completed']);
+  }
+  function mins(m) { return m ? m + ' min' : null; }
+
+  lessons.forEach(function (p) {
+    var meta = CYL.el('span', { class: 'home-card-meta' }, [
+      CYL.el('span', { text: 'Lesson ' + p.num + (p.minutes ? ' · ' + mins(p.minutes) : '') }),
+      p.tag ? CYL.el('span', { class: 'tag extension', text: p.tag }) : null,
+      doneTag()
+    ]);
+    var a = CYL.el('a', { class: 'card home-card', href: CYL.url(p.href) }, [
+      CYL.el('span', { class: 'home-num', 'aria-hidden': 'true', text: String(p.num) }),
+      meta,
+      CYL.el('h3', { class: 'card-title', text: p.title }),
+      CYL.el('p', { class: 'home-card-sum', html: SUMMARY[p.id] || '' })
+    ]);
+    cards[p.id] = a;
+    lessonList.appendChild(CYL.el('li', null, a));
+  });
+
+  CYL.PAGES.forEach(function (p) {
+    var r = RESOURCES[p.id];
+    if (!r) return;
+    var a = CYL.el('a', { class: 'card home-card', href: CYL.url(p.href) }, [
+      CYL.el('span', { class: 'home-icon ' + r.icon, 'aria-hidden': 'true' }),
+      CYL.el('span', { class: 'home-card-meta' }, [
+        CYL.el('span', { text: r.meta + (p.minutes ? ' · ' + mins(p.minutes) : '') }),
+        p.group === 'practice' ? doneTag() : null      // only lessons and practice pages can be marked complete
+      ]),
+      CYL.el('h3', { class: 'card-title', text: p.title }),
+      CYL.el('p', { class: 'home-card-sum', html: r.text })
+    ]);
+    cards[p.id] = a;
+    resList.appendChild(CYL.el('li', null, a));
+  });
+  CYL.renderMath(lessonList);
+  CYL.renderMath(resList);
+
+  // Progress: ✓ on cards, "n of 10 lessons complete", and the Continue button.
+  var contBtn = document.getElementById('home-continue');
+  var startBtn = document.getElementById('home-start');
+  var startLabel = document.getElementById('home-start-label');
+  var nextNote = document.getElementById('home-next');
+  var progBox = document.getElementById('home-progress');
+  var progText = document.getElementById('home-progress-text');
+  var progFill = document.getElementById('home-progress-fill');
+  var byId = {};
+  CYL.PAGES.forEach(function (p) { byId[p.id] = p; });
+
+  function refresh() {
+    var all = CYL.progress.all();
+    Object.keys(cards).forEach(function (id) { cards[id].classList.toggle('is-complete', !!all[id]); });
+
+    var done = lessons.filter(function (p) { return all[p.id]; }).length;
+    var summary = done + ' of ' + lessons.length + ' lessons complete';
+    progBox.hidden = done === 0;
+    progText.innerHTML = '<strong>' + done + ' of ' + lessons.length + '</strong> lessons complete';
+    progFill.style.width = (done / lessons.length * 100) + '%';
+
+    if (done === 0) {                                // nothing finished yet: only the primary "Start Lesson 1"
+      contBtn.hidden = true;
+      nextNote.hidden = true;
+      startBtn.hidden = false;
+      startBtn.classList.add('primary');
+      startLabel.textContent = 'Start Lesson 1';
+      return;
+    }
+    var next = null;
+    for (var i = 0; i < lessons.length; i++) if (!all[lessons[i].id]) { next = lessons[i]; break; }
+    var label;
+    if (next) {
+      label = 'Lesson ' + next.num + ' · ' + next.title;
+    } else {                                         // every lesson done: move on to the quiz, then the Practice Lab
+      next = all.quiz ? byId.practice : byId.quiz;
+      label = next.title;
+    }
+    // Returning student: "Continue" is the primary step; Lesson 1 stays reachable as a secondary
+    // button unless Continue already leads there.
+    contBtn.href = CYL.url(next.href);
+    contBtn.hidden = false;
+    startBtn.classList.remove('primary');
+    startLabel.textContent = 'Review Lesson 1';
+    startBtn.hidden = next.id === 'l01';
+    nextNote.textContent = '';
+    nextNote.appendChild(document.createTextNode('Next up: '));
+    nextNote.appendChild(CYL.el('strong', { text: label }));
+    // a title can end in its own punctuation ("Why Cylindrical Coordinates?")
+    nextNote.appendChild(document.createTextNode((/[?.!]$/.test(label) ? ' ' : '. ') + summary + '.'));
+    nextNote.hidden = false;
+  }
+  refresh();
+  CYL.progress.onChange(refresh);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Parallel-Axis Theorem · Mass Moments of Inertia</title>
+<meta name="description" content="The parallel-axis theorem I = I_G + m d²: its proof, moving from centroidal axes to any parallel axis, why every transfer must go through G, the radius-of-gyration form, and measuring I with a compound pendulum.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<style>
+  /* ---- Lesson 3 page styles (tokens from module.css only) ---- */
+  .l03-plot { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--viz-bg); }
+</style>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 30 min</p>
+    <h1>The Parallel-Axis Theorem</h1>
+    <p class="lede">Tables give moments of inertia about axes through the center of mass. Real parts turn about hinges, pins and shafts that are somewhere else. One short theorem connects the two, as long as you remember where it starts.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>State and prove the parallel-axis theorem \(I = I_G + m d^2\).</li>
+      <li>Move a centroidal moment of inertia from the table of Lesson 2 to any parallel axis.</li>
+      <li>Transfer between two axes that do not pass through \(G\), by going through \(G\).</li>
+      <li>Use the radius-of-gyration form \(k^2 = k_G^2 + d^2\), and measure \(I\) with a compound pendulum.</li>
+    </ul>
+  </section>
+
+  <section id="theorem">
+    <h2>The theorem</h2>
+    <p>Let \(G\) be the center of mass of a body of mass \(m\). Take an axis through \(G\), and a second axis parallel to it at perpendicular distance \(d\). Then</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Parallel-axis theorem</p>
+      \[ I = I_G + m d^2 \]
+      <p>\(I_G\): moment of inertia about the axis through \(G\). \(d\): perpendicular distance between the two parallel axes. \(I\): moment of inertia about the other axis.</p>
+    </div>
+
+    <p><strong>Why it works.</strong> Put the \(z\)-axis through \(G\) and the parallel axis through the point \(A = (x_A, y_A)\) of the \(xy\)-plane, so \(d^2 = x_A^2 + y_A^2\). A mass element at \((x, y, z)\) is at squared distance \((x - x_A)^2 + (y - y_A)^2\) from the second axis:</p>
+    \[ \begin{aligned} I_A &= \int \left[(x - x_A)^2 + (y - y_A)^2\right] dm \\ &= \int (x^2 + y^2)\,dm - 2x_A \int x\,dm - 2y_A \int y\,dm + (x_A^2 + y_A^2)\int dm \\ &= I_G - 0 - 0 + m d^2 \end{aligned} \]
+    <p>The two middle integrals are first moments of mass about axes through \(G\), and those are zero: that is what "center of mass" means. The whole proof hinges on it, so the theorem only works when one of the two axes passes through \(G\).</p>
+
+    <p>Since \(m d^2 \ge 0\), the axis through \(G\) has the <strong>smallest</strong> moment of inertia of all the axes parallel to it. A body is easiest to spin about an axis through its center of mass.</p>
+
+    <figure class="figure" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> Top view of a body turning about an axis perpendicular to the page through \(A\). Drag \(A\) anywhere. The moment of inertia is \(I_G\) plus \(m d^2\), where \(d\) is the distance from \(G\) to \(A\); the small plot shows \(I_A\) growing as a parabola in \(d\), smallest at \(d = 0\). The direction of \(A\) from \(G\) does not matter, only its distance.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 3.1 — The rod again</p>
+      <p>Use the parallel-axis theorem to find \(I\) of a slender rod about a perpendicular axis through one end.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>\(I_G = \tfrac1{12} m l^2\) and the end is \(d = l/2\) from \(G\):</p>
+          \[ I_\text{end} = \tfrac1{12} m l^2 + m\left(\tfrac l2\right)^2 = \tfrac1{12} m l^2 + \tfrac14 m l^2 = \tfrac13 m l^2 \]
+          <p>the same as the direct integration in Lesson 2.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 3.2 — A disk pivoted at its rim</p>
+      <p>A thin \(4\ \text{kg}\) disk of radius \(0.15\ \text{m}\) swings in its own plane about a pin through a point on its rim. Find its moment of inertia about the pin.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The pin is perpendicular to the disk, so start from \(I_G = \tfrac12 m r^2\), with \(d = r\):</p>
+          \[ I_O = \tfrac12 m r^2 + m r^2 = \tfrac32 m r^2 = 1.5(4)(0.15)^2 = 0.1350\ \text{kg·m}^2 \]
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 3.3 — A cylinder about an axis through an end face</p>
+      <p>A solid steel cylinder has \(m = 8\ \text{kg}\), \(r = 50\ \text{mm}\) and length \(h = 500\ \text{mm}\). Find its moment of inertia about a diameter of one end face.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>A diameter of the end face is a transverse axis, parallel to the centroidal transverse axis and \(h/2\) from it:</p>
+          \[ I = \tfrac1{12} m (3r^2 + h^2) + m\left(\tfrac h2\right)^2 = \tfrac1{12} m (3r^2 + 4h^2) \]
+          \[ I = \tfrac{8}{12}\left(3(0.05)^2 + 4(0.5)^2\right) = \tfrac{8}{12}(1.0075) = 0.6717\ \text{kg·m}^2 \]
+          <p>For a long cylinder the \(3r^2\) term hardly matters: a slender rod would give \(\tfrac13 m h^2 = 0.6667\ \text{kg·m}^2\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="through-g">
+    <h2>Every transfer goes through \(G\)</h2>
+    <p>Suppose you know \(I_A\) about an axis through \(A\) and need \(I_B\) about a parallel axis through \(B\), where neither passes through \(G\). The theorem cannot jump straight from \(A\) to \(B\). Step back to \(G\) first, then out to \(B\):</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Between two axes that miss G</p>
+      \[ I_G = I_A - m d_A^2, \qquad I_B = I_G + m d_B^2 \]
+      <p>\(d_A\) and \(d_B\) are the distances from \(G\) to each axis, <em>not</em> the distance between \(A\) and \(B\).</p>
+    </div>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: \(I_B = I_A + m\,d_{AB}^2\)</p>
+      <p>This is wrong unless \(A\) is \(G\). Moving the axis toward \(G\) <em>decreases</em> \(I\), which a formula that only ever adds \(m d^2\) cannot do.</p>
+    </aside>
+  </section>
+
+  <section id="pendulum">
+    <h2>Measuring \(I\) with a pendulum</h2>
+    <p>For a part too complex to calculate, such as a forged connecting rod, you can measure \(I\). Hang it from a pin through \(O\) and let it swing with small amplitude, as a <dfn>compound pendulum</dfn>. With \(G\) a distance \(d\) below \(O\), the period is</p>
+    \[ \tau = 2\pi\sqrt{\frac{I_O}{m g d}} \qquad \Longrightarrow \qquad I_O = \frac{m g d\,\tau^2}{4\pi^2}, \]
+    <p>and the parallel-axis theorem then gives \(I_G = I_O - m d^2\).</p>
+
+    <div class="example">
+      <p class="example-title">Example 3.4 — A connecting rod</p>
+      <p>A \(1.2\ \text{kg}\) connecting rod hangs from a knife edge through its small-end bore \(A\). Its center of mass is \(0.12\ \text{m}\) below \(A\), and it swings with a period of \(1.121\ \text{s}\). (a) Find \(I_A\) and \(I_G\). (b) The big-end bore \(B\) is \(0.20\ \text{m}\) from \(A\), on the far side of \(G\). Find \(I_B\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>(a) From the period:</p>
+          \[ I_A = \frac{(1.2)(9.81)(0.12)(1.121)^2}{4\pi^2} = 0.04497\ \text{kg·m}^2, \qquad I_G = 0.04497 - 1.2(0.12)^2 = 0.02769\ \text{kg·m}^2 \]
+          <p>(b) \(B\) is \(0.20 - 0.12 = 0.08\ \text{m}\) from \(G\):</p>
+          \[ I_B = I_G + m d_B^2 = 0.02769 + 1.2(0.08)^2 = 0.03537\ \text{kg·m}^2 \]
+          <p>The tempting shortcut \(I_A + m(0.20)^2 = 0.09297\ \text{kg·m}^2\) is off by more than a factor of two.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout engineering">
+      <p class="callout-title">Engineering connection</p>
+      <p>Pendulum tests like this are routine for engine and vehicle components. For moments about a vertical axis, a part is hung from two parallel wires (a <em>bifilar</em> pendulum) and twisted slightly; the period of the twisting oscillation gives \(I\). Similar swing tests are used to measure the moments of inertia of aircraft components and scale models.</p>
+    </aside>
+  </section>
+
+  <section id="gyration">
+    <h2>The radius-of-gyration form</h2>
+    <p>Divide \(I = I_G + m d^2\) by \(m\), with \(I = m k^2\) and \(I_G = m k_G^2\):</p>
+    \[ k^2 = k_G^2 + d^2 \]
+    <p>So radii of gyration add like the sides of a right triangle, with \(k\) as the hypotenuse. Radii of gyration do not add directly: \(k \ne k_G + d\).</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(I = I_G + m d^2\), for two <em>parallel</em> axes, one of them through \(G\).</li>
+      <li>The centroidal axis has the smallest \(I\) of all axes parallel to it.</li>
+      <li>To go between two axes that miss \(G\), go through \(G\): \(I_B = I_A - m d_A^2 + m d_B^2\).</li>
+      <li>\(k^2 = k_G^2 + d^2\). A compound pendulum measures \(I_O = m g d\,\tau^2/4\pi^2\).</li>
+      <li>Next: <a href="04-composite-bodies.html">Lesson 4</a> uses the theorem on every part of a composite body.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 3.1: drag the axis A; I_A = I_G + m d², with the parabola I_A(d) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var T = String.raw;
+  var BODIES = {
+    rod: { name: 'Slender rod (1.2 m)', m: 3, IG: 3 * 1.44 / 12, IGtex: T`\tfrac1{12} m l^2`, dmax: 1.1 },
+    disk: { name: 'Thin disk (radius 0.5 m)', m: 3, IG: 0.5 * 3 * 0.25, IGtex: T`\tfrac12 m r^2`, dmax: 1.1 },
+    plate: { name: 'Square plate (0.8 m)', m: 3, IG: 3 * 2 * 0.64 / 12, IGtex: T`\tfrac16 m a^2`, dmax: 1.1 }
+  };
+  var st = { type: 'rod', A: [0.6, 0.25] };
+  var p = CYL2D.plane(document.getElementById('fig31-stage'), {
+    xRange: [-1.1, 1.1], yRange: [-0.9, 0.9], grid: 'cartesian', gridStep: 0.25, axisLabels: null, height: 360,
+    ariaLabel: 'Top view of a body with its center of mass G at the origin and a draggable axis point A. A dashed line from G to A shows the distance d.'
+  });
+  var shapes = {
+    rod: p.line([-0.6, 0], [0.6, 0], { color: 'accent', width: 8 }),
+    disk: p.circle({ center: [0, 0], r: 0.5, color: 'accent', width: 2, fill: 'accent', fillOpacity: 0.22 }),
+    plate: p.polyline([[-0.4, -0.4], [0.4, -0.4], [0.4, 0.4], [-0.4, 0.4]], { color: 'accent', width: 2, closed: true, fill: 'accent', fillOpacity: 0.22 })
+  };
+  var dLine = p.line([0, 0], [0, 0], { color: 'bad', width: 2, dashed: true, label: 'd', labelSide: 'left' });
+  p.point([0, 0], { color: 'point', r: 5, label: 'G', labelAnchor: 'sw' });
+  var A = p.point(st.A, { color: 'bad', r: 7, hollow: true, label: 'A', labelAnchor: 'ne', draggable: true, snap: 0.05,
+    ariaLabel: 'Axis point A', ariaFormat: function (q) { return 'd = ' + CYL.fmt(Math.hypot(q[0], q[1]), 3) + ' m'; },
+    onDrag: function (q) { st.A = q; schedule(); } });
+
+  var panel = document.getElementById('fig31-controls');
+  var sel = CYL.select({ label: 'Body (mass 3 kg)', value: st.type,
+    options: Object.keys(BODIES).map(function (k) { return { value: k, label: BODIES[k].name }; }),
+    onChange: function (k) { st.type = k; update(); } });
+  var roD = CYL.readout('Distance \\(d = GA\\)');
+  var roG = CYL.readout('\\(I_G\\)');
+  var roM = CYL.readout('\\(m d^2\\)', { color: 'bad' });
+  var roA = CYL.readout('\\(I_A = I_G + m d^2\\)');
+  var plotBox = CYL.el('div', { class: 'l03-plot' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Axis through A' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roD.el, roG.el, roM.el, roA.el]));
+  panel.appendChild(CYL.el('p', { class: 'mat-label', html: '\\(I_A\\) against \\(d\\)' }));
+  panel.appendChild(plotBox);
+  panel.appendChild(CYL.el('p', { class: 'fig-note', text: 'Lengths in metres, moments of inertia in kg·m². The axis is perpendicular to the page.' }));
+  CYL.renderMath(panel);
+
+  // Normalized plot: x = d / dmax, y = I_A / I_A(dmax) (CYL2D scales x and y equally)
+  var q = CYL2D.plane(plotBox, { xRange: [0, 1], yRange: [0, 1], grid: 'none', ticks: false, axisLabels: ['d', 'I_A'], height: 170, pad: 14,
+    ariaLabel: 'Plot of the moment of inertia about A against the distance d: a parabola that starts at I_G when d is zero.' });
+  var curve = q.fn(function () { return 0; }, { color: 'accent', width: 2.5, domain: [0, 1] });
+  var base = q.line([0, 0], [1, 0], { color: 'muted', width: 1.2, dashed: true });
+  var baseLab = q.label([0.02, 0], 'I_G', { color: 'muted', anchor: 'ne' });
+  var dot = q.point([0, 0], { color: 'bad', r: 5 });
+
+  function update() {
+    var B = BODIES[st.type], d = Math.hypot(st.A[0], st.A[1]), IA = B.IG + B.m * d * d, Imax = B.IG + B.m * B.dmax * B.dmax;
+    Object.keys(shapes).forEach(function (k) { shapes[k].setVisible(k === st.type); });
+    dLine.set([0, 0], st.A); dLine.setVisible(d > 0.04);
+    roD.set(CYL.fmt(d, 3) + ' m');
+    roG.set(B.IGtex + ' = ' + CYL.fmtTex(B.IG, 4), { tex: true });
+    roM.set(CYL.fmt(B.m * d * d, 4));
+    roA.set(CYL.fmt(IA, 4) + ' kg·m²');
+    curve.setFn(function (u) { var dd = u * B.dmax; return (B.IG + B.m * dd * dd) / Imax; });
+    base.set([0, B.IG / Imax], [1, B.IG / Imax]);
+    baseLab.set([0.02, B.IG / Imax], 'I_G');
+    dot.set([Math.min(1, d / B.dmax), Math.min(1, IA / Imax)]);
+    dot.setVisible(d <= B.dmax + 1e-9);
+  }
+  var schedule = CYL.throttleRAF(update);
+  update();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1', type: 'numeric',
+    prompt: 'A uniform \\(2\\ \\text{kg}\\) rod, \\(0.9\\ \\text{m}\\) long, turns about a perpendicular axis \\(0.2\\ \\text{m}\\) from its center. Find its moment of inertia about that axis.',
+    label: '\\(I =\\)', answer: 0.215, unit: 'kg·m²',
+    hints: ['\\(I_G = \\tfrac1{12} m l^2\\), and \\(d = 0.2\\ \\text{m}\\).'],
+    explain: '\\(I = I_G + md^2\\).',
+    solution: '\\[ I = \\tfrac1{12}(2)(0.9)^2 + 2(0.2)^2 = 0.135 + 0.080 = 0.2150\\ \\text{kg·m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2', type: 'mc',
+    prompt: 'Of all the axes parallel to a given direction, which one has the smallest moment of inertia for a given body?',
+    choices: [
+      { html: 'The one through the center of mass \\(G\\)', correct: true },
+      { html: 'The one through the heaviest part of the body', feedback: '\\(I = I_G + md^2\\): the smallest value is at \\(d = 0\\), through \\(G\\).' },
+      { html: 'The one farthest from \\(G\\)', feedback: 'That one has the largest \\(md^2\\) term.' },
+      { html: 'They are all equal', feedback: 'Only the direction is the same; the \\(md^2\\) term depends on the distance from \\(G\\).' }
+    ],
+    hints: ['Look at the sign of \\(m d^2\\).'],
+    explain: '\\(md^2 \\ge 0\\), so the minimum is at \\(d = 0\\).',
+    solution: '<p>\\(I = I_G + md^2 \\ge I_G\\), with equality only when \\(d = 0\\): the axis through \\(G\\).</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3', type: 'numeric',
+    prompt: 'A \\(5\\ \\text{kg}\\) bracket has \\(I_A = 2.0\\ \\text{kg·m}^2\\) about an axis through \\(A\\), whose distance from \\(G\\) is \\(0.4\\ \\text{m}\\). Find \\(I_B\\) about a parallel axis \\(0.3\\ \\text{m}\\) from \\(G\\).',
+    label: '\\(I_B =\\)', answer: 1.65, unit: 'kg·m²',
+    hints: ['Go back to \\(G\\) first: \\(I_G = I_A - m d_A^2\\).', 'Then \\(I_B = I_G + m d_B^2\\).'],
+    explain: 'Every transfer passes through \\(G\\).',
+    solution: '\\[ I_G = 2.0 - 5(0.4)^2 = 1.20\\ \\text{kg·m}^2, \\qquad I_B = 1.20 + 5(0.3)^2 = 1.650\\ \\text{kg·m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l03-q4', type: 'numeric',
+    prompt: 'A wheel has a radius of gyration of \\(0.10\\ \\text{m}\\) about its own axis. Find its radius of gyration about a parallel axis \\(0.24\\ \\text{m}\\) away.',
+    label: '\\(k =\\)', answer: 0.26, unit: 'm',
+    hints: ['\\(k^2 = k_G^2 + d^2\\).'],
+    explain: 'Radii of gyration combine like a right triangle.',
+    solution: '\\[ k = \\sqrt{0.10^2 + 0.24^2} = \\sqrt{0.0676} = 0.260\\ \\text{m} \\]'
+  });
+});
+</script>
+</body>
+</html>

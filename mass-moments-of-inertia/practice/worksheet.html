@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Mass Moments of Inertia</title>
+<meta name="description" content="Twelve paper problems on mass moments of inertia, from particles and integration to composite bodies, products of inertia, the inertia tensor and principal axes, with work space for printing and a Show answers toggle for self-checking.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from particles and integration to composite bodies, the inertia tensor, a wobbling disk and principal axes. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Mass Moments of Inertia · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Use SI units and give answers to 4 significant figures. Products of inertia are defined as \(I_{xy} = \int xy\,dm\) and enter the inertia tensor with a minus sign. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on about five Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A is moments of inertia, Part B is products of inertia and the inertia tensor, and Part C is any axis and principal axes. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units, answers to 4 significant figures. Products of inertia are defined as \(I_{xy} = \int xy\,dm\), so they can be negative, and they enter the inertia tensor \(\Imat\) with a minus sign. Slender rods and thin plates have negligible thickness. The <a href="../reference/cheat-sheet.html">Formula Sheet</a>, with its table of standard bodies, is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Moments of inertia</h2>
+    <p class="ws-part-sub">Problems 1–5 · Basic to challenge · Lessons 1–4</p>
+    <div class="ws-list" data-from="1" data-to="5"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Products of inertia and the inertia tensor</h2>
+    <p class="ws-part-sub">Problems 6–9 · Basic to challenge · Lessons 5–6</p>
+    <div class="ws-list" data-from="6" data-to="9"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Any axis and principal axes</h2>
+    <p class="ws-part-sub">Problems 10–12 · Basic to challenge · Lessons 7–8</p>
+    <div class="ws-list" data-from="10" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+<template id="ws-fig-cross"><svg class="ws-svg" viewBox="0 0 220 190" role="img" aria-label="Top view of a light cross in the xy-plane with arms 0.25 m long. A 0.5 kg mass sits at the end of each arm and a 1 kg mass at the center. The z-axis points out of the page through the center.">
+<line x1="20" y1="95" x2="205" y2="95" class="s-thin"/><path d="M210 95 L203 98 L203 92Z" class="f-axis"/><text x="200" y="112" class="m">x</text><line x1="110" y1="180" x2="110" y2="10" class="s-thin"/><path d="M110 5 L113 12 L107 12Z" class="f-axis"/><text x="118" y="14" class="m">y</text><line x1="40" y1="95" x2="180" y2="95" class="s-acc"/><line x1="110" y1="25" x2="110" y2="165" class="s-acc"/><circle cx="40" cy="95" r="7" class="f-ink"/><circle cx="180" cy="95" r="7" class="f-ink"/><circle cx="110" cy="25" r="7" class="f-ink"/><circle cx="110" cy="165" r="7" class="f-ink"/><circle cx="110" cy="95" r="9" class="f-ink"/><text x="145" y="88" class="lbl" text-anchor="middle">0.25 m</text><text x="185" y="84" class="lbl">0.5 kg</text><text x="120" y="92" class="lbl" dy="-8">1 kg</text>
+</svg></template>
+<template id="ws-fig-pend"><svg class="ws-svg" viewBox="0 0 220 220" role="img" aria-label="Side view of a pendulum pinned at O at the top: a slender rod 0.8 m long hangs down, and a solid sphere of radius 0.1 m is fixed to its lower end, with the sphere's center 0.9 m below O.">
+<circle cx="90" cy="20" r="6" class="s-ink" fill="none"/><text x="72" y="16" class="m">O</text><line x1="90" y1="26" x2="90" y2="150" class="s-acc" style="stroke-width:6"/><circle cx="90" cy="168" r="20" class="f-face"/><circle cx="90" cy="168" r="20" class="s-ink" fill="none"/><circle cx="90" cy="168" r="2.5" class="f-ink"/><line x1="130" y1="20" x2="130" y2="148" class="s-thin"/><text x="136" y="90" class="lbl">0.8 m</text><line x1="175" y1="20" x2="175" y2="168" class="s-thin"/><text x="180" y="120" class="lbl">0.9 m</text><line x1="90" y1="168" x2="110" y2="168" class="s-thin"/><text x="70" y="205" class="lbl">r = 0.1 m</text>
+</svg></template>
+<template id="ws-fig-bent"><svg class="ws-svg" viewBox="0 0 250 200" role="img" aria-label="Isometric sketch of a bent rod: segment OA runs 0.3 m along the y-axis, segment AB runs 0.2 m parallel to the x-axis, and segment BC runs 0.25 m downward, parallel to the negative z-axis.">
+<line x1="100" y1="80" x2="100" y2="12" class="s-thin"/><path d="M100 7 L103 14 L97 14Z" class="f-axis"/><text x="106" y="14" class="m">z</text><line x1="100" y1="80" x2="238" y2="120" class="s-thin"/><path d="M243 121 L235 123 L237 116Z" class="f-axis"/><text x="232" y="138" class="m">y</text><line x1="100" y1="80" x2="30" y2="125" class="s-thin"/><path d="M25 128 L30 121 L33 127Z" class="f-axis"/><text x="18" y="142" class="m">x</text><polyline points="100,80 196,108 150,137 150,190" class="s-acc" fill="none" style="stroke-width:5"/><text x="88" y="76" class="m">O</text><text x="198" y="104" class="m">A</text><text x="136" y="136" class="m">B</text><text x="156" y="192" class="m">C</text><text x="148" y="88" class="lbl">0.3 m</text><text x="178" y="136" class="lbl">0.2 m</text><text x="156" y="168" class="lbl">0.25 m</text>
+</svg></template>
+<template id="ws-fig-disk"><svg class="ws-svg" viewBox="0 0 262 200" role="img" aria-label="Side view of a thin disk mounted on a vertical shaft between two bearings 0.3 m apart. The disk is tilted so that its axis makes 5 degrees with the shaft.">
+<line x1="120" y1="8" x2="120" y2="192" class="s-ink" style="stroke-width:3"/><rect x="104" y="22" width="32" height="12" class="f-face"/><rect x="104" y="22" width="32" height="12" class="s-ink" fill="none"/><rect x="104" y="166" width="32" height="12" class="f-face"/><rect x="104" y="166" width="32" height="12" class="s-ink" fill="none"/><g transform="rotate(-10 120 100)"><ellipse cx="120" cy="100" rx="80" ry="12" class="f-face"/><ellipse cx="120" cy="100" rx="80" ry="12" class="s-acc" fill="none"/><line x1="120" y1="100" x2="120" y2="40" class="s-thin dash"/></g><text x="126" y="52" class="lbl">5°</text><line x1="210" y1="28" x2="210" y2="172" class="s-thin"/><text x="216" y="104" class="lbl">0.3 m</text><text x="142" y="18" class="lbl">ω = 100 rad/s</text>
+</svg></template>
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Particles on a light cross', level: 1, lessons: ['l01'], units: 'kg, m',
+      statementHTML: T`<p>Four \(0.5\ \text{kg}\) masses sit at the ends of a light cross whose arms are \(0.25\ \text{m}\) long, and a \(1\ \text{kg}\) mass sits at its center. The cross lies in the \(xy\)-plane with its arms along \(x\) and \(y\). Treat the masses as particles.</p>`,
+      parts: [
+        part('a', T`Find \(I_{zz}\), about the axis through the center perpendicular to the cross.`, T`\(I_{zz} = 0.125\ \text{kg·m}^2\)`, { Izz: 0.125 }),
+        part('b', T`Find \(I_{xx}\), about the arm along \(x\).`, T`\(I_{xx} = 0.0625\ \text{kg·m}^2\) (only the two masses on the \(y\)-arm count)`, { Ixx: 0.0625 }),
+        part('c', T`Find the radius of gyration about \(z\).`, T`\(k_z = \sqrt{0.125/3} = 0.2041\ \text{m}\)`, { kz: Math.sqrt(0.125 / 3) })
+      ],
+      figure: { tpl: 'ws-fig-cross', label: 'Figure P1', caption: 'Top view; \\(z\\) points out of the page.' }, space: 45 }),
+
+    prob({ n: 2, title: 'A rod whose density varies', level: 2, lessons: ['l02', 'l03'], units: 'kg, m',
+      statementHTML: T`<p>A slender rod lies along \(0 \le x \le 1\ \text{m}\). Its mass per unit length increases linearly from one end to the other: \(\lambda = 2(1 + x)\ \text{kg/m}\), with \(x\) in metres.</p>`,
+      parts: [
+        part('a', T`Find the mass of the rod.`, T`\(m = 3\ \text{kg}\)`, { m: 3 }),
+        part('b', T`Find the moment of inertia about a perpendicular axis through the end \(x = 0\).`, T`\(I_O = 2\left(\tfrac13 + \tfrac14\right) = \tfrac76 = 1.167\ \text{kg·m}^2\)`, { IO: 7 / 6 }),
+        part('c', T`Locate the center of mass and find the moment of inertia about the parallel axis through it.`, T`\(\bar x = \tfrac59 = 0.5556\ \text{m}\); \(\bar I = \tfrac76 - 3\left(\tfrac59\right)^2 = 0.2407\ \text{kg·m}^2\)`, { xbar: 5 / 9, IG: 7 / 6 - 3 * 25 / 81 })
+      ],
+      figure: null, space: 60 }),
+
+    prob({ n: 3, title: 'A solid cone by integration', level: 2, lessons: ['l02'], units: 'kg, m',
+      statementHTML: T`<p>A uniform solid cone has mass \(m\), base radius \(r\) and height \(h\). Its axis is the \(z\)-axis, with the apex at the origin.</p>`,
+      parts: [
+        part('a', T`Slice the cone into thin disks of radius \(\rho(z) = rz/h\) and thickness \(dz\). Integrate \(dI = \tfrac12\,\rho^2\,dm\) to show that \(I_{zz} = \tfrac3{10}\,mr^2\).`, T`\(dm = \dfrac{3m}{r^2h}\rho^2\,dz\), so \(I_{zz} = \dfrac{3m}{2r^2h}\displaystyle\int_0^h \left(\frac{rz}{h}\right)^4 dz = \tfrac3{10}\,mr^2\)`, null),
+        part('b', T`Evaluate \(I_{zz}\) for a \(2\ \text{kg}\) cone with a base radius of \(0.1\ \text{m}\).`, T`\(I_{zz} = 0.00600\ \text{kg·m}^2\)`, { Izz: 0.006 })
+      ],
+      figure: null, space: 60 }),
+
+    prob({ n: 4, title: 'A rod-and-sphere pendulum', level: 2, lessons: ['l03', 'l04'], units: 'kg, m, s',
+      statementHTML: T`<p>A pendulum is a \(2\ \text{kg}\) slender rod, \(0.8\ \text{m}\) long, pinned at its top end \(O\), with a \(5\ \text{kg}\) solid sphere of radius \(0.1\ \text{m}\) fixed to its lower end so that the sphere's center is \(0.9\ \text{m}\) below \(O\).</p>`,
+      parts: [
+        part('a', T`Find the moment of inertia about the pin \(O\).`, T`\(I_O = 0.4267 + 4.070 = 4.497\ \text{kg·m}^2\)`, { IO: 4.4967 }),
+        part('b', T`Find the distance \(\bar y\) from \(O\) to the center of mass, and \(\bar I\) about the parallel axis through it.`, T`\(\bar y = 5.3/7 = 0.7571\ \text{m}\); \(\bar I = 4.497 - 7(0.7571)^2 = 0.4838\ \text{kg·m}^2\)`, { ybar: 0.75714, IG: 0.48381 }),
+        part('c', T`Find the period of small oscillations, \(\tau = 2\pi\sqrt{I_O/(m g \bar y)}\).`, T`\(\tau = 1.848\ \text{s}\)`, { tau: 1.8478 })
+      ],
+      figure: { tpl: 'ws-fig-pend', label: 'Figure P4', caption: 'The pendulum hangs from the pin \\(O\\).' }, space: 55 }),
+
+    prob({ n: 5, title: 'A flywheel with holes', level: 3, lessons: ['l04'], units: 'kg, m',
+      statementHTML: T`<p>A steel flywheel (\(\rho = 7850\ \text{kg/m}^3\)) is a disk of radius \(200\ \text{mm}\) and thickness \(40\ \text{mm}\). It has a central bore of radius \(20\ \text{mm}\) and four lightening holes of radius \(30\ \text{mm}\) whose centers are \(120\ \text{mm}\) from the axis.</p>`,
+      parts: [
+        part('a', T`Find the mass of the flywheel.`, T`\(m = 39.46 - 4(0.8878) - 0.3946 = 35.51\ \text{kg}\)`, { m: 35.513 }),
+        part('b', T`Find its moment of inertia about its axis.`, T`\(I = 0.7892 - 4(0.01318) - 0.0000789 = 0.7364\ \text{kg·m}^2\)`, { I: 0.73635 }),
+        part('c', T`By what percentage do the holes and bore reduce the mass, and the moment of inertia? Comment.`, T`Mass: \(10.0\%\); moment of inertia: \(6.7\%\). Holes near the axis remove mass that contributes little to \(I\).`, { mPct: 10.0, IPct: 6.69 })
+      ],
+      figure: null, space: 60 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 6, title: 'Products of a rectangular plate', level: 1, lessons: ['l05'], units: 'kg, m',
+      statementHTML: T`<p>A thin \(3\ \text{kg}\) rectangular plate lies in the \(xy\)-plane with one corner at the origin and covers \(0 \le x \le 0.4\ \text{m}\), \(0 \le y \le 0.2\ \text{m}\).</p>`,
+      parts: [
+        part('a', T`Find \(I_{xy}\) about the origin.`, T`\(I_{xy} = m\bar x\bar y = 3(0.2)(0.1) = 0.0600\ \text{kg·m}^2\)`, { Ixy: 0.06 }),
+        part('b', T`Find \(I_{yz}\) and \(I_{zx}\) about the origin.`, T`Both zero: every point has \(z = 0\).`, { Iyz: 0, Izx: 0 }),
+        part('c', T`The plate is moved to cover \(-0.4 \le x \le 0\). What is \(I_{xy}\) now?`, T`\(I_{xy} = 3(-0.2)(0.1) = -0.0600\ \text{kg·m}^2\)`, { Ixy2: -0.06 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 7, title: 'A bent rod: moments and products', level: 2, lessons: ['l05'], units: 'kg, m',
+      statementHTML: T`<p>A slender rod with \(3\ \text{kg/m}\) is bent into three straight segments: \(OA\), \(0.3\ \text{m}\) along the \(y\)-axis; \(AB\), \(0.2\ \text{m}\) parallel to the \(x\)-axis; and \(BC\), \(0.25\ \text{m}\) parallel to the negative \(z\)-axis. So \(A = (0,\ 0.3,\ 0)\), \(B = (0.2,\ 0.3,\ 0)\) and \(C = (0.2,\ 0.3,\ -0.25)\ \text{m}\).</p>`,
+      parts: [
+        part('a', T`Find the products of inertia \(I_{xy}\), \(I_{yz}\), \(I_{zx}\) about \(O\).`, T`\(I_{xy} = 0.0630\), \(I_{yz} = -0.02813\), \(I_{zx} = -0.01875\ \text{kg·m}^2\)`, { Ixy: 0.063, Iyz: -0.028125, Izx: -0.01875 }),
+        part('b', T`Find the moments of inertia \(I_{xx}\), \(I_{yy}\), \(I_{zz}\) about \(O\).`, T`\(I_{xx} = 0.1641\), \(I_{yy} = 0.05363\), \(I_{zz} = 0.1865\ \text{kg·m}^2\)`, { Ixx: 0.164125, Iyy: 0.053625, Izz: 0.1865 })
+      ],
+      figure: { tpl: 'ws-fig-bent', label: 'Figure P7', caption: 'The bent rod \\(OABC\\).' }, space: 70 }),
+
+    prob({ n: 8, title: 'The bent rod spinning about y', level: 2, lessons: ['l06'], units: 'kg, m, s',
+      statementHTML: T`<p>The bent rod of Problem 7 turns about the \(y\)-axis (bearings along \(OA\)) at \(\omega = 12\ \text{rad/s}\).</p>`,
+      parts: [
+        part('a', T`Write the inertia tensor \(\Imat_O\).`, T`\(\Imat_O = \begin{bmatrix} 0.1641 & -0.0630 & 0.01875 \\ -0.0630 & 0.05363 & 0.02813 \\ 0.01875 & 0.02813 & 0.1865 \end{bmatrix}\ \text{kg·m}^2\)`, null),
+        part('b', T`Find \(\Hvec_O\) and the angle between \(\Hvec_O\) and the \(y\)-axis.`, T`\(\Hvec_O = -0.756\,\ihat + 0.6435\,\jhat + 0.3375\,\khat\ \text{kg·m}^2/\text{s}\); angle \(= 52.1^\circ\)`, { Hx: -0.756, Hy: 0.6435, Hz: 0.3375, ang: 52.14 }),
+        part('c', T`Find the kinetic energy.`, T`\(T = \tfrac12(12)(0.6435) = 3.861\ \text{J}\)`, { T: 3.861 })
+      ],
+      figure: null, space: 55 }),
+
+    prob({ n: 9, title: 'A wobbling disk on a shaft', level: 3, lessons: ['l06'], units: 'kg, m, s',
+      statementHTML: T`<p>A thin uniform \(5\ \text{kg}\) disk of radius \(0.15\ \text{m}\) is mounted at its center on a vertical shaft (the \(z\)-axis), but its axis is tilted \(5^\circ\) from the shaft, in the \(xz\)-plane at the instant shown. The shaft spins at \(100\ \text{rad/s}\) in bearings \(0.3\ \text{m}\) apart, centred on the disk.</p>`,
+      parts: [
+        part('a', T`Using \(\Imat = I_t\,\mathbf{1} + (I_a - I_t)\,\mathbf{n}\mathbf{n}^\mathsf{T}\), with \(I_a = \tfrac12 mr^2\) about the disk's axis \(\mathbf{n}\) and \(I_t = \tfrac14 mr^2\) about a diameter, find \(I_{zz}\) and the product \(I_{xz}\) about the center.`, T`\(I_{zz} = 0.05604\ \text{kg·m}^2\); \(I_{xz} = (I_t - I_a)\sin 5^\circ\cos 5^\circ = -0.002442\ \text{kg·m}^2\)`, { Izz: 0.056036, Ixz: -0.0024419 }),
+        part('b', T`Find \(\Hvec\) about the center.`, T`\(\Hvec = 0.2442\,\ihat + 5.604\,\khat\ \text{kg·m}^2/\text{s}\)`, { Hx: 0.24419, Hz: 5.6036 }),
+        part('c', T`Find the moment the bearings must apply, and the force on each bearing.`, T`\(|\wvec \times \Hvec| = 24.42\ \text{N·m}\), turning with the shaft; \(\pm 81.40\ \text{N}\) on the two bearings (a couple)`, { M: 24.419, F: 81.398 })
+      ],
+      figure: { tpl: 'ws-fig-disk', label: 'Figure P9', caption: 'Side view; the tilt is exaggerated.' }, space: 60 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 10, title: 'A block about its diagonal', level: 1, lessons: ['l07'], units: 'kg, m',
+      statementHTML: T`<p>A \(6\ \text{kg}\) solid block measures \(0.2 \times 0.2 \times 0.4\ \text{m}\) along \(x, y, z\), with its center at the origin.</p>`,
+      parts: [
+        part('a', T`Write its inertia tensor about the center.`, T`\(\Imat_G = \mathrm{diag}(0.10,\ 0.10,\ 0.04)\ \text{kg·m}^2\)`, { Ixx: 0.1, Iyy: 0.1, Izz: 0.04 }),
+        part('b', T`Find its moment of inertia about the body diagonal through the center.`, T`\(\uvec = (0.2,\ 0.2,\ 0.4)/\sqrt{0.24}\); \(I = 0.0600\ \text{kg·m}^2\)`, { I: 0.06 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 11, title: 'Rotating the axes of a plate', level: 2, lessons: ['l07', 'l08'], units: 'kg, m',
+      statementHTML: T`<p>A thin plate in the \(xy\)-plane has \(I_{xx} = 0.08\), \(I_{yy} = 0.18\) and \(I_{xy} = -0.06\ \text{kg·m}^2\) about \(O\).</p>`,
+      parts: [
+        part('a', T`Find \(I_{x'x'}\), \(I_{y'y'}\) and \(I_{x'y'}\) for axes turned \(60^\circ\) counterclockwise about \(z\).`, T`\(I_{x'x'} = 0.2070\), \(I_{y'y'} = 0.05304\), \(I_{x'y'} = -0.01330\ \text{kg·m}^2\)`, { Ixx: 0.20696, Iyy: 0.053038, Ixy: -0.013301 }),
+        part('b', T`Find the principal moments of inertia in the plane.`, T`\(I_{\max} = 0.2081\), \(I_{\min} = 0.05190\ \text{kg·m}^2\)`, { Imax: 0.2081, Imin: 0.051898 }),
+        part('c', T`Find the direction of the axis of maximum moment of inertia.`, T`\(\theta = 64.90^\circ\) counterclockwise from \(x\) (the axis at \(-25.10^\circ\) carries \(I_{\min}\))`, { thMax: 64.903 })
+      ],
+      figure: null, space: 60 }),
+
+    prob({ n: 12, title: 'Principal axes in 3D', level: 3, lessons: ['l08'], units: 'kg, m',
+      statementHTML: T`<p>About its center of mass, a body has \(I_{xx} = I_{yy} = I_{zz} = 0.5\) and \(I_{xy} = I_{yz} = I_{zx} = 0.1\ \text{kg·m}^2\).</p>`,
+      parts: [
+        part('a', T`Find the invariants \(J_1\), \(J_2\), \(J_3\) and write the characteristic cubic.`, T`\(J_1 = 1.5\), \(J_2 = 0.72\), \(J_3 = 0.108\); \(I^3 - 1.5I^2 + 0.72I - 0.108 = 0\)`, { J1: 1.5, J2: 0.72, J3: 0.108 }),
+        part('b', T`Find the principal moments. (Hint: try \(I = 0.3\).)`, T`\((I - 0.3)(I - 0.6)^2 = 0\): \(I_3 = 0.3\) and \(I_1 = I_2 = 0.6\ \text{kg·m}^2\)`, { I1: 0.6, I3: 0.3 }),
+        part('c', T`Find the principal axis of the minimum moment. Which other axes through \(G\) are principal?`, T`\(\uvec_3 = (1,\ 1,\ 1)/\sqrt3\); every axis through \(G\) perpendicular to \(\uvec_3\) is principal, with \(I = 0.6\ \text{kg·m}^2\)`, null)
+      ],
+      figure: null, space: 70 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; products of inertia defined as I_xy = integral of xy dm (they enter the inertia tensor with a minus sign); exact values where simple, otherwise 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

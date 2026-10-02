@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radius of Curvature · Curvilinear Motion</title>
+<meta name="description" content="Finding the radius of curvature: the formula for a path y = f(x), the parametric form v³/|v × a|, special points such as crests, sags and inflection points, and the top of a projectile's flight.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 30 min</p>
+    <h1>Radius of Curvature</h1>
+    <p class="lede">\(a_n = v^2/\rho\) is only useful if you can find \(\rho\). For a circle it is the radius, but roads, cams, wires and trajectories are rarely circles. This lesson gives the formulas that work for any smooth path.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute \(\rho\) for a path \(y = f(x)\) from its first and second derivatives.</li>
+      <li>Compute \(\rho\) from a motion given as \(x(t)\), \(y(t)\), or from \(\vvec\) and \(\avec\).</li>
+      <li>Find \(\rho\) quickly at crests, sags and inflection points, and at the top of a projectile's flight.</li>
+      <li>Decide which side of the path \(\en\) (and the center of curvature) is on.</li>
+    </ul>
+  </section>
+
+  <section id="formula">
+    <h2>Radius of curvature of \(y = f(x)\)</h2>
+    <p>Lesson 6 used \(d\psi = ds/\rho\): the radius of curvature is how much path length it takes to turn the tangent through one radian, \(\rho = ds/d\psi\). For a graph \(y = f(x)\), the tangent angle satisfies \(\tan\psi = y'\) and the arc length satisfies \(ds = \sqrt{1 + y'^2}\,dx\). Putting these together (details below) gives</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Radius of curvature of a path \(y = f(x)\)</p>
+      \[ \rho = \frac{\left[1 + \left(\dfrac{dy}{dx}\right)^2\right]^{3/2}}{\left|\dfrac{d^2y}{dx^2}\right|} \]
+      <p>The center of curvature is on the side where the path is concave: above the path when \(y'' \gt 0\), below it when \(y'' \lt 0\).</p>
+    </div>
+
+    <details class="reveal">
+      <summary>Optional: where the formula comes from</summary>
+      <div>
+        <p>Differentiate \(\tan\psi = y'\) with respect to \(x\): \(\sec^2\psi\,\dfrac{d\psi}{dx} = y''\), and \(\sec^2\psi = 1 + \tan^2\psi = 1 + y'^2\). So</p>
+        \[ \frac{d\psi}{dx} = \frac{y''}{1 + y'^2}, \qquad \frac{ds}{dx} = \sqrt{1 + y'^2} \]
+        \[ \rho = \left|\frac{ds}{d\psi}\right| = \left|\frac{ds/dx}{d\psi/dx}\right| = \frac{(1 + y'^2)^{3/2}}{|y''|} \]
+      </div>
+    </details>
+
+    <p>Two quick consequences:</p>
+    <ul>
+      <li><strong>Crests and sags.</strong> Where the path is horizontal (\(y' = 0\)), the numerator is 1, so \(\rho = 1/|y''|\). For the parabola \(y = kx^2\), the vertex has \(\rho = 1/(2|k|)\).</li>
+      <li><strong>Inflection points.</strong> Where \(y'' = 0\), \(\rho = \infty\): the path is momentarily straight, and \(a_n = 0\) there however fast the particle moves.</li>
+    </ul>
+
+    <figure class="figure" aria-labelledby="fig71-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> Choose a curve and drag the point along it (or use the slider). The dashed osculating circle has radius \(\rho\) from the formula above, and its center \(C\) is always on the concave side. At a crest or a sag the circle is smallest; near an inflection point it grows without bound.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 7.1 — A sag curve on a highway</p>
+      <p>A highway dips through a valley along the vertical curve \(y = x^2/400\) (metres, \(x\) horizontal). (a) Find \(\rho\) at the lowest point, and the normal acceleration of a car passing through it at \(25\ \text{m/s}\). (b) Find \(\rho\) at \(x = 20\ \text{m}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Derivatives.</strong> \(y' = x/200\) and \(y'' = 1/200\ \text{m}^{-1}\) (constant).</p>
+          <p><strong>(a) Lowest point, \(x = 0\).</strong> \(y' = 0\), so \(\rho = 1/y'' = 200\ \text{m}\). Then</p>
+          \[ a_n = \frac{v^2}{\rho} = \frac{25^2}{200} = 3.125\ \text{m/s}^2 \ \text{(upward, toward the center above the road)} \]
+          <p><strong>(b) At \(x = 20\ \text{m}\).</strong> \(y' = 0.1\):</p>
+          \[ \rho = \frac{(1 + 0.1^2)^{3/2}}{1/200} = 200(1.01)^{3/2} = 203.0\ \text{m} \]
+          <p><strong>Interpret.</strong> Road slopes are small, so \(y'^2\) barely matters: engineers often use \(\rho \approx 1/|y''|\) along the whole of a gentle vertical curve.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="parametric">
+    <h2>When the motion is given as \(x(t)\) and \(y(t)\)</h2>
+    <p>You do not need to eliminate \(t\) to get \(y = f(x)\). Lesson 6 said \(a_n = v^2/\rho\), so if you can find \(a_n\) from the rectangular components, you have \(\rho\). The normal acceleration is the part of \(\avec\) perpendicular to \(\vvec\), which is \(|\vvec \times \avec|/v\) (Lesson 8 shows why). That gives</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Radius of curvature from the motion</p>
+      \[ \rho = \frac{v^2}{a_n} = \frac{v^3}{|\vvec \times \avec|} = \frac{\left(\dot x^2 + \dot y^2\right)^{3/2}}{\left|\dot x\,\ddot y - \dot y\,\ddot x\right|} \]
+      <p>In the plane, the "cross product" \(\vvec \times \avec\) reduces to the single number \(\dot x\,\ddot y - \dot y\,\ddot x\).</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 7.2 — A parametric path</p>
+      <p>A particle moves with \(x = 2t^2\) and \(y = t^3\) (metres, seconds). Find the radius of curvature of its path at \(t = 1\ \text{s}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Derivatives at \(t = 1\).</strong> \(\dot x = 4t = 4\), \(\dot y = 3t^2 = 3\), \(\ddot x = 4\), \(\ddot y = 6t = 6\).</p>
+          \[ v = \sqrt{4^2 + 3^2} = 5\ \text{m/s}, \qquad \dot x\,\ddot y - \dot y\,\ddot x = 4(6) - 3(4) = 12 \]
+          \[ \rho = \frac{5^3}{|12|} = \frac{125}{12} = 10.42\ \text{m} \]
+          <p><strong>Check with \(y = f(x)\).</strong> Eliminating \(t\): \(y = (x/2)^{3/2}\). At \(x = 2\): \(y' = \tfrac34\), \(y'' = \tfrac{3}{16}\), and \(\rho = (1 + \tfrac{9}{16})^{3/2}/\tfrac{3}{16} = 10.42\ \text{m}\). ✓ Same path, same answer.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 7.3 — The top of a projectile's flight</p>
+      <p>A ball is launched at \(20\ \text{m/s}\), \(30^\circ\) above the horizontal. What is the radius of curvature of its path at the highest point?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>At the top the velocity is horizontal, \(v = v_0\cos\theta_0 = 17.32\ \text{m/s}\), and the acceleration \(g\) points straight down, perpendicular to \(\vvec\). So all of \(g\) is normal acceleration: \(a_n = g\).</p>
+          \[ \rho = \frac{v^2}{a_n} = \frac{(v_0\cos\theta_0)^2}{g} = \frac{17.32^2}{9.81} = 30.58\ \text{m} \]
+          <p>This trick (find \(v\) and \(a_n\) from the physics, then \(\rho = v^2/a_n\)) is often the fastest route to a radius of curvature.</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">Three ways to get \(\rho\)</p>
+      <ul>
+        <li><strong>Geometry given, \(y = f(x)\):</strong> \(\rho = (1 + y'^2)^{3/2}/|y''|\).</li>
+        <li><strong>Motion given, \(x(t)\) and \(y(t)\):</strong> \(\rho = v^3/|\dot x\ddot y - \dot y\ddot x|\).</li>
+        <li><strong>\(v\) and \(a_n\) known from the physics:</strong> \(\rho = v^2/a_n\).</li>
+      </ul>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+    <div class="check" id="check-5"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\rho = (1 + y'^2)^{3/2}/|y''|\) for a path \(y = f(x)\); at a crest or sag this is simply \(1/|y''|\).</li>
+      <li>\(\rho = v^3/|\dot x\ddot y - \dot y\ddot x|\) for a motion \(x(t), y(t)\), or \(\rho = v^2/a_n\) whenever \(a_n\) is known.</li>
+      <li>At an inflection point (\(y'' = 0\)), \(\rho = \infty\) and \(a_n = 0\).</li>
+      <li>The center of curvature, and \(\en\), are on the concave side: above the path if \(y'' \gt 0\), below if \(y'' \lt 0\).</li>
+      <li>Next: <a href="08-connecting-systems.html">Lesson 8</a> converts freely between \(x\)–\(y\) and \(n\)–\(t\) components.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 7.1: curve explorer with the osculating circle ---------- */
+CYL.ready(function () {
+  'use strict';
+  var CURVES = {
+    parab: { label: 'Parabola \\(y = 0.25x^2\\)', text: 'Parabola: y = 0.25x²', tex: 'y = 0.25x^2',
+      f: function (x) { return 0.25 * x * x; }, d1: function (x) { return 0.5 * x; }, d2: function () { return 0.5; } },
+    sine: { label: 'Sine \\(y = 1.5\\sin x\\)', text: 'Sine curve: y = 1.5 sin x', tex: 'y = 1.5\\sin x',
+      f: function (x) { return 1.5 * Math.sin(x); }, d1: function (x) { return 1.5 * Math.cos(x); }, d2: function (x) { return -1.5 * Math.sin(x); } },
+    cubic: { label: 'Cubic \\(y = 0.08x^3 - 0.6x\\)', text: 'Cubic: y = 0.08x³ − 0.6x', tex: 'y = 0.08x^3 - 0.6x',
+      f: function (x) { return 0.08 * x * x * x - 0.6 * x; }, d1: function (x) { return 0.24 * x * x - 0.6; }, d2: function (x) { return 0.48 * x; } },
+    hump: { label: 'Hump \\(y = 3e^{-x^2/4}\\)', text: 'Hump: y = 3 exp(−x²/4)', tex: 'y = 3e^{-x^2/4}',
+      f: function (x) { return 3 * Math.exp(-x * x / 4); }, d1: function (x) { return -1.5 * x * Math.exp(-x * x / 4); },
+      d2: function (x) { return (0.75 * x * x - 1.5) * Math.exp(-x * x / 4); } }
+  };
+  var XR = [-5, 5], st = { key: 'hump', x: 1.2 };
+  var p = CYL2D.plane(document.getElementById('fig71-stage'), {
+    xRange: XR, yRange: [-3.2, 4.4], grid: 'cartesian', gridStep: 1, height: 400,
+    ariaLabel: 'A curve y = f(x) with a draggable point on it. A dashed osculating circle touches the curve at the point; its center C is on the concave side. Unit vectors u_t (along the curve) and u_n (toward C) are drawn at the point.'
+  });
+  var curve = p.fn(CURVES[st.key].f, { color: 'accent', width: 3, domain: XR });
+  var circ = p.circle({ center: [0, 0], r: 1, color: 'muted', width: 1.4, dashed: true });
+  var rad = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true, label: '\\rho', labelSide: 'left' });
+  var C = p.point([0, 0], { color: 'muted', r: 3.5, label: 'C', labelAnchor: 'se' });
+  var eT = p.line([0, 0], [0, 0], { color: 't', width: 2.5, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left' });
+  var eN = p.line([0, 0], [0, 0], { color: 'n', width: 2.5, arrow: true, label: '\\en', labelAt: 1, labelSide: 'right' });
+  var P = p.point([0, 0], {
+    color: 'point', r: 6.5, draggable: true, bounds: false, ariaLabel: 'Point on the curve',
+    snap: function (q) { var x = Math.max(XR[0], Math.min(XR[1], q[0])); return [x, CURVES[st.key].f(x)]; },
+    keyMove: function (pos, d) { var x = Math.max(XR[0], Math.min(XR[1], st.x + 0.05 * ((d[0] || d[1]) > 0 ? 1 : -1))); return [x, CURVES[st.key].f(x)]; },
+    ariaFormat: function () { return 'x = ' + CYL.fmt(st.x, 3); },
+    onDrag: function (q) { st.x = q[0]; sX.set(st.x, true); schedule(); }
+  });
+  var panel = document.getElementById('fig71-controls');
+  var sel = CYL.select({
+    label: 'Curve', value: st.key,
+    options: Object.keys(CURVES).map(function (k) { return { value: k, label: CURVES[k].text }; }),
+    onChange: function (k) { st.key = k; curve.setFn(CURVES[k].f); schedule(); }
+  });
+  var sX = CYL.slider({ label: 'Position \\(x\\)', min: XR[0], max: XR[1], step: 0.05, value: st.x, unit: 'm', onInput: function (v) { st.x = v; schedule(); } });
+  var ro = {
+    d1: CYL.readout('Slope \\(y\'\\)'), d2: CYL.readout('\\(y\'\'\\)'), rho: CYL.readout('\\(\\rho = (1 + y\'^2)^{3/2}/|y\'\'|\\)'), side: CYL.readout('Center of curvature')
+  };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Choose a curve' }));
+  panel.appendChild(sel.el); panel.appendChild(sX.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid' }, [ro.d1.el, ro.d2.el, ro.rho.el, ro.side.el]));
+  var note = CYL.el('p', { class: 'mf-note', html: 'Units: metres. The point moves in the \\(+x\\) direction, so \\(\\et\\) points to the right.' });
+  panel.appendChild(note);
+  CYL.renderMath(note);
+  function update() {
+    var c = CURVES[st.key], x = st.x, y = c.f(x), m = c.d1(x), k = c.d2(x);
+    P.set([x, y]);
+    var L = Math.sqrt(1 + m * m), et = [1 / L, m / L];
+    var sgn = k >= 0 ? 1 : -1, en = [-sgn * et[1], sgn * et[0]];
+    eT.set([x, y], [x + 1.4 * et[0], y + 1.4 * et[1]]);
+    eN.set([x, y], [x + 1.4 * en[0], y + 1.4 * en[1]]);
+    var rho = Math.abs(k) < 1e-9 ? Infinity : Math.pow(1 + m * m, 1.5) / Math.abs(k);
+    var okC = isFinite(rho) && rho < 400;
+    if (okC) {
+      var cc = [x + rho * en[0], y + rho * en[1]];
+      circ.set({ center: cc, r: rho }); C.set(cc); rad.set(cc, [x, y]);
+    }
+    circ.setVisible(okC); C.setVisible(okC); rad.setVisible(okC);
+    ro.d1.set(CYL.fmt(m, 4)); ro.d2.set(CYL.fmt(k, 4) + ' m\u207b\u00b9');
+    ro.rho.set(isFinite(rho) ? CYL.fmt(rho, 4) + ' m' : '\u221e (inflection)');
+    ro.side.set(Math.abs(k) < 1e-9 ? 'none (straight here)' : k > 0 ? 'above the curve' : 'below the curve');
+  }
+  var schedule = CYL.throttleRAF(update);
+  update();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1', type: 'numeric', unit: 'm',
+    prompt: 'Find the radius of curvature of \\(y = 0.5x^2\\) (metres) at its vertex, \\(x = 0\\).',
+    label: '\\(\\rho =\\)', answer: 1,
+    hints: ['\\(y\' = x\\) and \\(y\'\' = 1\\).', 'At the vertex \\(y\' = 0\\), so \\(\\rho = 1/|y\'\'|\\).'],
+    explain: 'At a vertex the slope is zero and \\(\\rho = 1/|y\'\'|\\). For \\(y = kx^2\\), that is \\(1/(2k)\\).',
+    solution: '\\[ \\rho = \\frac{(1 + 0^2)^{3/2}}{|1|} = 1\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2', type: 'numeric', unit: 'm',
+    prompt: 'Find the radius of curvature of the same path, \\(y = 0.5x^2\\), at \\(x = 1\\ \\text{m}\\).',
+    label: '\\(\\rho =\\)', answer: Math.pow(2, 1.5),
+    hints: ['At \\(x = 1\\): \\(y\' = 1\\) and \\(y\'\' = 1\\).'],
+    explain: 'Away from the vertex the slope term \\(1 + y\'^2\\) makes \\(\\rho\\) larger: the parabola flattens out.',
+    solution: '\\[ \\rho = \\frac{(1 + 1^2)^{3/2}}{1} = 2^{3/2} = 2\\sqrt2 \\approx 2.828\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3', type: 'numeric', unit: 'm',
+    prompt: 'A track follows \\(y = 3\\sin(x/2)\\) (metres). Find the radius of curvature at the crest, \\(x = \\pi\\ \\text{m}\\).',
+    label: '\\(\\rho =\\)', answer: 4 / 3,
+    hints: ['\\(y\' = 1.5\\cos(x/2)\\) and \\(y\'\' = -0.75\\sin(x/2)\\).', 'At \\(x = \\pi\\): \\(y\' = 0\\), \\(y\'\' = -0.75\\).'],
+    explain: 'At a crest \\(\\rho = 1/|y\'\'|\\); the minus sign only says the center is below the track.',
+    solution: '\\[ \\rho = \\frac{1}{|-0.75|} = \\frac43 \\approx 1.333\\ \\text{m}, \\ \\text{with the center of curvature below the crest} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l07-q4', type: 'numeric', unit: 'm',
+    prompt: 'A golf ball is struck at \\(25\\ \\text{m/s}\\), \\(40^\\circ\\) above the horizontal (ignore drag). What is the radius of curvature of its path at the highest point?',
+    label: '\\(\\rho =\\)', answer: Math.pow(25 * Math.cos(40 * Math.PI / 180), 2) / 9.81,
+    hints: ['At the top, \\(\\vvec\\) is horizontal and \\(\\avec = g\\) is perpendicular to it, so \\(a_n = g\\).', '\\(\\rho = v^2/a_n\\) with \\(v = v_0\\cos\\theta_0\\).'],
+    explain: 'At the top of a projectile\'s flight, \\(\\rho = (v_0\\cos\\theta_0)^2/g\\).',
+    solution: '\\[ v = 25\\cos 40^\\circ = 19.15\\ \\text{m/s}, \\qquad \\rho = \\frac{19.15^2}{9.81} = 37.39\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-5'), {
+    id: 'l07-q5', type: 'numeric', unit: 'm',
+    prompt: 'A particle moves with \\(x = t^2\\) and \\(y = 2t\\) (metres, seconds). Find the radius of curvature of its path at \\(t = 1\\ \\text{s}\\).',
+    label: '\\(\\rho =\\)', answer: Math.pow(8, 1.5) / 4,
+    hints: ['At \\(t = 1\\): \\(\\dot x = 2,\\ \\dot y = 2,\\ \\ddot x = 2,\\ \\ddot y = 0\\).', '\\(\\rho = (\\dot x^2 + \\dot y^2)^{3/2}/|\\dot x\\ddot y - \\dot y\\ddot x|\\).'],
+    explain: 'Use the parametric formula; no need to eliminate \\(t\\).',
+    solution: '\\[ v = \\sqrt{2^2 + 2^2} = 2\\sqrt2, \\quad \\dot x\\ddot y - \\dot y\\ddot x = 2(0) - 2(2) = -4 \\]' +
+      '\\[ \\rho = \\frac{(2\\sqrt2)^3}{|-4|} = \\frac{16\\sqrt2}{4} = 4\\sqrt2 \\approx 5.657\\ \\text{m} \\]'
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Curvilinear Motion</title>
+<meta name="description" content="Unlimited randomized practice problems on plane curvilinear motion: x–y components, paths y = f(x), projectiles, tangential and normal acceleration, radius of curvature and converting between systems, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/curv-motion.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it you can see it drawn to scale.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem drawn to scale: the path, the particle, and its velocity (green) and acceleration (red) with their components. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>proj-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. proj-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>sqrt(0.4*9.81*80)</code></td><td>\(\sqrt{313.92} \approx 17.72\)</td></tr>
+          <tr><td><code>25^2/150</code></td><td>\(625/150 \approx 4.167\)</td></tr>
+          <tr><td><code>2sqrt(13)</code> or <code>2√13</code></td><td>\(2\sqrt{13} \approx 7.211\)</td></tr>
+          <tr><td><code>20cos(35°)</code></td><td>\(20\cos 35^\circ \approx 16.38\)</td></tr>
+          <tr><td><code>(1+0.1^2)^1.5*200</code></td><td>\(203.0\)</td></tr>
+          <tr><td><code>-3.048</code></td><td>a decimal: accepted when it is within 1% of the exact value</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(g = 9.81\ \text{m/s}^2\). Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>sqrt(3^2+2.667^2)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 2D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var PI = Math.PI, G = 9.81, D = PI / 180;
+  var T = String.raw;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(x, 4); }                     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }  // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-'); }
+  function bump(v) { return v + 1 + Math.abs(v); }                 // a clearly wrong value, for the self-test
+  function nz(rng, lo, hi) { var v; do { v = rng.int(lo, hi); } while (v === 0); return v; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  var MS = '\\ \\text{m/s}', MS2 = '\\ \\text{m/s}^2', MM = '\\ \\text{m}', SS = '\\ \\text{s}';
+  // Polynomials as coefficient arrays by power: [c0, c1, c2, c3]
+  function pv(c, t) { var s = 0; for (var p = c.length - 1; p >= 0; p--) s = s * t + c[p]; return s; }
+  function dp(c) { var o = []; for (var p = 1; p < c.length; p++) o.push(c[p] * p); return o.length ? o : [0]; }
+  function polyTex(c, v) {
+    var out = '';
+    for (var p = c.length - 1; p >= 0; p--) {
+      var k = c[p];
+      if (!k) continue;
+      var mag = Math.abs(k), coef = mag === 1 && p > 0 ? '' : nn(mag);
+      var term = coef + (p === 0 ? '' : p === 1 ? v : v + '^' + p);
+      out = out ? out + (k < 0 ? ' - ' : ' + ') + term : (k < 0 ? '-' : '') + term;
+    }
+    return out || '0';
+  }
+  function vecTex(a, b, unit) { return '(' + n4(a) + ',\\ ' + n4(b) + ')' + unit; }
+  function hyp(a, b) { return Math.sqrt(a * a + b * b); }
+  function sample(fx, fy, t0, t1, n) { var o = []; for (var i = 0; i <= (n || 120); i++) { var t = t0 + (t1 - t0) * i / (n || 120); o.push([fx(t), fy(t)]); } return o; }
+  // the n-t split of a vector pair (see CURV.nt): used by several generators and by the view
+  function ntOf(vx, vy, ax, ay) { return CURV.nt(vx, vy, ax, ay); }
+  // Scene items (physical units; the view scales arrows):
+  //   {k:'path', pts, dashed?}  {k:'ground', y}  {k:'pt', at, label?}  {k:'circle', c, r}
+  //   {k:'vec', g:'v'|'a', at, off:[ox, oy] (in the group's units), vec, color, label, dashed?}
+  function arrowsVA(P, vx, vy, ax, ay, comps) {
+    var it = [{ k: 'vec', g: 'v', at: P, vec: [vx, vy], color: 'good', label: '\\vvec' }];
+    if (comps === 'nt') {
+      var s = ntOf(vx, vy, ax, ay);
+      if (s.et) {
+        var A1 = [s.et[0] * s.at, s.et[1] * s.at];
+        it.push({ k: 'vec', g: 'a', at: P, vec: A1, color: 't', label: 'a_t' });
+        it.push({ k: 'vec', g: 'a', at: P, off: A1, vec: [s.en[0] * s.an, s.en[1] * s.an], color: 'n', label: 'a_n' });
+      }
+    } else if (comps === 'xy') {
+      it.push({ k: 'vec', g: 'a', at: P, vec: [ax, 0], color: 'x', label: 'a_x' });
+      it.push({ k: 'vec', g: 'a', at: P, off: [ax, 0], vec: [0, ay], color: 'y', label: 'a_y' });
+    }
+    it.push({ k: 'vec', g: 'a', at: P, vec: [ax, ay], color: 'bad', label: '\\avec' });
+    return it;
+  }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 x(t), y(t) given: velocity and acceleration ---------- */
+  var CTX_XYT = [
+    { w: 3, who: 'A particle', verb: 'moves in the plane with' },
+    { w: 2, who: 'The gripper of a pick-and-place robot', verb: 'moves with' },
+    { w: 2, who: 'A camera drone', verb: 'flies with' },
+    { w: 2, who: 'The pen of a plotter', verb: 'moves with' },
+    { w: 1, who: 'A marker on a shaker table', verb: 'moves with' }
+  ];
+  function randPoly(rng, deg) {
+    var c = [0, 0, 0, 0];
+    if (deg === 3) { c[3] = rng.pick([0.5, 1, 2, -1, -0.5, 1]); c[2] = rng.pick([0, 0, 1, -1, 2]); c[1] = rng.int(-4, 4); }
+    else if (deg === 2) { c[2] = rng.pick([0.5, 1, 1.5, 2, 3, -1, -2]); c[1] = rng.int(-5, 5); }
+    else c[1] = nz(rng, -6, 6);
+    c[0] = rng.pick([0, 0, 0, 1, 2, -1, 3]);
+    return c;
+  }
+  function genXYT(rng) {
+    var cx, cy, t, X, Y, VX, VY, AX, AY, vxC, vyC, axC, ayC;
+    do {
+      var dx = rng.pick([1, 2, 2, 3, 3]), dy = rng.pick([1, 2, 2, 3, 3]);
+      if (dx === 1 && dy === 1) dy = 2;
+      cx = randPoly(rng, dx); cy = randPoly(rng, dy); t = rng.pick([1, 1.5, 2, 2, 3]);
+      vxC = dp(cx); vyC = dp(cy); axC = dp(vxC); ayC = dp(vyC);
+      X = pv(cx, t); Y = pv(cy, t); VX = pv(vxC, t); VY = pv(vyC, t); AX = pv(axC, t); AY = pv(ayC, t);
+    } while (hyp(VX, VY) < 0.5 || hyp(AX, AY) < 0.5);
+    var V = hyp(VX, VY), A = hyp(AX, AY);
+    var ctx = pickW(rng, CTX_XYT.map(function (c) { return [c, c.w]; }));
+    var comp = rng.next() < 0.4;
+    var given = m('x = ' + polyTex(cx, 't') + MM) + ' and ' + m('y = ' + polyTex(cy, 't') + MM);
+    var prompt = ctx.who + ' ' + ctx.verb + ' ' + given + ', where ' + m('t') + ' is in seconds. ' +
+      (comp ? 'Find the components of its velocity and acceleration at ' : 'Find its speed and the magnitude of its acceleration at ') + m('t = ' + nn(t) + SS) + '.';
+    var deriv = M(T`\begin{aligned} v_x &= \dot x = ${polyTex(vxC, 't')} = ${n4(VX)}${MS} \\ v_y &= \dot y = ${polyTex(vyC, 't')} = ${n4(VY)}${MS} \\ a_x &= \ddot x = ${polyTex(axC, 't')} = ${n4(AX)}${MS2} \\ a_y &= \ddot y = ${polyTex(ayC, 't')} = ${n4(AY)}${MS2} \end{aligned}`);
+    var mags = M(T`v = \sqrt{${n4(VX)}^2 + ${n4(VY)}^2} = ${n4(V)}${MS}, \qquad |\avec| = \sqrt{${n4(AX)}^2 + ${n4(AY)}^2} = ${n4(A)}${MS2}`);
+    var spec = comp ? {
+      type: 'fields', prompt: prompt,
+      fields: [
+        { name: 'vx', label: '\\(v_x =\\)', answer: VX, unit: 'm/s' }, { name: 'vy', label: '\\(v_y =\\)', answer: VY, unit: 'm/s' },
+        { name: 'ax', label: '\\(a_x =\\)', answer: AX, unit: 'm/s²' }, { name: 'ay', label: '\\(a_y =\\)', answer: AY, unit: 'm/s²' }
+      ]
+    } : {
+      type: 'fields', prompt: prompt,
+      fields: [{ name: 'v', label: '\\(v =\\)', answer: V, unit: 'm/s' }, { name: 'a', label: '\\(|\\avec| =\\)', answer: A, unit: 'm/s²' }]
+    };
+    spec.hints = [
+      T`The unit vectors \(\ihat\) and \(\jhat\) are fixed, so differentiate each coordinate: \(v_x = \dot x\), \(a_x = \ddot x\), and the same for \(y\).`,
+      T`\(v_x = ${polyTex(vxC, 't')}\), \(v_y = ${polyTex(vyC, 't')}\), \(a_x = ${polyTex(axC, 't')}\), \(a_y = ${polyTex(ayC, 't')}\). Now put in \(t = ${nn(t)}\).`
+    ];
+    if (!comp) spec.hints.push(T`Combine the components: \(v = \sqrt{v_x^2 + v_y^2}\) and \(|\avec| = \sqrt{a_x^2 + a_y^2}\).`);
+    spec.explain = T`Rectangular components: differentiate \(x(t)\) and \(y(t)\) separately, then combine with Pythagoras for magnitudes.`;
+    spec.solution = '<p>Differentiate each coordinate and evaluate at ' + m('t = ' + nn(t) + SS) + ':</p>' + deriv + (comp ? '' : '<p>Then combine:</p>' + mags) +
+      '<p>So ' + m('\\vvec = ' + vecTex(VX, VY, MS)) + ' and ' + m('\\avec = ' + vecTex(AX, AY, MS2)) + '.</p>';
+    var tEnd = Math.max(t + 1, t * 1.4);
+    return {
+      spec: spec,
+      view: {
+        title: 'Path and vectors at t = ' + CYL.fmt(t) + ' s',
+        items: [{ k: 'path', pts: sample(function (s) { return pv(cx, s); }, function (s) { return pv(cy, s); }, 0, tEnd), dashed: true },
+          { k: 'path', pts: sample(function (s) { return pv(cx, s); }, function (s) { return pv(cy, s); }, 0, t) },
+          { k: 'pt', at: [X, Y], label: 'P' }].concat(arrowsVA([X, Y], VX, VY, AX, AY, 'xy')),
+        readouts: [{ label: 'Position', tex: vecTex(X, Y, MM) }, { label: '\\(\\vvec\\)', tex: vecTex(VX, VY, MS), color: 'good' },
+          { label: '\\(\\avec\\)', tex: vecTex(AX, AY, MS2), color: 'bad' }],
+        note: 'The solid line is the path from ' + m('t = 0') + ' to the instant asked about; the dashed line continues it.',
+        aria: 'The path of the particle from t = 0, with the particle at P, its green velocity arrow tangent to the path and its red acceleration arrow split into x and y components.'
+      },
+      test: {
+        right: [comp ? { vx: typed(VX), vy: typed(VY), ax: typed(AX), ay: typed(AY) } : { v: typed(V), a: typed(A) }],
+        wrong: [comp ? { vx: typed(bump(VX)), vy: typed(VY), ax: typed(AX), ay: typed(AY) } : { v: typed(Math.abs(VX) + Math.abs(VY) + 1), a: typed(A) }],
+        check: function () {
+          var e = [], h = 1e-5;
+          if (Math.abs((pv(cx, t + h) - pv(cx, t - h)) / (2 * h) - VX) > 1e-4) e.push('vx derivative');
+          if (Math.abs((pv(vyC, t + h) - pv(vyC, t - h)) / (2 * h) - AY) > 1e-4) e.push('ay derivative');
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 2.2 Path y = f(x) with v_x (and a_x) given: chain rule ---------- */
+  var CTX_PATH = [
+    { w: 3, who: 'A pin', where: 'slides in a slot shaped like' },
+    { w: 2, who: 'A bead', where: 'slides along a wire bent into the shape' },
+    { w: 2, who: 'A cam follower', where: 'moves in a guide track' },
+    { w: 2, who: 'A small cart', where: 'rolls along a ramp profile' }
+  ];
+  function genPath(rng) {
+    var fam = pickW(rng, [['sq', 45], ['cube', 25], ['root', 30]]);
+    var f, f1, f2, ftex, f1tex, f2tex, x0;
+    if (fam === 'sq') {
+      var k = rng.pick([0.1, 0.2, 0.25, 0.5, 1]), b = rng.pick([0, 0, 0, 1, -1, 2]);
+      x0 = rng.pick([1, 2, 3, 4, -2, -1]);
+      f = function (x) { return k * x * x + b * x; }; f1 = function (x) { return 2 * k * x + b; }; f2 = function () { return 2 * k; };
+      ftex = polyTex([0, b, k], 'x'); f1tex = polyTex([b, 2 * k], 'x'); f2tex = nn(2 * k);
+    } else if (fam === 'cube') {
+      var c = rng.pick([0.05, 0.1, 0.2, 0.5]);
+      x0 = rng.pick([1, 2, 3, -1, -2]);
+      f = function (x) { return c * x * x * x; }; f1 = function (x) { return 3 * c * x * x; }; f2 = function (x) { return 6 * c * x; };
+      ftex = polyTex([0, 0, 0, c], 'x'); f1tex = polyTex([0, 0, 3 * c], 'x'); f2tex = polyTex([0, 6 * c], 'x');
+    } else {
+      var q = rng.pick([1, 2, 3, 4]);
+      x0 = rng.pick([1, 4, 4, 9]);
+      f = function (x) { return q * Math.sqrt(x); }; f1 = function (x) { return q / (2 * Math.sqrt(x)); }; f2 = function (x) { return -q / (4 * Math.pow(x, 1.5)); };
+      ftex = (q === 1 ? '' : q) + '\\sqrt{x}'; f1tex = '\\dfrac{' + q + '}{2\\sqrt{x}}'; f2tex = '-\\dfrac{' + q + '}{4x^{3/2}}';
+    }
+    var vx = rng.pick([1, 2, 2, 3, 4, 5]) * (rng.next() < 0.15 ? -1 : 1);
+    var ax = pickW(rng, [[0, 60], [0.5, 10], [1, 10], [2, 10], [-1, 10]]);
+    var F1 = f1(x0), F2 = f2(x0), vy = F1 * vx, ay = F2 * vx * vx + F1 * ax, y0 = f(x0);
+    var ctx = pickW(rng, CTX_PATH.map(function (c) { return [c, c.w]; }));
+    var motionTxt = ax === 0 ? 'The horizontal velocity is held constant at ' + m('v_x = ' + nn(vx) + MS) + '.'
+      : 'At the instant of interest ' + m('v_x = ' + nn(vx) + MS) + ' and ' + m('a_x = ' + nn(ax) + MS2) + '.';
+    var prompt = ctx.who + ' ' + ctx.where + ' ' + m('y = ' + ftex) + ' (metres). ' + motionTxt + ' Find ' + m('v_y') + ' and ' + m('a_y') + ' when ' + m('x = ' + nn(x0) + MM) + '.';
+    var sol = '<p>Derivatives of the path: ' + m("f'(x) = " + f1tex) + ' and ' + m("f''(x) = " + f2tex) + '. At ' + m('x = ' + nn(x0)) + ': ' +
+      m("f' = " + n4(F1)) + ', ' + m("f'' = " + n4(F2) + '\\ \\text{m}^{-1}') + '.</p>' +
+      M(T`\begin{aligned} v_y &= f'(x)\,v_x = (${n4(F1)})(${nn(vx)}) = ${n4(vy)}${MS} \\ a_y &= f''(x)\,v_x^2 + f'(x)\,a_x = (${n4(F2)})(${nn(vx)})^2 + (${n4(F1)})(${nn(ax)}) = ${n4(ay)}${MS2} \end{aligned}`);
+    var xs = [x0 - 3, x0 + 3];
+    if (fam === 'root') xs = [Math.max(0.05, x0 - 3), x0 + 3];
+    return {
+      spec: {
+        type: 'fields', prompt: prompt,
+        fields: [{ name: 'vy', label: '\\(v_y =\\)', answer: vy, unit: 'm/s' }, { name: 'ay', label: '\\(a_y =\\)', answer: ay, unit: 'm/s²' }],
+        hints: [T`\(y\) depends on time through \(x\): \(v_y = f'(x)\,v_x\).`,
+          T`Differentiate again with the product rule: \(a_y = f''(x)\,v_x^2 + f'(x)\,a_x\). Here \(f'(x) = ${f1tex}\) and \(f''(x) = ${f2tex}\).`],
+        explain: T`On a known path \(y = f(x)\): \(v_y = f'v_x\) and \(a_y = f''v_x^2 + f'a_x\). The \(f''\) term is the curvature of the path.`,
+        solution: sol
+      },
+      view: {
+        title: 'The path at x = ' + CYL.fmt(x0) + ' m',
+        items: [{ k: 'path', pts: sample(function (x) { return x; }, f, xs[0], xs[1]) }, { k: 'pt', at: [x0, y0], label: 'P' }]
+          .concat(arrowsVA([x0, y0], vx, vy, ax, ay, 'xy')),
+        readouts: [{ label: 'Slope \\(f\'\\)', tex: n4(F1) }, { label: '\\(\\vvec\\)', tex: vecTex(vx, vy, MS), color: 'good' }, { label: '\\(\\avec\\)', tex: vecTex(ax, ay, MS2), color: 'bad' }],
+        note: 'The velocity is tangent to the path: its slope ' + m('v_y / v_x') + ' equals ' + m('f\'(x)') + '.',
+        aria: 'The path y = f(x) with the particle at P, a green velocity arrow tangent to the path and a red acceleration arrow split into x and y components.'
+      },
+      test: {
+        right: [{ vy: typed(vy), ay: typed(ay) }],
+        wrong: [{ vy: typed(vy), ay: typed(bump(ay)) }],
+        check: function () {
+          var h = 1e-5, e = [];
+          if (Math.abs((f(x0 + h) - f(x0 - h)) / (2 * h) - F1) > 1e-4) e.push("f' mismatch");
+          if (Math.abs((f1(x0 + h) - f1(x0 - h)) / (2 * h) - F2) > 1e-3) e.push("f'' mismatch");
+          return e;
+        }
+      }
+    };
+  }
+
+  /* ---------- 2.3 Projectiles ---------- */
+  function projScene(v0x, v0y, y0, tEv, tEnd, label) {
+    var X = v0x * tEv, Y = y0 + v0y * tEv - G * tEv * tEv / 2, VY = v0y - G * tEv;
+    var items = [{ k: 'ground', y: 0 },
+      { k: 'path', pts: sample(function (t) { return v0x * t; }, function (t) { return y0 + v0y * t - G * t * t / 2; }, 0, tEnd), dashed: true },
+      { k: 'path', pts: sample(function (t) { return v0x * t; }, function (t) { return y0 + v0y * t - G * t * t / 2; }, 0, tEv) },
+      { k: 'pt', at: [X, Y], label: label || 'P' }];
+    if (y0 > 0) items.push({ k: 'tower', h: y0 });
+    return items.concat(arrowsVA([X, Y], v0x, VY, 0, -G, 'xy'));
+  }
+  function genProj(rng) {
+    var fam = pickW(rng, [['level', 30], ['height', 25], ['horiz', 25], ['wall', 20]]);
+    var spec, view, right, wrong, check;
+    var hints0 = T`Take \(x\) horizontal and \(y\) up: \(a_x = 0\), \(a_y = -g = -9.81\ \text{m/s}^2\). The two motions share only \(t\).`;
+    if (fam === 'level') {
+      var v0 = rng.int(5, 15) * 2, th = rng.pick([15, 20, 25, 30, 35, 40, 50, 55, 60, 65, 70]);
+      var who = rng.pick(['A soccer ball is kicked', 'A water balloon is fired from a launcher on the ground', 'A golf ball is chipped', 'A ball is thrown from ground level']);
+      var vx = v0 * Math.cos(th * D), vy = v0 * Math.sin(th * D), Tf = 2 * vy / G, H = vy * vy / (2 * G), R = vx * Tf;
+      var askT = rng.next() < 0.4;
+      spec = {
+        type: 'fields',
+        prompt: who + ' at ' + m(nn(v0) + MS) + ', ' + m(th + '^\\circ') + ' above the horizontal, and lands at its launch height. Ignoring air resistance, find its ' + (askT ? 'time of flight and range.' : 'maximum height and range.'),
+        fields: (askT ? [{ name: 'T', label: '\\(T =\\)', answer: Tf, unit: 's' }] : [{ name: 'h', label: '\\(h_\\text{max} =\\)', answer: H, unit: 'm' }])
+          .concat([{ name: 'R', label: '\\(R =\\)', answer: R, unit: 'm' }]),
+        hints: [hints0, T`It lands at launch height, so \(T = 2v_0\sin\theta_0/g\), \(h_\text{max} = v_0^2\sin^2\theta_0/(2g)\) and \(R = v_0^2\sin 2\theta_0/g\).`],
+        explain: T`Launch and landing at the same height: the level-ground results apply.`,
+        solution: M(T`v_{x0} = ${nn(v0)}\cos ${th}^\circ = ${n4(vx)}${MS}, \qquad v_{y0} = ${nn(v0)}\sin ${th}^\circ = ${n4(vy)}${MS}`) +
+          M(T`\begin{aligned} T &= \frac{2v_{y0}}{g} = \frac{2(${n4(vy)})}{9.81} = ${n4(Tf)}${SS} \\ h_\text{max} &= \frac{v_{y0}^2}{2g} = ${n4(H)}${MM} \\ R &= v_{x0}\,T = (${n4(vx)})(${n4(Tf)}) = ${n4(R)}${MM} \end{aligned}`)
+      };
+      right = askT ? { T: typed(Tf), R: typed(R) } : { h: typed(H), R: typed(R) };
+      wrong = askT ? { T: typed(Tf / 2), R: typed(R) } : { h: typed(2 * H), R: typed(R) };
+      view = { items: projScene(vx, vy, 0, Tf / 2, Tf, 'top'), readouts: [{ label: 'Time of flight', tex: n4(Tf) + SS }, { label: 'Maximum height', tex: n4(H) + MM }, { label: 'Range', tex: n4(R) + MM }] };
+      check = function () { return Math.abs(R - v0 * v0 * Math.sin(2 * th * D) / G) > 1e-9 ? ['range formula'] : []; };
+    } else if (fam === 'height') {
+      var h0 = rng.int(1, 8) * 5, v0b = rng.int(8, 25), thb = rng.pick([10, 15, 20, 25, 30, 35, 40, 45]);
+      var ctxb = rng.pick([['A stone is thrown from the top of a cliff', 'above the sea'], ['A ball is thrown from a balcony', 'above the street'], ['A flare is fired from the deck of a ship', 'above the water']]);
+      var bx = v0b * Math.cos(thb * D), by = v0b * Math.sin(thb * D), Tb = (by + Math.sqrt(by * by + 2 * G * h0)) / G, Xb = bx * Tb;
+      spec = {
+        type: 'fields',
+        prompt: ctxb[0] + ' ' + m(nn(h0) + MM) + ' ' + ctxb[1] + ', at ' + m(nn(v0b) + MS) + ' and ' + m(thb + '^\\circ') + ' above the horizontal. How long is it in the air, and how far does it travel horizontally before it lands?',
+        fields: [{ name: 't', label: '\\(t =\\)', answer: Tb, unit: 's' }, { name: 'x', label: '\\(x =\\)', answer: Xb, unit: 'm' }],
+        hints: [hints0, T`Put the origin at the base, so \(y_0 = ${nn(h0)}\ \text{m}\). Impact is when \(y = 0\): solve \(0 = ${nn(h0)} + v_{y0}t - 4.905t^2\) and keep the positive root.`],
+        explain: T`The landing height differs from the launch height, so the level-ground range formula does not apply: find \(t\) from \(y\) first.`,
+        solution: M(T`v_{x0} = ${n4(bx)}${MS}, \qquad v_{y0} = ${n4(by)}${MS}`) +
+          M(T`0 = ${nn(h0)} + ${n4(by)}\,t - 4.905\,t^2 \quad\Rightarrow\quad t = \frac{${n4(by)} + \sqrt{${n4(by)}^2 + 2(9.81)(${nn(h0)})}}{9.81} = ${n4(Tb)}${SS}`) +
+          M(T`x = v_{x0}\,t = (${n4(bx)})(${n4(Tb)}) = ${n4(Xb)}${MM}`)
+      };
+      right = { t: typed(Tb), x: typed(Xb) };
+      wrong = { t: typed(2 * by / G), x: typed(bx * 2 * by / G) };
+      view = { items: projScene(bx, by, h0, Tb, Tb, 'impact'), readouts: [{ label: 'Time in the air', tex: n4(Tb) + SS }, { label: 'Horizontal distance', tex: n4(Xb) + MM }] };
+      check = function () { var y = h0 + by * Tb - G * Tb * Tb / 2; return Math.abs(y) > 1e-8 ? ['impact y != 0'] : []; };
+    } else if (fam === 'horiz') {
+      var hc = rng.pick([1.2, 1.25, 2, 5, 10, 20, 45, 80]), v0c = rng.int(2, 20);
+      var ctxc = hc < 3 ? rng.pick(['A ball rolls off a table', 'Water leaves a horizontal hose nozzle', 'A marble rolls off a bench'])
+        : rng.pick(['A drone flying horizontally releases a package', 'A stone is thrown horizontally from a bridge', 'A rescue plane drops a supply crate while flying level']);
+      var Tc = Math.sqrt(2 * hc / G), Xc = v0c * Tc, Vc = hyp(v0c, G * Tc);
+      var askV = rng.next() < 0.4;
+      spec = {
+        type: 'fields',
+        prompt: ctxc + ' ' + m(nn(hc) + MM) + ' above the ground, with a horizontal speed of ' + m(nn(v0c) + MS) + '. Find ' + (askV ? 'how far it travels horizontally and its speed when it hits the ground.' : 'how long it takes to reach the ground and how far it travels horizontally.'),
+        fields: (askV ? [{ name: 'x', label: '\\(x =\\)', answer: Xc, unit: 'm' }, { name: 'v', label: '\\(v =\\)', answer: Vc, unit: 'm/s' }]
+          : [{ name: 't', label: '\\(t =\\)', answer: Tc, unit: 's' }, { name: 'x', label: '\\(x =\\)', answer: Xc, unit: 'm' }]),
+        hints: [hints0, T`Launched horizontally, \(v_{y0} = 0\), so \(${nn(hc)} = \tfrac12 g t^2\). Then \(x = v_0 t\)${askV ? T`, and at impact \(v_x = v_0\), \(v_y = -g\,t\).` : '.'}`],
+        explain: T`The fall time depends only on the height: \(t = \sqrt{2h/g}\). The horizontal speed never changes.`,
+        solution: M(T`t = \sqrt{\frac{2(${nn(hc)})}{9.81}} = ${n4(Tc)}${SS}, \qquad x = (${nn(v0c)})(${n4(Tc)}) = ${n4(Xc)}${MM}`) +
+          (askV ? M(T`v_y = -9.81(${n4(Tc)}) = ${n4(-G * Tc)}${MS}, \qquad v = \sqrt{${nn(v0c)}^2 + ${n4(G * Tc)}^2} = ${n4(Vc)}${MS}`) : '')
+      };
+      right = askV ? { x: typed(Xc), v: typed(Vc) } : { t: typed(Tc), x: typed(Xc) };
+      wrong = askV ? { x: typed(Xc), v: typed(v0c + G * Tc) } : { t: typed(2 * Tc), x: typed(Xc) };
+      view = { items: projScene(v0c, 0, hc, Tc, Tc, 'impact'), readouts: [{ label: 'Fall time', tex: n4(Tc) + SS }, { label: 'Horizontal distance', tex: n4(Xc) + MM }, { label: 'Impact speed', tex: n4(Vc) + MS }] };
+      check = function () { return Math.abs(G * Tc * Tc / 2 - hc) > 1e-9 ? ['fall time'] : []; };
+    } else {
+      var v0d = rng.int(8, 15) * 2, thd = rng.pick([25, 30, 35, 40, 45, 50, 55]);
+      var dx = v0d * Math.cos(thd * D), dy = v0d * Math.sin(thd * D), Rd = 2 * dx * dy / G;
+      var d = Math.round(Rd * rng.pick([0.3, 0.4, 0.5, 0.6, 0.7]));
+      if (d < 3) d = 3;
+      var tw = d / dx, hw = dy * tw - G * tw * tw / 2;
+      var ctxd = rng.pick(['A ball is kicked from the ground toward a wall', 'A snowball is thrown from ground level toward a fence', 'A stream of water leaves a sprinkler at ground level toward a wall']);
+      spec = {
+        type: 'fields',
+        prompt: ctxd + ' ' + m(nn(d) + MM) + ' away. It leaves at ' + m(nn(v0d) + MS) + ', ' + m(thd + '^\\circ') + ' above the horizontal. When does it reach the wall, and how high up the wall does it hit?',
+        fields: [{ name: 't', label: '\\(t =\\)', answer: tw, unit: 's' }, { name: 'y', label: '\\(y =\\)', answer: hw, unit: 'm' }],
+        hints: [hints0, T`The horizontal distance is known, so get the time from \(x\): \(t = d/(v_0\cos\theta_0)\). Then \(y = v_0\sin\theta_0\,t - \tfrac12 g t^2\).`],
+        explain: T`When a horizontal distance is given, the \(x\) motion gives the time directly.`,
+        solution: M(T`t = \frac{${nn(d)}}{${nn(v0d)}\cos ${thd}^\circ} = \frac{${nn(d)}}{${n4(dx)}} = ${n4(tw)}${SS}`) +
+          M(T`y = (${n4(dy)})(${n4(tw)}) - 4.905(${n4(tw)})^2 = ${n4(hw)}${MM}`)
+      };
+      right = { t: typed(tw), y: typed(hw) };
+      wrong = { t: typed(tw), y: typed(dy * tw) };
+      view = { items: projScene(dx, dy, 0, tw, Math.min(Rd / dx, tw * 1.25), 'wall').concat([{ k: 'wall', x: d, h: Math.max(hw, 0) * 1.3 + 2 }]),
+        readouts: [{ label: 'Time to the wall', tex: n4(tw) + SS }, { label: 'Height on the wall', tex: n4(hw) + MM }] };
+      check = function () { return hw <= 0 ? ['misses the wall'] : []; };
+    }
+    view.title = 'The trajectory';
+    view.note = 'Dashed: the rest of the flight. The acceleration is ' + m('g') + ', straight down, at every instant.';
+    view.aria = 'Side view of the projectile trajectory, a downward-opening parabola, with the ground line. The particle is drawn at the instant of interest with its velocity, its acceleration (straight down) and their x and y components.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong], check: check } };
+  }
+
+  /* ---------- 2.4 Tangential and normal acceleration ---------- */
+  function ntScene(R, v, at, label) {
+    var P = [0, -R];
+    return [{ k: 'circle', c: [0, 0], r: R, dashed: true }, { k: 'pt', at: [0, 0], label: 'C', muted: true },
+      { k: 'path', pts: sample(function (s) { return R * Math.cos(-PI / 2 + s); }, function (s) { return R * Math.sin(-PI / 2 + s); }, -0.9, 0.9) },
+      { k: 'pt', at: P, label: label || 'P' }].concat(arrowsVA(P, v, 0, at, v * v / R, 'nt'));
+  }
+  var VEH = [['A car', 'a curve'], ['A bus', 'a curve'], ['A train', 'a curved section of track'], ['A cyclist', 'a bend'], ['A race car', 'a turn']];
+  function genNT(rng) {
+    var fam = pickW(rng, [['basic', 45], ['spin', 20], ['vmax', 20], ['rmin', 15]]);
+    var spec, view, right, wrong;
+    if (fam === 'basic') {
+      var veh = rng.pick(VEH), kmh = rng.next() < 0.35;
+      var v = kmh ? rng.pick([36, 54, 72, 90, 108]) / 3.6 : rng.int(4, 30);
+      var R = rng.pick([20, 25, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300]);
+      var at = rng.pick([-4, -3, -2.5, -2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 3]);
+      var an = v * v / R, A = hyp(at, an);
+      spec = {
+        type: 'fields',
+        prompt: veh[0] + ' travels round ' + veh[1] + ' of radius ' + m(nn(R) + MM) + ' at ' + (kmh ? m(nn(v * 3.6) + '\\ \\text{km/h}') : m(nn(v) + MS)) + ', and is ' +
+          (at > 0 ? 'speeding up at ' : 'slowing down at ') + m(nn(Math.abs(at)) + MS2) + '. Find its normal acceleration and the magnitude of its total acceleration.',
+        fields: [{ name: 'an', label: '\\(a_n =\\)', answer: an, unit: 'm/s²' }, { name: 'a', label: '\\(|\\avec| =\\)', answer: A, unit: 'm/s²' }],
+        hints: [(kmh ? T`Convert first: divide km/h by 3.6 to get m/s. ` : '') + T`\(a_n = v^2/\rho\).`, T`\(a_t = ${nn(at)}\ \text{m/s}^2\) and \(a_n\) are perpendicular: \(|\avec| = \sqrt{a_t^2 + a_n^2}\).`],
+        explain: T`The tangential part changes the speed; the normal part \(v^2/\rho\) turns the velocity. They add like perpendicular vectors.`,
+        solution: (kmh ? '<p>' + m(nn(v * 3.6) + '\\ \\text{km/h} = ' + n4(v) + MS) + '.</p>' : '') +
+          M(T`a_n = \frac{v^2}{\rho} = \frac{${n4(v)}^2}{${nn(R)}} = ${n4(an)}${MS2}, \qquad |\avec| = \sqrt{(${nn(at)})^2 + ${n4(an)}^2} = ${n4(A)}${MS2}`)
+      };
+      right = { an: typed(an), a: typed(A) }; wrong = { an: typed(an), a: typed(Math.abs(at) + an) };
+      view = { items: ntScene(R, v, at), readouts: [{ label: '\\(v\\)', tex: n4(v) + MS, color: 'good' }, { label: '\\(a_t\\)', tex: nn(at) + MS2, color: 't' }, { label: '\\(a_n\\)', tex: n4(an) + MS2, color: 'n' }, { label: '\\(|\\avec|\\)', tex: n4(A) + MS2, color: 'bad' }] };
+    } else if (fam === 'spin') {
+      var r = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1.2]), w = rng.int(2, 30), al = nz(rng, -8, 12);
+      var who = rng.pick(['A point on the rim of a flywheel', 'The tip of a fan blade', 'A point on a grinding wheel', 'A bolt on a spinning turntable']);
+      var atS = al * r, anS = w * w * r;
+      spec = {
+        type: 'fields',
+        prompt: who + ' is ' + m(nn(r) + MM) + ' from the axis. At an instant the wheel turns at ' + m('\\omega = ' + nn(w) + '\\ \\text{rad/s}') + ' and ' +
+          (al > 0 ? 'speeds up' : 'slows down') + ' at ' + m('|\\alpha| = ' + nn(Math.abs(al)) + '\\ \\text{rad/s}^2') + '. Find the point\'s tangential and normal accelerations (give ' + m('a_t') + ' a sign: negative when slowing).',
+        fields: [{ name: 'at', label: '\\(a_t =\\)', answer: atS, unit: 'm/s²' }, { name: 'an', label: '\\(a_n =\\)', answer: anS, unit: 'm/s²' }],
+        hints: [T`For a point on a rotating body, \(v = \omega r\), so \(a_t = \dot v = \alpha r\).`, T`\(a_n = v^2/r = \omega^2 r\).`],
+        explain: T`Circular motion: \(a_t = \alpha r\) and \(a_n = \omega^2 r\).`,
+        solution: M(T`a_t = \alpha r = (${nn(al)})(${nn(r)}) = ${n4(atS)}${MS2}, \qquad a_n = \omega^2 r = (${nn(w)})^2(${nn(r)}) = ${n4(anS)}${MS2}`)
+      };
+      right = { at: typed(atS), an: typed(anS) }; wrong = { at: typed(atS), an: typed(w * r) };
+      view = { items: ntScene(r, w * r, atS), readouts: [{ label: '\\(v = \\omega r\\)', tex: n4(w * r) + MS, color: 'good' }, { label: '\\(a_t\\)', tex: n4(atS) + MS2, color: 't' }, { label: '\\(a_n\\)', tex: n4(anS) + MS2, color: 'n' }] };
+    } else if (fam === 'vmax') {
+      var Rm = rng.pick([30, 40, 50, 60, 80, 100, 150, 200, 300]), f = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5]);
+      var vm = Math.sqrt(f * G * Rm);
+      var ctxm = rng.pick(['For passenger comfort, the sideways acceleration of a light-rail car', 'To keep its tyres gripping, the sideways acceleration of a car', 'For rider comfort, the sideways acceleration of a bus']);
+      spec = {
+        type: 'numeric', unit: 'm/s', label: '\\(v_\\text{max} =\\)', answer: vm,
+        prompt: ctxm + ' on a flat curve of radius ' + m(nn(Rm) + MM) + ' must not exceed ' + m(nn(f) + 'g') + '. What is the highest steady speed allowed?',
+        hints: [T`At steady speed the only acceleration is \(a_n = v^2/\rho\).`, T`Set \(v^2/${nn(Rm)} = ${nn(f)}(9.81)\).`],
+        explain: T`A limit on \(a_n\) caps the speed at \(\sqrt{a_{n,\max}\,\rho}\).`,
+        solution: M(T`v_\text{max} = \sqrt{${nn(f)}(9.81)(${nn(Rm)})} = ${n4(vm)}${MS} \approx ${n4(vm * 3.6)}\ \text{km/h}`)
+      };
+      right = typed(vm); wrong = typed(f * G * Rm);
+      view = { items: ntScene(Rm, vm, 0), readouts: [{ label: '\\(v_\\text{max}\\)', tex: n4(vm) + MS, color: 'good' }, { label: '\\(a_n\\)', tex: n4(f * G) + MS2, color: 'n' }] };
+    } else {
+      var kmh2 = rng.pick([50, 60, 70, 80, 90, 100, 110]), f2 = rng.pick([0.1, 0.12, 0.15, 0.2]);
+      var v2 = kmh2 / 3.6, Rn = v2 * v2 / (f2 * G);
+      spec = {
+        type: 'numeric', unit: 'm', label: '\\(\\rho_\\text{min} =\\)', answer: Rn,
+        prompt: 'A road curve is designed for ' + m(nn(kmh2) + '\\ \\text{km/h}') + ', with the sideways acceleration limited to ' + m(nn(f2) + 'g') + '. What is the smallest curve radius allowed?',
+        hints: [T`Convert: \(${nn(kmh2)}\ \text{km/h} = ${n4(v2)}\ \text{m/s}\).`, T`\(\rho_\text{min} = v^2/a_{n,\max}\).`],
+        explain: T`\(a_n = v^2/\rho\) must stay below the limit, so \(\rho \ge v^2/a_{n,\max}\).`,
+        solution: M(T`\rho_\text{min} = \frac{${n4(v2)}^2}{${nn(f2)}(9.81)} = ${n4(Rn)}${MM}`)
+      };
+      right = typed(Rn); wrong = typed(v2 / (f2 * G));
+      view = { items: ntScene(Rn, v2, 0), readouts: [{ label: '\\(v\\)', tex: n4(v2) + MS, color: 'good' }, { label: '\\(\\rho_\\text{min}\\)', tex: n4(Rn) + MM }] };
+    }
+    view.title = 'The curve';
+    view.note = 'The particle ' + m('P') + ' is drawn at the bottom of the osculating circle, moving to the right; ' + m('C') + ' is the center of curvature.';
+    view.aria = 'The osculating circle of the path with its center C. The particle at the bottom moves to the right; its acceleration is split into a tangential part along the path and a normal part pointing up toward C.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 Speed changing along the path ---------- */
+  function genSpeed(rng) {
+    var fam = pickW(rng, [['as', 30], ['at', 25], ['const', 25], ['vt', 20]]);
+    var R = rng.pick([20, 25, 30, 40, 50, 60, 80, 100]);
+    var who = rng.pick(['A car', 'A go-kart', 'A motorcycle', 'A train', 'A roller-coaster car']);
+    var v, at, text, sol, h1, h2;
+    if (fam === 'as') {
+      var c = rng.pick([0.02, 0.05, 0.08, 0.1, 0.2]), s = rng.int(2, 12) * 5;
+      v = Math.sqrt(c) * s; at = c * s;
+      text = who + ' starts from rest and gains speed along a track with ' + m('a_t = ' + nn(c) + 's' + MS2) + ', where ' + m('s') + ' is the distance travelled in metres. When ' + m('s = ' + nn(s) + MM) + ' it is on a curve of radius ' + m(nn(R) + MM) + '.';
+      h1 = T`\(a_t\) depends on \(s\): use \(v\,dv = a_t\,ds\) and integrate from rest.`;
+      h2 = T`\(\tfrac12 v^2 = \tfrac12(${nn(c)})s^2\), so \(v = \sqrt{${nn(c)}}\,s\).`;
+      sol = M(T`\int_0^v v\,dv = \int_0^{s} ${nn(c)}\,s\,ds \ \Rightarrow\ v = \sqrt{${nn(c)}}\,s = ${n4(v)}${MS}`) + M(T`a_t = ${nn(c)}(${nn(s)}) = ${n4(at)}${MS2}`);
+    } else if (fam === 'at') {
+      var k = rng.pick([0.5, 1, 1.5, 2]), v0 = rng.int(0, 10), t = rng.int(2, 6);
+      v = v0 + k * t * t / 2; at = k * t;
+      text = who + ' moving at ' + m(nn(v0) + MS) + ' starts to speed up with ' + m('a_t = ' + nn(k) + 't' + MS2) + ' (' + m('t') + ' in seconds). At ' + m('t = ' + nn(t) + SS) + ' it is on a curve of radius ' + m(nn(R) + MM) + '.';
+      h1 = T`\(a_t\) depends on \(t\): integrate \(dv = a_t\,dt\) from \(v_0 = ${nn(v0)}\ \text{m/s}\).`;
+      h2 = T`\(v = ${nn(v0)} + \tfrac12(${nn(k)})t^2\).`;
+      sol = M(T`v = ${nn(v0)} + \int_0^t ${nn(k)}\,t\,dt = ${nn(v0)} + ${nn(k / 2)}t^2 = ${n4(v)}${MS}, \qquad a_t = ${nn(k)}(${nn(t)}) = ${n4(at)}${MS2}`);
+    } else if (fam === 'const') {
+      var v0c = rng.int(6, 25), a0 = rng.pick([-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 3]), sc = rng.int(2, 16) * 5;
+      if (a0 < 0) {                                        // braking: stop the distance well short of standstill
+        var sMax = Math.floor((v0c * v0c - 9) / (-2 * a0) / 5) * 5;
+        if (sMax < 5) a0 = -a0; else sc = Math.min(sc, sMax);
+      }
+      v = Math.sqrt(v0c * v0c + 2 * a0 * sc); at = a0;
+      text = who + ' passes point A at ' + m(nn(v0c) + MS) + ' and then ' + (a0 > 0 ? 'speeds up' : 'slows down') + ' steadily at ' + m(nn(Math.abs(a0)) + MS2) + '. ' + m(nn(sc) + MM) + ' past A it is on a curve of radius ' + m(nn(R) + MM) + '.';
+      h1 = T`\(a_t\) is constant (\(${nn(a0)}\ \text{m/s}^2\)), so along the path \(v^2 = v_0^2 + 2a_t s\).`;
+      h2 = T`\(v^2 = ${nn(v0c)}^2 + 2(${nn(a0)})(${nn(sc)})\).`;
+      sol = M(T`v = \sqrt{${nn(v0c)}^2 + 2(${nn(a0)})(${nn(sc)})} = ${n4(v)}${MS}, \qquad a_t = ${nn(a0)}${MS2}`);
+    } else {
+      var q = rng.pick([0.5, 1, 2, 3]), tv = rng.int(1, 5);
+      v = q * tv * tv; at = 2 * q * tv;
+      text = 'The speed of ' + who.toLowerCase() + ' on a curved track is ' + m('v = ' + nn(q) + 't^2' + MS) + ' (' + m('t') + ' in seconds). At ' + m('t = ' + nn(tv) + SS) + ' the track has a radius of curvature of ' + m(nn(R) + MM) + '.';
+      h1 = T`\(a_t = dv/dt\): differentiate the speed.`;
+      h2 = T`\(a_t = ${nn(2 * q)}t\) and \(v = ${nn(q)}t^2\) at \(t = ${nn(tv)}\).`;
+      sol = M(T`v = ${nn(q)}(${nn(tv)})^2 = ${n4(v)}${MS}, \qquad a_t = \frac{dv}{dt} = ${nn(2 * q)}(${nn(tv)}) = ${n4(at)}${MS2}`);
+    }
+    var an = v * v / R, A = hyp(at, an);
+    sol += M(T`a_n = \frac{v^2}{\rho} = \frac{${n4(v)}^2}{${nn(R)}} = ${n4(an)}${MS2}, \qquad |\avec| = \sqrt{${n4(at)}^2 + ${n4(an)}^2} = ${n4(A)}${MS2}`);
+    return {
+      spec: {
+        type: 'fields', prompt: text + ' Find its speed there and the magnitude of its acceleration.',
+        fields: [{ name: 'v', label: '\\(v =\\)', answer: v, unit: 'm/s' }, { name: 'a', label: '\\(|\\avec| =\\)', answer: A, unit: 'm/s²' }],
+        hints: [h1, h2, T`Then \(a_n = v^2/\rho\) and \(|\avec| = \sqrt{a_t^2 + a_n^2}\).`],
+        explain: T`Find \(v\) from \(a_t\) (with \(dv = a_t\,dt\) or \(v\,dv = a_t\,ds\)), then combine \(a_t\) with \(a_n = v^2/\rho\).`,
+        solution: sol
+      },
+      view: {
+        title: 'The curve', items: ntScene(R, v, at),
+        readouts: [{ label: '\\(v\\)', tex: n4(v) + MS, color: 'good' }, { label: '\\(a_t\\)', tex: n4(at) + MS2, color: 't' }, { label: '\\(a_n\\)', tex: n4(an) + MS2, color: 'n' }, { label: '\\(|\\avec|\\)', tex: n4(A) + MS2, color: 'bad' }],
+        note: 'The vehicle ' + m('P') + ' is drawn at the bottom of the osculating circle, moving to the right.',
+        aria: 'The osculating circle of the track with its center C. The vehicle at the bottom moves to the right; its acceleration has a tangential part along the track and a normal part pointing up toward C.'
+      },
+      test: { right: [{ v: typed(v), a: typed(A) }], wrong: [{ v: typed(v), a: typed(an + Math.abs(at) + 1) }] }
+    };
+  }
+
+  /* ---------- 2.6 Radius of curvature ---------- */
+  function oscItems(P, en, rho) {
+    return rho < 1e4 ? [{ k: 'circle', c: [P[0] + rho * en[0], P[1] + rho * en[1]], r: rho, dashed: true }, { k: 'pt', at: [P[0] + rho * en[0], P[1] + rho * en[1]], label: 'C', muted: true }] : [];
+  }
+  function genRho(rng) {
+    var fam = pickW(rng, [['poly', 35], ['cube', 15], ['param', 25], ['proj', 15], ['sine', 10]]);
+    var rho, spec, items, readouts;
+    var hint0 = T`\(\rho = \dfrac{(1 + y'^2)^{3/2}}{|y''|}\) for a path \(y = f(x)\); \(\rho = \dfrac{v^3}{|\dot x\ddot y - \dot y\ddot x|}\) for a motion \(x(t), y(t)\).`;
+    if (fam === 'poly' || fam === 'cube' || fam === 'sine') {
+      var f, f1, f2, ftex, f1t, f2t, x0;
+      if (fam === 'poly') {
+        var k = rng.pick([0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, -0.1, -0.25, -0.5]), b = rng.pick([0, 0, 1, -1, 2]);
+        x0 = rng.pick([0, 1, 2, 3, -1, -2, 4]);
+        f = function (x) { return k * x * x + b * x; }; f1 = function (x) { return 2 * k * x + b; }; f2 = function () { return 2 * k; };
+        ftex = polyTex([0, b, k], 'x'); f1t = polyTex([b, 2 * k], 'x'); f2t = nn(2 * k);
+      } else if (fam === 'cube') {
+        var c = rng.pick([0.05, 0.1, 0.2, -0.1]);
+        x0 = rng.pick([1, 2, 3, -1, -2]);
+        f = function (x) { return c * x * x * x; }; f1 = function (x) { return 3 * c * x * x; }; f2 = function (x) { return 6 * c * x; };
+        ftex = polyTex([0, 0, 0, c], 'x'); f1t = polyTex([0, 0, 3 * c], 'x'); f2t = polyTex([0, 6 * c], 'x');
+      } else {
+        var A = rng.pick([1, 2, 3, 4, 5]), bb = rng.pick([2, 3, 4, 5, 10]), crest = rng.next() < 0.5;
+        x0 = (crest ? 1 : 3) * bb * PI / 2;
+        f = function (x) { return A * Math.sin(x / bb); }; f1 = function (x) { return A / bb * Math.cos(x / bb); }; f2 = function (x) { return -A / (bb * bb) * Math.sin(x / bb); };
+        ftex = nn(A) + '\\sin(x/' + bb + ')'; f1t = '\\tfrac{' + A + '}{' + bb + '}\\cos(x/' + bb + ')'; f2t = '-\\tfrac{' + A + '}{' + (bb * bb) + '}\\sin(x/' + bb + ')';
+      }
+      var F1 = f1(x0), F2 = f2(x0), y0 = f(x0);
+      rho = Math.pow(1 + F1 * F1, 1.5) / Math.abs(F2);
+      var xTex = fam === 'sine' ? (crest ? '\\tfrac{' + bb + '\\pi}{2}' : '\\tfrac{' + (3 * bb) + '\\pi}{2}') : nn(x0);
+      var what = rng.pick(['a road profile', 'a guide rail', 'a cam track', 'a wire', 'a roller-coaster track']);
+      spec = {
+        type: 'numeric', unit: 'm', label: '\\(\\rho =\\)', answer: rho,
+        prompt: 'Find the radius of curvature of ' + what + ' with the shape ' + m('y = ' + ftex) + ' (metres) at ' + m('x = ' + xTex + MM) + '.',
+        hints: [hint0, T`\(y' = ${f1t}\) and \(y'' = ${f2t}\). At this point \(y' = ${n4(F1)}\) and \(y'' = ${n4(F2)}\).`],
+        explain: T`Use \(\rho = (1 + y'^2)^{3/2}/|y''|\); where \(y' = 0\) this is simply \(1/|y''|\).`,
+        solution: '<p>' + m("y' = " + f1t) + ' and ' + m("y'' = " + f2t) + '. At ' + m('x = ' + xTex) + ': ' + m("y' = " + n4(F1)) + ', ' + m("y'' = " + n4(F2)) + '.</p>' +
+          M(T`\rho = \frac{\left(1 + (${n4(F1)})^2\right)^{3/2}}{|${n4(F2)}|} = ${n4(rho)}${MM}`) +
+          '<p>The center of curvature is ' + (F2 > 0 ? 'above' : 'below') + ' the path (' + m("y'' " + (F2 > 0 ? '\\gt' : '\\lt') + ' 0') + ').</p>'
+      };
+      var L = Math.sqrt(1 + F1 * F1), sg = F2 > 0 ? 1 : -1, en = [-sg * F1 / L, sg / L];
+      var span = Math.max(3, Math.min(rho * 1.2, 12));
+      items = [{ k: 'path', pts: sample(function (x) { return x; }, f, x0 - span, x0 + span, 160) }, { k: 'pt', at: [x0, y0], label: 'P' }].concat(oscItems([x0, y0], en, rho));
+      readouts = [{ label: "\\(y'\\)", tex: n4(F1) }, { label: "\\(y''\\)", tex: n4(F2) + '\\ \\text{m}^{-1}' }, { label: '\\(\\rho\\)', tex: n4(rho) + MM }];
+    } else if (fam === 'param') {
+      var p = rng.pick([1, 2, 3]), q = rng.pick([1, 2, 0.5]), tt = rng.pick([1, 2]), form = rng.pick(['a', 'b', 'c']);
+      var X, Y, xd, yd, xdd, ydd, xT, yT;
+      if (form === 'a') { X = function (t) { return p * t * t; }; Y = function (t) { return q * t * t * t; }; xT = polyTex([0, 0, p], 't'); yT = polyTex([0, 0, 0, q], 't'); }
+      else if (form === 'b') { X = function (t) { return p * t; }; Y = function (t) { return q * t * t * t; }; xT = polyTex([0, p], 't'); yT = polyTex([0, 0, 0, q], 't'); }
+      else { X = function (t) { return p * t * t; }; Y = function (t) { return 2 * q * t; }; xT = polyTex([0, 0, p], 't'); yT = polyTex([0, 2 * q], 't'); }
+      var cxp = form === 'b' ? [0, p] : [0, 0, p], cyp = form === 'c' ? [0, 2 * q] : [0, 0, 0, q];
+      xd = pv(dp(cxp), tt); yd = pv(dp(cyp), tt); xdd = pv(dp(dp(cxp)), tt); ydd = pv(dp(dp(cyp)), tt);
+      var vv = hyp(xd, yd), cr = xd * ydd - yd * xdd;
+      rho = Math.pow(vv, 3) / Math.abs(cr);
+      spec = {
+        type: 'numeric', unit: 'm', label: '\\(\\rho =\\)', answer: rho,
+        prompt: 'A particle moves with ' + m('x = ' + xT + MM) + ' and ' + m('y = ' + yT + MM) + ' (' + m('t') + ' in seconds). Find the radius of curvature of its path at ' + m('t = ' + nn(tt) + SS) + '.',
+        hints: [hint0, T`At \(t = ${nn(tt)}\): \(\dot x = ${n4(xd)}\), \(\dot y = ${n4(yd)}\), \(\ddot x = ${n4(xdd)}\), \(\ddot y = ${n4(ydd)}\).`],
+        explain: T`No need to eliminate \(t\): \(\rho = v^3/|\dot x\ddot y - \dot y\ddot x|\).`,
+        solution: M(T`\dot x = ${n4(xd)},\ \dot y = ${n4(yd)},\ \ddot x = ${n4(xdd)},\ \ddot y = ${n4(ydd)}`) +
+          M(T`v = \sqrt{${n4(xd)}^2 + ${n4(yd)}^2} = ${n4(vv)}${MS}, \qquad \dot x\ddot y - \dot y\ddot x = ${n4(cr)}`) +
+          M(T`\rho = \frac{v^3}{|\dot x\ddot y - \dot y\ddot x|} = \frac{${n4(vv)}^3}{${n4(Math.abs(cr))}} = ${n4(rho)}${MM}`)
+      };
+      var P0 = [X(tt), Y(tt)], s0 = ntOf(xd, yd, xdd, ydd);
+      items = [{ k: 'path', pts: sample(X, Y, 0, tt * 1.6) }, { k: 'pt', at: P0, label: 'P' }].concat(oscItems(P0, s0.en, rho)).concat(arrowsVA(P0, xd, yd, xdd, ydd, 'nt'));
+      readouts = [{ label: '\\(v\\)', tex: n4(vv) + MS, color: 'good' }, { label: '\\(a_n\\)', tex: n4(s0.an) + MS2, color: 'n' }, { label: '\\(\\rho = v^2/a_n\\)', tex: n4(rho) + MM }];
+    } else {
+      var v0 = rng.int(8, 30), th = rng.pick([20, 25, 30, 35, 40, 45, 50, 60]);
+      var vx = v0 * Math.cos(th * D), vy = v0 * Math.sin(th * D);
+      rho = vx * vx / G;
+      var who = rng.pick(['A ball is launched', 'A stone is thrown', 'A javelin (treat it as a particle) is released', 'A water jet leaves a nozzle']);
+      spec = {
+        type: 'numeric', unit: 'm', label: '\\(\\rho =\\)', answer: rho,
+        prompt: who + ' at ' + m(nn(v0) + MS) + ', ' + m(th + '^\\circ') + ' above the horizontal. Ignoring air resistance, find the radius of curvature of its path at the highest point.',
+        hints: [T`At the top, \(\vvec\) is horizontal with \(v = v_0\cos\theta_0\), and \(\avec = g\) points straight down: all of \(g\) is normal acceleration.`, T`\(\rho = v^2/a_n = (v_0\cos\theta_0)^2/g\).`],
+        explain: T`At the top of a projectile's flight, \(a_n = g\) and \(\rho = (v_0\cos\theta_0)^2/g\).`,
+        solution: M(T`v = ${nn(v0)}\cos ${th}^\circ = ${n4(vx)}${MS}, \qquad \rho = \frac{v^2}{g} = \frac{${n4(vx)}^2}{9.81} = ${n4(rho)}${MM}`)
+      };
+      var tTop = vy / G, Ptop = [vx * tTop, vy * tTop - G * tTop * tTop / 2];
+      items = [{ k: 'ground', y: 0 }, { k: 'path', pts: sample(function (t) { return vx * t; }, function (t) { return vy * t - G * t * t / 2; }, 0, 2 * tTop) }, { k: 'pt', at: Ptop, label: 'top' }]
+        .concat(oscItems(Ptop, [0, -1], rho)).concat(arrowsVA(Ptop, vx, 0, 0, -G, 'none'));
+      readouts = [{ label: '\\(v\\) at the top', tex: n4(vx) + MS, color: 'good' }, { label: '\\(a_n = g\\)', tex: '9.81' + MS2, color: 'n' }, { label: '\\(\\rho\\)', tex: n4(rho) + MM }];
+    }
+    return {
+      spec: spec,
+      view: {
+        title: 'The osculating circle', items: items, readouts: readouts,
+        note: 'The dashed circle is the osculating circle at ' + m('P') + ', with radius ' + m('\\rho') + ' and center ' + m('C') + ' on the concave side of the path.',
+        aria: 'The path with the point P and the dashed osculating circle that touches it there, centered at C on the concave side.'
+      },
+      test: {
+        right: [typed(rho)], wrong: [typed(rho * 2 + 1)],
+        check: function () { return isFinite(rho) && rho > 0 ? [] : ['rho not finite']; }
+      }
+    };
+  }
+
+  /* ---------- 2.7 Converting between x-y and n-t ---------- */
+  var PYTH = [[3, 4], [4, 3], [6, 8], [8, 6], [5, 12], [12, 5], [1, 2], [2, 1], [2, 3], [1, 1]];
+  function genConvert(rng) {
+    var fam = pickW(rng, [['xy2nt', 60], ['nt2xy', 40]]);
+    if (fam === 'xy2nt') {
+      var vx, vy, ax, ay, cr;
+      do {
+        var pp = rng.pick(PYTH);
+        vx = pp[0] * (rng.next() < 0.3 ? -1 : 1); vy = pp[1] * (rng.next() < 0.3 ? -1 : 1);
+        ax = rng.int(-6, 6); ay = rng.int(-6, 6);
+        cr = vx * ay - vy * ax;
+      } while (Math.abs(cr) < 1 || (ax === 0 && ay === 0));
+      var v = hyp(vx, vy), at = (vx * ax + vy * ay) / v, an = Math.abs(cr) / v, rho = v * v / an;
+      var who = rng.pick(['a particle', 'a drone', 'a hockey puck', 'the tip of a robot arm', 'a car on a test pad']);
+      return {
+        spec: {
+          type: 'fields',
+          prompt: 'At an instant, ' + who + ' has ' + m('\\vvec = ' + vecIJ(vx, vy) + MS) + ' and ' + m('\\avec = ' + vecIJ(ax, ay) + MS2) + '. Find its tangential and normal accelerations and the radius of curvature of its path.',
+          fields: [{ name: 'at', label: '\\(a_t =\\)', answer: at, unit: 'm/s²' }, { name: 'an', label: '\\(a_n =\\)', answer: an, unit: 'm/s²' }, { name: 'rho', label: '\\(\\rho =\\)', answer: rho, unit: 'm' }],
+          hints: [T`\(v = ${n4(v)}\ \text{m/s}\). \(a_t = \avec\cdot\vvec/v = (v_x a_x + v_y a_y)/v\).`, T`\(a_n = |v_x a_y - v_y a_x|/v\), and then \(\rho = v^2/a_n\).`],
+          explain: T`Project \(\avec\) on \(\et = \vvec/v\) for \(a_t\); the perpendicular part is \(a_n\). A negative \(a_t\) means slowing down.`,
+          solution: M(T`v = \sqrt{${nn(vx)}^2 + ${nn(vy)}^2} = ${n4(v)}${MS}`) +
+            M(T`a_t = \frac{(${nn(vx)})(${nn(ax)}) + (${nn(vy)})(${nn(ay)})}{${n4(v)}} = ${n4(at)}${MS2}, \qquad a_n = \frac{|(${nn(vx)})(${nn(ay)}) - (${nn(vy)})(${nn(ax)})|}{${n4(v)}} = ${n4(an)}${MS2}`) +
+            M(T`\rho = \frac{v^2}{a_n} = \frac{${n4(v * v)}}{${n4(an)}} = ${n4(rho)}${MM}`) +
+            '<p>Check: ' + m(n4(at) + '^2 + ' + n4(an) + '^2 = ' + n4(at * at + an * an) + ' = ' + nn(ax) + '^2 + ' + nn(ay) + '^2') + '. The particle is ' + (at > 0 ? 'speeding up' : at < 0 ? 'slowing down' : 'at a steady speed') + '.</p>'
+        },
+        view: convView(vx, vy, ax, ay),
+        test: {
+          right: [{ at: typed(at), an: typed(an), rho: typed(rho) }], wrong: [{ at: typed(at), an: typed(bump(an)), rho: typed(rho) }],
+          check: function () { return Math.abs(at * at + an * an - ax * ax - ay * ay) > 1e-9 ? ['a_t^2 + a_n^2 != |a|^2'] : []; }
+        }
+      };
+    }
+    var psi = rng.pick([0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330]), left = rng.next() < 0.5;
+    var at2 = rng.pick([-3, -2, -1.5, -1, 1, 1.5, 2, 3, 4]), an2 = rng.pick([1, 2, 2.5, 3, 4, 5, 6]);
+    var c = Math.cos(psi * D), s = Math.sin(psi * D), sg = left ? 1 : -1;
+    var AX = at2 * c - sg * an2 * s, AY = at2 * s + sg * an2 * c;
+    var who2 = rng.pick(['A car', 'A drone', 'A boat', 'A cyclist']);
+    return {
+      spec: {
+        type: 'fields',
+        prompt: who2 + ' heading at ' + m(psi + '^\\circ') + ' (measured counter-clockwise from the ' + m('+x') + ' axis) is turning to its <strong>' + (left ? 'left' : 'right') + '</strong>, with ' +
+          m('a_t = ' + nn(at2) + MS2) + ' and ' + m('a_n = ' + nn(an2) + MS2) + '. Find the rectangular components ' + m('a_x') + ' and ' + m('a_y') + '.',
+        fields: [{ name: 'ax', label: '\\(a_x =\\)', answer: AX, unit: 'm/s²' }, { name: 'ay', label: '\\(a_y =\\)', answer: AY, unit: 'm/s²' }],
+        hints: [T`\(\et = \cos ${psi}^\circ\,\ihat + \sin ${psi}^\circ\,\jhat\).`,
+          left ? T`Turning left (counter-clockwise), \(\en = -\sin\psi\,\ihat + \cos\psi\,\jhat\).` : T`Turning right (clockwise), \(\en = \sin\psi\,\ihat - \cos\psi\,\jhat\).`,
+          T`\(\avec = a_t\,\et + a_n\,\en\): collect the \(\ihat\) and \(\jhat\) parts.`],
+        explain: T`Write \(\et\) and \(\en\) in terms of \(\ihat\), \(\jhat\), then add \(a_t\,\et + a_n\,\en\). \(\en\) is on the side the path turns toward.`,
+        solution: M(T`\et = (${n4(c)},\ ${n4(s)}), \qquad \en = (${n4(-sg * s)},\ ${n4(sg * c)})`) +
+          M(T`\begin{aligned} a_x &= a_t(${n4(c)}) + a_n(${n4(-sg * s)}) = ${n4(AX)}${MS2} \\ a_y &= a_t(${n4(s)}) + a_n(${n4(sg * c)}) = ${n4(AY)}${MS2} \end{aligned}`) +
+          '<p>Check: ' + m('\\sqrt{a_x^2 + a_y^2} = ' + n4(hyp(AX, AY)) + ' = \\sqrt{a_t^2 + a_n^2}') + '.</p>'
+      },
+      view: convView(c * 3, s * 3, AX, AY),
+      test: {
+        right: [{ ax: typed(AX), ay: typed(AY) }], wrong: [{ ax: typed(at2 * c + sg * an2 * s), ay: typed(at2 * s - sg * an2 * c) }],
+        check: function () { var n = ntOf(c, s, AX, AY); return Math.abs(n.at - at2) > 1e-9 || Math.abs(n.an - an2) > 1e-9 || n.turn !== sg ? ['round trip'] : []; }
+      }
+    };
+  }
+  function vecIJ(a, b) {
+    var t = (a === 0 ? '' : (a === 1 ? '' : a === -1 ? '-' : nn(a)) + '\\ihat');
+    if (b !== 0) t += (t ? (b > 0 ? ' + ' : ' - ') : (b < 0 ? '-' : '')) + (Math.abs(b) === 1 ? '' : nn(Math.abs(b))) + '\\jhat';
+    return t || '\\mathbf{0}';
+  }
+  function convView(vx, vy, ax, ay) {
+    var s = ntOf(vx, vy, ax, ay), P = [0, 0], items = [{ k: 'pt', at: P, label: 'P' }];
+    if (s.an > 1e-9) {
+      var rho = s.v * s.v / s.an, C = [rho * s.en[0], rho * s.en[1]], th0 = Math.atan2(-C[1], -C[0]), sp = Math.min(PI * 0.8, 3 / rho * Math.max(1, rho / 3));
+      items.push({ k: 'path', pts: sample(function (u) { return C[0] + rho * Math.cos(th0 + u); }, function (u) { return C[1] + rho * Math.sin(th0 + u); }, -Math.min(sp, 1.2), Math.min(sp, 1.2)) });
+    }
+    return {
+      title: 'Vectors at the particle', items: items.concat(arrowsVA(P, vx, vy, ax, ay, 'nt')),
+      readouts: [{ label: '\\(a_t\\)', tex: n4(s.at) + MS2, color: 't' }, { label: '\\(a_n\\)', tex: n4(s.an) + MS2, color: 'n' },
+        { label: '\\(\\rho = v^2/a_n\\)', tex: s.an > 1e-9 ? n4(s.v * s.v / s.an) + MM : '\\infty' }],
+      note: 'The solid arc is the local shape of the path (part of the osculating circle). The acceleration is split into ' + m('a_t') + ' along the velocity and ' + m('a_n') + ' toward the inside of the curve.',
+      aria: 'The particle P with its velocity and acceleration arrows. The acceleration is split into a tangential part along the velocity and a normal part toward the inside of the curved path, which is drawn as an arc.'
+    };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l03: L(3, '03-rectangular-components.html', 'Rectangular (x–y) Components'), l04: L(4, '04-projectile-motion.html', 'Projectile Motion'),
+    l05: L(5, '05-path-coordinates.html', 'Path Coordinates'), l06: L(6, '06-nt-acceleration.html', 'Acceleration in Path Coordinates'),
+    l07: L(7, '07-radius-of-curvature.html', 'Radius of Curvature'), l08: L(8, '08-connecting-systems.html', 'Connecting x–y and n–t'),
+    l09: L(9, '09-applications.html', 'Engineering Applications')
+  };
+  var CATS = [
+    { id: 'xyt', label: 'x(t), y(t): v and a', gen: genXYT, lessons: [LES.l03] },   //  : labels never break at an awkward place
+    { id: 'path', label: 'Path y = f(x)', gen: genPath, lessons: [LES.l03] },
+    { id: 'proj', label: 'Projectiles', gen: genProj, lessons: [LES.l04] },
+    { id: 'ntacc', label: 'Tangential & normal', gen: genNT, lessons: [LES.l06, LES.l09] },
+    { id: 'speed', label: 'Changing speed', gen: genSpeed, lessons: [LES.l06] },
+    { id: 'rho', label: 'Radius of curvature', gen: genRho, lessons: [LES.l07] },
+    { id: 'convert', label: 'x–y ↔ n–t', gen: genConvert, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      (v.items || []).forEach(function (it) { if (it.label) out.push(['item label', '\\(' + it.label + '\\)']); });
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.items || !vw.items.length) f('view has no items');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            var bad = vw.items.filter(function (it) {
+              var nums = [].concat(it.at || [], it.vec || [], it.off || [], it.c || [], it.r != null ? [it.r] : [], it.y != null ? [it.y] : [], it.h != null ? [it.h] : []);
+              (it.pts || []).forEach(function (q) { nums.push(q[0], q[1]); });
+              return nums.some(function (x) { return !isFinite(x); });
+            });
+            if (bad.length) f('view item with a non-finite number: ' + bad[0].k);
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared 2D view (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var IDLE = 'Empty x-y axes. The picture for the current problem appears here after you solve it or open its solution.';
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it drawn here.' })]);
+    var plane = null, cur = null, revealed = false;
+    function reset(opts) {
+      if (plane && plane.destroy) plane.destroy();
+      stage.innerHTML = '';
+      plane = CYL2D.plane(stage, Object.assign({ grid: 'cartesian', axisLabels: ['x', 'y'], height: 400 }, opts));
+      stage.appendChild(veil);
+    }
+    function idle() {
+      reset({ xRange: [-5, 5], yRange: [-3, 3], ariaLabel: IDLE });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      var items = vw.items, xs = [], ys = [];
+      function addPt(q) { xs.push(q[0]); ys.push(q[1]); }
+      items.forEach(function (it) {
+        if (it.k === 'path') it.pts.forEach(addPt);
+        if (it.k === 'pt' && !it.muted) addPt(it.at);
+        if (it.k === 'tower') addPt([0, it.h]);
+        if (it.k === 'wall') addPt([it.x, it.h]);
+      });
+      var w0 = Math.max.apply(null, xs) - Math.min.apply(null, xs), h0 = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+      var base = Math.max(w0, h0, 1e-3);
+      items.forEach(function (it) {                      // circles no more than 4x the path size are shown whole
+        if (it.k === 'circle' && it.r <= 4 * Math.max(base, 1)) { addPt([it.c[0] - it.r, it.c[1] - it.r]); addPt([it.c[0] + it.r, it.c[1] + it.r]); it.whole = true; }
+        if (it.k === 'ground') addPt([xs[0], it.y]);
+      });
+      items.forEach(function (it) { if (it.k === 'pt' && it.muted && items.some(function (c) { return c.k === 'circle' && c.whole; })) addPt(it.at); });
+      var span = Math.max(Math.max.apply(null, xs) - Math.min.apply(null, xs), Math.max.apply(null, ys) - Math.min.apply(null, ys), 1e-3);
+      var maxV = 0, maxA = 0;
+      items.forEach(function (it) {
+        if (it.k !== 'vec') return;
+        var mg = Math.sqrt(it.vec[0] * it.vec[0] + it.vec[1] * it.vec[1]);
+        if (it.g === 'v') maxV = Math.max(maxV, mg); else if (it.color === 'bad') maxA = Math.max(maxA, mg);
+      });
+      var kV = CURV.niceScale(maxV, 0.3 * span), kA = CURV.niceScale(maxA || 1, 0.3 * span);
+      items.forEach(function (it) {
+        if (it.k !== 'vec') return;
+        var k = it.g === 'v' ? kV : kA, o = it.off || [0, 0];
+        var a = [it.at[0] + o[0] / k, it.at[1] + o[1] / k];
+        it._a = a; it._b = [a[0] + it.vec[0] / k, a[1] + it.vec[1] / k];
+        addPt(it._b);
+      });
+      var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+      var pad = 0.1 * Math.max(x1 - x0, y1 - y0, 1e-3);
+      reset({ xRange: [x0 - pad, x1 + pad], yRange: [y0 - pad, y1 + pad], ariaLabel: vw.aria });
+      var XR = [x0 - pad * 40, x1 + pad * 40];
+      items.forEach(function (it) {
+        if (it.k === 'ground') plane.polyline([[XR[0], it.y], [XR[1], it.y]], { color: 'surface', width: 2.5 });
+        if (it.k === 'tower') plane.polyline([[-0.06 * span, 0], [0, 0], [0, it.h], [-0.06 * span, it.h]], { color: 'surface', width: 2, fill: 'surface', fillOpacity: 0.25, closed: true });
+        if (it.k === 'wall') plane.polyline([[it.x, 0], [it.x, it.h], [it.x + 0.03 * span, it.h], [it.x + 0.03 * span, 0]], { color: 'surface', width: 2, fill: 'surface', fillOpacity: 0.25, closed: true });
+      });
+      items.forEach(function (it) {
+        if (it.k === 'circle') plane.circle({ center: it.c, r: it.r, color: 'muted', width: 1.3, dashed: true });
+        if (it.k === 'path') plane.polyline(it.pts, { color: it.dashed ? 'muted' : 'accent', width: it.dashed ? 1.5 : 3, dashed: !!it.dashed });
+      });
+      items.forEach(function (it) {
+        if (it.k !== 'vec' || Math.hypot(it._b[0] - it._a[0], it._b[1] - it._a[1]) < span * 2e-3) return;
+        var big = it.color === 'good' || it.color === 'bad';
+        plane.line(it._a, it._b, { color: it.color, width: big ? 3.25 : 2.25, arrow: true, label: it.label, labelAt: big ? 1 : 0.5, labelSide: it.color === 'bad' ? 'right' : 'left', dashed: !!it.dashed });
+      });
+      items.forEach(function (it) { if (it.k === 'pt') plane.point(it.at, { color: it.muted ? 'muted' : 'point', r: it.muted ? 3.5 : 6, label: it.label || null, labelAnchor: 'nw' }); });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      // the notes hold math, as in the Cylindrical Coordinates Practice Lab
+      var note = (vw.note ? vw.note + ' ' : '') + 'Arrows are to scale: 1 m on the grid is ' + CYL.fmt(kV) + ' m/s for ' + m('\\vvec') +
+        (maxA ? ' and ' + CYL.fmt(kA) + ' m/s\u00b2 for ' + m('\\avec') + '.' : '.');
+      var n = CYL.el('p', { class: 'pl-panel-note', html: note });
+      panel.appendChild(n);
+      CYL.renderMath(n);
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like proj-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

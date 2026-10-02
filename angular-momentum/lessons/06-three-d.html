@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Angular Momentum in Three Dimensions · Angular Momentum</title>
+<meta name="description" content="Angular momentum of a rigid body in 3D: H_G = [I_G]ω and H_O = [I_O]ω, the simple form in principal axes, kinetic energy, the impulse–momentum principles in 3D, and a disk spinning on a turning axle.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/vendor/three/three.bundle.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-3d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/angmom.js"></script>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 35 min</p>
+    <h1>Angular Momentum in Three Dimensions</h1>
+    <p class="lede">In the plane, angular momentum and angular velocity always point the same way, out of the page. In three dimensions they part company: a wheel spinning on an axle that is itself turning has an angular velocity in one direction and an angular momentum in quite another. The inertia tensor is what connects them.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute the angular momentum of a rigid body in 3D as \(\Hvec_G = \Imat_G\wvec\) or, about a fixed point, \(\Hvec_O = \Imat_O\wvec\).</li>
+      <li>Use the principal-axis form \(\Hvec = I_x\omega_x\ihat + I_y\omega_y\jhat + I_z\omega_z\khat\).</li>
+      <li>Add angular velocities (spin plus precession) and find the resulting \(\Hvec\).</li>
+      <li>Compute the kinetic energy and apply the impulse–momentum principles in 3D.</li>
+    </ul>
+  </section>
+
+  <section id="tensor">
+    <h2>From a sum to a matrix</h2>
+    <p>For a rigid body turning at \(\wvec\) about its center of mass, each particle moves relative to \(G\) at \(\wvec \times \boldsymbol\rho_i\), so</p>
+    \[ \Hvec_G = \sum \boldsymbol\rho_i \times m_i(\wvec \times \boldsymbol\rho_i) = \int \boldsymbol\rho \times (\wvec \times \boldsymbol\rho)\,dm \]
+    <p>Expanding the triple product component by component (as in Lesson 6 of the Mass Moments of Inertia module) gives a matrix times \(\wvec\):</p>
+
+    <div class="key-formula">
+      <p class="key-formula-title">Angular momentum of a rigid body</p>
+      \[ \Hvec_G = \Imat_G\,\wvec, \qquad \begin{Bmatrix} H_x \\ H_y \\ H_z \end{Bmatrix} = \begin{bmatrix} I_{xx} & -I_{xy} & -I_{xz} \\ -I_{xy} & I_{yy} & -I_{yz} \\ -I_{xz} & -I_{yz} & I_{zz} \end{bmatrix} \begin{Bmatrix} \omega_x \\ \omega_y \\ \omega_z \end{Bmatrix} \]
+      <p>About a fixed point \(O\) of the body: \(\Hvec_O = \Imat_O\,\wvec\). In general: \(\Hvec_P = \rvec_{G/P} \times m\vvec_G + \Hvec_G\), exactly as in Lesson 3.</p>
+    </div>
+
+    <h3>Principal axes</h3>
+    <p>If \(x, y, z\) are principal axes of the body at the point, every product of inertia vanishes and</p>
+    \[ \Hvec = I_x\omega_x\,\ihat + I_y\omega_y\,\jhat + I_z\omega_z\,\khat \]
+    <p>Each component of \(\Hvec\) is simply the matching component of \(\wvec\) times its principal moment. Unless the three moments happen to be equal, the unequal scaling tilts \(\Hvec\) away from \(\wvec\): they are parallel only when \(\wvec\) lies along a principal axis.</p>
+
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> A \(4\ \text{kg}\) disk of radius \(0.2\ \text{m}\) spins at \(\omega_s\) on a horizontal axle, and the axle turns about the vertical at \(\omega_p\), pivoting at \(O\), \(0.5\ \text{m}\) from the disk. The angular velocity \(\colW{\wvec} = \omega_s\,\mathbf{e} + \omega_p\khat\) is the vector sum of the two. The angular momentum \(\colH{\Hvec}\) weights the two parts very differently, so it points somewhere else. Switch between \(O\) and \(G\).</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 6.1 — A disk on a turning axle</p>
+      <p>For the disk of Figure 6.1, \(\omega_s = 30\ \text{rad/s}\) and \(\omega_p = 2\ \text{rad/s}\). At the instant the axle lies along \(x\), find \(\Hvec_G\) and \(\Hvec_O\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>\(\wvec = 30\,\ihat + 2\,\khat\ \text{rad/s}\). The disk's axis \(x\) and every diameter are principal axes at \(G\): \(I_x = \tfrac12 mr^2 = 0.08\), \(I_y = I_z = \tfrac14 mr^2 = 0.04\ \text{kg·m}^2\).</p>
+          \[ \Hvec_G = 0.08(30)\,\ihat + 0.04(2)\,\khat = 2.40\,\ihat + 0.08\,\khat\ \text{kg·m}^2/\text{s} \]
+          <p>About the pivot, the transverse moments grow by \(ma^2 = 4(0.5)^2 = 1\ \text{kg·m}^2\) (parallel-axis theorem), and \(x, y, z\) stay principal at \(O\):</p>
+          \[ \Hvec_O = 0.08(30)\,\ihat + 1.04(2)\,\khat = 2.40\,\ihat + 2.08\,\khat\ \text{kg·m}^2/\text{s} \]
+          <p>\(\wvec\) is \(3.8^\circ\) above the axle; \(\Hvec_G\) is only \(1.9^\circ\) above it, while \(\Hvec_O\) is \(40.9^\circ\) above it. Check \(\Hvec_O = \rvec_G \times m\vvec_G + \Hvec_G\): \(\vvec_G = 2\khat \times 0.5\ihat = 1\jhat\), and \(0.5\ihat \times 4(1\jhat) = 2\khat\). ✓</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="energy">
+    <h2>Kinetic energy</h2>
+    <div class="key-formula">
+      <p class="key-formula-title">Kinetic energy of a rigid body</p>
+      \[ T = \tfrac12 m v_G^2 + \tfrac12\wvec^\mathsf{T}\Imat_G\wvec \qquad \text{or, about a fixed point,} \qquad T = \tfrac12\wvec^\mathsf{T}\Imat_O\wvec = \tfrac12\wvec\cdot\Hvec_O \]
+      <p>In principal axes: \(\tfrac12\wvec^\mathsf{T}\Imat\wvec = \tfrac12(I_x\omega_x^2 + I_y\omega_y^2 + I_z\omega_z^2)\).</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 6.2 — Energy of the disk</p>
+      <p>Find the kinetic energy of the disk of Example 6.1.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>About the fixed pivot: \(T = \tfrac12\left[0.08(30)^2 + 1.04(2)^2\right] = \tfrac12(72 + 4.16) = 38.08\ \text{J}\).</p>
+          <p>Or with \(G\): \(T = \tfrac12(4)(1)^2 + \tfrac12\left[0.08(30)^2 + 0.04(2)^2\right] = 2 + 36.08 = 38.08\ \text{J}\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="impulse">
+    <h2>Impulse and momentum in 3D</h2>
+    <p>Lesson 5's principles carry over with vectors: \(m\vvec_{G1} + \sum\int\Fvec\,dt = m\vvec_{G2}\) and \(\Hvec_{G1} + \sum\int\Mvec_G\,dt = \Hvec_{G2}\) (or about a fixed point \(O\)). The angular equation is a vector equation, three scalar equations in all.</p>
+
+    <div class="example">
+      <p class="example-title">Example 6.3 — Firing a spacecraft's thrusters</p>
+      <p>A spacecraft with principal moments \(I_x = 200\), \(I_y = 300\), \(I_z = 400\ \text{kg·m}^2\) about its center of mass is at rest. Its thrusters deliver an angular impulse of \(10\,\ihat + 20\,\khat\ \text{N·m·s}\) about \(G\). Find its angular velocity afterward.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>\(\Hvec_{G2} = \mathbf{0} + (10,\ 0,\ 20)\ \text{kg·m}^2/\text{s}\). In principal axes each component divides by its own moment:</p>
+          \[ \wvec = \left(\frac{10}{200},\ 0,\ \frac{20}{400}\right) = (0.05,\ 0,\ 0.05)\ \text{rad/s} \]
+          <p>\(\Hvec\) and \(\wvec\) point in different directions (\(\Hvec\) at \(63.4^\circ\) from \(x\), \(\wvec\) at \(45^\circ\)), because \(I_x \ne I_z\).</p>
+        </div>
+      </details>
+    </div>
+
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: \(\Hvec = I\wvec\) with a single number</p>
+      <p>A scalar \(I\) times \(\wvec\) always points along \(\wvec\). That is only right for rotation about a principal axis, or for bodies with three equal principal moments (spheres, cubes). In general, use the tensor, or the principal-axis form with a different moment for each component.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\Hvec_G = \Imat_G\wvec\); about a fixed point \(\Hvec_O = \Imat_O\wvec\); in general \(\Hvec_P = \rvec_{G/P} \times m\vvec_G + \Hvec_G\).</li>
+      <li>In principal axes, \(\Hvec = (I_x\omega_x,\ I_y\omega_y,\ I_z\omega_z)\): parallel to \(\wvec\) only along a principal axis.</li>
+      <li>Angular velocities add as vectors: spin plus precession.</li>
+      <li>\(T = \tfrac12 m v_G^2 + \tfrac12\wvec^\mathsf{T}\Imat_G\wvec\), and \(\Hvec_{G1} + \sum\int\Mvec_G\,dt = \Hvec_{G2}\).</li>
+      <li>Next: <a href="07-euler.html">Lesson 7</a> differentiates \(\Hvec\) in a rotating frame to get Euler's equations.</li>
+    </ul>
+  </section>
+</main>
+<script>
+/* ---------- Figure 6.1: a disk spinning on an axle that precesses about the vertical ---------- */
+CYL.ready(function () {
+  'use strict';
+  var M = 4, R = 0.2, A = 0.5, IA = 0.5 * M * R * R, ITG = 0.25 * M * R * R, ITO = ITG + M * A * A;
+  var st = { ws: 30, wp: 2, ref: 'O', phi: 0, psi: 0 };
+  var stage = document.getElementById('fig61-stage'), panel = document.getElementById('fig61-controls');
+  var v = CYL3D.create(stage, {
+    extent: 0.8, zRange: [-0.35, 0.8], grid: 'cartesian', ui: ['iso', 'top', 'front', 'reset'],
+    camera: { azimuth: 38, elevation: 22, zoom: 1.1 },
+    ariaLabel: 'A disk on a horizontal axle pivoted at the origin. The disk spins on the axle and the axle turns about the vertical. A green arrow shows the angular velocity and a red arrow the angular momentum.'
+  });
+  v.solid({ shape: 'cylinder', r: 0.012, h: 0.45, center: [0, 0, -0.2], color: 'surface', opacity: 1, edges: false });
+  v.point([0, 0, 0], { color: 'ink', size: 0.022, label: 'O' });
+  var arm = v.group(), disk = v.group(arm);
+  v.solid({ shape: 'cylinder', r: 0.01, h: A + 0.06, center: [(A + 0.06) / 2, 0, 0], axis: [1, 0, 0], color: 'ink', opacity: 1, edges: false, parent: arm });
+  disk.position.set(A, 0, 0);
+  v.solid({ shape: 'cylinder', r: R, h: 0.025, center: [0, 0, 0], axis: [1, 0, 0], color: 'accent', opacity: 0.55, parent: disk });
+  v.line([[0, -R, 0], [0, R, 0]], { color: 'ink', width: 3, parent: disk });
+  var gp = v.point([A, 0, 0], { color: 'point', size: 0.018, label: 'G', parent: arm });
+  var wA = v.arrow([0, 0, 0], [0.5, 0, 0], { color: "good", label: "\\wvec", width: 0.016, headLength: 0.07, headRadius: 0.03 });
+  var hA = v.arrow([0, 0, 0], [0.5, 0, 0], { color: 'bad', label: '\\Hvec', width: 0.012, headLength: 0.06, headRadius: 0.024 });
+
+  var sS = CYL.slider({ label: 'Spin \\(\\omega_s\\)', min: 0, max: 40, step: 1, value: st.ws, unit: 'rad/s', color: 'good', onInput: function (x) { st.ws = x; schedule(); } });
+  var sP = CYL.slider({ label: 'Precession \\(\\omega_p\\)', min: 0, max: 5, step: 0.5, value: st.wp, unit: 'rad/s', color: 'good', onInput: function (x) { st.wp = x; schedule(); } });
+  var tO = CYL.toggle({ label: 'About \\(O\\)', value: true, onChange: function () { pick('O'); } });
+  var tG = CYL.toggle({ label: 'About \\(G\\)', value: false, onChange: function () { pick('G'); } });
+  function pick(r) { st.ref = r; tO.set(r === 'O', true); tG.set(r === 'G', true); schedule(); }
+  var roW = CYL.readout('\\(\\wvec\\) (axle along \\(\\mathbf{e}\\))', { color: 'good' }), roH = CYL.readout('\\(\\Hvec\\)', { color: 'bad' });
+  var roA = CYL.readout('Angle between \\(\\wvec\\) and \\(\\Hvec\\)'), roT = CYL.readout('Kinetic energy \\(T\\)');
+  var loop = AM.loop(function (dt) { st.phi += 0.25 * st.wp * dt; st.psi += 0.05 * st.ws * dt; update(); }, { label: 'Play', autoplay: false });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Disk on a turning axle' }));
+  [sS.el, sP.el].forEach(function (e) { panel.appendChild(e); });
+  panel.appendChild(CYL.el('div', { class: 'chip-row' }, [tO.el, tG.el]));
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [loop.btn]));
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roW.el, roH.el, roA.el, roT.el]));
+  panel.appendChild(CYL.el('p', { class: 'fig-note', html: 'Components \\((\\mathbf{e},\\ \\text{horizontal},\\ \\khat)\\). Arrows are to scale within each quantity but not between them. The animation runs slowly.' }));
+  CYL.renderMath(panel);
+
+  function update() {
+    var c = Math.cos(st.phi), s = Math.sin(st.phi), e = [c, s, 0];
+    arm.rotation.z = st.phi; disk.rotation.x = st.psi;
+    var It = st.ref === 'O' ? ITO : ITG, P = st.ref === 'O' ? [0, 0, 0] : [A * c, A * s, 0];
+    var w = [st.ws * c, st.ws * s, st.wp], H = [IA * st.ws * c, IA * st.ws * s, It * st.wp];
+    var wn = AM.norm(w), Hn = AM.norm(H), kw = 0.027, kh = 0.28;
+    wA.set(P, AM.add(P, AM.scale(w, kw)));
+    hA.set(P, AM.add(P, AM.scale(H, kh)));
+    var ang = wn > 1e-9 && Hn > 1e-9 ? Math.acos(Math.max(-1, Math.min(1, AM.dot(w, H) / (wn * Hn)))) * 180 / Math.PI : 0;
+    roW.set(AM.vecTex([st.ws, 0, st.wp], 3) + '\\ \\text{rad/s}', { tex: true });
+    roH.set(AM.vecTex([IA * st.ws, 0, It * st.wp], 4) + '\\ \\text{kg·m}^2/\\text{s}', { tex: true });
+    roA.set(CYL.fmt(ang, 3) + '°');
+    roT.set(CYL.fmt(0.5 * (IA * st.ws * st.ws + ITO * st.wp * st.wp), 4) + ' J');
+    v.render();
+  }
+  var schedule = CYL.throttleRAF(update);
+  update();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1', type: 'fields',
+    prompt: 'A body\'s principal moments about \\(G\\) are \\(I_x = 2\\), \\(I_y = 3\\), \\(I_z = 4\\ \\text{kg·m}^2\\), along \\(x, y, z\\). It turns at \\(\\wvec = \\ihat - 2\\,\\jhat + 0.5\\,\\khat\\ \\text{rad/s}\\). Find \\(\\Hvec_G\\).',
+    fields: [
+      { name: 'hx', label: '\\(H_x =\\)', answer: 2, unit: 'kg·m²/s' },
+      { name: 'hy', label: '\\(H_y =\\)', answer: -6, unit: 'kg·m²/s' },
+      { name: 'hz', label: '\\(H_z =\\)', answer: 2, unit: 'kg·m²/s' }
+    ],
+    hints: ['In principal axes, each component of \\(\\Hvec\\) is the matching principal moment times the matching component of \\(\\wvec\\).'],
+    explain: '\\(\\Hvec = (I_x\\omega_x,\\ I_y\\omega_y,\\ I_z\\omega_z)\\).',
+    solution: '\\[ \\Hvec_G = (2 \\cdot 1,\\ 3(-2),\\ 4(0.5)) = (2,\\ -6,\\ 2)\\ \\text{kg·m}^2/\\text{s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2', type: 'numeric',
+    prompt: 'For the body and angular velocity of the previous question, with \\(G\\) at rest, find the kinetic energy.',
+    label: '\\(T =\\)', answer: 7.5, unit: 'J',
+    hints: ['\\(T = \\tfrac12(I_x\\omega_x^2 + I_y\\omega_y^2 + I_z\\omega_z^2)\\), or \\(\\tfrac12\\wvec\\cdot\\Hvec\\).'],
+    explain: '\\(T = \\tfrac12\\wvec\\cdot\\Hvec_G\\) when \\(v_G = 0\\).',
+    solution: '\\[ T = \\tfrac12\\left[2(1) + 3(4) + 4(0.25)\\right] = \\tfrac12(15) = 7.50\\ \\text{J} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3', type: 'mc',
+    prompt: 'A body with three different principal moments of inertia rotates about its center of mass. When is its angular momentum parallel to its angular velocity?',
+    choices: [
+      { html: 'When \\(\\wvec\\) lies along one of the principal axes', correct: true },
+      { html: 'Always', feedback: 'With unequal principal moments, the components of \\(\\wvec\\) are scaled differently.' },
+      { html: 'Never', feedback: 'Along a principal axis, \\(\\Hvec = I\\wvec\\) with a single \\(I\\).' },
+      { html: 'Only when the body is at rest', feedback: 'Then both are zero; the question is about a rotating body.' }
+    ],
+    hints: ['Write \\(\\Hvec = (I_x\\omega_x,\\ I_y\\omega_y,\\ I_z\\omega_z)\\) and ask when it is a multiple of \\(\\wvec\\).'],
+    explain: 'Principal axes are exactly the directions where \\(\\Imat\\wvec\\) is parallel to \\(\\wvec\\).',
+    solution: '<p>\\(\\Hvec = \\lambda\\wvec\\) requires \\(I_x\\omega_x = \\lambda\\omega_x\\) and so on. With three different moments, only one component of \\(\\wvec\\) can be nonzero: \\(\\wvec\\) must lie along a principal axis.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l06-q4', type: 'fields',
+    prompt: 'A satellite at rest has principal moments \\(I_x = 100\\), \\(I_y = 150\\), \\(I_z = 200\\ \\text{kg·m}^2\\) about its center of mass. Its thrusters deliver an angular impulse of \\(30\\,\\jhat + 40\\,\\khat\\ \\text{N·m·s}\\). Find \\(\\omega_y\\) and \\(\\omega_z\\) afterward.',
+    fields: [
+      { name: 'wy', label: '\\(\\omega_y =\\)', answer: 0.2, unit: 'rad/s' },
+      { name: 'wz', label: '\\(\\omega_z =\\)', answer: 0.2, unit: 'rad/s' }
+    ],
+    hints: ['\\(\\Hvec_{G2} = \\Hvec_{G1} + \\int\\Mvec_G\\,dt\\), with \\(\\Hvec_{G1} = \\mathbf{0}\\).', 'Divide each component by its principal moment.'],
+    explain: 'Angular impulse–momentum in principal axes.',
+    solution: '\\[ \\omega_y = \\frac{30}{150} = 0.200\\ \\text{rad/s}, \\qquad \\omega_z = \\frac{40}{200} = 0.200\\ \\text{rad/s} \\]'
+  });
+});
+</script>
+</body>
+</html>
