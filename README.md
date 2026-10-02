@@ -8,12 +8,17 @@ Source for **https://openengineering.ca**: a home page that lists the interactiv
 | `curvilinear-motion/`, `cylindrical-coordinates/`, `mass-moments-of-inertia/`, `angular-momentum/` | The **student** build of each module, served as is. |
 | `downloads/*.zip` | The student zips, for offline use. |
 | `scripts/sync-modules.sh` | Re-copies the modules and zips from the folder above this one. |
+| `LICENSE.md` | CC BY-NC-SA 4.0 notice for the site and modules; third-party exceptions (KaTeX, three.js: MIT). |
 | `404.html` | Shown by GitHub Pages for unknown URLs. |
 | `CNAME` | The custom domain (`openengineering.ca`). |
 | `.nojekyll` | Tells GitHub Pages to serve the files as they are, without a Jekyll build. |
 | `sitemap.xml`, `robots.txt` | For search engines. |
 
 Instructor copies (answer keys, instructor guides) are deliberately **not** published here.
+
+## License
+
+© 2026 Open Engineering. Content licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/); see `LICENSE.md`. The sync script adds a `LICENSE.txt` to each module folder and download zip, and a license line to every module page footer (text in `scripts/LICENSE-module.txt`).
 
 ## Publishing with GitHub Pages
 
@@ -53,7 +58,7 @@ git commit -m "Update modules"
 git push
 ```
 
-The sync script copies each `<module> student/` folder and `<module>-student.zip` from the folder above this one, and patches the copy's `cyl-core.js` and `module.css` with an "All modules · Open Engineering" link (sidebar and footer) back to the home page. The source modules and zips are not changed.
+The sync script copies each `<module> student/` folder and `<module>-student.zip` from the folder above this one, and patches the copy's `cyl-core.js` and `module.css` with an "All modules · Open Engineering" link (sidebar and footer) back to the home page and a CC BY-NC-SA 4.0 line in the footer. It also adds `LICENSE.txt` to each module and its zip. The source modules and zips are not changed.
 
 Pages redeploys on its own after each push, usually within a few minutes.
 

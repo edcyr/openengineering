@@ -12,7 +12,13 @@ mkdir -p "$SITE/downloads"
 for m in $MODULES; do
   if [ ! -d "$SRC/$m student" ]; then echo "missing: $SRC/$m student" >&2; exit 1; fi
   rsync -a --delete --exclude '.DS_Store' "$SRC/$m student/" "$SITE/$m/"
+  cp "$SITE/scripts/LICENSE-module.txt" "$SITE/$m/LICENSE.txt"
   cp "$SRC/$m-student.zip" "$SITE/downloads/$m.zip"
+  TMP="$(mktemp -d)"
+  mkdir -p "$TMP/$m student"
+  cp "$SITE/scripts/LICENSE-module.txt" "$TMP/$m student/LICENSE.txt"
+  (cd "$TMP" && zip -q -X "$SITE/downloads/$m.zip" "$m student/LICENSE.txt")
+  rm -rf "$TMP"
 
   python3 - "$SITE/$m" <<'PY'
 import sys, pathlib
@@ -26,8 +32,13 @@ link = ("\n    // openengineering.ca: link back to the site's module catalog\n"
         "    ]));")
 foot = "el('a', { href: CYL.url(sheet.href), text: 'Formula Sheet' }),"
 foot_new = "el('a', { href: CYL.url('../index.html'), text: 'openengineering.ca' }),\n        ' \\u00b7 ',\n        " + foot
-assert s.count(head) == 1 and s.count(foot) == 1, core
-s = s.replace(head, head + link).replace(foot, foot_new)
+offline = "el('span', { class: 'cyl-offline', text: 'Works offline' })\n      ])"
+lic = (offline + ",\n      el('p', { class: 'cyl-license' }, [\n"
+       "        '\\u00a9 2026 Open Engineering \\u00b7 ',\n"
+       "        el('a', { href: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', rel: 'license', text: 'CC BY-NC-SA 4.0' })\n"
+       "      ])")
+assert s.count(head) == 1 and s.count(foot) == 1 and s.count(offline) == 1, core
+s = s.replace(head, head + link).replace(foot, foot_new).replace(offline, lic)
 core.write_text(s)
 css = root / 'assets/css/module.css'
 css.write_text(css.read_text() + """
@@ -47,6 +58,7 @@ css.write_text(css.read_text() + """
 .cyl-site-link:hover { background: var(--bg-sunken); color: var(--ink); text-decoration: none; }
 .cyl-site-link-arrow { color: var(--accent); }
 @media print { .cyl-site-link { display: none; } }
+.cyl-footer .cyl-license { flex-basis: 100%; font-size: 0.8rem; }
 """)
 PY
 done
