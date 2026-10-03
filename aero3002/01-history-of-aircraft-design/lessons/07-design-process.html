@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Cut-and-Try to the Design Wheel · The History of Aircraft Design</title>
+<meta name="description" content="How the aircraft design process itself evolved, Raymer's design wheel and the conceptual, preliminary and detail design phases, and how historical data become the first weight estimate of a new aircraft.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<style>
+  /* The design wheel (Figure 7.1): an inline SVG, colors from the module tokens */
+  .wheel { display: block; width: 100%; max-width: 520px; height: auto; margin: 0 auto; padding: 14px 8px; }
+  .wheel text { font-family: var(--font-sans); fill: var(--ink); }
+  .wheel .seg { fill: var(--bg-elev); stroke: var(--line-strong); stroke-width: 1.5; cursor: pointer; transition: fill 0.15s; }
+  .wheel .seg:hover, .wheel .seg:focus-visible { fill: var(--accent-soft); outline: none; }
+  .wheel .seg.is-on { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+  .wheel .hub { fill: var(--bg-sunken); stroke: var(--line); }
+  .wheel .arrow { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+  .wheel .arrowhead { fill: var(--accent); }
+  .wheel-text { min-height: 7.5em; }
+  .iter-table td, .iter-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .iter-table td:first-child, .iter-table th:first-child { text-align: left; }
+</style>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 35 min</p>
+    <h1>From Cut-and-Try to the Design Wheel</h1>
+    <p class="lede">The Wrights designed, built and flew their own aircraft. A modern airliner involves thousands of engineers over a decade. This lesson traces how the design process grew, introduces Raymer's design wheel and the phases of design, and shows how the historical data of this module become the first estimate of a new aircraft's weight: the start of the rest of this course.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Describe how the organization and tools of aircraft design changed from 1903 to today.</li>
+      <li>Explain Raymer's design wheel and the conceptual, preliminary and detail design phases.</li>
+      <li>Fit and use a statistical empty-weight trend \(\We/\Wo = A\,\Wo^{\,C}\) from historical data.</li>
+      <li>Solve the first-estimate sizing equation \(\Wo = (W_{\text{crew}} + W_{\text{payload}})/(1 - \Wf/\Wo - \We/\Wo)\) by iteration, and explain why it is so sensitive.</li>
+    </ul>
+  </section>
+
+  <section id="process-history">
+    <h2>How the design process grew</h2>
+    <ol class="timeline" aria-label="How aircraft design was organized, 1903 to today">
+      <li class="tl-z"><span class="tl-year">1900s</span><div><p><strong>The designer-builder-pilot.</strong> The Wrights measured, designed, built and flew. Their method (Lesson 2) was systematic, but it lived in two heads.</p></div></li>
+      <li class="tl-r"><span class="tl-year">1910s</span><div><p><strong>The chief designer and the shop.</strong> Wartime firms built dozens of types, often designed by one person with a drawing office, and tested by flying them. Many were built, flown and abandoned within months: design by cut-and-try.</p></div></li>
+      <li class="tl-t"><span class="tl-year">1920s–30s</span><div><p><strong>Engineering departments and research.</strong> Stress analysis groups, weight control, and wind-tunnel data from government laboratories such as NACA turned design into engineering. The DC-3 was the product of a team, tested in the wind tunnel before it flew.</p></div></li>
+      <li class="tl-good"><span class="tl-year">1940s</span><div><p><strong>Specialization and speed.</strong> War production needed whole design organizations. At Lockheed, Kelly Johnson's small "Skunk Works" team designed and built the XP-80, the first operational US jet fighter, in 143 days in 1943.</p></div></li>
+      <li class="tl-v"><span class="tl-year">1950s–70s</span><div><p><strong>Systems engineering and the computer.</strong> Jet programs grew to thousands of engineers; requirements, interfaces and reliability were managed formally. Computers took over structural analysis (the finite-element method) and performance calculations.</p></div></li>
+      <li class="tl-warn"><span class="tl-year">1980s–</span><div><p><strong>Digital design and optimization.</strong> Computational fluid dynamics, complete 3D digital definition (the Boeing 777 of 1994) and multidisciplinary design optimization let a configuration be analyzed and refined long before anything is built.</p></div></li>
+    </ol>
+    <p>Through all of it, one thing did not change: the first estimate of a new aircraft still comes from what earlier aircraft achieved.</p>
+  </section>
+
+  <section id="wheel">
+    <h2>The design wheel</h2>
+    <p>Raymer describes design as a wheel rather than a line. Requirements suggest a concept; analysis of the concept shows what it can do; sizing and trade studies show what it would take to meet the requirements; and the results feed back, sometimes into the concept, sometimes into the requirements themselves. Each turn of the wheel refines the design.</p>
+    <figure class="figure" aria-labelledby="fig71-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> The design wheel, after Raymer. Select a segment (click, or use Tab and Enter) to read what happens there, with an example from the history in this module.</figcaption>
+    </figure>
+
+    <h3>The phases of design</h3>
+    <div class="grid-cards">
+      <div class="card card-z"><h3>Conceptual design</h3><p>What will it look like, weigh and cost, and can it meet the requirements? Many configurations, quick methods, trade studies. The layout is fluid. This course.</p></div>
+      <div class="card card-t"><h3>Preliminary design</h3><p>The configuration is frozen in its main features. Specialists in structures, aerodynamics, propulsion and control analyze and test it in depth; the outer shape is defined precisely (lofting).</p></div>
+      <div class="card card-r"><h3>Detail design</h3><p>Every part, fastener and wire is designed for manufacture; tooling, production planning, ground and flight testing follow.</p></div>
+    </div>
+    <aside class="callout note">
+      <p class="callout-title">Why conceptual design matters most</p>
+      <p>Most of an aircraft's eventual cost is committed by decisions made in conceptual design, when only a small fraction of the money has been spent. A poor choice of configuration, wing loading or engine cannot be fixed later by good detail design.</p>
+    </aside>
+  </section>
+
+  <section id="statistics">
+    <h2>History as data: the empty-weight trend</h2>
+    <p>The heart of the first weight estimate is the empty-weight fraction. Within a class of aircraft, \(\We/\Wo\) tends to fall slowly as aircraft get bigger, and Raymer models that with a power law fitted to historical aircraft:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Statistical empty-weight fraction</p>
+      \[ \frac{\We}{\Wo} = A\,\Wo^{\,C} \qquad\Longleftrightarrow\qquad \ln\frac{\We}{\Wo} = \ln A + C\ln\Wo \]
+      <p>A straight line on log–log axes, fitted by least squares. \(A\) depends on the units of \(\Wo\) (kg or lb); \(C\) does not. Raymer's Table 3.1 gives \(A\) and \(C\) for many classes of aircraft.</p>
+    </div>
+    <p>Fitting Loftin's 14 jet transports with a published empty weight gives</p>
+    \[ \frac{\We}{\Wo} = 1.117\,\Wo^{-0.0698}\qquad (\Wo\ \text{in kg}) \]
+    <p>Compare it with Raymer's fit for jet transports in his Table 3.1, made from a larger and more recent set of aircraft. The scatter is large: a single fit hides real differences in technology, range and design philosophy. That is exactly why it is only a first estimate.</p>
+  </section>
+
+  <section id="sizing">
+    <h2>The first estimate of takeoff weight</h2>
+    <p>Return to the weight build-up of Lesson 1, \(\Wo = W_{\text{crew}} + W_{\text{payload}} + \Wf + \We\). Divide the fuel and empty weights by \(\Wo\) and solve for \(\Wo\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Sizing equation (Raymer)</p>
+      \[ \Wo = \frac{W_{\text{crew}} + W_{\text{payload}}}{1 - \dfrac{\Wf}{\Wo} - \dfrac{\We}{\Wo}} \]
+      <p>The fuel fraction comes from the mission (Breguet, Lesson 6) and the empty-weight fraction from the trend; since the trend depends on \(\Wo\), the equation is solved by iteration.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 7.1 — Sizing a jet transport from Loftin's trend</p>
+      <p>A jet transport must carry \(20\,000\ \text{kg}\) of crew and payload, and its mission needs a fuel fraction \(\Wf/\Wo = 0.35\). Using the trend above, estimate \(\Wo\). Start from a guess of \(100\,000\ \text{kg}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Guess, evaluate the trend, compute a new \(\Wo\), repeat:</p>
+          <div class="table-wrap">
+            <table class="data iter-table">
+              <thead><tr><th scope="col">Iteration</th><th scope="col">\(\Wo\) guess (kg)</th><th scope="col">\(\We/\Wo\)</th><th scope="col">New \(\Wo\) (kg)</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>100 000</td><td>0.5001</td><td>133 400</td></tr>
+                <tr><td>2</td><td>133 400</td><td>0.4901</td><td>125 100</td></tr>
+                <tr><td>3</td><td>125 100</td><td>0.4923</td><td>126 900</td></tr>
+                <tr><td>4</td><td>126 900</td><td>0.4919</td><td>126 500</td></tr>
+                <tr><td>5</td><td>126 500</td><td>0.4919</td><td>126 500</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>For example, \(1.117(100\,000)^{-0.0698} = 0.5001\) and \(20\,000/(1 - 0.35 - 0.5001) = 133\,400\ \text{kg}\). The estimate converges to \(\Wo \approx 126\,500\ \text{kg}\), with \(\We \approx 62\,200\ \text{kg}\) and \(\Wf \approx 44\,300\ \text{kg}\).</p>
+        </div>
+      </details>
+    </div>
+    <aside class="callout warning">
+      <p class="callout-title">The weight snowball</p>
+      <p>The denominator \(1 - \Wf/\Wo - \We/\Wo\) is small, here about 0.16, so small errors are amplified. In Example 7.1, a fuel fraction of 0.33 instead of 0.35 gives \(\Wo = 114\,500\ \text{kg}\); 0.37 gives \(141\,100\ \text{kg}\). Two percentage points of fuel move the gross weight by about 10%. Every kilogram added anywhere needs more wing, more engine and more fuel to carry it: that is why designers fight for every kilogram.</p>
+    </aside>
+
+    <figure class="figure wide" aria-labelledby="fig72-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig72-stage"></div>
+        <div class="viz-controls" id="fig72-controls"></div>
+      </div>
+      <figcaption id="fig72-cap"><strong>Figure 7.2</strong> The sizing equation as two curves. The trend (blue) is the empty-weight fraction that history says an aircraft of weight \(\Wo\) will have; the purple curve is the empty-weight fraction the design can afford, \(1 - \Wf/\Wo - (W_{\text{crew}} + W_{\text{payload}})/\Wo\). The design closes where they cross. The points are Loftin's aircraft of the chosen class. Try a technology factor below 1 (for example lighter composite structure) and watch the gross weight fall by much more than the empty weight.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Aircraft design grew from one or two people testing their own machines to large organizations with specialist groups, systems engineering and digital tools.</li>
+      <li>The design wheel: requirements → design concept → design analysis → sizing and trade studies → back to requirements. Design is iterative.</li>
+      <li>Conceptual design decides the configuration, size and most of the eventual cost; preliminary and detail design follow.</li>
+      <li>Historical data give the empty-weight trend \(\We/\Wo = A\Wo^{\,C}\), and the sizing equation \(\Wo = (W_{\text{crew}} + W_{\text{payload}})/(1 - \Wf/\Wo - \We/\Wo)\) gives the first estimate of \(\Wo\), solved by iteration.</li>
+      <li>You have finished the lessons. Try the <a href="../practice/practice-lab.html">Practice Lab</a> and the <a href="../practice/quiz.html">Self-Check Quiz</a>, and explore all of Loftin's aircraft in the <a href="../tools/explorer.html">Design Trends Explorer</a>.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 7.1: the design wheel ---------- */
+CYL.ready(function () {
+  'use strict';
+  var SEG = [
+    { t: 'Requirements', body: 'The customer\'s and the regulators\' requirements: payload, range, speed, field length, cost, certification. They are not fixed: a trade study may show that relaxing one is worth it.', ex: 'Example: Douglas answered TWA\'s 1932 request for a trimotor with a twin-engine design, the DC-1, after showing that it could meet the requirement with one engine out.' },
+    { t: 'Design concept', body: 'A configuration that might meet the requirements: a layout sketch with a wing, fuselage, tail, engines and landing gear, drawn with enough care to be analyzed.', ex: 'Example: the B-47\'s thin swept wing with engines in pods on pylons, a new concept that the 707 adopted.' },
+    { t: 'Design analysis', body: 'Aerodynamics, weights, propulsion, structures, stability and control, performance and cost of the concept. In conceptual design these are quick methods, often statistical.', ex: 'Example: the Wrights\' wind-tunnel tests of 1901 replaced Lilienthal\'s data with their own.' },
+    { t: 'Sizing and trade studies', body: 'Find the gross weight, wing area and engine size that meet the requirements, then vary the main parameters (wing loading, thrust-to-weight ratio, aspect ratio, sweep) to find the best combination.', ex: 'Example: Lesson 4\'s flaps: a higher maximum lift coefficient let designers trade a smaller wing for the same landing speed.' }
+  ];
+  var st = { i: 0 };
+  var stage = document.getElementById('fig71-stage');
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '-210 -210 420 420'); svg.setAttribute('class', 'wheel'); svg.setAttribute('role', 'group'); svg.setAttribute('aria-label', 'The design wheel: four segments in a cycle');
+  function mk(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  var R1 = 190, R0 = 78, gap = 0.06, segs = [];
+  SEG.forEach(function (s, i) {
+    var a0 = -Math.PI / 2 + i * Math.PI / 2 + gap, a1 = a0 + Math.PI / 2 - 2 * gap;
+    var p = function (r, a) { return (r * Math.cos(a)).toFixed(1) + ' ' + (r * Math.sin(a)).toFixed(1); };
+    var d = 'M' + p(R0, a0) + ' L' + p(R1, a0) + ' A' + R1 + ' ' + R1 + ' 0 0 1 ' + p(R1, a1) + ' L' + p(R0, a1) + ' A' + R0 + ' ' + R0 + ' 0 0 0 ' + p(R0, a0) + ' Z';
+    var g = mk('path', { d: d, class: 'seg', tabindex: '0', role: 'button', 'aria-label': s.t });
+    g.addEventListener('click', function () { choose(i); });
+    g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(i); } });
+    svg.appendChild(g); segs.push(g);
+    var am = (a0 + a1) / 2, words = s.t.split(' ');
+    var lines = words.length > 2 ? [words.slice(0, 2).join(' '), words.slice(2).join(' ')] : words.length === 2 && s.t.length > 12 ? words : [s.t];
+    lines.forEach(function (L, k) {
+      var tx = mk('text', { x: (134 * Math.cos(am)).toFixed(1), y: (134 * Math.sin(am) + (k - (lines.length - 1) / 2) * 17 + 5).toFixed(1), 'text-anchor': 'middle', 'font-size': 14.5, 'font-weight': 700, 'pointer-events': 'none' });
+      tx.textContent = L; svg.appendChild(tx);
+    });
+  });
+  svg.appendChild(mk('circle', { cx: 0, cy: 0, r: R0 - 8, class: 'hub' }));
+  var hub = mk('text', { x: 0, y: 5, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700 }); hub.textContent = 'Iterate'; svg.appendChild(hub);
+  var arcD = 'M 0 -48 A 48 48 0 1 1 -48 0';
+  svg.appendChild(mk('path', { d: arcD, class: 'arrow' }));
+  svg.appendChild(mk('path', { d: 'M -48 0 l -6 -10 l 12 0 z', class: 'arrowhead', transform: 'rotate(0)' }));
+  stage.appendChild(svg);
+  var panel = document.getElementById('fig71-controls');
+  var title = CYL.el('p', { class: 'viz-title' }), body = CYL.el('p'), ex = CYL.el('p', { class: 'small muted' });
+  panel.appendChild(CYL.el('div', { class: 'wheel-text', 'aria-live': 'polite' }, [title, body, ex]));
+  function choose(i) {
+    st.i = i;
+    segs.forEach(function (g, k) { g.classList.toggle('is-on', k === i); g.setAttribute('aria-pressed', String(k === i)); });
+    title.textContent = (i + 1) + ' · ' + SEG[i].t; body.textContent = SEG[i].body; ex.textContent = SEG[i].ex;
+  }
+  choose(0);
+});
+
+/* ---------- Figure 7.2: the sizing equation as two curves ---------- */
+CYL.ready(function () {
+  'use strict';
+  function fit(list) {
+    var X = [], Y = [];
+    list.forEach(function (d) { X.push(Math.log(d.W0)); Y.push(Math.log(d.We / d.W0)); });
+    var n = X.length, mx = X.reduce(function (a, b) { return a + b; }) / n, my = Y.reduce(function (a, b) { return a + b; }) / n, sxy = 0, sxx = 0;
+    for (var i = 0; i < n; i++) { sxy += (X[i] - mx) * (Y[i] - my); sxx += (X[i] - mx) * (X[i] - mx); }
+    var C = sxy / sxx;
+    return { A: Math.exp(my - C * mx), C: C, n: n };
+  }
+  var CLS = {
+    jt: { label: 'Jet transports', sel: function (d) { return d.era === 'jettransport'; }, pay: 20000, ff: 0.35, x: [2e4, 1e6] },
+    jf: { label: 'Jet fighters', sel: function (d) { return d.era === 'jetfighter'; }, pay: 2500, ff: 0.30, x: [3e3, 1e5] },
+    pt: { label: 'Propeller transports and bombers', sel: function (d) { return (d.role === 'transport' || d.role === 'bomber') && d.eng !== 'turbojet' && d.eng !== 'turbofan' && d.era !== 'ww1'; }, pay: 4000, ff: 0.25, x: [2e3, 2e5] }
+  };
+  Object.keys(CLS).forEach(function (k) { var c = CLS[k]; c.pts = AERO.DATA.filter(function (d) { return c.sel(d) && d.We; }); c.fit = fit(c.pts); });
+  var st = { cls: 'jt', pay: 20000, ff: 0.35, tech: 1 };
+  var chart = AERO.chart(document.getElementById('fig72-stage'), {
+    x: { label: 'Gross weight \\(\\Wo\\) (kg)', min: 2e4, max: 1e6, log: true }, y: { label: 'Empty-weight fraction \\(\\We/\\Wo\\)', min: 0.2, max: 0.9 }, height: 360,
+    ariaLabel: 'Empty-weight fraction against gross weight on a logarithmic axis: a falling trend curve, a rising curve of the affordable empty-weight fraction, their crossing point, and Loftin\'s aircraft of the chosen class.',
+    legend: [{ label: 'Trend (fit to Loftin)', color: 'z', line: true }, { label: 'Affordable', color: 't', line: true }, { label: 'Loftin\'s aircraft', color: 'muted' }]
+  });
+  var pts = chart.points([], {
+    x: function (d) { return d.W0; }, y: function (d) { return d.We / d.W0; }, color: 'muted', r: 4.5,
+    title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + '</span><br>W0 = ' + CYL.fmt(d.W0 / 1000, 3) + ' t, We/W0 = ' + CYL.fmt(d.We / d.W0, 3); }
+  });
+  var trend = chart.fn(function (w) { var f = CLS[st.cls].fit; return st.tech * f.A * Math.pow(w, f.C); }, { color: 'z', width: 2.4 });
+  var avail = chart.fn(function (w) { return 1 - st.ff - st.pay / w; }, { color: 't', width: 2.4 });
+  var mark = chart.marker([0, 0], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig72-controls');
+  var sel = CYL.select({ label: 'Class of aircraft (for the trend)', value: st.cls, options: Object.keys(CLS).map(function (k) { return { value: k, label: CLS[k].label }; }), onChange: function (v) { setClass(v); } });
+  var sP = CYL.slider({ label: 'Crew and payload', min: 500, max: 60000, step: 100, value: st.pay, unit: 'kg', onInput: function (v) { st.pay = v; draw(); } });
+  var sF = CYL.slider({ label: 'Fuel fraction \\(\\Wf/\\Wo\\)', min: 0.1, max: 0.5, step: 0.005, value: st.ff, color: 't', onInput: function (v) { st.ff = v; draw(); } });
+  var sT = CYL.slider({ label: 'Technology factor on \\(\\We\\)', min: 0.8, max: 1.1, step: 0.01, value: 1, color: 'z', onInput: function (v) { st.tech = v; draw(); } });
+  var roFit = CYL.readout('Trend'), roW = CYL.readout('Gross weight \\(\\Wo\\)'), roE = CYL.readout('Empty and fuel weight');
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Requirements' }));
+  [sel, sP, sF, sT].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roFit.el, roW.el, roE.el]));
+  CYL.renderMath(panel);
+  function solve() {
+    var f = CLS[st.cls].fit, W = 10 * st.pay, i;
+    for (i = 0; i < 200; i++) {
+      var d = 1 - st.ff - st.tech * f.A * Math.pow(W, f.C);
+      if (d <= 0.005) return null;
+      var Wn = st.pay / d;
+      if (Math.abs(Wn - W) < 0.01) { W = Wn; break; }
+      W = Wn;
+    }
+    return isFinite(W) && W > 0 && W < 5e7 ? W : null;
+  }
+  function setClass(k) {
+    st.cls = k;
+    var c = CLS[k];
+    st.pay = c.pay; st.ff = c.ff; sP.set(c.pay, true); sF.set(c.ff, true);
+    chart.setAxes({ x: { min: c.x[0], max: c.x[1] } });
+    pts.set(c.pts);
+    draw();
+  }
+  function draw() {
+    var f = CLS[st.cls].fit, W = solve();
+    trend.draw(); avail.draw();
+    roFit.set('\\(\\We/\\Wo = ' + CYL.fmtTex(st.tech * f.A, 4) + '\\,\\Wo^{' + CYL.fmtTex(f.C, 3) + '}\\) (' + f.n + ' aircraft)');
+    if (W) {
+      var fe = st.tech * f.A * Math.pow(W, f.C);
+      mark.set([W, fe]); mark.setVisible(true);
+      roW.set(CYL.fmt(W / 1000, 4) + ' t');
+      roE.set(CYL.fmt(fe * W / 1000, 3) + ' t empty, ' + CYL.fmt(st.ff * W / 1000, 3) + ' t fuel');
+    } else {
+      mark.setVisible(false);
+      roW.set('does not close');
+      roE.set('the trend lies above the affordable curve everywhere: reduce the fuel fraction or the empty weight');
+    }
+  }
+  setClass('jt');
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'numeric',
+    prompt: 'Using the jet-transport trend \\(\\We/\\Wo = 1.117\\,\\Wo^{-0.0698}\\) (\\(\\Wo\\) in kg), find the empty-weight fraction of an aircraft with \\(\\Wo = 250\\,000\\ \\text{kg}\\).',
+    label: '\\(\\We/\\Wo =\\)', answer: 1.117 * Math.pow(250000, -0.0698),
+    hints: ['Evaluate \\(250\\,000^{-0.0698}\\) first: \\(e^{-0.0698\\ln 250\\,000}\\).', 'Type it directly: 1.117*250000^(-0.0698).'],
+    explain: 'The fraction falls only slowly with size: about 0.469 at 250 t against 0.500 at 100 t.',
+    solution: '\\[ \\frac{\\We}{\\Wo} = 1.117(250\\,000)^{-0.0698} = 1.117(0.4196) = 0.469 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'numeric',
+    prompt: 'In a sizing calculation, crew plus payload is \\(9000\\ \\text{kg}\\), the fuel fraction is 0.30 and the empty-weight fraction (at the converged weight) is 0.52. What is \\(\\Wo\\)?',
+    label: '\\(\\Wo =\\)', answer: 9000 / (1 - 0.30 - 0.52), unit: 'kg',
+    hints: ['\\(\\Wo = (W_{\\text{crew}} + W_{\\text{payload}})/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).'],
+    explain: 'Only 18% of the gross weight is crew and payload; the rest is the aircraft and its fuel.',
+    solution: '\\[ \\Wo = \\frac{9000}{1 - 0.30 - 0.52} = \\frac{9000}{0.18} = 50\\,000\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'mc',
+    prompt: 'In which phase of design are the configuration, size and most of the eventual cost of an aircraft decided?',
+    choices: [
+      { html: 'Conceptual design', correct: true, feedback: 'Yes: quick methods and trade studies decide the layout, size and main parameters.' },
+      { html: 'Preliminary design', feedback: 'Preliminary design analyzes and refines a configuration that is already largely frozen.' },
+      { html: 'Detail design', feedback: 'Detail design designs the parts of a fixed configuration for manufacture.' },
+      { html: 'Flight testing', feedback: 'By then changes are very expensive.' }
+    ],
+    explain: 'Decisions made early, with little money spent, commit most of the cost.'
+  });
+});
+</script>
+</body>
+</html>

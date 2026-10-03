@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading an Aircraft Like a Designer · The History of Aircraft Design</title>
+<meta name="description" content="The handful of numbers designers use to compare aircraft: takeoff gross weight W0, empty-weight fraction, wing loading, power and thrust loading, aspect ratio, zero-lift drag coefficient and maximum lift-to-drag ratio.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+</head>
+<body data-page="l01" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 1 · 35 min</p>
+    <h1>Reading an Aircraft Like a Designer</h1>
+    <p class="lede">A Sopwith Camel and a Boeing 747 look nothing alike, yet a designer can compare them with the same half-dozen numbers: how heavy the aircraft is, how much of that weight is the aircraft itself, how hard the wing and the engines work, and how cleanly it slips through the air. This lesson defines those numbers. The rest of the module follows them through eighty years of aircraft.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Define takeoff gross weight \(\Wo\), empty weight \(\We\) and the empty-weight fraction \(\We/\Wo\), in Raymer's notation.</li>
+      <li>Compute wing loading \(\WS\), power loading \(W/P\) and thrust-to-weight ratio \(\TW\), and convert them between SI and US units.</li>
+      <li>Find the aspect ratio \(A = b^2/S\) and the drag area \(f = \CDz S\) of a wing or an aircraft.</li>
+      <li>Derive \(\LDmax = \tfrac12\sqrt{\pi A e/\CDz}\) from the parabolic drag polar and use it to estimate an aircraft's aerodynamic efficiency.</li>
+    </ul>
+  </section>
+
+  <section id="why">
+    <h2>Why designers compare numbers, not pictures</h2>
+    <p>Conceptual design starts long before anyone draws the final shape. A designer asked for a new aircraft first asks what similar aircraft have achieved: how heavy they were for their payload, how big a wing they needed, how much power. Those answers come from <strong>historical data</strong>, and they are the starting point of the sizing method you will use in the coming weeks. Raymer's book builds its first weight estimate on exactly this kind of data.</p>
+    <p>This module therefore reads the history of aircraft design through the numbers that a designer would extract from each aircraft. Most of them come from one careful source: Laurence Loftin's <em>Quest for Performance</em> (NASA SP-468, 1985), whose appendix lists the weights, dimensions, engines, speeds and estimated drag of about ninety aircraft from 1914 to 1982. The <a href="../tools/explorer.html">Design Trends Explorer</a> lets you plot all of them.</p>
+    <aside class="callout note">
+      <p class="callout-title">Units in this module</p>
+      <p>Lessons work in SI units and quote US units where the historical sources use them. Raymer's statistics, and Loftin's tables, are in pounds, feet, horsepower and miles per hour. Useful factors: \(1\ \text{lb} = 0.4536\ \text{kg}\), \(1\ \text{ft} = 0.3048\ \text{m}\), \(1\ \text{hp} = 0.7457\ \text{kW}\), \(1\ \text{mph} = 1.609\ \text{km/h}\) and \(1\ \text{lb/ft}^2 = 4.882\ \text{kg/m}^2\).</p>
+    </aside>
+  </section>
+
+  <section id="weights">
+    <h2>Weights: \(\Wo\), \(\We\) and the empty-weight fraction</h2>
+    <p>Raymer divides the <strong>takeoff gross weight</strong> \(\Wo\), the weight at the start of the design mission, into three parts:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Weight build-up</p>
+      \[ \Wo = W_{\text{crew}} + W_{\text{payload}} + \Wf + \We \]
+      <p>\(\Wf\) is the fuel weight and \(\We\) the <strong>empty weight</strong>: structure, engines, landing gear, fixed equipment and avionics, everything that is not crew, payload or fuel.</p>
+    </div>
+    <p>The <strong>empty-weight fraction</strong> \(\We/\Wo\) measures how much of the aircraft's weight is the aircraft itself. A low value leaves more of \(\Wo\) for fuel and payload, so it is one of the best single indicators of structural and technological progress. It also depends strongly on the type of aircraft and its size, which is why Raymer correlates it statistically against \(\Wo\) for each class of aircraft (Raymer, Chapter 3; you will use these correlations for the first weight estimate).</p>
+    <aside class="callout warning">
+      <p class="callout-title">Common mistake: weight or mass?</p>
+      <p>Designers say <em>weight</em> and quote kilograms (or pounds). In SI the kilogram is a mass: the weight force is \(W = mg\) in newtons. Ratios such as \(\We/\Wo\) do not care, but any formula that contains a force, such as the lift equation, needs \(W = mg\) in newtons. This module uses \(g = 9.81\ \text{m/s}^2\).</p>
+    </aside>
+  </section>
+
+  <section id="loadings">
+    <h2>Loadings: how hard the wing and the engines work</h2>
+    <div class="two-col">
+      <div class="card card-z"><h3>Wing loading \(\WS\)</h3><p>Weight per unit wing area, \(\Wo/S\). In steady level flight the wing carries the weight, so \(\WS = \tfrac12\rho V^2 \CL\): a high wing loading means high speeds, especially for takeoff and landing.</p></div>
+      <div class="card card-r"><h3>Power and thrust loading</h3><p>For propeller aircraft, the <strong>power loading</strong> \(W/P\) (kg/kW or lb/hp; lower is more powerful). For jets, the <strong>thrust-to-weight ratio</strong> \(\TW\), dimensionless (higher is more powerful).</p></div>
+    </div>
+    <div class="key-formula">
+      <p class="key-formula-title">Loadings</p>
+      \[ \frac{W}{S} = \frac{\Wo\,g}{S}\ \ \text{(N/m}^2\text{)}, \qquad \frac{W}{P} = \frac{\Wo}{P}\ \ \text{(kg/kW)}, \qquad \frac{T}{W} = \frac{T}{\Wo\,g} \]
+      <p>Raymer quotes \(\WS\) in kg/m² in SI (lb/ft² in US units). Multiply by \(g\) for N/m².</p>
+    </div>
+    <p>Raymer calls \(\TW\) and \(\WS\) the two most important parameters of a conceptual design: together with \(\Wo\) they fix the size of the wing and of the engines. Raymer devotes his Chapter 5 to choosing them. Lesson 4 shows how flaps made possible the jump in wing loading of the 1930s.</p>
+
+    <div class="example">
+      <p class="example-title">Example 1.1 — The loadings of a P-51D Mustang</p>
+      <p>Loftin lists the P-51D at \(\Wo = 10\,100\ \text{lb}\), \(S = 233\ \text{ft}^2\) and \(1490\ \text{hp}\). Find its wing loading in kg/m², lb/ft² and N/m², and its power loading in kg/kW.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Convert first: \(\Wo = 10\,100(0.4536) = 4581\ \text{kg}\), \(S = 233(0.0929) = 21.65\ \text{m}^2\), \(P = 1490(0.7457) = 1111\ \text{kW}\).</p>
+          \[ \begin{aligned}
+            \frac{W}{S} &= \frac{4581}{21.65} = 211.6\ \text{kg/m}^2 = \frac{10\,100}{233} = 43.3\ \text{lb/ft}^2 \\
+            \frac{W}{S} &= 211.6(9.81) = 2076\ \text{N/m}^2 \\
+            \frac{W}{P} &= \frac{4581}{1111} = 4.12\ \text{kg/kW}\quad (6.8\ \text{lb/hp})
+          \end{aligned} \]
+          <p>Seven times the wing loading of a First World War fighter (about \(30\ \text{kg/m}^2\)), with half its power loading: Lessons 3 and 4 explain how that became possible.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="aero">
+    <h2>Aerodynamic efficiency: \(A\), \(\CDz\) and \(\LDmax\)</h2>
+    <p>The wing's <strong>aspect ratio</strong> is its span squared over its area, \(A = b^2/S\): long, slender wings have a high \(A\). For a biplane, Loftin uses the span and the area of one wing, so a biplane with two equal wings has \(A = b^2/(S/2)\).</p>
+    <p>For most of this course, the drag of a whole aircraft is modeled with the <strong>parabolic drag polar</strong>: a zero-lift (parasite) part, plus a part that grows with the square of the lift coefficient.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Lift, drag and the drag polar</p>
+      \[ \colL{L} = \tfrac12\rho V^2 S\,\CL, \qquad \colD{D} = \tfrac12\rho V^2 S\,\CD, \qquad \CD = \CDz + K\CL^2,\quad K = \frac{1}{\pi A e} \]
+      <p>\(e\) is the Oswald efficiency factor, about 0.7 to 0.85 for a complete aircraft. The product \(f = \CDz S\) is the <strong>drag area</strong>, the area of a flat plate with the same zero-lift drag.</p>
+    </div>
+    <p>The ratio \(L/D = \CL/(\CDz + K\CL^2)\) is the aircraft's aerodynamic efficiency. To find its maximum, set the derivative with respect to \(\CL\) to zero:</p>
+    \[ \frac{\dd}{\dd\CL}\!\left(\frac{\CL}{\CDz + K\CL^2}\right) = \frac{\CDz - K\CL^2}{(\CDz + K\CL^2)^2} = 0 \quad\Rightarrow\quad K\CL^2 = \CDz \]
+    <p>At the best \(L/D\) the induced drag equals the zero-lift drag, \(\CD = 2\CDz\), and</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Maximum lift-to-drag ratio</p>
+      \[ \CL^* = \sqrt{\frac{\CDz}{K}}, \qquad \LDmax = \frac{1}{2\sqrt{K\CDz}} = \frac12\sqrt{\frac{\pi A e}{\CDz}} \]
+    </div>
+    <p>Loftin computed every \(\LDmax\) in his tables this way, with \(e\) between 0.70 and 0.75. Two routes lead to a better aircraft: lower \(\CDz\) (cleaner shapes, Lesson 4) or higher \(A\) (longer wings, limited by structural weight).</p>
+
+    <figure class="figure wide" aria-labelledby="fig11-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig11-stage"></div>
+        <div class="viz-controls" id="fig11-controls"></div>
+      </div>
+      <figcaption id="fig11-cap"><strong>Figure 1.1</strong> An aircraft's numbers. Choose an aircraft to see a schematic top view drawn to scale (grid squares are 5 m) and the parameters a designer would extract from it. Add a second aircraft to compare sizes: the outline in orange is to the same scale. Planforms are simplified from the published span, length, wing area and sweep; biplanes show the lower wing dashed.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 1.2 — How efficient was the DC-3?</p>
+      <p>The Douglas DC-3 has \(A = 9.14\) and \(\CDz = 0.0249\). With \(e = 0.75\), estimate \(\LDmax\) and the lift coefficient at which it occurs. Its wing area is \(91.7\ \text{m}^2\); what is its drag area?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ K = \frac{1}{\pi(9.14)(0.75)} = 0.04643, \qquad \LDmax = \frac{1}{2\sqrt{0.04643(0.0249)}} = 14.7 \]
+          \[ \CL^* = \sqrt{\frac{0.0249}{0.04643}} = 0.732, \qquad f = \CDz S = 0.0249(91.7) = 2.28\ \text{m}^2 \]
+          <p>Loftin's table gives \(\LDmax = 14.7\). The whole aircraft, with two engines, landing gear and a tail, has the zero-lift drag of a flat plate of about \(2.3\ \text{m}^2\), a square 1.5 m on a side.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="trends">
+    <h2>Eighty years in one chart</h2>
+    <p>Put the numbers of many aircraft on one chart against the year of their first flight, and the history of aircraft design appears as a set of trends. Figure 1.2 shows four of them. Look for the sudden changes: they mark the technical revolutions that the next five lessons describe.</p>
+    <figure class="figure wide" aria-labelledby="fig12-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig12-stage"></div>
+        <div class="viz-controls" id="fig12-controls"></div>
+      </div>
+      <figcaption id="fig12-cap"><strong>Figure 1.2</strong> Design parameters of the aircraft in Loftin's tables, by year of first flight. Circles are propeller aircraft and triangles jets; colors mark the era. Hover over (or tap) a point to identify it. \(\CDz\) and \(\LDmax\) are Loftin's estimates for subsonic flight; he did not publish them for every aircraft.</figcaption>
+    </figure>
+    <aside class="callout tip">
+      <p class="callout-title">What to look for</p>
+      <p>Wing loading rose about twentyfold between 1915 and 1970. \(\CDz\) fell by half between 1920 and the mid-1930s, then barely moved. The best \(\LDmax\) rose from about 8 to about 19. And the empty-weight fraction stayed stubbornly near 0.5 to 0.7 for the whole period: better materials were spent on more performance, not on lighter aircraft.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\Wo = W_{\text{crew}} + W_{\text{payload}} + \Wf + \We\). The empty-weight fraction \(\We/\Wo\) measures how much of the aircraft is aircraft.</li>
+      <li>Wing loading \(\WS\) and power loading \(W/P\) (or \(\TW\) for jets) say how hard the wing and the engines work; with \(\Wo\) they size the aircraft.</li>
+      <li>\(A = b^2/S\); the drag polar is \(\CD = \CDz + \CL^2/(\pi A e)\), and \(f = \CDz S\) is the drag area.</li>
+      <li>\(\LDmax = \tfrac12\sqrt{\pi A e/\CDz}\), reached when the induced drag equals the zero-lift drag.</li>
+      <li>Historical data are the designer's first tool. Next, <a href="02-pioneers.html">Lesson 2</a> goes back to the beginning: how the first designers found the lift equation and the wing that made the Wright Flyer work.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 1.1: an aircraft's data card, with a to-scale planform ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = AERO.DATA, st = { a: 'douglas-dc-3', b: 'none' };
+  var plane = CYL2D.plane(document.getElementById('fig11-stage'), {
+    xRange: [-20, 20], yRange: [-3, 26], grid: 'cartesian', gridStep: 5, axes: false, ticks: false, maxHeight: 460,
+    ariaLabel: 'A schematic top view of the chosen aircraft, nose up, drawn to scale on a 5 m grid.'
+  });
+  var panel = document.getElementById('fig11-controls');
+  function opts(withNone) {
+    var o = withNone ? [{ value: 'none', label: 'None' }] : [];
+    AERO.ERAS.forEach(function (e) {
+      D.filter(function (d) { return d.era === e.id; }).sort(function (p, q) { return p.year - q.year; })
+        .forEach(function (d) { o.push({ value: d.id, label: d.name + ' (' + d.year + ')' }); });
+    });
+    return o;
+  }
+  var selA = CYL.select({ label: 'Aircraft', options: opts(false), value: st.a, onChange: function (v) { st.a = v; draw(); } });
+  var selB = CYL.select({ label: 'Compare with', options: opts(true), value: st.b, onChange: function (v) { st.b = v; draw(); } });
+  var ro = {
+    W0: CYL.readout('Gross weight \\(\\Wo\\)'), we: CYL.readout('Empty-weight fraction \\(\\We/\\Wo\\)'),
+    ws: CYL.readout('Wing loading \\(\\WS\\)'), pw: CYL.readout('Power or thrust'),
+    A: CYL.readout('Aspect ratio \\(A\\)'), cd: CYL.readout('\\(\\CDz\\) and \\(\\LDmax\\)')
+  };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Choose' }));
+  panel.appendChild(selA.el);
+  panel.appendChild(selB.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, Object.keys(ro).map(function (k) { return ro[k].el; })));
+  var note = CYL.el('p', { class: 'small muted' });
+  panel.appendChild(note);
+  CYL.renderMath(panel);
+  var gA = null, gB = null;
+  function n(x, s) { return CYL.fmt(x, s || 3); }
+  function draw() {
+    var a = AERO.byId(st.a), b = st.b === 'none' ? null : AERO.byId(st.b);
+    if (gA) gA.remove(); if (gB) gB.remove();
+    var span = Math.max(a.b, b ? b.b : 0), len = Math.max(a.l, b ? b.l : 0);
+    var half = Math.max(span / 2 + 1.5, len * 0.55);
+    plane.setRange([-half, half], [-1.5, len + 1.5]);
+    gA = AERO.planform(plane, a, { color: 'accent', fillOpacity: 0.16 });
+    if (b) gB = AERO.planform(plane, b, { color: 'r', fillOpacity: 0.05, width: 1.8 });
+    var d = AERO.derive(a);
+    ro.W0.set(CYL.fmt(a.W0, 4).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' kg');
+    ro.we.set(d.WeW0 ? n(d.WeW0) : 'not published');
+    ro.ws.set(n(d.WSkg) + ' kg/m² (' + n(d.WSus) + ' lb/ft²)');
+    ro.pw.set(a.P ? 'W/P = ' + n(d.WP) + ' kg/kW (' + n(a.P, 4) + ' kW)' : 'T/W = ' + n(d.TW, 2) + ' (' + n(a.T, 4) + ' kN)');
+    ro.A.set(n(a.A) + (a.variableSweep ? ' (wings spread)' : ''));
+    ro.cd.set(a.CD0 ? a.CD0 + ', ' + a.LD : a.LD ? '(L/D)max ≈ ' + a.LD + ' (Loftin)' : 'not published');
+    note.textContent = a.full + ', first flown ' + a.year + '. ' + (a.engine ? a.n + ' × ' + a.engine.replace(/^\dx\s*/, '') + '. ' : '') +
+      'Span ' + n(a.b) + ' m, length ' + n(a.l) + ' m, wing area ' + n(a.S) + ' m²' + (a.sweep ? ', sweep ' + a.sweep + '°' : '') + '. Source: ' + a.src.replace('Loftin T', 'Loftin, Table ') + '.';
+    plane.svg.setAttribute('aria-label', 'Top view, to scale, of the ' + a.name + (b ? ' with the outline of the ' + b.name + ' for comparison' : '') + ', nose up, on a 5 m grid.');
+  }
+  draw();
+});
+
+/* ---------- Figure 1.2: four trends against the year ---------- */
+CYL.ready(function () {
+  'use strict';
+  var METRICS = {
+    ws: { label: 'Wing loading \\(\\WS\\) (kg/m²)', y: function (d) { return AERO.derive(d).WSkg; }, log: true, min: 5, max: 1000, fmt: function (v) { return CYL.fmt(v, 3) + ' kg/m²'; } },
+    cd0: { label: 'Zero-lift drag coefficient \\(\\CDz\\)', y: function (d) { return d.CD0; }, log: false, min: 0, max: 0.08, fmt: function (v) { return CYL.fmt(v, 3); } },
+    ld: { label: 'Maximum lift-to-drag ratio \\(\\LDmax\\)', y: function (d) { return d.LD; }, log: false, min: 4, max: 21, fmt: function (v) { return CYL.fmt(v, 3); } },
+    we: { label: 'Empty-weight fraction \\(\\We/\\Wo\\)', y: function (d) { return d.We ? d.We / d.W0 : null; }, log: false, min: 0.3, max: 0.9, fmt: function (v) { return CYL.fmt(v, 3); } }
+  };
+  var st = { m: 'ws' };
+  var stage = document.getElementById('fig12-stage');
+  var chart = AERO.chart(stage, {
+    x: { label: 'Year of first flight', min: 1900, max: 1985, format: function (v) { return String(v); } },
+    y: { label: METRICS.ws.label, min: 5, max: 1000, log: true }, height: 380,
+    ariaLabel: 'Scatter plot of a design parameter against year of first flight for about ninety aircraft from 1903 to 1982.',
+    legend: AERO.ERAS.map(function (e) { return { label: e.label, color: e.color, shape: e.id.indexOf('jet') === 0 ? 'tri' : 'circle' }; })
+  });
+  var pts = chart.points(AERO.DATA, {
+    x: function (d) { return d.year; }, y: function (d) { return METRICS[st.m].y(d); },
+    color: function (d) { return AERO.era(d.era).color; },
+    shape: function (d) { return d.eng === 'turbojet' || d.eng === 'turbofan' ? 'tri' : 'circle'; },
+    title: function (d) { var M = METRICS[st.m]; return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + ' · ' + AERO.ROLES[d.role] + '</span><br>' + M.fmt(M.y(d)); }
+  });
+  var panel = document.getElementById('fig12-controls');
+  var chips = {};
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Parameter' });
+  [['ws', 'Wing loading'], ['cd0', 'Zero-lift drag'], ['ld', 'Max L/D'], ['we', 'Empty-weight fraction']].forEach(function (p) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(p[0] === st.m), text: p[1] });
+    b.addEventListener('click', function () { set(p[0]); });
+    chips[p[0]] = b; row.appendChild(b);
+  });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Show' }));
+  panel.appendChild(row);
+  function set(k) {
+    st.m = k;
+    Object.keys(chips).forEach(function (c) { chips[c].setAttribute('aria-pressed', String(c === k)); });
+    var M = METRICS[k];
+    chart.setAxes({ y: { label: M.label, min: M.min, max: M.max, log: M.log } });
+    chart.setAriaLabel('Scatter plot of ' + M.label.replace(/\\\(|\\\)|\\/g, '') + ' against year of first flight, 1903 to 1982.');
+  }
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l01-q1',
+    type: 'fields',
+    prompt: 'The Boeing 747-200B has \\(\\Wo = 379\\,200\\ \\text{kg}\\), \\(\\We = 173\\,300\\ \\text{kg}\\) and \\(S = 511\\ \\text{m}^2\\). Find its empty-weight fraction and its wing loading in kg/m².',
+    fields: [
+      { name: 'we', label: '\\(\\We/\\Wo =\\)', answer: 173300 / 379200 },
+      { name: 'ws', label: '\\(\\WS =\\)', answer: 379200 / 511, unit: 'kg/m²' }
+    ],
+    hints: ['Both are simple ratios of the given numbers.', '\\(\\WS = \\Wo/S\\) in kg/m²; multiply by \\(g\\) only if you want N/m².'],
+    explain: 'Loftin lists \\(\\WS = 152\\ \\text{lb/ft}^2\\) for the 747-200B, which is \\(742\\ \\text{kg/m}^2\\).',
+    solution: '\\[ \\frac{\\We}{\\Wo} = \\frac{173\\,300}{379\\,200} = 0.457, \\qquad \\frac{W}{S} = \\frac{379\\,200}{511} = 742\\ \\text{kg/m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l01-q2',
+    type: 'fields',
+    prompt: 'A Lockheed Vega has span \\(b = 12.5\\ \\text{m}\\), wing area \\(S = 25.55\\ \\text{m}^2\\) and \\(\\CDz = 0.0278\\). Find its aspect ratio and, with \\(e = 0.75\\), its maximum lift-to-drag ratio.',
+    fields: [
+      { name: 'A', label: '\\(A =\\)', answer: 12.5 * 12.5 / 25.55 },
+      { name: 'ld', label: '\\(\\LDmax =\\)', answer: 0.5 * Math.sqrt(Math.PI * (12.5 * 12.5 / 25.55) * 0.75 / 0.0278) }
+    ],
+    hints: ['\\(A = b^2/S\\).', '\\(\\LDmax = \\tfrac12\\sqrt{\\pi A e/\\CDz}\\).'],
+    explain: 'Loftin lists \\(A = 6.11\\) and \\(\\LDmax = 11.4\\) for the Vega 5C: a clean, cantilever monoplane of 1927.',
+    solution: '\\[ A = \\frac{12.5^2}{25.55} = 6.115, \\qquad \\LDmax = \\frac12\\sqrt{\\frac{\\pi(6.115)(0.75)}{0.0278}} = 11.4 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l01-q3',
+    type: 'mc',
+    prompt: 'An aircraft flies at its maximum lift-to-drag ratio. Which statement is true?',
+    choices: [
+      { html: 'The induced drag equals the zero-lift drag, so \\(\\CD = 2\\CDz\\).', correct: true, feedback: 'Right: setting \\(\\dd(L/D)/\\dd\\CL = 0\\) gives \\(K\\CL^2 = \\CDz\\).' },
+      { html: 'The induced drag is zero.', feedback: 'Induced drag is zero only at zero lift, where \\(L/D = 0\\).' },
+      { html: 'The lift coefficient is at its maximum, \\(\\CLmax\\).', feedback: 'Near \\(\\CLmax\\) the induced drag is far larger than \\(\\CDz\\), so \\(L/D\\) is well below its maximum.' },
+      { html: 'The zero-lift drag is twice the induced drag.', feedback: 'The two are equal at \\(\\LDmax\\).' }
+    ],
+    explain: 'At \\(\\LDmax\\), \\(\\CL^* = \\sqrt{\\CDz/K}\\) and the two parts of the drag are equal.'
+  });
+});
+</script>
+</body>
+</html>

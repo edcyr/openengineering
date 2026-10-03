@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Trends Explorer · The History of Aircraft Design</title>
+<meta name="description" content="Plot any two design parameters of 91 aircraft from 1903 to 1982 (Loftin, NASA SP-468), filter by era and role, fit power-law or linear trends, compare planforms to scale, and download the data.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<style>
+/* ---------- Design Trends Explorer: page-specific layout (tokens from module.css only) ---------- */
+.xp-axes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.xp-filters .chip-row { margin-top: 4px; }
+.xp-fit { margin: 0; color: var(--ink); font-size: 0.88rem; line-height: 1.5; }
+.xp-fit .muted { color: var(--ink-muted); }
+.xp-card { padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+.xp-card h3 { margin: 0 0 2px; font-size: 1rem; }
+.xp-card p { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.84rem; }
+#xp-table { font-size: 0.84rem; }
+#xp-table th, #xp-table td { padding: 6px 8px; white-space: nowrap; }
+#xp-table td { text-align: right; font-variant-numeric: tabular-nums; }
+#xp-table td:first-child, #xp-table th:first-child { text-align: left; position: sticky; left: 0; background: var(--bg-elev); }
+#xp-table thead th { cursor: pointer; user-select: none; }
+#xp-table thead th[aria-sort="ascending"]::after { content: " ▲"; font-size: 0.7em; }
+#xp-table thead th[aria-sort="descending"]::after { content: " ▼"; font-size: 0.7em; }
+#xp-table tbody tr.is-hit { background: var(--accent-soft); }
+.xp-tablewrap { max-height: 520px; overflow: auto; }
+@media print { .xp-tablewrap { max-height: none; overflow: visible; } }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · 91 aircraft, 1903–1982</p>
+    <h1>Design Trends Explorer</h1>
+    <p class="lede">Every aircraft in this module in one place: the Wright Flyer and the 90 aircraft of Laurence Loftin's <em>Quest for Performance</em> (NASA SP-468). Plot any parameter against any other, filter by era and role, fit a trend line as a designer would, compare planforms to scale, and download the data for your own analysis.</p>
+  </header>
+
+  <section id="plot">
+    <h2>Plot two parameters</h2>
+    <p>Choose the axes. Hover over a point (or tap it) to identify the aircraft, and click it to show its numbers and planform below the chart. A trend fit uses the points shown, so filter first: trends only make sense within one class of aircraft.</p>
+    <figure class="figure wide" aria-labelledby="xp-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="xp-stage"></div>
+        <div class="viz-controls" id="xp-controls">
+          <div class="xp-axes" id="xp-axes"></div>
+          <div class="xp-filters">
+            <p class="viz-title">Eras shown</p>
+            <div class="chip-row" id="xp-eras" role="group" aria-label="Eras shown"></div>
+          </div>
+          <div class="two-col">
+            <div id="xp-role"></div>
+            <div id="xp-fitsel"></div>
+          </div>
+          <p class="xp-fit" id="xp-fit" aria-live="polite"></p>
+        </div>
+      </div>
+      <figcaption id="xp-cap"><strong>Figure E.1</strong> Design parameters of the aircraft in this module. Circles are propeller aircraft, triangles jets; colors mark the era. Loftin estimated \(\CDz\) and \(\LDmax\) only where performance data allowed, so some aircraft are missing from those plots.</figcaption>
+    </figure>
+  </section>
+
+  <section id="aircraft">
+    <h2>An aircraft and its planform</h2>
+    <p>Choose an aircraft here, or click one on the chart. Add a second to compare them to the same scale.</p>
+    <figure class="figure wide" aria-labelledby="xp-cap2">
+      <div class="viz">
+        <div class="viz-stage" id="xp-stage2"></div>
+        <div class="viz-controls" id="xp-controls2"></div>
+      </div>
+      <figcaption id="xp-cap2"><strong>Figure E.2</strong> Schematic top views to scale (grid squares are 5 m), built from the published span, length, wing area and sweep; engine positions and tail sizes are typical, not exact.</figcaption>
+    </figure>
+  </section>
+
+  <section id="table">
+    <h2>The data</h2>
+    <p>All 91 aircraft. Click a column heading to sort; the search box filters by name. <span class="nowrap">Download the table</span> as a CSV file to analyze it in a spreadsheet or in Python or MATLAB.</p>
+    <div class="btn-row" id="xp-tablebar"></div>
+    <div class="table-wrap xp-tablewrap">
+      <table class="data" id="xp-table">
+        <caption>Aircraft data in SI units (published US values converted). Empty cells were not published.</caption>
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2>About the data</h2>
+    <ul>
+      <li><strong>Source.</strong> Laurence K. Loftin Jr., <em>Quest for Performance: The Evolution of Modern Aircraft</em>, NASA SP-468 (1985), Appendix A, Tables I–III (propeller aircraft, 1914–1980), V (jet fighters) and VII (jet transports). The values were transcribed from the published tables and converted from US units; the original US values are kept in the CSV file.</li>
+      <li><strong>The Wright Flyer</strong> (1903) is added from the Smithsonian National Air and Space Museum (span, length, weights, 12 hp) and NASA Glenn Research Center (wing area 510 ft²).</li>
+      <li><strong>Years</strong> are the first flight of the type. Loftin gives them for the jets; for the propeller aircraft of Tables I–III they come from general references and may differ by a year for a particular variant.</li>
+      <li><strong>\(\CDz\) and \(\LDmax\)</strong> are Loftin's estimates from published performance (his Appendix C), with \(e = 0.70\) to \(0.75\). For jet transports he gave no \(\CDz\), and his \(\LDmax\) estimates come from his text (707-320B 19 to 19.5, DC-8-63 17.9, 747-200B and 767-200 about 18, L-1011 and DC-10 17 to 17.5).</li>
+      <li><strong>Wing loading and thrust-to-weight ratio</strong> are computed here from the gross weight; for the jet fighters, \(\TW\) uses the maximum (afterburning) thrust. Variable-sweep aircraft are listed with their wings spread.</li>
+      <li><strong>Range</strong> for jet transports is Loftin's maximum-payload range with no fuel reserve.</li>
+    </ul>
+    <aside class="callout tip">
+      <p class="callout-title">Ideas for your own analysis</p>
+      <p>Fit \(\We/\Wo = A\,\Wo^{\,C}\) separately for jet fighters, jet transports and general-aviation aircraft, and compare with Raymer's Table 3.1. Plot \(\TW\) against \(\WS\) for the jets: do fighters and transports form separate clusters? Add a modern aircraft from its published data and see whether it continues Loftin's trends.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==========================================================================================
+   Design Trends Explorer. window.__explorer exposes {state, fit(), points(), select(id)} for QA scripts.
+   ========================================================================================== */
+CYL.ready(function () {
+  'use strict';
+  var D = AERO.DATA, G = AERO.G;
+  function jet(d) { return d.eng === 'turbojet' || d.eng === 'turbofan'; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009'); }
+  // ---- Variables that can be plotted: {label (TeX ok), unit, get(d), log (default), min, max (optional fixed range)}
+  var V = {
+    year: { label: 'Year of first flight', short: 'Year', get: function (d) { return d.year; }, log: false, fmt: String },
+    W0: { label: 'Gross weight \\(\\Wo\\) (kg)', short: 'W0 (kg)', get: function (d) { return d.W0; }, log: true },
+    We: { label: 'Empty weight \\(\\We\\) (kg)', short: 'We (kg)', get: function (d) { return d.We; }, log: true },
+    WeW0: { label: 'Empty-weight fraction \\(\\We/\\Wo\\)', short: 'We/W0', get: function (d) { return d.We ? d.We / d.W0 : null; }, log: false },
+    WS: { label: 'Wing loading \\(\\WS\\) (kg/m²)', short: 'W/S (kg/m²)', get: function (d) { return d.W0 / d.S; }, log: true },
+    WP: { label: 'Power loading \\(W/P\\) (kg/kW, propeller aircraft)', short: 'W/P (kg/kW)', get: function (d) { return d.P ? d.W0 / d.P : null; }, log: true },
+    TW: { label: 'Thrust-to-weight ratio \\(\\TW\\) (jets)', short: 'T/W', get: function (d) { return d.T ? d.T * 1000 / (d.W0 * G) : null; }, log: false },
+    A: { label: 'Aspect ratio \\(A\\)', short: 'A', get: function (d) { return d.A; }, log: false },
+    CD0: { label: 'Zero-lift drag coefficient \\(\\CDz\\)', short: 'CD0', get: function (d) { return d.CD0; }, log: false },
+    LD: { label: 'Maximum lift-to-drag ratio \\(\\LDmax\\)', short: '(L/D)max', get: function (d) { return d.LD; }, log: false },
+    f: { label: 'Drag area \\(f\\) (m²)', short: 'f (m²)', get: function (d) { return d.CD0 ? d.CD0 * d.S : null; }, log: true },
+    b: { label: 'Span \\(b\\) (m)', short: 'b (m)', get: function (d) { return d.b; }, log: true },
+    S: { label: 'Wing area \\(S\\) (m²)', short: 'S (m²)', get: function (d) { return d.S; }, log: true },
+    sweep: { label: 'Wing sweep \\(\\Lambda\\) (degrees)', short: 'Sweep (°)', get: function (d) { return d.sweep; }, log: false },
+    V: { label: 'Speed (km/h): maximum, or cruise for jet transports', short: 'Speed (km/h)', get: function (d) { return d.Vmax || d.Vc || null; }, log: false },
+    M: { label: 'Mach number: maximum (fighters) or cruise (transports)', short: 'Mach', get: function (d) { return d.Mmax || d.Mc || null; }, log: false },
+    Vs: { label: 'Stall speed \\(V_s\\) (km/h)', short: 'Vs (km/h)', get: function (d) { return d.Vs; }, log: false }
+  };
+  var ORDER = ['year', 'W0', 'We', 'WeW0', 'WS', 'WP', 'TW', 'A', 'CD0', 'LD', 'f', 'b', 'S', 'sweep', 'V', 'M', 'Vs'];
+  var st = { x: 'year', y: 'WS', xlog: false, ylog: true, eras: {}, role: 'all', fit: 'none', sel: 'douglas-dc-3', cmp: 'none' };
+  AERO.ERAS.forEach(function (e) { st.eras[e.id] = true; });
+  try { var saved = CYL.store.get('explorer:axes', null); if (saved && V[saved.x] && V[saved.y]) { st.x = saved.x; st.y = saved.y; st.xlog = !!saved.xlog; st.ylog = !!saved.ylog; } } catch (e) { /* ignore */ }
+
+  function shown() {
+    return D.filter(function (d) {
+      if (!st.eras[d.era]) return false;
+      if (st.role !== 'all' && d.role !== st.role) return false;
+      var x = V[st.x].get(d), y = V[st.y].get(d);
+      return x != null && y != null && isFinite(x) && isFinite(y) && (!st.xlog || x > 0) && (!st.ylog || y > 0);
+    });
+  }
+  function bounds(key, log, list) {
+    var vals = list.map(function (d) { return V[key].get(d); });
+    if (!vals.length) return log ? [1, 10] : [0, 1];
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    if (key === 'year') return [Math.floor(lo / 10) * 10 - 2, Math.ceil(hi / 10) * 10 + 2];
+    if (log) { return [Math.pow(10, Math.floor(Math.log10(lo) * 4) / 4 - 0.05), Math.pow(10, Math.ceil(Math.log10(hi) * 4) / 4 + 0.05)]; }
+    var pad = (hi - lo) * 0.08 || Math.abs(hi) * 0.1 || 1;
+    var a = lo - pad, b = hi + pad;
+    if (lo >= 0 && a < 0) a = 0;
+    return [a, b];
+  }
+  // ---- least-squares fits on the shown points
+  function fit(list) {
+    var X = [], Y = [], kind = st.fit;
+    if (kind === 'none') return null;
+    list.forEach(function (d) {
+      var x = V[st.x].get(d), y = V[st.y].get(d);
+      if (kind === 'power') { if (x > 0 && y > 0) { X.push(Math.log(x)); Y.push(Math.log(y)); } }
+      else { X.push(x); Y.push(y); }
+    });
+    var n = X.length;
+    if (n < 3) return { n: n, bad: true };
+    var mx = 0, my = 0, i; for (i = 0; i < n; i++) { mx += X[i]; my += Y[i]; } mx /= n; my /= n;
+    var sxy = 0, sxx = 0, syy = 0; for (i = 0; i < n; i++) { sxy += (X[i] - mx) * (Y[i] - my); sxx += (X[i] - mx) * (X[i] - mx); syy += (Y[i] - my) * (Y[i] - my); }
+    if (!(sxx > 0)) return { n: n, bad: true };
+    var slope = sxy / sxx, icpt = my - slope * mx, r2 = syy > 0 ? sxy * sxy / (sxx * syy) : 1;
+    if (kind === 'power') return { n: n, kind: kind, A: Math.exp(icpt), C: slope, r2: r2, f: function (x) { return Math.exp(icpt) * Math.pow(x, slope); } };
+    return { n: n, kind: kind, m: slope, c: icpt, r2: r2, f: function (x) { return icpt + slope * x; } };
+  }
+
+  // ---- the chart
+  var chart = AERO.chart(document.getElementById('xp-stage'), {
+    x: { label: V[st.x].label, min: 1900, max: 1985 }, y: { label: V[st.y].label, min: 1, max: 10, log: true }, height: 420,
+    ariaLabel: 'Scatter plot of two design parameters for the aircraft in the module.',
+    legend: AERO.ERAS.map(function (e) { return { label: e.label, color: e.color, shape: e.id.indexOf('jet') === 0 ? 'tri' : 'circle' }; })
+  });
+  var trend = chart.fn(function () { return NaN; }, { color: 'accent', width: 2.4, dashed: true });
+  var pts = chart.points([], {
+    x: function (d) { return V[st.x].get(d); }, y: function (d) { return V[st.y].get(d); },
+    color: function (d) { return AERO.era(d.era).color; }, shape: function (d) { return jet(d) ? 'tri' : 'circle'; },
+    title: function (d) {
+      var fx = V[st.x].fmt || function (v) { return CYL.fmt(v, 3); }, fy = V[st.y].fmt || function (v) { return CYL.fmt(v, 3); };
+      return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + ' · ' + AERO.ROLES[d.role] + '</span><br>' +
+        CYL.escapeHtml(V[st.x].short) + ' = ' + fx(V[st.x].get(d)) + '<br>' + CYL.escapeHtml(V[st.y].short) + ' = ' + fy(V[st.y].get(d));
+    },
+    onClick: function (d) { select(d.id, true); }
+  });
+  var mark = chart.marker([NaN, NaN], { color: 'accent', r: 7, label: '' });
+
+  // ---- controls
+  var axes = document.getElementById('xp-axes');
+  function axisCtl(which) {
+    var sel = CYL.select({ label: which === 'x' ? 'Horizontal axis' : 'Vertical axis', value: st[which],
+      options: ORDER.map(function (k) { return { value: k, label: V[k].short + (k === 'year' ? '' : '') }; }),
+      onChange: function (v) { st[which] = v; st[which + 'log'] = !!V[v].log; logT.set(st[which + 'log'], true); draw(); } });
+    var logT = CYL.toggle({ label: 'Log scale', value: st[which + 'log'], onChange: function (on) { st[which + 'log'] = on; draw(); } });
+    axes.appendChild(CYL.el('div', null, [sel.el, CYL.el('div', { class: 'chip-row', style: { marginTop: '6px' } }, [logT.el])]));
+    return { sel: sel, log: logT };
+  }
+  var ax = { x: axisCtl('x'), y: axisCtl('y') };
+  var eraRow = document.getElementById('xp-eras');
+  AERO.ERAS.forEach(function (e) {
+    var t = CYL.toggle({ label: e.label, value: true, color: e.color === 'ink' ? null : e.color, onChange: function (on) { st.eras[e.id] = on; draw(); } });
+    eraRow.appendChild(t.el);
+  });
+  var roleSel = CYL.select({ label: 'Role', value: 'all', options: [{ value: 'all', label: 'All roles' }].concat(Object.keys(AERO.ROLES).map(function (k) { return { value: k, label: AERO.ROLES[k] }; })), onChange: function (v) { st.role = v; draw(); } });
+  document.getElementById('xp-role').appendChild(roleSel.el);
+  var fitSel = CYL.select({ label: 'Trend line', value: 'none', options: [{ value: 'none', label: 'None' }, { value: 'power', label: 'Power law y = A x^C' }, { value: 'linear', label: 'Straight line y = m x + c' }], onChange: function (v) { st.fit = v; draw(); } });
+  document.getElementById('xp-fitsel').appendChild(fitSel.el);
+  var fitOut = document.getElementById('xp-fit');
+  CYL.renderMath(document.getElementById('xp-controls'));
+
+  function draw() {
+    try { CYL.store.set('explorer:axes', { x: st.x, y: st.y, xlog: st.xlog, ylog: st.ylog }); } catch (e) { /* ignore */ }
+    var list = shown(), bx = bounds(st.x, st.xlog, list), by = bounds(st.y, st.ylog, list);
+    chart.setAxes({ x: { label: V[st.x].label, min: bx[0], max: bx[1], log: st.xlog, format: V[st.x].fmt || null }, y: { label: V[st.y].label, min: by[0], max: by[1], log: st.ylog, format: V[st.y].fmt || null } });
+    pts.set(list);
+    var F = fit(list);
+    if (!F) { trend.setFn(function () { return NaN; }); fitOut.innerHTML = '<span class="muted">' + list.length + ' aircraft shown. Choose a trend line to fit them.</span>'; }
+    else if (F.bad) { trend.setFn(function () { return NaN; }); fitOut.innerHTML = '<span class="muted">Not enough points with positive values to fit (' + F.n + ').</span>'; }
+    else {
+      trend.setFn(F.f);
+      fitOut.innerHTML = (F.kind === 'power' ? 'Fit: \\(y = ' + CYL.fmtTex(F.A, 4) + '\\,x^{' + CYL.fmtTex(F.C, 3) + '}\\)' : 'Fit: \\(y = ' + CYL.fmtTex(F.m, 4) + '\\,x ' + (F.c < 0 ? '- ' + CYL.fmtTex(-F.c, 4) : '+ ' + CYL.fmtTex(F.c, 4)) + '\\)') +
+        ', \\(r^2 = ' + CYL.fmtTex(F.r2, 3) + '\\), ' + F.n + ' aircraft.' + (F.kind === 'power' && st.x === 'W0' && st.y === 'WeW0' ? ' <span class="muted">This is Raymer\'s empty-weight trend, with \\(\\Wo\\) in kg.</span>' : '');
+      CYL.renderMath(fitOut);
+    }
+    var s = AERO.byId(st.sel), sx = s ? V[st.x].get(s) : null, sy = s ? V[st.y].get(s) : null;
+    mark.set(s && sx != null && sy != null && list.indexOf(s) >= 0 ? [sx, sy] : [NaN, NaN]);
+    mark.setLabel(s ? s.name : '');
+    chart.setAriaLabel(list.length + ' aircraft plotted: ' + V[st.y].short + ' against ' + V[st.x].short + (F && !F.bad ? ', with a ' + (F.kind === 'power' ? 'power-law' : 'straight-line') + ' trend' : '') + '.');
+  }
+
+  // ---- aircraft card and planform comparison
+  var plane = CYL2D.plane(document.getElementById('xp-stage2'), { xRange: [-20, 20], yRange: [-2, 26], grid: 'cartesian', gridStep: 5, axes: false, ticks: false, maxHeight: 440,
+    ariaLabel: 'Top view of the chosen aircraft to scale on a 5 m grid.' });
+  var panel2 = document.getElementById('xp-controls2');
+  function options(withNone) {
+    var o = withNone ? [{ value: 'none', label: 'None' }] : [];
+    AERO.ERAS.forEach(function (e) { D.filter(function (d) { return d.era === e.id; }).sort(function (p, q) { return p.year - q.year; }).forEach(function (d) { o.push({ value: d.id, label: d.name + ' (' + d.year + ')' }); }); });
+    return o;
+  }
+  var selA = CYL.select({ label: 'Aircraft', value: st.sel, options: options(false), onChange: function (v) { select(v, false); } });
+  var selB = CYL.select({ label: 'Compare with', value: 'none', options: options(true), onChange: function (v) { st.cmp = v; drawPlan(); } });
+  var card = CYL.el('div', { class: 'xp-card', 'aria-live': 'polite' });
+  panel2.appendChild(selA.el); panel2.appendChild(selB.el); panel2.appendChild(card);
+  var gA = null, gB = null;
+  function row(label, val) { return val == null || val === '' ? '' : '<div class="readout"><span class="readout-label">' + label + '</span><span class="readout-value">' + val + '</span></div>'; }
+  function drawPlan() {
+    var a = AERO.byId(st.sel), b = st.cmp === 'none' ? null : AERO.byId(st.cmp);
+    if (gA) gA.remove(); if (gB) gB.remove();
+    var span = Math.max(a.b, b ? b.b : 0), len = Math.max(a.l, b ? b.l : 0), half = Math.max(span / 2 + 1.5, len * 0.55);
+    plane.setRange([-half, half], [-1.5, len + 1.5]);
+    gA = AERO.planform(plane, a, { color: 'accent' });
+    if (b) gB = AERO.planform(plane, b, { color: 'r', fillOpacity: 0.05, width: 1.8 });
+    var d = AERO.derive(a);
+    card.innerHTML = '<h3>' + CYL.escapeHtml(a.full) + '</h3><p>' + a.year + ' · ' + AERO.ROLES[a.role] + ' · ' + CYL.escapeHtml(a.n + ' × ' + String(a.engine).replace(/^\dx\s*/, '')) + ' · source: ' + CYL.escapeHtml(a.src) + '</p>' +
+      '<div class="readout-grid">' +
+      row('Gross weight W0', grp(Math.round(a.W0)) + ' kg') + row('Empty-weight fraction', d.WeW0 ? CYL.fmt(d.WeW0, 3) : null) +
+      row('Wing loading', CYL.fmt(d.WSkg, 3) + ' kg/m²') + row(a.P ? 'Power loading' : 'Thrust-to-weight', a.P ? CYL.fmt(d.WP, 3) + ' kg/kW' : CYL.fmt(d.TW, 3)) +
+      row('Span, length, area', CYL.fmt(a.b, 3) + ' m, ' + CYL.fmt(a.l, 3) + ' m, ' + CYL.fmt(a.S, 3) + ' m²') + row('Aspect ratio, sweep', a.A + (a.sweep ? ', ' + a.sweep + '°' : '')) +
+      row('CD0, (L/D)max', a.CD0 || a.LD ? (a.CD0 || '—') + ', ' + (a.LD || '—') : null) +
+      row('Speed', a.Vmax ? CYL.fmt(a.Vmax, 3) + ' km/h max' + (a.Mmax ? ' (M ' + a.Mmax + ')' : '') : a.Vc ? CYL.fmt(a.Vc, 3) + ' km/h cruise' + (a.Mc ? ' (M ' + a.Mc + ')' : '') : null) +
+      row('Range, passengers', a.R ? grp(Math.round(a.R)) + ' km' + (a.pax ? ', ' + a.pax : '') : null) +
+      '</div>';
+    plane.svg.setAttribute('aria-label', 'Top view, to scale, of the ' + a.name + (b ? ', with the outline of the ' + b.name : '') + ', on a 5 m grid.');
+  }
+  function select(id, scroll) {
+    st.sel = id; selA.set(id, true); drawPlan(); draw();
+    Array.prototype.forEach.call(document.querySelectorAll('#xp-table tbody tr'), function (tr) { tr.classList.toggle('is-hit', tr.getAttribute('data-id') === id); });
+    if (scroll) document.getElementById('aircraft').scrollIntoView({ behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // ---- data table, sorting, search, CSV
+  var COLS = [
+    ['name', 'Aircraft', function (d) { return d.name; }], ['year', 'Year', function (d) { return d.year; }], ['role', 'Role', function (d) { return AERO.ROLES[d.role]; }],
+    ['W0', 'W0 (kg)', function (d) { return Math.round(d.W0); }], ['We', 'We (kg)', function (d) { return d.We ? Math.round(d.We) : null; }],
+    ['b', 'b (m)', function (d) { return +d.b.toPrecision(3); }], ['S', 'S (m²)', function (d) { return +d.S.toPrecision(4); }], ['A', 'A', function (d) { return d.A; }],
+    ['sweep', 'Sweep (°)', function (d) { return d.sweep || 0; }], ['P', 'P (kW)', function (d) { return d.P ? Math.round(d.P) : null; }], ['T', 'T (kN)', function (d) { return d.T ? +d.T.toPrecision(4) : null; }],
+    ['WS', 'W/S (kg/m²)', function (d) { return +(d.W0 / d.S).toPrecision(3); }], ['CD0', 'CD0', function (d) { return d.CD0 || null; }], ['LD', '(L/D)max', function (d) { return d.LD || null; }],
+    ['V', 'Speed (km/h)', function (d) { return d.Vmax ? Math.round(d.Vmax) : d.Vc ? Math.round(d.Vc) : null; }]
+  ];
+  var sort = { k: 'year', dir: 1 }, q = '';
+  var table = document.getElementById('xp-table');
+  var thead = table.tHead, tbody = table.tBodies[0];
+  var tr = document.createElement('tr');
+  COLS.forEach(function (c) {
+    var th = CYL.el('th', { scope: 'col', tabindex: '0', text: c[1], 'aria-sort': c[0] === sort.k ? 'ascending' : 'none' });
+    function go() { if (sort.k === c[0]) sort.dir = -sort.dir; else { sort.k = c[0]; sort.dir = 1; } fill(); }
+    th.addEventListener('click', go);
+    th.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+  function fill() {
+    var col = COLS.filter(function (c) { return c[0] === sort.k; })[0];
+    var rows = D.filter(function (d) { return !q || (d.name + ' ' + d.full).toLowerCase().indexOf(q) >= 0; }).slice().sort(function (a, b) {
+      var x = col[2](a), y = col[2](b);
+      if (x == null) return 1; if (y == null) return -1;
+      return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
+    });
+    tbody.innerHTML = rows.map(function (d) {
+      return '<tr data-id="' + d.id + '"' + (d.id === st.sel ? ' class="is-hit"' : '') + '>' + COLS.map(function (c, i) {
+        var v = c[2](d), s = v == null ? '' : typeof v === 'number' ? (c[0] === 'year' ? String(v) : CYL.fmt(v, 5)) : CYL.escapeHtml(v);
+        return i === 0 ? '<th scope="row"><a href="#aircraft" data-pick="' + d.id + '">' + s + '</a></th>' : '<td>' + s + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    Array.prototype.forEach.call(thead.querySelectorAll('th'), function (th, i) { th.setAttribute('aria-sort', COLS[i][0] === sort.k ? (sort.dir > 0 ? 'ascending' : 'descending') : 'none'); });
+  }
+  tbody.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-pick]'); if (a) { e.preventDefault(); select(a.getAttribute('data-pick'), true); } });
+  var bar = document.getElementById('xp-tablebar');
+  var search = CYL.el('input', { type: 'search', class: 'q-input', placeholder: 'Search, e.g. Boeing', 'aria-label': 'Search aircraft by name', style: { maxWidth: '16rem' } });
+  search.addEventListener('input', function () { q = search.value.trim().toLowerCase(); fill(); });
+  var csvBtn = CYL.button('Download CSV', function () {
+    var head = ['id', 'name', 'full_name', 'year', 'era', 'role', 'engine_type', 'engines', 'engine', 'W0_kg', 'We_kg', 'span_m', 'length_m', 'S_m2', 'A', 'sweep_deg', 'P_total_kW', 'T_total_kN', 'Vmax_kmh', 'Vcruise_kmh', 'Vstall_kmh', 'Mach_max', 'Mach_cruise', 'CD0', 'LDmax', 'range_km', 'passengers', 'W0_lb', 'We_lb', 'span_ft', 'S_ft2', 'P_hp', 'T_lbf', 'source'];
+    function c(v) { if (v == null) return ''; v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    var lines = [head.join(',')].concat(D.map(function (d) {
+      var u = d.us || {};
+      return [d.id, d.name, d.full, d.year, d.era, d.role, d.eng, d.n, d.engine, d.W0, d.We, d.b, d.l, d.S, d.A, d.sweep, d.P, d.T, d.Vmax, d.Vc, d.Vs, d.Mmax, d.Mc, d.CD0, d.LD, d.R, d.pax, u.W0, u.We, u.b, u.S, u.P, u.T, d.src].map(c).join(',');
+    }));
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob);
+    var a = CYL.el('a', { href: url, download: 'aircraft-design-history-data.csv' });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  });
+  bar.appendChild(search); bar.appendChild(csvBtn);
+  fill();
+
+  ax.x.sel.set(st.x, true); ax.y.sel.set(st.y, true); ax.x.log.set(st.xlog, true); ax.y.log.set(st.ylog, true);
+  drawPlan(); draw();
+  window.__explorer = { state: st, fit: function () { return fit(shown()); }, points: shown, select: select, vars: V };
+});
+</script>
+</body>
+</html>
