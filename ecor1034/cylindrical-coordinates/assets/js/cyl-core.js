@@ -1093,7 +1093,7 @@
     nav.appendChild(el('div', { class: 'cyl-sidebar-head' }, [el('p', { class: 'cyl-sidebar-title', text: 'Contents' }), closeBtn]));
     // openengineering.ca: link back to the site's module catalog
     nav.appendChild(el('a', { class: 'cyl-site-link', href: CYL.url('../index.html') }, [
-      el('span', { class: 'cyl-site-link-arrow', 'aria-hidden': 'true', text: '\u2190' }), 'All modules \u00b7 Open Engineering'
+      el('span', { class: 'cyl-site-link-arrow', 'aria-hidden': 'true', text: '\u2190' }), 'ECOR 1034 \u00b7 All modules'
     ]));
     var progText = el('p', { class: 'cyl-progress-text' });
     var progFill = el('span', { class: 'cyl-progress-fill' });
@@ -1239,7 +1239,7 @@
     return el('footer', { class: 'cyl-footer' }, [
       el('p', null, [el('strong', { text: 'Cylindrical Coordinates' }), ' \u00b7 An interactive module for first-year engineering dynamics']),
       el('p', null, [
-        el('a', { href: CYL.url('../index.html'), text: 'openengineering.ca' }),
+        el('a', { href: CYL.url('../index.html'), text: 'ECOR 1034 on openengineering.ca' }),
         ' \u00b7 ',
         el('a', { href: CYL.url(sheet.href), text: 'Formula Sheet' }),
         ' \u00b7 ',

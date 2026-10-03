@@ -1,12 +1,16 @@
 #!/bin/sh
-# Copies the student build of each learning module into this site and patches it with a link back
-# to the openengineering.ca home page. Run from anywhere after changing a module:
-#   sh scripts/sync-modules.sh
-# The module folders ("<slug> student") and their zips live in the folder above this site.
+# Copies the student build of each learning module into its course folder on this site, with its zip,
+# and patches it with a link back to the course page. Then run scripts/courses.py to rebuild the course
+# pages, the home page's course list, the redirects and the sitemap:
+#   sh scripts/sync-modules.sh && python3 scripts/courses.py
+# Each COURSES line is "<course folder>|<source folder, relative to the folder above this site>|<course code>|<module slugs>".
+# A module's source is "<source>/<slug> student" with its zip "<source>/<slug>-student.zip".
 set -eu
 SITE="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$(dirname "$SITE")"
-MODULES="curvilinear-motion cylindrical-coordinates mass-moments-of-inertia angular-momentum"
+COURSES="ecor1034|.|ECOR 1034|curvilinear-motion cylindrical-coordinates
+maae2101|.|MAAE 2101|mass-moments-of-inertia angular-momentum
+aero3002|conceptual-aircraft-design|AERO 3002|01-history-of-aircraft-design"
 
 patch_module() {
   python3 - "$1" "$2" "$3" <<'PY'
@@ -51,38 +55,22 @@ css.write_text(css.read_text() + """
 """)
 PY
 }
-
-mkdir -p "$SITE/downloads"
-for m in $MODULES; do
-  if [ ! -d "$SRC/$m student" ]; then echo "missing: $SRC/$m student" >&2; exit 1; fi
-  rsync -a --delete --exclude '.DS_Store' "$SRC/$m student/" "$SITE/$m/"
-  cp "$SITE/scripts/LICENSE-module.txt" "$SITE/$m/LICENSE.txt"
-  cp "$SRC/$m-student.zip" "$SITE/downloads/$m.zip"
-  TMP="$(mktemp -d)"
-  mkdir -p "$TMP/$m student"
-  cp "$SITE/scripts/LICENSE-module.txt" "$TMP/$m student/LICENSE.txt"
-  (cd "$TMP" && zip -q -X "$SITE/downloads/$m.zip" "$m student/LICENSE.txt")
-  rm -rf "$TMP"
-
-  patch_module "$SITE/$m" "All modules \u00b7 Open Engineering" "openengineering.ca"
+echo "$COURSES" | while IFS='|' read -r course from code mods; do
+  mkdir -p "$SITE/$course/downloads"
+  for m in $mods; do
+    dir="$SRC/$from/$m student"
+    if [ ! -d "$dir" ]; then echo "missing: $dir" >&2; exit 1; fi
+    rsync -a --delete --exclude '.DS_Store' "$dir/" "$SITE/$course/$m/"
+    cp "$SITE/scripts/LICENSE-module.txt" "$SITE/$course/$m/LICENSE.txt"
+    cp "$SRC/$from/$m-student.zip" "$SITE/$course/downloads/$m.zip"
+    TMP="$(mktemp -d)"
+    mkdir -p "$TMP/$m student"
+    cp "$SITE/scripts/LICENSE-module.txt" "$TMP/$m student/LICENSE.txt"
+    (cd "$TMP" && zip -q -X "$SITE/$course/downloads/$m.zip" "$m student/LICENSE.txt")
+    rm -rf "$TMP"
+    patch_module "$SITE/$course/$m" "$code \\u00b7 All modules" "$code on openengineering.ca"
+  done
+  echo "synced $code: $mods"
 done
-# AERO 3002 (Conceptual Aircraft Design): modules live in ../conceptual-aircraft-design and are served
-# under /aero3002/, with their zips in /aero3002/downloads/. The course home page is aero3002/index.html.
-COURSE_SRC="$SRC/conceptual-aircraft-design"
-COURSE_MODULES="01-history-of-aircraft-design"
-mkdir -p "$SITE/aero3002/downloads"
-for m in $COURSE_MODULES; do
-  if [ ! -d "$COURSE_SRC/$m student" ]; then echo "missing: $COURSE_SRC/$m student" >&2; exit 1; fi
-  rsync -a --delete --exclude '.DS_Store' "$COURSE_SRC/$m student/" "$SITE/aero3002/$m/"
-  cp "$SITE/scripts/LICENSE-module.txt" "$SITE/aero3002/$m/LICENSE.txt"
-  cp "$COURSE_SRC/$m-student.zip" "$SITE/aero3002/downloads/$m.zip"
-  TMP="$(mktemp -d)"
-  mkdir -p "$TMP/$m student"
-  cp "$SITE/scripts/LICENSE-module.txt" "$TMP/$m student/LICENSE.txt"
-  (cd "$TMP" && zip -q -X "$SITE/aero3002/downloads/$m.zip" "$m student/LICENSE.txt")
-  rm -rf "$TMP"
-  patch_module "$SITE/aero3002/$m" "AERO 3002 \u00b7 All modules" "AERO 3002 on openengineering.ca"
-done
-find "$SITE" -type d -exec chmod 755 {} +
+find "$SITE" -type d ! -path '*/.git*' -exec chmod 755 {} +
 find "$SITE" -type f ! -path '*/.git/*' -exec chmod 644 {} +
-echo "synced: $MODULES; aero3002: $COURSE_MODULES"

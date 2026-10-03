@@ -1,6 +1,7 @@
 /*!
- * cyl-core.js — core library for the Curvilinear Motion module (the same framework as the Cylindrical
- * Coordinates module; only the page registry, storage namespace, brand, colors and TeX macros differ).
+ * cyl-core.js — core library for the Angular Momentum module (the same framework as the Cylindrical
+ * Coordinates and Curvilinear Motion modules; only the page registry, storage namespace, brand, colors and
+ * TeX macros differ).
  * Classic script (no modules). Attaches ONE global: window.CYL. The file is split into sections (Errors,
  * Page registry, Persistence, Progress, Theme, Colors, KaTeX, Formatting, Math, DOM + UI helpers, Page shell,
  * Ready); every public function is documented where it is defined.
@@ -67,19 +68,18 @@
   }
   CYL.PAGES = Object.freeze([
     pg('home', null, 'Module Home', 'index.html', null, 'start'),
-    pg('l01', 1, 'From Straight Lines to Curves', 'lessons/01-straight-to-curved.html', 20, 'lessons'),
-    pg('l02', 2, 'Position, Velocity and Acceleration Vectors', 'lessons/02-motion-vectors.html', 30, 'lessons'),
-    pg('l03', 3, 'Rectangular (x–y) Components', 'lessons/03-rectangular-components.html', 35, 'lessons'),
-    pg('l04', 4, 'Projectile Motion', 'lessons/04-projectile-motion.html', 40, 'lessons'),
-    pg('l05', 5, 'Path Coordinates: Tangential and Normal', 'lessons/05-path-coordinates.html', 30, 'lessons'),
-    pg('l06', 6, 'Acceleration in Path Coordinates', 'lessons/06-nt-acceleration.html', 35, 'lessons'),
-    pg('l07', 7, 'Radius of Curvature', 'lessons/07-radius-of-curvature.html', 30, 'lessons'),
-    pg('l08', 8, 'Connecting x–y and n–t Components', 'lessons/08-connecting-systems.html', 35, 'lessons'),
-    pg('l09', 9, 'Choosing a System: Engineering Applications', 'lessons/09-applications.html', 35, 'lessons'),
+    pg('l01', 1, 'Angular Momentum of a Particle', 'lessons/01-particle.html', 30, 'lessons'),
+    pg('l02', 2, 'Angular Impulse and Momentum', 'lessons/02-impulse-momentum.html', 35, 'lessons'),
+    pg('l03', 3, 'Systems of Particles', 'lessons/03-systems.html', 30, 'lessons'),
+    pg('l04', 4, 'Rigid Bodies in Plane Motion', 'lessons/04-plane-motion.html', 35, 'lessons'),
+    pg('l05', 5, 'Impulse, Momentum and Impact of Rigid Bodies', 'lessons/05-rigid-impulse.html', 40, 'lessons'),
+    pg('l06', 6, 'Angular Momentum in Three Dimensions', 'lessons/06-three-d.html', 35, 'lessons'),
+    pg('l07', 7, "Euler's Equations of Motion", 'lessons/07-euler.html', 35, 'lessons'),
+    pg('l08', 8, 'Gyroscopic Motion', 'lessons/08-gyroscopes.html', 40, 'lessons'),
     pg('practice', null, 'Practice Lab', 'practice/practice-lab.html', null, 'practice'),
     pg('quiz', null, 'Self-Check Quiz', 'practice/quiz.html', 35, 'practice'),
     pg('worksheet', null, 'Printable Worksheet', 'practice/worksheet.html', null, 'practice'),
-    pg('explorer', null, 'Motion Explorer', 'tools/explorer.html', null, 'tools'),
+    pg('explorer', null, 'Spin Lab', 'tools/explorer.html', null, 'tools'),
     pg('cheatsheet', null, 'Formula Sheet', 'reference/cheat-sheet.html', null, 'reference'),
     pg('glossary', null, 'Glossary', 'reference/glossary.html', null, 'reference')
   ].filter(function (p) { return INCLUDE_INSTRUCTOR_GUIDE || p.group !== 'instructor'; }));
@@ -127,7 +127,7 @@
   /* ======================================================================
      Persistence (never throws)
      ====================================================================== */
-  var NS = 'curvmod:';   // storage namespace: keeps this module's progress apart from sibling modules
+  var NS = 'angmod:';   // storage namespace: keeps this module's progress apart from sibling modules
   var memStore = Object.create(null);
   var lsHandle; // undefined = not probed yet, null = unavailable
 
@@ -291,7 +291,7 @@
     bg: '--bg', bgElev: '--bg-elev', bgSunken: '--bg-sunken',
     ink: '--ink', inkMuted: '--ink-muted', inkFaint: '--ink-faint', muted: '--ink-muted',
     line: '--line', accent: '--accent', accentInk: '--accent-ink',
-    r: '--c-r', t: '--c-t', n: '--c-n', z: '--c-z', x: '--c-x', y: '--c-y',
+    r: '--c-r', t: '--c-t', n: '--c-n', z: '--c-z', x: '--c-x', y: '--c-y', v: '--c-v',
     axis: '--c-axis', grid: '--c-grid', point: '--c-point', surface: '--c-surface',
     good: '--c-good', bad: '--c-bad', warn: '--c-warn', vizBg: '--viz-bg'
   };
@@ -300,14 +300,14 @@
     light: {
       bg: '#f6f7f9', bgElev: '#ffffff', bgSunken: '#eef1f5', ink: '#18212b', inkMuted: '#556270',
       inkFaint: '#66727f', muted: '#556270', line: '#dde2e8', accent: '#0b6b86', accentInk: '#ffffff',
-      r: '#c2410c', t: '#6d44e0', n: '#c2410c', z: '#1769bd', x: '#56636f', y: '#5e6b12', axis: '#3a4450',
+      r: '#c2410c', t: '#6d44e0', n: '#c2410c', z: '#1769bd', x: '#c2410c', y: '#6d44e0', v: '#b8327a', axis: '#3a4450',
       grid: '#cfd6de', point: '#111820', surface: '#8894a3', good: '#23793a', bad: '#c92a2a',
       warn: '#9a5100', vizBg: '#fbfcfd'
     },
     dark: {
       bg: '#0e1318', bgElev: '#161c23', bgSunken: '#1d242c', ink: '#e5eaf0', inkMuted: '#9ba7b4',
       inkFaint: '#7f8b98', muted: '#9ba7b4', line: '#2a333d', accent: '#4fc0dc', accentInk: '#062530',
-      r: '#ff8a4c', t: '#a98bff', n: '#ff8a4c', z: '#5eaaff', x: '#a3adb8', y: '#bccb6e', axis: '#b3bdc8',
+      r: '#ff8a4c', t: '#a98bff', n: '#ff8a4c', z: '#5eaaff', x: '#ff8a4c', y: '#a98bff', v: '#ff7ab8', axis: '#b3bdc8',
       grid: '#2e3945', point: '#f3f6f9', surface: '#8d99a8', good: '#5cc26f', bad: '#ff6b6b',
       warn: '#ffb454', vizBg: '#11171d'
     }
@@ -379,25 +379,32 @@
   /* ======================================================================
      KaTeX: render options and the module's macros (\er, \et, \ez, \colR, …)
      ====================================================================== */
-  // Unit-vector notation lives here ONLY. The module uses Hibbeler's notation (bold i, j, u_t, u_n). For
-  // Meriam and Kraige's, change \et and \en to '\\hat{\\mathbf{e}}_t' and '\\hat{\\mathbf{e}}_n' (and \ihat,
-  // \jhat to '\\hat{\\mathbf{i}}', '\\hat{\\mathbf{j}}'); every lesson, question and figure label follows.
+  // Notation lives here ONLY. The module follows Hibbeler: unit vectors i, j, k in bold without hats, products of
+  // inertia defined as I_xy = ∫xy dm (so they enter the tensor with a minus sign), and the tensor written [I].
+  // For hats on the unit vectors, change \ihat, \jhat, \khat to '\\hat{\\mathbf{i}}' etc.; every lesson, question
+  // and figure label follows.
   var MACROS = {
-    '\\et': '\\mathbf{u}_t',
-    '\\en': '\\mathbf{u}_n',
     '\\ihat': '\\mathbf{i}',
     '\\jhat': '\\mathbf{j}',
+    '\\khat': '\\mathbf{k}',
+    '\\uvec': '\\mathbf{u}',
     '\\rvec': '\\mathbf{r}',
     '\\vvec': '\\mathbf{v}',
-    '\\avec': '\\mathbf{a}',
     '\\Fvec': '\\mathbf{F}',
-    '\\atantwo': '\\operatorname{atan2}',
+    '\\Mvec': '\\mathbf{M}',
+    '\\Hvec': '\\mathbf{H}',
+    '\\wvec': '\\boldsymbol{\\omega}',
+    '\\Wvec': '\\boldsymbol{\\Omega}',
+    '\\Lvec': '\\mathbf{L}',
+    '\\avec': '\\boldsymbol{\\alpha}',
+    '\\Imat': '[I]',
     '\\colX': '\\htmlClass{c-x}{#1}',
     '\\colY': '\\htmlClass{c-y}{#1}',
-    '\\colT': '\\htmlClass{c-t}{#1}',
-    '\\colN': '\\htmlClass{c-n}{#1}',
-    '\\colV': '\\htmlClass{c-good}{#1}',
-    '\\colA': '\\htmlClass{c-bad}{#1}',
+    '\\colZ': '\\htmlClass{c-z}{#1}',
+    '\\colW': '\\htmlClass{c-good}{#1}',
+    '\\colH': '\\htmlClass{c-bad}{#1}',
+    '\\colV': '\\htmlClass{c-v}{#1}',
+    '\\colM': '\\htmlClass{c-warn}{#1}',
     '\\dd': '\\mathrm{d}'
   };
   CYL.MACROS = MACROS;
@@ -1064,8 +1071,8 @@
       html: ICONS.menu + '<span class="cyl-btn-text">Contents</span>'
     });
     var brand = el('a', { class: 'cyl-brand', href: CYL.url('index.html') }, [
-      el('span', { class: 'cyl-brand-mark', 'aria-hidden': 'true', text: 'nt' }),
-      el('span', { class: 'cyl-brand-text', text: 'Curvilinear Motion' })
+      el('span', { class: 'cyl-brand-mark', 'aria-hidden': 'true', text: 'H' }),
+      el('span', { class: 'cyl-brand-text', text: 'Angular Momentum' })
     ]);
     if (page && page.id === 'home') brand.setAttribute('aria-current', 'page');
     var themeText = el('span', { class: 'cyl-btn-text' });
@@ -1088,7 +1095,7 @@
     nav.appendChild(el('div', { class: 'cyl-sidebar-head' }, [el('p', { class: 'cyl-sidebar-title', text: 'Contents' }), closeBtn]));
     // openengineering.ca: link back to the site's module catalog
     nav.appendChild(el('a', { class: 'cyl-site-link', href: CYL.url('../index.html') }, [
-      el('span', { class: 'cyl-site-link-arrow', 'aria-hidden': 'true', text: '\u2190' }), 'All modules \u00b7 Open Engineering'
+      el('span', { class: 'cyl-site-link-arrow', 'aria-hidden': 'true', text: '\u2190' }), 'MAAE 2101 \u00b7 All modules'
     ]));
     var progText = el('p', { class: 'cyl-progress-text' });
     var progFill = el('span', { class: 'cyl-progress-fill' });
@@ -1232,9 +1239,9 @@
   function buildFooter() {
     var sheet = findPage('cheatsheet');
     return el('footer', { class: 'cyl-footer' }, [
-      el('p', null, [el('strong', { text: 'Curvilinear Motion' }), ' \u00b7 An interactive module for first-year engineering']),
+      el('p', null, [el('strong', { text: 'Angular Momentum' }), ' \u00b7 An interactive module for second-year rigid-body dynamics']),
       el('p', null, [
-        el('a', { href: CYL.url('../index.html'), text: 'openengineering.ca' }),
+        el('a', { href: CYL.url('../index.html'), text: 'MAAE 2101 on openengineering.ca' }),
         ' \u00b7 ',
         el('a', { href: CYL.url(sheet.href), text: 'Formula Sheet' }),
         ' \u00b7 ',
