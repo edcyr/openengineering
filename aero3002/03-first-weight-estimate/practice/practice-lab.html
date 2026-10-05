@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="Unlimited randomized problems on the first estimate of takeoff weight: empty-weight trends, closing the sizing equation, wetted area and L/D, fuel consumption, cruise, loiter and combat fractions, mission fuel fractions and sensitivities, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: classes of aircraft, sketches, engines and missions, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>trend-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. trend-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>1.02*(6943/0.4536)^(-0.06)</code></td><td>\(0.5721\)</td></tr>
+          <tr><td><code>980/(1-0.2867-0.5721)</code></td><td>\(6941\)</td></tr>
+          <tr><td><code>sqrt(pi*0.75*(8/5.5)/0.003)/2</code></td><td>\(16.90\)</td></tr>
+          <tr><td><code>0.5*0.6083*9.81*(500/3.6)/(1000*0.8)</code></td><td>\(0.518\)</td></tr>
+          <tr><td><code>exp(-4600*0.65/(850*0.866*16.9))</code></td><td>\(0.7864\)</td></tr>
+          <tr><td><code>1.06*(1-0.97*0.985*0.7864*0.9759*0.995)</code></td><td>\(0.2867\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(g = 9.81\ \text{m/s}^2\), \(1\ \text{lb} = 0.4536\ \text{kg}\) and \(1\ \text{lb/(hp h)} = 0.6083\ \text{kg/(kW h)}\); <code>exp</code>, <code>ln</code> and <code>^</code> all work. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>980/(1-0.2867-0.9727*6943^(-0.06))</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var G = 9.81, D2R = Math.PI / 180, KT = 1852 / 3600, RE = 6371;
+  var KGM2 = '\\ \\text{kg/m}^2', KMH = '\\ \\text{km/h}', MS = '\\ \\text{m/s}', KG = '\\ \\text{kg}', KM = '\\ \\text{km}', M2 = '\\ \\text{m}^2', MM = '\\ \\text{m}', MIN = '\\ \\text{min}', KGH = '\\ \\text{kg/h}', PH = '/\\text{h}';
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function isaRho(h) { var T = 288.15 - 0.0065 * h; return 101325 * Math.pow(T / 288.15, 5.25588) / (287.05 * T); }
+  function coord(a) { return m(nn(Math.abs(a.lat)) + '^\\circ\\text{' + (a.lat >= 0 ? 'N' : 'S') + '}') + ', ' + m(nn(Math.abs(a.lon)) + '^\\circ\\text{' + (a.lon >= 0 ? 'E' : 'W') + '}'); }
+  var AP = MISSION.AIRPORTS;
+  var HIST = 0.970 * 0.985 * 0.995;
+
+  /* ================================================================ 2. Generators */
+
+  var LB = 0.45359237, KHP = LB / 0.745699872;
+  var CL_TREND = SIZING.CLASSES.filter(function (c) { return ['ga1', 'ga2', 'tprop', 'trainer', 'fighter', 'cargo', 'jt', 'homemw', 'boat'].indexOf(c.id) >= 0; });
+  var WR = { ga1: [600, 3000, 50], ga2: [1500, 6000, 100], tprop: [8000, 40000, 500], trainer: [2000, 9000, 100], fighter: [8000, 35000, 500], cargo: [30000, 300000, 5000], jt: [5000, 350000, 5000], homemw: [300, 900, 10], boat: [5000, 60000, 1000] };
+  function wOf(rng, c) { var r = WR[c.id]; return rng.pick(range(r[0], r[1], r[2])); }
+  function trendView(c, W, fe, o) {
+    o = o || {};
+    var r = WR[c.id], k = (o.kvs ? SIZING.KVS : 1) * (o.tech || 1);
+    return { title: 'The empty-weight trend', aria: 'Empty-weight fraction against takeoff weight for ' + c.label + ', with this problem marked.',
+      x: { label: '\\(\\Wo\\) (kg)', min: r[0] / 2, max: r[1] * 2, log: true }, y: { label: '\\(\\We/\\Wo\\)', min: 0.2, max: 0.95 },
+      curves: [{ f: function (w) { return SIZING.ef(w, c) * k; }, color: 'z' }], marker: { at: [W, fe], label: '' },
+      readouts: [{ label: 'Class', tex: '\\text{' + c.label.replace(/,/g, '') + '}' }, { label: '\\(\\Wo\\)', tex: grp(W) + KG }, { label: '\\(\\We/\\Wo\\)', tex: n4(fe) }],
+      note: 'The trend falls slowly with weight: bigger aircraft of a class are a little lighter for their size.' };
+  }
+
+  /* ---------- 2.1 Empty-weight trend (Lesson 2) ---------- */
+  function genTrend(rng) {
+    var c = rng.pick(CL_TREND), W = wOf(rng, c), kind = pickW(rng, [['lb', 3], ['kg', 2], ['conv', 2], ['tech', 2]]), spec, right, wrong, fe, o = {};
+    var Wlb = W / LB;
+    if (kind === 'lb') {
+      fe = SIZING.ef(W, c);
+      spec = { type: 'numeric', prompt: 'The trend for a ' + c.label.toLowerCase() + ' is ' + m('\\We/\\Wo = ' + nn(c.Alb) + '\\,\\Wo^{' + nn(c.C) + '}') + ' with ' + m('\\Wo') + ' in lb. Find the empty-weight fraction of an aircraft of ' + m(grp(W) + KG) + '.', label: '\\(\\We/\\Wo =\\)', answer: fe };
+      spec.hints = ['The coefficient is for pounds: \\(\\Wo = ' + grp(W) + '/0.4536 = ' + g4(Wlb) + '\\ \\text{lb}\\).', 'Then \\(\\We/\\Wo = ' + nn(c.Alb) + '(' + g4(Wlb) + ')^{' + nn(c.C) + '}\\).'];
+      spec.solution = M('\\frac{\\We}{\\Wo} = ' + nn(c.Alb) + '\\left(\\frac{' + grp(W) + '}{0.4536}\\right)^{' + nn(c.C) + '} = ' + nn(c.Alb) + '(' + g4(Wlb) + ')^{' + nn(c.C) + '} = ' + n4(fe));
+      right = { value: typed(fe) }; wrong = { value: typed(wrongOf(fe, [c.Alb * Math.pow(W, c.C), c.Alb * Math.pow(W * LB, c.C)])) };
+    } else if (kind === 'kg') {
+      fe = SIZING.ef(W, c);
+      spec = { type: 'fields', prompt: 'With the trend in kg, ' + m('\\We/\\Wo = ' + CYL.fmtTex(c.A, 4) + '\\,\\Wo^{' + nn(c.C) + '}') + ' (' + c.label.toLowerCase() + '), find the empty-weight fraction and the empty weight of an aircraft of ' + m(grp(W) + KG) + '.',
+        fields: [{ name: 'fe', label: '\\(\\We/\\Wo =\\)', answer: fe }, { name: 'we', label: '\\(\\We =\\)', answer: fe * W, unit: 'kg' }] };
+      spec.hints = ['Type the power directly, for example ' + CYL.fmt(c.A, 4) + '*' + W + '^(' + c.C + ').', '\\(\\We = (\\We/\\Wo)\\,\\Wo\\).'];
+      spec.solution = M('\\frac{\\We}{\\Wo} = ' + CYL.fmtTex(c.A, 4) + '(' + grp(W) + ')^{' + nn(c.C) + '} = ' + n4(fe)) + M('\\We = ' + n4(fe) + '(' + grp(W) + ') = ' + n4(fe * W) + KG);
+      right = { fe: typed(fe), we: typed(fe * W) }; wrong = { fe: typed(fe), we: typed(wrongOf(fe * W, [W * (1 - fe), fe * W / LB])) };
+    } else if (kind === 'conv') {
+      fe = SIZING.ef(W, c);
+      spec = { type: 'numeric', prompt: 'The ' + c.label.toLowerCase() + ' trend has ' + m('A = ' + nn(c.Alb)) + ', ' + m('C = ' + nn(c.C)) + ' for ' + m('\\Wo') + ' in lb. What is ' + m('A') + ' for ' + m('\\Wo') + ' in kg?', label: '\\(A_{\\text{kg}} =\\)', answer: c.A };
+      spec.hints = ['\\(A_{\\text{kg}} = A_{\\text{lb}}(0.4536)^{-C}\\).', 'With \\(C = ' + nn(c.C) + '\\), the exponent is \\(' + nn(-c.C) + '\\).'];
+      spec.solution = M('A_{\\text{kg}} = ' + nn(c.Alb) + '(0.4536)^{' + nn(-c.C) + '} = ' + nn(c.Alb) + '(' + n4(Math.pow(LB, -c.C)) + ') = ' + n4(c.A));
+      right = { value: typed(c.A) }; wrong = { value: typed(wrongOf(c.A, [c.Alb * Math.pow(LB, c.C), c.Alb / LB, c.Alb * LB])) };
+    } else {
+      o = { kvs: c.id === 'fighter' && rng.next() < 0.5, tech: rng.pick([0.85, 0.88, 0.9, 0.92, 0.95, 1.03, 1.05]) };
+      fe = SIZING.ef(W, c, o);
+      spec = { type: 'numeric', prompt: 'A new ' + c.label.toLowerCase() + ' of ' + m(grp(W) + KG) + (o.kvs ? ' has a variable-sweep wing and' : '') + ' is given a technology factor of ' + nn(o.tech) + ' on the statistical trend, ' + m('\\We/\\Wo = ' + CYL.fmtTex(c.A, 4) + '\\,\\Wo^{' + nn(c.C) + '}') + ' (kg). Find its empty-weight fraction.', label: '\\(\\We/\\Wo =\\)', answer: fe };
+      spec.hints = ['Evaluate the trend, then multiply by the factors' + (o.kvs ? ': \\(K_{vs} = 1.04\\) and the technology factor.' : '.'), '\\(\\We/\\Wo = A\\Wo^{\\,C}' + (o.kvs ? 'K_{vs}' : '') + 'K_{\\text{tech}}\\).'];
+      spec.solution = M('\\frac{\\We}{\\Wo} = ' + CYL.fmtTex(c.A, 4) + '(' + grp(W) + ')^{' + nn(c.C) + '}' + (o.kvs ? '(1.04)' : '') + '(' + nn(o.tech) + ') = ' + n4(SIZING.ef(W, c)) + (o.kvs ? '(1.04)' : '') + '(' + nn(o.tech) + ') = ' + n4(fe));
+      right = { value: typed(fe) }; wrong = { value: typed(wrongOf(fe, [SIZING.ef(W, c), SIZING.ef(W, c) / o.tech])) };
+    }
+    spec.explain = 'Check the unit of \\(\\Wo\\) that the coefficient \\(A\\) expects before you evaluate the trend.';
+    return { spec: spec, view: trendView(c, W, fe, o), test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Closing the sizing (Lessons 1 and 6) ---------- */
+  function genClose(rng) {
+    var kind = pickW(rng, [['w0', 3], ['iter', 3], ['split', 2]]), spec, right, wrong, view;
+    if (kind === 'w0' || kind === 'split') {
+      var Wp = rng.pick(range(300, 30000, 50)), ff = rng.pick(range(0.12, 0.42, 0.01)), fe = rng.pick(range(0.40, 0.62, 0.01));
+      if (1 - ff - fe < 0.08) fe = +(0.9 - ff).toFixed(2);
+      var W0 = Wp / (1 - ff - fe);
+      if (kind === 'w0') {
+        spec = { type: 'numeric', prompt: 'A design carries ' + m(grp(Wp) + KG) + ' of crew and payload. Its fuel fraction is ' + nn(ff) + ' and its empty-weight fraction at the converged weight is ' + nn(fe) + '. Find ' + m('\\Wo') + '.', label: '\\(\\Wo =\\)', answer: W0, unit: 'kg' };
+        spec.hints = ['\\(\\Wo = (W_{\\text{crew}} + W_{\\text{payload}})/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).', 'The denominator is \\(1 - ' + nn(ff) + ' - ' + nn(fe) + ' = ' + n4(1 - ff - fe) + '\\).'];
+        spec.solution = M('\\Wo = \\frac{' + grp(Wp) + '}{1 - ' + nn(ff) + ' - ' + nn(fe) + '} = \\frac{' + grp(Wp) + '}{' + n4(1 - ff - fe) + '} = ' + n4(W0) + KG);
+        right = { value: typed(W0) }; wrong = { value: typed(wrongOf(W0, [Wp / (1 - ff), Wp * (1 + ff + fe), Wp / (ff + fe)])) };
+      } else {
+        spec = { type: 'fields', prompt: 'A sizing converges at ' + m('\\Wo = ' + g4(W0) + KG) + ' with ' + m('\\Wf/\\Wo = ' + nn(ff)) + ' and ' + m('\\We/\\Wo = ' + nn(fe)) + '. Find the empty weight and the fuel weight.',
+          fields: [{ name: 'we', label: '\\(\\We =\\)', answer: fe * Math.round(W0), unit: 'kg' }, { name: 'wf', label: '\\(\\Wf =\\)', answer: ff * Math.round(W0), unit: 'kg' }] };
+        spec.hints = ['Multiply each fraction by \\(\\Wo\\).', 'Check: what is left, \\((1 - ' + nn(ff) + ' - ' + nn(fe) + ')\\Wo\\), is the crew and payload.'];
+        spec.solution = M('\\We = ' + nn(fe) + '(' + g4(W0) + ') = ' + n4(fe * Math.round(W0)) + KG) + M('\\Wf = ' + nn(ff) + '(' + g4(W0) + ') = ' + n4(ff * Math.round(W0)) + KG);
+        right = { we: typed(fe * Math.round(W0)), wf: typed(ff * Math.round(W0)) }; wrong = { we: typed(ff * Math.round(W0)), wf: typed(ff * Math.round(W0)) };
+      }
+      var pv = Wp, fv = ff;
+      view = { title: 'The affordable empty-weight fraction', aria: 'Affordable empty-weight fraction against takeoff weight for this design, with the solution marked.',
+        x: { label: '\\(\\Wo\\) (kg)', min: W0 / 4, max: W0 * 4, log: true }, y: { label: '\\(\\We/\\Wo\\)', min: 0, max: 1 },
+        curves: [{ f: function (w) { return 1 - fv - pv / w; }, color: 't' }], hline: { y: fe, label: 'given We/W0' }, marker: { at: [W0, fe], label: '' },
+        readouts: [{ label: 'Denominator', tex: n4(1 - ff - fe) }, { label: '\\(\\Wo\\)', tex: g4(W0) + KG }, { label: 'Fixed-fraction growth factor', tex: n4(1 / (1 - ff - fe)) }],
+        note: 'The solution is where the affordable curve reaches the empty-weight fraction.' };
+    } else {
+      var c = rng.pick(CL_TREND.filter(function (q) { return ['jt', 'tprop', 'ga1', 'fighter', 'ga2'].indexOf(q.id) >= 0; }));
+      var r = WR[c.id], Wg = rng.pick(range(r[0] * 1.5, r[1] * 0.6, r[2] * 2)), feg = SIZING.ef(Wg, c);
+      var ffi = rng.pick(range(0.15, 0.35, 0.01)), target = Wg * rng.pick(range(0.7, 1.3, 0.05));
+      var feT = SIZING.ef(target, c); ffi = Math.max(0.05, Math.min(ffi, +(0.86 - Math.max(feg, feT)).toFixed(2)));
+      var Wpi = Math.round(target * (1 - ffi - SIZING.ef(target, c)) / 10) * 10;
+      if (Wpi < 50) Wpi = 50;
+      var Wn = Wpi / (1 - ffi - feg);
+      spec = { type: 'numeric', prompt: 'Sizing a ' + c.label.toLowerCase() + ' with the trend ' + m('\\We/\\Wo = ' + CYL.fmtTex(c.A, 4) + '\\,\\Wo^{' + nn(c.C) + '}') + ' (kg): crew and payload ' + m(grp(Wpi) + KG) + ', ' + m('\\Wf/\\Wo = ' + nn(ffi)) + '. From a guess of ' + m(grp(Wg) + KG) + ', what is the next estimate of ' + m('\\Wo') + '?', label: '\\(\\Wo =\\)', answer: Wn, unit: 'kg' };
+      spec.hints = ['Evaluate the trend at the guess.', 'Then \\(\\Wo = ' + grp(Wpi) + '/(1 - ' + nn(ffi) + ' - \\We/\\Wo)\\).'];
+      spec.solution = M('\\frac{\\We}{\\Wo} = ' + CYL.fmtTex(c.A, 4) + '(' + grp(Wg) + ')^{' + nn(c.C) + '} = ' + n4(feg)) + M('\\Wo = \\frac{' + grp(Wpi) + '}{1 - ' + nn(ffi) + ' - ' + n4(feg) + '} = ' + n4(Wn) + KG) + '<p>Repeat with this value until it stops changing.</p>';
+      right = { value: typed(Wn) }; wrong = { value: typed(wrongOf(Wn, [Wpi / (1 - ffi), Wg, Wpi / (1 - feg)])) };
+      var cv = c, pi = Wpi, fi = ffi;
+      view = { title: 'One iteration', aria: 'Trend and affordable curves for this design, with the next estimate marked.',
+        x: { label: '\\(\\Wo\\) (kg)', min: Math.min(Wg, Wn) / 3, max: Math.max(Wg, Wn) * 3, log: true }, y: { label: '\\(\\We/\\Wo\\)', min: 0.2, max: 0.95 },
+        curves: [{ f: function (w) { return SIZING.ef(w, cv); }, color: 'z' }, { f: function (w) { return 1 - fi - pi / w; }, color: 't' }],
+        marker: { at: [Wn, Math.max(0.2, Math.min(0.95, SIZING.ef(Wn, cv)))], label: '' },
+        readouts: [{ label: 'Guess', tex: grp(Wg) + KG }, { label: '\\(\\We/\\Wo\\) at the guess', tex: n4(feg) }, { label: 'Next estimate', tex: g4(Wn) + KG }],
+        note: 'Blue: the trend; violet: what the design can afford. The iteration converges where they cross.' };
+    }
+    spec.explain = 'Only the crew and payload are in the numerator; the small denominator amplifies every error in the fractions.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 Wetted area and L/D max (Lesson 3) ---------- */
+  function genWetted(rng) {
+    var kind = pickW(rng, [['wing', 2], ['fus', 2], ['ld', 3], ['cd0', 2]]), spec, right, wrong;
+    var t = rng.pick(SIZING.CFE), A = rng.pick(range(4, 12, 0.5)), ratio = rng.pick(range(3, 7, 0.1)), e = rng.pick([0.7, 0.75, 0.8, 0.85]);
+    var aw = A / ratio, ld = SIZING.ldmaxWet(aw, t.cfe, e);
+    if (kind === 'wing') {
+      var Se = rng.pick(range(8, 300, 1)), tc = rng.pick([0.08, 0.1, 0.12, 0.14, 0.15, 0.18]), sw = Se * (1.977 + 0.52 * tc);
+      spec = { type: 'numeric', prompt: 'A wing (or tail) has an exposed planform area of ' + m(nn(Se) + M2) + ' and a thickness ratio ' + m('t/c = ' + nn(tc)) + '. Estimate its wetted area.', label: '\\(\\Swet =\\)', answer: sw, unit: 'm²' };
+      spec.hints = ['Both sides are wetted, plus a little for the thickness.', '\\(\\Swet \\approx S_{\\text{exposed}}(1.977 + 0.52\\,t/c)\\).'];
+      spec.solution = M('\\Swet = ' + nn(Se) + '(1.977 + 0.52(' + nn(tc) + ')) = ' + nn(Se) + '(' + n4(1.977 + 0.52 * tc) + ') = ' + n4(sw) + M2);
+      right = { value: typed(sw) }; wrong = { value: typed(wrongOf(sw, [Se, Se * (1 + tc), Se * 1.977 * 1.2])) };
+    } else if (kind === 'fus') {
+      var L = rng.pick(range(6, 60, 0.5)), D = Math.round(L * rng.pick(range(0.07, 0.15, 0.01)) * 10) / 10, k = rng.pick([0.75, 0.8, 0.85]), At = k * L * D, sf = 3.4 * At;
+      spec = { type: 'numeric', prompt: 'A fuselage ' + m(nn(L) + MM) + ' long and ' + m(nn(D) + MM) + ' wide has top and side views that each cover ' + Math.round(k * 100) + '% of their bounding rectangles. Estimate its wetted area.', label: '\\(\\Swet =\\)', answer: sf, unit: 'm²' };
+      spec.hints = ['\\(A_{\\text{top}} = A_{\\text{side}} = ' + nn(k) + '(' + nn(L) + ')(' + nn(D) + ')\\).', '\\(\\Swet \\approx 3.4(A_{\\text{top}} + A_{\\text{side}})/2\\).'];
+      spec.solution = M('A_{\\text{top}} = A_{\\text{side}} = ' + nn(k) + '(' + nn(L) + ')(' + nn(D) + ') = ' + n4(At) + M2 + ', \\qquad \\Swet = 3.4(' + n4(At) + ') = ' + n4(sf) + M2);
+      right = { value: typed(sf) }; wrong = { value: typed(wrongOf(sf, [Math.PI * D * L, 2 * At, 3.4 * 2 * At])) };
+    } else if (kind === 'ld') {
+      spec = { type: 'numeric', prompt: 'A sketch has ' + m('A = ' + nn(A)) + ' and ' + m('\\Swet/\\Sref = ' + nn(ratio)) + '. For a ' + t.label.toLowerCase() + ' (' + m('C_{fe} = ' + nn(t.cfe)) + ') with ' + m('e = ' + nn(e)) + ', estimate ' + m('\\LDmax') + '.', label: '\\(\\LDmax =\\)', answer: ld };
+      spec.hints = ['\\(A_{\\text{wet}} = A/(\\Swet/\\Sref) = ' + n4(aw) + '\\).', '\\(\\LDmax = \\tfrac12\\sqrt{\\pi e A_{\\text{wet}}/C_{fe}}\\).'];
+      spec.solution = M('A_{\\text{wet}} = \\frac{' + nn(A) + '}{' + nn(ratio) + '} = ' + n4(aw) + ', \\qquad \\LDmax = \\frac12\\sqrt{\\frac{\\pi(' + nn(e) + ')(' + n4(aw) + ')}{' + nn(t.cfe) + '}} = ' + n4(ld));
+      right = { value: typed(ld) }; wrong = { value: typed(wrongOf(ld, [2 * ld, 0.5 * Math.sqrt(Math.PI * e * A / t.cfe), Math.sqrt(Math.PI * e * aw / t.cfe)])) };
+    } else {
+      var cd0 = t.cfe * ratio;
+      spec = { type: 'fields', prompt: 'A sketch of a ' + t.label.toLowerCase() + ' has ' + m('\\Swet/\\Sref = ' + nn(ratio)) + ' and ' + m('A = ' + nn(A)) + '. With ' + m('C_{fe} = ' + nn(t.cfe)) + ' and ' + m('e = ' + nn(e)) + ', find ' + m('\\CDz') + ' and ' + m('\\LDmax') + '.',
+        fields: [{ name: 'cd0', label: '\\(\\CDz =\\)', answer: cd0 }, { name: 'ld', label: '\\(\\LDmax =\\)', answer: ld }] };
+      spec.hints = ['\\(\\CDz = C_{fe}\\Swet/\\Sref\\).', '\\(\\LDmax = \\tfrac12\\sqrt{\\pi A e/\\CDz}\\).'];
+      spec.solution = M('\\CDz = ' + nn(t.cfe) + '(' + nn(ratio) + ') = ' + n4(cd0) + ', \\qquad \\LDmax = \\frac12\\sqrt{\\frac{\\pi(' + nn(A) + ')(' + nn(e) + ')}{' + n4(cd0) + '}} = ' + n4(ld));
+      right = { cd0: typed(cd0), ld: typed(ld) }; wrong = { cd0: typed(cd0), ld: typed(wrongOf(ld, [2 * ld, Math.sqrt(Math.PI * A * e / cd0)])) };
+    }
+    spec.explain = 'Span gives lift efficiently; wetted area costs friction. Their ratio, the wetted aspect ratio, sets \\(\\LDmax\\).';
+    var tv = t.cfe, ev = e;
+    return { spec: spec, view: {
+      title: 'L/D max against wetted aspect ratio', aria: 'Maximum lift-to-drag ratio against wetted aspect ratio for this skin-friction coefficient, with the sketch marked.',
+      x: { label: '\\(A_{\\text{wet}}\\)', min: 0, max: 4.5 }, y: { label: '\\(\\LDmax\\)', min: 0, max: 35 },
+      curves: [{ f: function (a) { return SIZING.ldmaxWet(a, tv, ev); }, color: 'z' }], marker: { at: [aw, Math.min(35, ld)], label: '' },
+      readouts: [{ label: '\\(A_{\\text{wet}}\\)', tex: n4(aw) }, { label: '\\(C_{fe}\\)', tex: nn(t.cfe) }, { label: '\\(\\LDmax\\) of this sketch', tex: n4(ld) }],
+      note: 'The marker is a sketch with the aspect ratio and wetted-area ratio of the problem.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Specific fuel consumption (Lesson 4) ---------- */
+  function genSfc(rng) {
+    var kind = pickW(rng, [['conv', 2], ['propC', 3], ['vc', 2], ['mg', 2]]), spec, right, wrong;
+    var cb = rng.pick(range(0.35, 0.7, 0.01)), eta = rng.pick([0.7, 0.75, 0.78, 0.8, 0.82, 0.85]), V = rng.pick(range(150, 700, 10)), cs = cb * KHP, C = SIZING.propC(cs, V, eta);
+    if (kind === 'conv') {
+      spec = { type: 'numeric', prompt: 'An engine has a power-specific fuel consumption of ' + m(nn(cb) + '\\ \\text{lb/(hp h)}') + '. Express it in kg/(kW h).', label: '\\(c_P =\\)', answer: cs, unit: 'kg/(kW h)' };
+      spec.hints = ['\\(1\\ \\text{lb} = 0.4536\\ \\text{kg}\\), \\(1\\ \\text{hp} = 0.7457\\ \\text{kW}\\).', 'Multiply by \\(0.4536/0.7457 = 0.6083\\).'];
+      spec.solution = M('c_P = ' + nn(cb) + '\\,\\frac{0.4536}{0.7457} = ' + n4(cs) + '\\ \\text{kg/(kW h)}');
+      right = { value: typed(cs) }; wrong = { value: typed(wrongOf(cs, [cb * 0.4536 * 0.7457, cb / 0.6083])) };
+    } else if (kind === 'propC') {
+      spec = { type: 'numeric', prompt: 'A propeller aircraft cruises at ' + m(nn(V) + KMH) + ' with ' + m('c_P = ' + nn(cb) + '\\ \\text{lb/(hp h)}') + ' and ' + m('\\eta_p = ' + nn(eta)) + '. Find its equivalent ' + m('C') + '.', label: '\\(C =\\)', answer: C, unit: '/h' };
+      spec.hints = ['Convert: \\(c_P = ' + n4(cs) + '\\ \\text{kg/(kW h)}\\), \\(V = ' + n4(V / 3.6) + '\\ \\text{m/s}\\).', '\\(C = c_PgV/(1000\\,\\eta_p)\\).'];
+      spec.solution = M('C = \\frac{' + n4(cs) + '(9.81)(' + n4(V / 3.6) + ')}{1000(' + nn(eta) + ')} = ' + n4(C) + PH);
+      right = { value: typed(C) }; wrong = { value: typed(wrongOf(C, [C * 3.6, cb * 9.81 * (V / 3.6) / (1000 * eta), C * eta * eta])) };
+    } else if (kind === 'vc') {
+      var vc = 3600 * eta / (cs * 9.81);
+      spec = { type: 'numeric', prompt: 'For a propeller aircraft with ' + m('c_P = ' + nn(cb) + '\\ \\text{lb/(hp h)}') + ' and ' + m('\\eta_p = ' + nn(eta)) + ', find the propulsive factor ' + m('V/C') + ' of the Breguet equation, in km.', label: '\\(V/C =\\)', answer: vc, unit: 'km' };
+      spec.hints = ['For a propeller, \\(V/C\\) does not depend on speed.', '\\(V/C = 3600\\,\\eta_p/(c_Pg)\\) km with \\(c_P\\) in kg/(kW h).'];
+      spec.solution = M('c_P = ' + n4(cs) + '\\ \\text{kg/(kW h)}, \\qquad \\frac{V}{C} = \\frac{3600(' + nn(eta) + ')}{' + n4(cs) + '(9.81)} = ' + n4(vc) + KM);
+      right = { value: typed(vc) }; wrong = { value: typed(wrongOf(vc, [vc / 3.6, 3600 * eta / (cb * 9.81)])) };
+      C = 0; V = 0;
+    } else {
+      var mg = rng.pick(range(12, 30, 0.5)), Cj = mg / 28.33;
+      spec = { type: 'numeric', prompt: 'An engine data sheet gives a cruise thrust-specific fuel consumption of ' + m('c_T = ' + nn(mg) + '\\ \\text{mg/(N s)}') + '. What is ' + m('C') + ' in 1/h?', label: '\\(C =\\)', answer: Cj, unit: '/h' };
+      spec.hints = ['\\(C\\) is fuel <em>weight</em> per hour per unit thrust: \\(1/\\text{h} = 28.33\\ \\text{mg/(N s)}\\).', '\\(C = ' + nn(mg) + '/28.33\\).'];
+      spec.solution = M('C = \\frac{' + nn(mg) + '}{28.33} = ' + n4(Cj) + PH) + '<p>Since \\(1/\\text{h}\\) means \\(1\\ \\text{N}\\) of fuel per hour per newton of thrust: \\(\\tfrac{1}{9.81}\\ \\text{kg} = 101\\,900\\ \\text{mg}\\) in \\(3600\\ \\text{s}\\), or \\(28.33\\ \\text{mg/(N s)}\\).</p>';
+      right = { value: typed(Cj) }; wrong = { value: typed(wrongOf(Cj, [mg * 3.6 / 1000 * 9.81 * 10, mg / 1000, mg * 0.0367 * 9.81])) };
+      C = Cj; V = 0;
+    }
+    spec.explain = 'Jets burn fuel in proportion to thrust, propellers in proportion to power: that is why a propeller\'s equivalent \\(C\\) grows with speed.';
+    var cv = cs, ev = eta;
+    return { spec: spec, view: {
+      title: 'Equivalent C against speed', aria: 'Equivalent fuel consumption of this propeller engine against speed, a straight line through the origin.',
+      x: { label: '\\(V\\) (km/h)', min: 0, max: 800 }, y: { label: '\\(C\\) (1/h)', min: 0, max: 1.5 },
+      curves: [{ f: function (v) { return SIZING.propC(cv, v, ev); }, color: 'good' }], hline: { y: 0.5, label: 'high-bypass jet' },
+      marker: { at: kind === 'mg' ? [400, Math.min(1.5, C)] : [V || 400, Math.min(1.5, SIZING.propC(cs, V || 400, eta))], label: '' },
+      readouts: [{ label: '\\(c_P\\)', tex: n4(cs) + '\\ \\text{kg/(kW h)}' }, { label: '\\(\\eta_p\\)', tex: nn(eta) }, { label: '\\(V/C\\)', tex: g4(3600 * eta / (cs * 9.81)) + KM }],
+      note: kind === 'mg' ? 'The marker shows your jet C at an arbitrary speed, against a propeller with typical values.' : 'A propeller aircraft beats a high-bypass jet below the crossing speed.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 Cruise fraction (Lesson 5) ---------- */
+  function genCruise(rng) {
+    var jet = rng.next() < 0.6, kind = pickW(rng, [['frac', 4], ['range', 2]]), spec, right, wrong;
+    var LDm = rng.pick(range(9, 20, 0.5)), V = jet ? rng.pick(range(600, 920, 10)) : rng.pick(range(250, 600, 10)), C = jet ? rng.pick([0.5, 0.55, 0.6, 0.65, 0.7, 0.8, 0.9]) : 0, cb = 0, eta = 0;
+    if (!jet) { cb = rng.pick([0.4, 0.45, 0.5, 0.55]); eta = rng.pick([0.8, 0.82, 0.85]); C = SIZING.propC(cb * KHP, V, eta); }
+    var LD = jet ? 0.866 * LDm : LDm, R = rng.pick(range(500, jet ? 9000 : 3000, 50)), f = SIZING.cruise(R, V, C, LD);
+    var given = (jet ? 'A jet' : 'A propeller aircraft') + ' with ' + m('\\LDmax = ' + nn(LDm)) + ' cruises at ' + m(nn(V) + KMH) + ' with ' + (jet ? m('C = ' + nn(C) + PH) : m('c_P = ' + nn(cb) + '\\ \\text{lb/(hp h)}') + ' and ' + m('\\eta_p = ' + nn(eta)));
+    var cLine = jet ? '' : M('C = \\frac{' + n4(cb * KHP) + '(9.81)(' + n4(V / 3.6) + ')}{1000(' + nn(eta) + ')} = ' + n4(C) + PH);
+    if (kind === 'frac') {
+      spec = { type: 'numeric', prompt: given + '. Find the weight fraction of a ' + m(grp(R) + KM) + ' cruise.', label: '\\(W_i/W_{i-1} =\\)', answer: f };
+      spec.hints = [jet ? 'A jet cruises at \\(0.866\\,\\LDmax\\).' : 'A propeller aircraft cruises at \\(\\LDmax\\); find its equivalent \\(C\\) first.', '\\(W_i/W_{i-1} = \\exp[-RC/(V\\,L/D)]\\).'];
+      spec.solution = cLine + M('\\frac{L}{D} = ' + (jet ? '0.866(' + nn(LDm) + ') = ' + n4(LD) : nn(LDm)) + ', \\qquad \\frac{W_i}{W_{i-1}} = \\exp\\left[-\\frac{' + grp(R) + '(' + n4(C) + ')}{' + nn(V) + '(' + n4(LD) + ')}\\right] = ' + n4(f));
+      right = { value: typed(f) }; wrong = { value: typed(wrongOf(f, [SIZING.cruise(R, V, C, jet ? LDm : 0.866 * LDm), 1 - R * C / (V * LD) * 1.3, Math.exp(-R * C * LD / V)])) };
+    } else {
+      f = rng.pick(range(0.6, 0.97, 0.01)); R = -Math.log(f) * V * LD / C;
+      spec = { type: 'numeric', prompt: given + '. How far can it cruise on a segment fraction of ' + nn(f) + '?', label: '\\(R =\\)', answer: R, unit: 'km' };
+      spec.hints = [jet ? 'Cruise \\(L/D = 0.866\\,\\LDmax\\).' : 'Cruise \\(L/D = \\LDmax\\); find the equivalent \\(C\\).', 'Invert Breguet: \\(R = (V/C)(L/D)\\ln(W_{i-1}/W_i)\\).'];
+      spec.solution = cLine + M('R = \\frac{' + nn(V) + '}{' + n4(C) + '}(' + n4(LD) + ')\\ln\\frac{1}{' + nn(f) + '} = ' + n4(R) + KM);
+      right = { value: typed(R) }; wrong = { value: typed(wrongOf(R, [(1 - f) * V * LD / C, -Math.log(f) * V * (jet ? LDm : 0.866 * LDm) / C])) };
+    }
+    spec.explain = 'Jets: cruise at \\(0.866\\,\\LDmax\\). Propellers: cruise at \\(\\LDmax\\).';
+    var k = V / C * LD;
+    return { spec: spec, view: {
+      title: 'Cruise fraction against range', aria: 'Cruise weight fraction against range for this aircraft, with the problem marked.',
+      x: { label: 'Cruise range (km)', min: 0, max: Math.max(R * 1.6, 1000) }, y: { label: '\\(W_i/W_{i-1}\\)', min: 0.4, max: 1 },
+      curves: [{ f: function (r) { return Math.exp(-r / k); }, color: 'z' }], marker: { at: [R, Math.max(0.4, f)], label: '' },
+      readouts: [{ label: 'Cruise \\(L/D\\)', tex: n4(LD) }, { label: '\\(C\\)', tex: n4(C) + PH }, { label: '\\((V/C)(L/D)\\)', tex: g4(k) + KM }],
+      note: 'The fraction falls exponentially with range.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Loiter and combat fractions (Lesson 5) ---------- */
+  function genLoiter(rng) {
+    var kind = pickW(rng, [['jet', 3], ['prop', 2], ['combat', 2]]), spec, right, wrong, f, E, view;
+    if (kind === 'combat') {
+      var Cc = rng.pick([1.6, 1.7, 1.8, 1.9, 2.0, 2.1]), tw = rng.pick(range(0.6, 1.2, 0.05)), t = rng.pick([2, 3, 4, 5, 6, 8, 10]);
+      f = 1 - Cc * tw * t / 60;
+      spec = { type: 'numeric', prompt: 'A fighter spends ' + t + ' minutes in combat at full afterburner, with ' + m('\\TW = ' + nn(tw)) + ' and ' + m('C = ' + nn(Cc) + PH) + '. Find the combat weight fraction.', label: '\\(W_i/W_{i-1} =\\)', answer: f };
+      spec.hints = ['Fuel burned \\(= CTt\\); as a fraction of the weight, \\(C(\\TW)t\\), with \\(t\\) in hours.', '\\(W_i/W_{i-1} = 1 - C(\\TW)t\\).'];
+      spec.solution = M('\\frac{W_i}{W_{i-1}} = 1 - ' + nn(Cc) + '(' + nn(tw) + ')\\frac{' + t + '}{60} = 1 - ' + n4(Cc * tw * t / 60) + ' = ' + n4(f));
+      right = { value: typed(f) }; wrong = { value: typed(wrongOf(f, [1 - Cc * tw * t, Math.exp(-Cc * t / 60), 1 - Cc * t / 60])) };
+      var a = Cc * tw;
+      view = { title: 'Combat fraction against time', aria: 'Combat weight fraction against minutes of combat, a falling straight line, with the problem marked.',
+        x: { label: 'Combat time (min)', min: 0, max: 12 }, y: { label: '\\(W_i/W_{i-1}\\)', min: 0.5, max: 1 },
+        curves: [{ f: function (m) { return 1 - a * m / 60; }, color: 'r' }], marker: { at: [t, f], label: '' },
+        readouts: [{ label: '\\(C(\\TW)\\)', tex: n4(a) + PH }, { label: 'Fraction', tex: n4(f) }], note: 'Minutes of combat cost as much as an hour of cruise.' };
+    } else {
+      var jet = kind === 'jet', LDm = rng.pick(range(9, 20, 0.5)), C, cb, eta, V;
+      E = rng.pick([15, 20, 30, 45, 60, 90, 120, 180, 240]);
+      if (jet) C = rng.pick([0.4, 0.45, 0.5, 0.6, 0.7, 0.8]);
+      else { cb = rng.pick([0.45, 0.5, 0.55, 0.6]); eta = rng.pick([0.7, 0.75, 0.8]); V = rng.pick(range(150, 400, 10)); C = SIZING.propC(cb * KHP, V, eta); }
+      var LD = jet ? LDm : 0.866 * LDm; f = SIZING.loiter(E / 60, C, LD);
+      spec = { type: 'numeric', prompt: (jet ? 'A jet with ' + m('\\LDmax = ' + nn(LDm)) + ' loiters for ' + E + ' minutes with ' + m('C = ' + nn(C) + PH) : 'A propeller aircraft with ' + m('\\LDmax = ' + nn(LDm)) + ' loiters for ' + E + ' minutes at ' + m(nn(V) + KMH) + ' with ' + m('c_P = ' + nn(cb) + '\\ \\text{lb/(hp h)}') + ' and ' + m('\\eta_p = ' + nn(eta))) + '. Find the loiter weight fraction.', label: '\\(W_i/W_{i-1} =\\)', answer: f };
+      spec.hints = [jet ? 'A jet loiters at \\(\\LDmax\\).' : 'A propeller aircraft loiters at \\(0.866\\,\\LDmax\\); its equivalent \\(C\\) is \\(c_PgV/(1000\\,\\eta_p)\\).', '\\(W_i/W_{i-1} = \\exp[-EC/(L/D)]\\) with \\(E\\) in hours.'];
+      spec.solution = (jet ? '' : M('C = \\frac{' + n4(cb * KHP) + '(9.81)(' + n4(V / 3.6) + ')}{1000(' + nn(eta) + ')} = ' + n4(C) + PH)) + M('\\frac{L}{D} = ' + (jet ? nn(LDm) : '0.866(' + nn(LDm) + ') = ' + n4(LD)) + ', \\qquad \\frac{W_i}{W_{i-1}} = \\exp\\left[-\\frac{' + n4(E / 60) + '(' + n4(C) + ')}{' + n4(LD) + '}\\right] = ' + n4(f));
+      right = { value: typed(f) }; wrong = { value: typed(wrongOf(f, [SIZING.loiter(E, C, LD), SIZING.loiter(E / 60, C, jet ? 0.866 * LDm : LDm) , 1 - E / 60 * C])) };
+      var cv = C, lv = LD;
+      view = { title: 'Loiter fraction against time', aria: 'Loiter weight fraction against endurance for this aircraft, with the problem marked.',
+        x: { label: 'Loiter time (min)', min: 0, max: Math.max(60, E * 1.5) }, y: { label: '\\(W_i/W_{i-1}\\)', min: Math.min(0.9, Math.floor(SIZING.loiter(Math.max(60, E * 1.5) / 60, C, LD) * 20) / 20), max: 1 },
+        curves: [{ f: function (m) { return SIZING.loiter(m / 60, cv, lv); }, color: 'warn' }], marker: { at: [E, f], label: '' },
+        readouts: [{ label: 'Loiter \\(L/D\\)', tex: n4(LD) }, { label: '\\(C\\)', tex: n4(C) + PH }, { label: 'Fraction', tex: n4(f) }], note: 'Jets loiter at \\(\\LDmax\\); propellers at \\(0.866\\,\\LDmax\\).' };
+    }
+    spec.explain = 'Convert minutes to hours: \\(C\\) is per hour.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Mission fuel fraction (Lesson 5) ---------- */
+  function genMissionFF(rng) {
+    var kind = pickW(rng, [['product', 3], ['build', 3]]), spec, right, wrong, fs, names;
+    if (kind === 'product') {
+      fs = [0.970, 0.985, rng.pick(range(0.6, 0.95, 0.005)), rng.pick(range(0.96, 0.995, 0.001)), 0.995]; names = ['Takeoff', 'Climb', 'Cruise', 'Loiter', 'Landing'];
+      if (rng.next() < 0.4) { fs.splice(3, 0, rng.pick(range(0.85, 0.95, 0.005))); names.splice(3, 0, 'Combat'); }
+      var wx = fs.reduce(function (a, b) { return a * b; }, 1), ff = 1.06 * (1 - wx);
+      spec = { type: 'fields', prompt: 'A mission has segment fractions ' + fs.map(function (q, i) { return names[i].toLowerCase() + ' ' + nn(q); }).join(', ') + '. Find ' + m('W_x/W_0') + ' and ' + m('\\Wf/\\Wo') + ' with the 6% allowance.',
+        fields: [{ name: 'wx', label: '\\(W_x/W_0 =\\)', answer: wx }, { name: 'ff', label: '\\(\\Wf/\\Wo =\\)', answer: ff }] };
+      spec.hints = ['Multiply all the segment fractions.', '\\(\\Wf/\\Wo = 1.06(1 - W_x/W_0)\\).'];
+      spec.solution = M('\\frac{W_x}{W_0} = ' + fs.map(nn).join('\\times ') + ' = ' + n4(wx)) + M('\\frac{\\Wf}{\\Wo} = 1.06(1 - ' + n4(wx) + ') = ' + n4(ff));
+      right = { wx: typed(wx), ff: typed(ff) }; wrong = { wx: typed(wx), ff: typed(wrongOf(ff, [1 - wx, 1.06 * wx])) };
+    } else {
+      var LDm = rng.pick(range(12, 19, 0.5)), V = rng.pick(range(700, 900, 10)), C = rng.pick([0.5, 0.55, 0.6, 0.65, 0.7]), Cl = +(C - 0.1).toFixed(2), R = rng.pick(range(1500, 8000, 100)), E = rng.pick([20, 30, 45, 60]);
+      var f3 = SIZING.cruise(R, V, C, 0.866 * LDm), f4 = SIZING.loiter(E / 60, Cl, LDm);
+      fs = [0.970, 0.985, f3, f4, 0.995]; names = ['Takeoff', 'Climb', 'Cruise', 'Loiter', 'Landing'];
+      wx = fs.reduce(function (a, b) { return a * b; }, 1); ff = 1.06 * (1 - wx);
+      spec = { type: 'numeric', prompt: 'A jet with ' + m('\\LDmax = ' + nn(LDm)) + ' flies: takeoff (0.970), climb (0.985), cruise ' + m(grp(R) + KM) + ' at ' + m(nn(V) + KMH) + ' with ' + m('C = ' + nn(C) + PH) + ', loiter ' + E + ' minutes with ' + m('C = ' + nn(Cl) + PH) + ', landing (0.995). Find ' + m('\\Wf/\\Wo') + ' with the 6% allowance.', label: '\\(\\Wf/\\Wo =\\)', answer: ff };
+      spec.hints = ['Cruise at \\(0.866\\,\\LDmax = ' + n4(0.866 * LDm) + '\\), loiter at \\(\\LDmax\\).', 'Multiply the five fractions; then \\(\\Wf/\\Wo = 1.06(1 - W_x/W_0)\\).'];
+      spec.solution = M('\\frac{W_3}{W_2} = \\exp\\left[-\\frac{' + grp(R) + '(' + nn(C) + ')}{' + nn(V) + '(' + n4(0.866 * LDm) + ')}\\right] = ' + n4(f3)) + M('\\frac{W_4}{W_3} = \\exp\\left[-\\frac{' + n4(E / 60) + '(' + nn(Cl) + ')}{' + nn(LDm) + '}\\right] = ' + n4(f4)) +
+        M('\\frac{W_x}{W_0} = 0.970(0.985)(' + n4(f3) + ')(' + n4(f4) + ')(0.995) = ' + n4(wx)) + M('\\frac{\\Wf}{\\Wo} = 1.06(1 - ' + n4(wx) + ') = ' + n4(ff));
+      right = { value: typed(ff) }; wrong = { value: typed(wrongOf(ff, [1 - wx, 1.06 * (1 - 0.970 * 0.985 * SIZING.cruise(R, V, C, LDm) * f4 * 0.995)])) };
+    }
+    spec.explain = 'Multiply the fractions; do not add the fuel of each segment as fractions of \\(W_0\\).';
+    var pts = [[0, 1]], w = 1; fs.forEach(function (q, i) { w *= q; pts.push([i + 1, w]); });
+    return { spec: spec, view: {
+      title: 'Weight through the mission', aria: 'Weight as a fraction of takeoff weight at the end of each segment, with the end of the mission marked.',
+      x: { label: 'End of segment', min: 0, max: fs.length + 0.5, ticks: fs.map(function (q, i) { return i + 1; }), format: function (v) { return names[Math.round(v) - 1] || ''; } }, y: { label: '\\(W_i/W_0\\)', min: Math.max(0, Math.floor((w - 0.1) * 10) / 10), max: 1.02 },
+      lines: [{ pts: pts, color: 'z', width: 2.4 }], marker: { at: [fs.length, w], label: '' },
+      readouts: [{ label: '\\(W_x/W_0\\)', tex: n4(wx) }, { label: '\\(\\Wf/\\Wo\\)', tex: n4(ff) }], note: 'Each step down is a segment\'s fuel.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Sensitivities and growth (Lesson 7) ---------- */
+  function genSens(rng) {
+    var kind = pickW(rng, [['fixed', 3], ['true', 2], ['pct', 2]]), spec, right, wrong, view;
+    var ff = rng.pick(range(0.15, 0.4, 0.01)), fe = rng.pick(range(0.42, 0.6, 0.01));
+    if (1 - ff - fe < 0.1) fe = +(0.9 - ff).toFixed(2);
+    if (kind === 'fixed') {
+      var dW = rng.pick(range(20, 3000, 10)), gf = 1 / (1 - ff - fe), dW0 = dW * gf;
+      spec = { type: 'numeric', prompt: 'A design has ' + m('\\Wf/\\Wo = ' + nn(ff)) + ' and ' + m('\\We/\\Wo = ' + nn(fe)) + '. Holding the fractions fixed, how much does ' + m('\\Wo') + ' grow if ' + m(grp(dW) + KG) + ' of payload is added?', label: '\\(\\Delta\\Wo =\\)', answer: dW0, unit: 'kg' };
+      spec.hints = ['The fixed-fraction growth factor is \\(1/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).', 'Multiply it by the added weight.'];
+      spec.solution = M('\\Delta\\Wo = \\frac{' + grp(dW) + '}{1 - ' + nn(ff) + ' - ' + nn(fe) + '} = ' + grp(dW) + '(' + n4(gf) + ') = ' + n4(dW0) + KG);
+      right = { value: typed(dW0) }; wrong = { value: typed(wrongOf(dW0, [dW, dW / (1 - fe), dW * (1 + ff + fe)])) };
+      view = { slope: gf, x: dW, y: dW0 };
+    } else if (kind === 'true') {
+      var W1 = rng.pick(range(1000, 200000, 100)), add = rng.pick(range(50, 2000, 10)), g = rng.pick(range(3.5, 7, 0.05)), W2 = Math.round(W1 + g * add);
+      var gt = (W2 - W1) / add;
+      spec = { type: 'numeric', prompt: 'Adding ' + m(grp(add) + KG) + ' of equipment to a design raises its resized takeoff weight from ' + m(grp(W1) + KG) + ' to ' + m(grp(W2) + KG) + '. What is the growth factor?', label: '\\(\\Delta\\Wo/\\Delta W =\\)', answer: gt };
+      spec.hints = ['The growth factor is the change in \\(\\Wo\\) per kilogram added.', '\\((' + grp(W2) + ' - ' + grp(W1) + ')/' + grp(add) + '\\).'];
+      spec.solution = M('\\frac{\\Delta\\Wo}{\\Delta W} = \\frac{' + grp(W2) + ' - ' + grp(W1) + '}{' + grp(add) + '} = ' + n4(gt));
+      right = { value: typed(gt) }; wrong = { value: typed(wrongOf(gt, [W2 / add, add / (W2 - W1), (W2 - W1) / W1])) };
+      view = { slope: gt, x: add, y: W2 - W1 };
+    } else {
+      var Wa = rng.pick(range(1000, 200000, 100)), p = rng.pick([-25, -15, -10, -8, -5, 4, 6, 9, 12, 20, 30, 45]), Wb = Math.round(Wa * (1 + p / 100 + rng.pick([-0.004, 0, 0.003])));
+      var pc = (Wb / Wa - 1) * 100;
+      spec = { type: 'numeric', prompt: 'A change in an input moves a design\'s takeoff weight from ' + m(grp(Wa) + KG) + ' to ' + m(grp(Wb) + KG) + '. By what percentage did ' + m('\\Wo') + ' change? (Negative for a decrease.)', label: 'Change \\(=\\)', answer: pc, unit: '%' };
+      spec.hints = ['\\((W_{\\text{new}}/W_{\\text{old}} - 1) \\times 100\\).', 'A decrease gives a negative number.'];
+      spec.solution = M('\\left(\\frac{' + grp(Wb) + '}{' + grp(Wa) + '} - 1\\right)100 = ' + n4(pc) + '\\%');
+      right = { value: typed(pc) }; wrong = { value: typed(wrongOf(pc, [(Wa / Wb - 1) * 100, -pc, pc / 100])) };
+      view = { slope: Wb / Wa, x: 1, y: Wb / Wa, pct: true };
+    }
+    spec.explain = 'Every kilogram added costs several at takeoff; the true (resized) factor is a little smaller than the fixed-fraction one.';
+    var sl = view.slope;
+    return { spec: spec, view: view.pct ? {
+      title: 'Old and new takeoff weight', aria: 'New takeoff weight against old, with the line of no change and this design marked.',
+      x: { label: 'Old \\(\\Wo\\) (relative)', min: 0, max: 2 }, y: { label: 'New \\(\\Wo\\) (relative)', min: 0, max: 2 },
+      curves: [{ f: function (x) { return x; }, color: 'muted', dashed: true }, { f: function (x) { return sl * x; }, color: 'z' }], marker: { at: [1, sl], label: '' },
+      readouts: [{ label: 'Ratio', tex: n4(sl) }, { label: 'Change', tex: n4((sl - 1) * 100) + '\\%' }], note: 'Above the dashed line the design got heavier.' } : {
+      title: 'Growth of the takeoff weight', aria: 'Increase in takeoff weight against weight added: a straight line of slope equal to the growth factor, with this problem marked.',
+      x: { label: 'Weight added (kg)', min: 0, max: view.x * 1.6 }, y: { label: 'Increase in \\(\\Wo\\) (kg)', min: 0, max: view.y * 1.6 },
+      curves: [{ f: function (x) { return sl * x; }, color: 'z' }], marker: { at: [view.x, view.y], label: '' },
+      readouts: [{ label: 'Growth factor', tex: n4(sl) }, { label: '\\(\\Delta\\Wo\\)', tex: g4(view.y) + KG }], note: 'The slope is the growth factor.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-sizing-equation.html', 'Sizing from a Conceptual Sketch'), l02: L(2, '02-empty-weight.html', 'The Empty-Weight Fraction'),
+    l03: L(3, '03-lift-to-drag.html', 'Estimating L/D from the Sketch'), l04: L(4, '04-fuel-consumption.html', 'Engines and Fuel Consumption'),
+    l05: L(5, '05-fuel-fraction.html', 'Mission Segment Weight Fractions'), l06: L(6, '06-closing-the-loop.html', 'Closing the Sizing Loop'),
+    l07: L(7, '07-sensitivities.html', 'Sensitivities and Trade Studies')
+  };
+  var CATS = [
+    { id: 'trend', label: 'Empty-weight trend', gen: genTrend, lessons: [LES.l02] },
+    { id: 'close', label: 'Closing the sizing', gen: genClose, lessons: [LES.l01, LES.l06] },
+    { id: 'wetted', label: 'Wetted area and L/D', gen: genWetted, lessons: [LES.l03] },
+    { id: 'sfc', label: 'Fuel consumption', gen: genSfc, lessons: [LES.l04] },
+    { id: 'cruise', label: 'Cruise fraction', gen: genCruise, lessons: [LES.l05] },
+    { id: 'loiter', label: 'Loiter and combat', gen: genLoiter, lessons: [LES.l05] },
+    { id: 'mission', label: 'Mission fuel fraction', gen: genMissionFF, lessons: [LES.l05] },
+    { id: 'sens', label: 'Sensitivities', gen: genSens, lessons: [LES.l07] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like range-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

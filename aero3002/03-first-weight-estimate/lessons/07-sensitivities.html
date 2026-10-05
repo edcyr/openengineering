@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensitivities and Trade Studies · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="How the first estimate of takeoff weight responds to its inputs: sensitivities to payload, range, L/D, fuel consumption and empty weight, the true growth factor, payload-range trade studies, and what the first estimate is for.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  .sens td, .sens th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sens td:first-child, .sens th:first-child { text-align: left; }
+  /* Figure 7.1: tornado chart */
+  .tn { padding: 16px 18px 12px; }
+  .tn-row { display: grid; grid-template-columns: 12.5rem minmax(0, 1fr); gap: 4px 14px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .tn-row.tn-head { border-top: 0; padding: 0 0 6px; align-items: end; }
+  .tn-name { display: block; color: var(--ink); font-size: 0.9rem; font-weight: 700; line-height: 1.3; }
+  .tn-dirs { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 3px; font-size: 0.78rem; line-height: 1.35; color: var(--ink-muted); }
+  .tn-dirs .b::before, .tn-dirs .w::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 2px; vertical-align: 0; }
+  .tn-dirs .b::before { background: var(--c-good); }
+  .tn-dirs .w::before { background: var(--c-r); }
+  .tn-track { display: grid; grid-template-columns: 1fr 1fr; min-height: 30px; }
+  .tn-half { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .tn-left { justify-content: flex-end; border-right: 2px solid var(--c-axis); padding-right: 0; }
+  .tn-right { justify-content: flex-start; }
+  .tn-bar { height: 22px; flex: none; transition: width 0.25s ease; }
+  .tn-left .tn-bar { background: color-mix(in srgb, var(--c-good) 60%, transparent); border: 1.5px solid var(--c-good); border-right: 0; border-radius: 5px 0 0 5px; }
+  .tn-right .tn-bar { background: color-mix(in srgb, var(--c-r) 60%, transparent); border: 1.5px solid var(--c-r); border-left: 0; border-radius: 0 5px 5px 0; }
+  .tn-right .tn-bar.inf { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--c-r) 60%, transparent) 0 6px, transparent 6px 10px); }
+  .tn-val { flex: none; font-size: 0.82rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tn-left .tn-val { color: var(--c-good); }
+  .tn-right .tn-val { color: var(--c-r); }
+  .tn-axis { display: grid; grid-template-columns: 1fr 1fr; font-size: 0.8rem; font-weight: 700; line-height: 1.3; }
+  .tn-axis span:first-child { text-align: right; padding-right: 10px; color: var(--c-good); }
+  .tn-axis span:last-child { padding-left: 10px; color: var(--c-r); }
+  .tn-axis small { display: block; font-weight: 500; color: var(--ink-muted); font-size: 0.76rem; }
+  @media (max-width: 559.98px) { .tn-row { grid-template-columns: minmax(0, 1fr); } .tn-row.tn-head > :first-child { display: none; } }
+</style>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 35 min</p>
+    <h1>Sensitivities and Trade Studies</h1>
+    <p class="lede">The business jet weighs 6943 kg, to four figures. Not one of its inputs is known to four figures. The most useful thing a first estimate can tell a design team is not the number but how it moves: which inputs matter, which do not, and what each requirement and each technology is worth in takeoff weight.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute the sensitivity of \(\Wo\) to payload, range, \(L/D\), \(C\) and the empty-weight trend by resizing.</li>
+      <li>Explain why the true growth factor is smaller than the fixed-fraction one.</li>
+      <li>Read a payload–range trade study and use it to discuss requirements.</li>
+      <li>State what the first estimate is used for, and what replaces it later.</li>
+    </ul>
+  </section>
+
+  <section id="sensitivity">
+    <h2>Resize, do not differentiate</h2>
+    <p>The cleanest way to find a sensitivity is to change one input, resize completely, and compare. For the business jet:</p>
+    <div class="table-wrap">
+      <table class="data sens">
+        <caption>Sensitivities of the business jet (baseline \(\Wo = 6943\ \text{kg}\))</caption>
+        <thead><tr><th scope="col">Change</th><th scope="col">New \(\Wo\) (kg)</th><th scope="col">Change in \(\Wo\)</th></tr></thead>
+        <tbody>
+          <tr><td>Payload +100 kg (one more passenger)</td><td>7508</td><td>+8.2%</td></tr>
+          <tr><td>Range +100 km</td><td>7105</td><td>+2.3%</td></tr>
+          <tr><td>Range +10% (+460 km)</td><td>7745</td><td>+11.6%</td></tr>
+          <tr><td>\(\LDmax\) +10%</td><td>6264</td><td>−9.8%</td></tr>
+          <tr><td>\(C\) −10% (cruise and loiter)</td><td>6202</td><td>−10.7%</td></tr>
+          <tr><td>Empty-weight trend −10% (technology factor 0.9)</td><td>5179</td><td>−25.4%</td></tr>
+          <tr><td>Empty-weight trend +10% (factor 1.1)</td><td>10 032</td><td>+44.5%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Three lessons hide in that table. The empty-weight trend is by far the most powerful input, which is why Lesson 2's choice of class and technology factor matters so much. Aerodynamics and propulsion are worth about the same, about 1% of \(\Wo\) for each 1% of \(L/D\) or \(C\). And the effects are not symmetric: making things worse costs more than making them better gains, because the denominator of the sizing equation shrinks toward zero.</p>
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> A tornado chart for the business jet: the change in \(\Wo\) when one input at a time is changed by the chosen percentage, everything else held fixed. <em>Better</em> means the direction that makes the aircraft lighter, which is not always an increase: a lower \(C\) or empty-weight trend, a higher \(L/D\), a shorter range or less payload. Green bars to the left show the input made better; orange bars to the right, the input made worse. The rows are in order of importance, and the longest bars are the inputs to get right first. For the empty-weight trend, \(L/D\), \(C\) and range, worse costs more than better gains, because the denominator of the sizing equation shrinks toward zero (if it reaches zero, the sizing does not close); payload acts almost in proportion.</figcaption>
+    </figure>
+  </section>
+
+  <section id="growth">
+    <h2>The true growth factor</h2>
+    <p>Module 2 defined the growth factor with the fractions held fixed, \(1/(1 - \Wf/\Wo - \We/\Wo)\). For the business jet that is \(1/(1 - 0.2867 - 0.5721) = 7.08\): each kilogram of payload would add 7.08 kg to \(\Wo\). Resizing gives a smaller number:</p>
+    <div class="example">
+      <p class="example-title">Example 7.1 — One more passenger</p>
+      <p>Adding a passenger (\(100\ \text{kg}\)) raises the business jet's \(\Wo\) from \(6943\) to \(7508\ \text{kg}\). Find the true growth factor and explain the difference from 7.08.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \frac{\Delta\Wo}{\Delta W_{\text{payload}}} = \frac{7508 - 6943}{100} = 5.65 \]
+          <p>The heavier aircraft has a slightly lower empty-weight fraction (the trend falls with weight), which takes back about a fifth of the growth. Fixed fractions overestimate the snowball; the full resize is the honest number. Both say the same thing: every kilogram added anywhere costs five to seven kilograms at takeoff.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="trade">
+    <h2>Trade studies: payload and range</h2>
+    <p>A trade study resizes the aircraft over a grid of requirements, so that the customer and the designers can see what each combination costs. Figure 7.2 does it for the business jet's two main requirements.</p>
+    <figure class="figure wide" aria-labelledby="fig72-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig72-stage"></div>
+        <div class="viz-controls" id="fig72-controls"></div>
+      </div>
+      <figcaption id="fig72-cap"><strong>Figure 7.2</strong> Takeoff weight against design range for the business jet with 4 to 12 passengers. Each line is a family of designs; the marked point is the chosen requirement. Change the technology to see the whole chart shift.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 7.2 — Which is cheaper?</p>
+      <p>A customer asks for either two more passengers (10 instead of 8) or 1000 km more range (5600 instead of 4600 km). Using the trade study, which costs more takeoff weight?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>From the sizing (Figure 7.2): 10 passengers at 4600 km gives \(\Wo = 8066\ \text{kg}\), \(+1123\ \text{kg}\) (+16%); 8 passengers at 5600 km gives \(\Wo = 8891\ \text{kg}\), \(+1949\ \text{kg}\) (+28%). The range costs nearly twice as much, because at this range the design is already climbing the steep part of its curve. The answer would be different for a short-range design: trade studies are specific to the design point.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="what-next">
+    <h2>What the first estimate is for</h2>
+    <p>The first estimate is a starting point, not a result. It sets the scale of everything that follows:</p>
+    <ul>
+      <li><strong>Module 4</strong> chooses the airfoil and wing geometry; <strong>Module 5</strong> chooses the wing loading and thrust-to-weight ratio, which with \(\Wo\) give the wing area and engine thrust.</li>
+      <li>With those, a real layout can be drawn (Module 6), its drag (Module 9) and component weights (Module 10) estimated, and the aircraft resized with numbers from its own drawing instead of from history: refined sizing.</li>
+      <li>The sensitivities found here say where that later effort pays: for the business jet, the empty weight first, then \(L/D\) and \(C\).</li>
+    </ul>
+    <aside class="callout tip">
+      <p class="callout-title">Your own design</p>
+      <p>Size your project aircraft in the <a href="../tools/sizing-calculator.html">Sizing Calculator</a>, then run its tornado chart. Write down your class, technology factor, \(\LDmax\) and \(C\) with a sentence of justification for each: they are the assumptions every later module will test.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Find sensitivities by changing one input and resizing.</li>
+      <li>The empty-weight trend is the most powerful input; \(L/D\) and \(C\) are worth about 1% of \(\Wo\) per 1%.</li>
+      <li>Worse inputs cost more than better ones gain: the denominator shrinks toward zero.</li>
+      <li>The true growth factor (about 5.7 for the business jet) is smaller than the fixed-fraction one (7.1).</li>
+      <li>Trade studies over payload and range show customers the price of their requirements.</li>
+      <li>This completes the module. Try the <a href="../practice/practice-lab.html">Practice Lab</a> and the <a href="../practice/quiz.html">Self-Check Quiz</a>; Module 4 begins the wing.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* The business jet, resized for any inputs (shared by both figures) */
+var BIZ = (function () {
+  'use strict';
+  function size(o) {
+    o = Object.assign({ fixed: 980, R: 4600, C: 0.65, Cl: 0.55, LD: 16.9, tech: 1 }, o || {});
+    var ff = 1.06 * (1 - 0.970 * 0.985 * SIZING.cruise(o.R, 850, o.C, 0.866 * o.LD) * SIZING.loiter(0.75, o.Cl, o.LD) * 0.995);
+    var r = SIZING.solve({ cls: 'jt', Wfixed: o.fixed, ff: ff, tech: o.tech, guess: 8000 });
+    return r.ok ? r.W0 : NaN;
+  }
+  return { size: size };
+})();
+
+/* ---------- Figure 7.1: tornado chart ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { p: 10 };
+  var stage = document.getElementById('fig71-stage');
+  var box = CYL.el('div', { class: 'tn', role: 'img' });
+  stage.appendChild(box);
+  var panel = document.getElementById('fig71-controls');
+  var s = CYL.slider({ label: 'Change in each input', min: 2, max: 20, step: 1, value: st.p, unit: '%', onInput: function (v) { st.p = v; draw(); } });
+  panel.appendChild(s.el);
+  // better / worse: the inputs passed to the sizer; b / w: how the input changes, shown under its name
+  var ITEMS = [
+    { label: 'Empty-weight trend', b: '\\(\\We/\\Wo\\) −', w: '\\(\\We/\\Wo\\) +', worse: function (k) { return { tech: 1 + k }; }, better: function (k) { return { tech: 1 - k }; } },
+    { label: 'Fuel consumption \\(C\\)', b: '\\(C\\) −', w: '\\(C\\) +', worse: function (k) { return { C: 0.65 * (1 + k), Cl: 0.55 * (1 + k) }; }, better: function (k) { return { C: 0.65 * (1 - k), Cl: 0.55 * (1 - k) }; } },
+    { label: 'Lift-to-drag ratio \\(\\LDmax\\)', b: '\\(L/D\\) +', w: '\\(L/D\\) −', worse: function (k) { return { LD: 16.9 * (1 - k) }; }, better: function (k) { return { LD: 16.9 * (1 + k) }; } },
+    { label: 'Design range', b: 'shorter, −', w: 'longer, +', worse: function (k) { return { R: 4600 * (1 + k) }; }, better: function (k) { return { R: 4600 * (1 - k) }; } },
+    { label: 'Crew and payload', b: 'lighter, −', w: 'heavier, +', worse: function (k) { return { fixed: 980 * (1 + k) }; }, better: function (k) { return { fixed: 980 * (1 - k) }; } }
+  ];
+  function pct(x) { return (x >= 0 ? '+' : '−') + CYL.fmt(Math.abs(x) * 100, 3) + '%'; }
+  function draw() {
+    var k = st.p / 100, base = BIZ.size();
+    var rows = ITEMS.map(function (it) {
+      var w = BIZ.size(it.worse(k)), b = BIZ.size(it.better(k));
+      return { it: it, up: isFinite(w) && w > 0 ? w / base - 1 : Infinity, dn: b / base - 1 };
+    }).sort(function (p, q) { return (q.up - q.dn) - (p.up - p.dn); });   // most important first
+    var max = Math.max.apply(null, rows.map(function (r) { return Math.max(isFinite(r.up) ? r.up : 0, Math.abs(r.dn)); }));
+    box.innerHTML = '';
+    box.appendChild(CYL.el('div', { class: 'tn-row tn-head' }, [
+      CYL.el('div', { class: 'tn-name', text: 'Input changed by ' + st.p + '%' }),
+      CYL.el('div', { class: 'tn-axis' }, [
+        CYL.el('span', { html: '◀ Lighter aircraft<small>input made better</small>' }),
+        CYL.el('span', { html: 'Heavier aircraft ▶<small>input made worse</small>' })
+      ])
+    ]));
+    rows.forEach(function (r) {
+      var lb = CYL.el('span', { class: 'tn-bar' }), rb = CYL.el('span', { class: 'tn-bar' + (isFinite(r.up) ? '' : ' inf') });
+      lb.style.width = (Math.abs(r.dn) / max * 72) + '%';
+      rb.style.width = (isFinite(r.up) ? r.up / max * 72 : 80) + '%';
+      box.appendChild(CYL.el('div', { class: 'tn-row' }, [
+        CYL.el('div', null, [
+          CYL.el('span', { class: 'tn-name', html: r.it.label }),
+          CYL.el('span', { class: 'tn-dirs' }, [
+            CYL.el('span', { class: 'b', html: 'better: ' + r.it.b + st.p + '%' }),
+            CYL.el('span', { class: 'w', html: 'worse: ' + r.it.w + st.p + '%' })
+          ])
+        ]),
+        CYL.el('div', { class: 'tn-track' }, [
+          CYL.el('div', { class: 'tn-half tn-left' }, [CYL.el('span', { class: 'tn-val', text: pct(r.dn) }), lb]),
+          CYL.el('div', { class: 'tn-half tn-right' }, [rb, CYL.el('span', { class: 'tn-val', text: isFinite(r.up) ? pct(r.up) : 'does not close' })])
+        ])
+      ]));
+    });
+    CYL.renderMath(box);
+    box.setAttribute('aria-label', 'Tornado chart of the change in takeoff weight for a ' + st.p + '% change in each input. ' + rows.map(function (r) {
+      return r.it.label.replace(/\\\(|\\\)|\\/g, '') + ': made better, ' + pct(r.dn) + '; made worse, ' + (isFinite(r.up) ? pct(r.up) : 'the sizing does not close');
+    }).join('. ') + '.');
+  }
+  draw();
+});
+
+/* ---------- Figure 7.2: payload-range trade study ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { pax: 8, R: 4600, tech: 1 };
+  var chart = AERO.chart(document.getElementById('fig72-stage'), {
+    x: { label: 'Design range (km)', min: 1000, max: 8000 }, y: { label: '\\(\\Wo\\) (t)', min: 0, max: 25 }, height: 340,
+    ariaLabel: 'Takeoff weight against design range for 4, 6, 8, 10 and 12 passengers; the curves rise and steepen with range.'
+  });
+  var lines = [4, 6, 8, 10, 12].map(function (n) {
+    return chart.fn(function (R) { var w = BIZ.size({ fixed: 180 + 100 * n, R: R, tech: st.tech }); return isFinite(w) && w < 25000 ? w / 1000 : NaN; }, { color: n === 8 ? 'z' : 'muted', width: n === 8 ? 2.6 : 1.4, label: n + ' pax', samples: 120 });
+  });
+  var mk = chart.marker([4600, 6.94], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig72-controls');
+  var sP = CYL.slider({ label: 'Passengers', min: 2, max: 14, step: 1, value: st.pax, onInput: function (v) { st.pax = v; draw(); } });
+  var sR = CYL.slider({ label: 'Design range', min: 1000, max: 8000, step: 100, value: st.R, unit: 'km', color: 'v', onInput: function (v) { st.R = v; draw(); } });
+  var sT = CYL.slider({ label: 'Technology factor on \\(\\We\\)', min: 0.8, max: 1.1, step: 0.01, value: st.tech, color: 't', onInput: function (v) { st.tech = v; draw(); } });
+  var ro = { w: CYL.readout('\\(\\Wo\\)'), d: CYL.readout('Change from the baseline jet') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Requirement' }));
+  [sP, sR, sT].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.w.el, ro.d.el]));
+  CYL.renderMath(panel);
+  var base = BIZ.size();
+  function draw() {
+    lines.forEach(function (l) { l.draw(); });
+    var w = BIZ.size({ fixed: 180 + 100 * st.pax, R: st.R, tech: st.tech });
+    if (isFinite(w) && w < 25000) { mk.setVisible(true); mk.set([st.R, w / 1000]); ro.w.set(CYL.fmt(w, 4).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' kg'); ro.d.set((w >= base ? '+' : '') + CYL.fmt((w / base - 1) * 100, 3) + '%'); }
+    else { mk.setVisible(false); ro.w.set(isFinite(w) ? 'over 25 t' : 'does not close'); ro.d.set('—'); }
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'numeric',
+    prompt: 'Adding \\(250\\ \\text{kg}\\) of equipment to a design raises its resized \\(\\Wo\\) from \\(31\\,400\\) to \\(32\\,700\\ \\text{kg}\\). What is the growth factor?',
+    label: '\\(\\Delta\\Wo/\\Delta W =\\)', answer: 1300 / 250,
+    hints: ['Growth factor = change in \\(\\Wo\\) divided by the weight added.'],
+    explain: 'Each kilogram added costs 5.2 kg at takeoff.',
+    solution: '\\[ \\frac{32\\,700 - 31\\,400}{250} = \\frac{1300}{250} = 5.2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'numeric',
+    prompt: 'For the business jet, a 10% lower empty-weight trend gives \\(\\Wo = 5179\\ \\text{kg}\\) and a 10% higher one gives \\(10\\,032\\ \\text{kg}\\), against a baseline of \\(6943\\ \\text{kg}\\). By what percentage does the higher trend raise \\(\\Wo\\)?',
+    label: 'Change \\(=\\)', answer: (10032 / 6943 - 1) * 100, unit: '%',
+    hints: ['\\((10\\,032/6943 - 1) \\times 100\\).'],
+    explain: 'Compare with \\(-25\\%\\) for the lower trend: the effect is strongly asymmetric because the denominator shrinks toward zero.',
+    solution: '\\[ \\left(\\frac{10\\,032}{6943} - 1\\right)100 = +44.5\\% \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'mc',
+    prompt: 'Why is the true growth factor (from resizing) smaller than the fixed-fraction one, \\(1/(1 - \\Wf/\\Wo - \\We/\\Wo)\\)?',
+    choices: [
+      { html: 'Because the fuel fraction falls as the aircraft gets heavier.', feedback: 'In the first estimate the fuel fraction does not depend on weight.' },
+      { html: 'Because the 6% fuel allowance is not applied when resizing.', feedback: 'It is applied in both.' },
+      { html: 'Because a heavier aircraft has a slightly lower empty-weight fraction, by the statistical trend.', correct: true, feedback: 'Yes: \\(C < 0\\) in \\(\\We/\\Wo = A\\Wo^{\\,C}\\), so growth partly pays for itself.' },
+      { html: 'Because the crew weight grows with the aircraft.', feedback: 'The crew is fixed by the requirements.' }
+    ],
+    explain: 'Fixed fractions are a quick bound; resizing gives the real number.'
+  });
+});
+</script>
+</body>
+</html>

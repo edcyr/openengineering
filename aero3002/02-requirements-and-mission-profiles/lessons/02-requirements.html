@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where Requirements Come From · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Where aircraft design requirements come from and how to write them: customers, markets and regulators; kinds of requirements; threshold and objective values; seats and frequencies from a market; design range from great-circle distances; and wingspan limits at airports.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<script src="../assets/js/world-land.js"></script>
+<style>
+  .req-table td:first-child { font-weight: 600; white-space: nowrap; }
+  .req-bad { color: var(--c-bad); }
+  .req-good { color: var(--c-good); }
+  .route-bars { max-height: 420px; overflow-y: auto; padding-right: 4px; }
+  .route-bars .bar-label { min-width: 9.5rem; }
+</style>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 40 min</p>
+    <h1>Where Requirements Come From</h1>
+    <p class="lede">"Design an airplane" is not a design problem. "Carry 150 passengers 5000 km at Mach 0.78 from a 2000 m runway, at a lower cost per seat than today's aircraft" is. This lesson shows who sets numbers like these, what kinds of requirements there are, how to write one that can be checked, and how a few of the most important numbers are worked out from a market, a map and an airport.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Name the sources of aircraft requirements and sort requirements into mission, performance, certification, compatibility, economic and environmental kinds.</li>
+      <li>Write a requirement that is specific, measurable and verifiable, and distinguish threshold and objective values.</li>
+      <li>Estimate seats per aircraft, departures and fleet size from passenger demand.</li>
+      <li>Compute great-circle distances between airports, and use them to choose a design range.</li>
+      <li>Relate an airport's wingspan limit to the maximum aspect ratio of a wing.</li>
+    </ul>
+  </section>
+
+  <section id="sources">
+    <h2>Who sets the requirements</h2>
+    <div class="grid-cards">
+      <div class="card card-z"><h3>Customers</h3><p>A military customer states a need and issues a <strong>request for proposal</strong> (RFP) with numbered requirements. Airlines rarely write formal specifications; instead a manufacturer works with <em>launch customers</em> to agree on the seats, range and economics before committing to a new type.</p></div>
+      <div class="card card-r"><h3>The market</h3><p>Market studies forecast traffic on city pairs, the age of fleets that need replacing and what competitors will offer. They decide the size (seats or payload) and the range that will sell the most aircraft, often as a family of sizes.</p></div>
+      <div class="card card-t"><h3>Regulators and infrastructure</h3><p>Airworthiness rules (Lesson 4), operating rules such as fuel reserves (Lesson 6), noise and emissions limits, and the airports themselves: runway lengths, gate sizes and wingspan limits.</p></div>
+    </div>
+    <p>The manufacturer adds its own requirements: use an engine that exists, share parts with an earlier model, reach a target price, or leave room to stretch the fuselage later. These company requirements can be as decisive as the customer's.</p>
+  </section>
+
+  <section id="kinds">
+    <h2>Kinds of requirements</h2>
+    <div class="table-wrap">
+      <table class="data req-table">
+        <caption>Typical requirements for a new transport aircraft, with examples</caption>
+        <thead><tr><th scope="col">Kind</th><th scope="col">Examples</th></tr></thead>
+        <tbody>
+          <tr><td>Mission</td><td>Design payload (150 passengers with bags), design range (5000 km with reserves), cruise Mach number (0.78), cruise altitude; for military aircraft, combat radius, loiter time, weapons carried</td></tr>
+          <tr><td>Field and climb performance</td><td>Takeoff field length at maximum weight on a hot day, landing field length, one-engine-out climb gradient, time to climb, initial cruise altitude</td></tr>
+          <tr><td>Maneuver (military)</td><td>Sustained turn load factor, specific excess power, acceleration time</td></tr>
+          <tr><td>Certification</td><td>The certification basis (FAR or CS Part 25, for example), and everything it implies: safety, structural margins, systems redundancy</td></tr>
+          <tr><td>Compatibility</td><td>Wingspan for the airport gates, door sill heights for ground equipment, runway pavement loading, turnaround time, cargo containers</td></tr>
+          <tr><td>Economic</td><td>Price, fuel burn per seat, direct operating cost, maintenance cost, dispatch reliability, first delivery date</td></tr>
+          <tr><td>Environmental</td><td>Noise at certification points, emissions of nitrogen oxides and carbon dioxide</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Notice that only the first two rows are "aircraft design" in the textbook sense. Real programs are as often won or lost on the others.</p>
+  </section>
+
+  <section id="writing">
+    <h2>Writing a requirement that can be checked</h2>
+    <p>A requirement is only useful if, at the end, someone can show that the aircraft meets it. Good requirements are <strong>specific</strong> (one thing each), <strong>measurable</strong> (a number with a unit), state the <strong>conditions</strong> (weight, altitude, temperature, configuration) and are <strong>verifiable</strong> by analysis, test or inspection. They are written with "shall".</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Weak and better versions of the same requirements</caption>
+        <thead><tr><th scope="col">Weak</th><th scope="col">Better</th></tr></thead>
+        <tbody>
+          <tr><td class="req-bad">The aircraft should have a short takeoff.</td><td class="req-good">The takeoff field length shall not exceed 2100 m at maximum takeoff weight, sea level, ISA + 15 °C.</td></tr>
+          <tr><td class="req-bad">Long range with good fuel efficiency.</td><td class="req-good">The aircraft shall carry 150 passengers at 100 kg each over 5000 km with international fuel reserves.</td></tr>
+          <tr><td class="req-bad">Fit at existing airports.</td><td class="req-good">The wingspan shall be less than 36 m (ICAO aerodrome code C).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Military requirements often give two values. The <strong>threshold</strong> is the minimum acceptable; the <strong>objective</strong> is what the customer would like, if it is affordable. A combat radius might have a threshold of 900 km and an objective of 1100 km. The gap between them is where trade studies (Lesson 7) do their work.</p>
+    <p>Top-level requirements are then broken down into <strong>derived requirements</strong> for each part of the aircraft. "Takeoff in 2100 m" becomes, after analysis, a maximum wing loading and a minimum thrust-to-weight ratio (Lesson 4 shows one way), and eventually a maximum lift coefficient for the flap designers to achieve.</p>
+  </section>
+
+  <section id="market">
+    <h2>From a market to a size</h2>
+    <p>Suppose a market study says a route carries \(Q\) passengers a day in each direction, and the airline wants \(n\) departures a day each way (frequency sells tickets: business travellers want a flight when they need one). With an average <strong>load factor</strong> \(LF\), the fraction of seats filled, the number of seats each aircraft needs, or the number of departures for an aircraft of a given size, follows from the demand:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Seats and departures</p>
+      \[ \text{seats} = \frac{Q}{n\,LF}, \qquad n = \frac{Q}{\text{seats}\times LF} \]
+      <p>Round \(n\) up. The fleet needed follows from the time each round trip takes, \(2(t_{\text{block}} + t_{\text{turn}})\), and the hours a day each aircraft can fly.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 2.1 — How big, and how many?</p>
+      <p>A route carries \(1800\) passengers a day each way. (a) With 8 departures a day and a load factor of 0.80, how many seats does each aircraft need? (b) With a 180-seat aircraft instead, how many departures are needed? (c) Each flight takes \(2.5\ \text{h}\) block to block, the turnaround takes \(45\ \text{min}\), and each aircraft can operate \(17\ \text{h}\) a day. How many 180-seat aircraft does the route need?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{(a) seats} = \frac{1800}{8(0.80)} = 281 \]
+          \[ \text{(b) } n = \frac{1800}{180(0.80)} = 12.5 \ \Rightarrow\ 13\ \text{departures a day each way} \]
+          <p>(c) A round trip takes \(2(2.5 + 0.75) = 6.5\ \text{h}\), so each aircraft can fly \(\lfloor 17/6.5 \rfloor = 2\) round trips a day. Thirteen round trips need \(\lceil 13/2 \rceil = 7\) aircraft (plus spares for maintenance).</p>
+          <p>The airline's choice between (a) and (b) is a real trade: fewer, larger aircraft have a lower cost per seat; more frequent, smaller ones attract more passengers. Market studies of many such routes give the seat count that suits the most airlines.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="range">
+    <h2>From a map to a design range</h2>
+    <p>Aircraft fly (approximately) along <strong>great circles</strong>, the shortest paths on the sphere. For two airports at latitudes \(\phi_1, \phi_2\) (north positive) and longitudes \(\lambda_1, \lambda_2\) (east positive), the central angle \(\theta\) between them and the distance are</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Great-circle distance (spherical law of cosines)</p>
+      \[ \cos\theta = \sin\phi_1\sin\phi_2 + \cos\phi_1\cos\phi_2\cos(\lambda_2 - \lambda_1), \qquad d = R_E\,\theta \]
+      <p>\(R_E = 6371\ \text{km}\) (mean radius of the Earth) and \(\theta\) in radians. One nautical mile is \(1.852\ \text{km}\), about one minute of arc. Airlines and manufacturers quote ranges in nautical miles.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 2.2 — Ottawa to London</p>
+      <p>Ottawa airport (YOW) is at \(45.32^\circ\text{N}\), \(75.67^\circ\text{W}\); London Heathrow (LHR) at \(51.47^\circ\text{N}\), \(0.45^\circ\text{W}\). Find the great-circle distance in km and nautical miles.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>West longitudes are negative: \(\lambda_2 - \lambda_1 = -0.45 - (-75.67) = 75.22^\circ\).</p>
+          \[ \cos\theta = \sin 45.32^\circ\sin 51.47^\circ + \cos 45.32^\circ\cos 51.47^\circ\cos 75.22^\circ \]
+          \[ \cos\theta = 0.5562 + 0.4380(0.2551) = 0.6680 \]
+          \[ \theta = 48.09^\circ = 0.8393\ \text{rad}, \qquad d = 6371(0.8393) = 5347\ \text{km} = 2887\ \text{nmi} \]
+          <p>The route bulges north of the straight line on a flat map, toward Ireland: Figure 2.1 shows the curve.</p>
+        </div>
+      </details>
+    </div>
+    <p>A manufacturer does this for every city pair in its target market and sets the <strong>design range</strong> to cover the routes that matter, often 90% or more of them, with an allowance for winds, routings and reserves (Lesson 6). Range beyond what the market needs is paid for on every flight in fuel and weight (Lesson 7), so the choice is not "as much as possible".</p>
+
+    <figure class="figure wide" aria-labelledby="fig21-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig21-stage"></div>
+        <div class="viz-controls" id="fig21-controls"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> Great-circle routes from a chosen airport to 25 others, drawn on a map with a latitude–longitude grid (a flat map, so the shortest routes look curved). Routes within the design range are drawn in green. Choose an origin and set the design range to see which markets an aircraft can serve nonstop, before any allowance for winds and reserves.</figcaption>
+    </figure>
+  </section>
+
+  <section id="airports">
+    <h2>From an airport to a wingspan</h2>
+    <p>Airports are designed around classes of aircraft. The International Civil Aviation Organization (ICAO) gives each a <strong>code letter</strong> by wingspan, which sets taxiway widths, separation and gate sizes. An aircraft that is too wide for the code of the gates it must use is a problem for every airline that buys it.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>ICAO aerodrome reference code letters by wingspan</caption>
+        <thead><tr><th scope="col">Code</th><th scope="col">Wingspan</th><th scope="col">Examples</th></tr></thead>
+        <tbody id="icao-rows"></tbody>
+      </table>
+    </div>
+    <p>A span limit is an aspect-ratio limit. Since \(A = b^2/S\), a wing of area \(S\) that must fit span \(b_{\max}\) has \(A \le b_{\max}^2/S\). That matters, because induced drag, and so cruise \(L/D\), improves with aspect ratio. Boeing's answer on the 777X was a folding wingtip: about 72 m in flight, about 65 m (code E) at the gate.</p>
+    <div class="example">
+      <p class="example-title">Example 2.3 — The code C box</p>
+      <p>A narrow-body airliner has a wing area of \(122\ \text{m}^2\) and must fit code C gates. What is the largest aspect ratio it can have?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ A \le \frac{b_{\max}^2}{S} = \frac{36^2}{122} = 10.6 \]
+          <p>(Strictly, the span must be less than 36 m.) Today's narrow-bodies have aspect ratios a little below this, with winglets that recover some of the induced drag a longer span would have saved. A larger wing area, needed by a heavier stretch, lowers the limit further.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> Wingspans of transport aircraft against year: Loftin's transports (circles) and a few later aircraft from their published specifications (diamonds), with the ICAO code limits. The calculator gives the largest aspect ratio a wing of a chosen area can have within a code.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Requirements come from customers (RFPs, launch customers), markets, regulators, airports and the manufacturer itself.</li>
+      <li>A good requirement is specific, measurable, states its conditions and can be verified; military requirements give threshold and objective values.</li>
+      <li>Seats \(= Q/(n\,LF)\); the fleet follows from block and turnaround times.</li>
+      <li>Great-circle distance: \(\cos\theta = \sin\phi_1\sin\phi_2 + \cos\phi_1\cos\phi_2\cos\Delta\lambda\), \(d = R_E\theta\). The design range covers the important city pairs, with allowances.</li>
+      <li>Airport codes limit the span, so \(A \le b_{\max}^2/S\).</li>
+      <li>Next, <a href="03-payload-range.html">Lesson 3</a> combines the payload and range requirements in one diagram.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- ICAO code table (from MISSION.ICAO_CODES) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('icao-rows'), lo = 0;
+  MISSION.ICAO_CODES.forEach(function (c) {
+    tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.code }), CYL.el('td', { text: (lo ? lo + ' m to under ' : 'Under ') + c.max + ' m' }), CYL.el('td', { text: c.example })]));
+    lo = c.max;
+  });
+});
+
+/* ---------- Figure 2.1: great-circle routes and the design range ---------- */
+CYL.ready(function () {
+  'use strict';
+  var AP = MISSION.AIRPORTS, st = { from: 'YOW', R: 6000 };
+  var chart = AERO.chart(document.getElementById('fig21-stage'), {
+    x: { label: 'Longitude (degrees, east positive)', min: -180, max: 180, ticks: [-180, -120, -60, 0, 60, 120, 180] },
+    y: { label: 'Latitude (degrees)', min: -60, max: 90, ticks: [-60, -30, 0, 30, 60, 90] }, height: 360, pad: { l: 50 },
+    ariaLabel: 'Great-circle routes from the chosen airport to 25 others on a latitude-longitude grid; routes within the design range are green.',
+    legend: [{ label: 'Within the design range', color: 'good', line: true }, { label: 'Beyond it', color: 'muted', line: true, dashed: true }]
+  });
+  MISSION.drawLand(chart);                 // the map first, so the routes and airports sit on top
+  var routeHandles = [];
+  var pts = chart.points(AP, { x: function (a) { return a.lon; }, y: function (a) { return a.lat; }, r: 4, color: function (a) { return a.id === st.from ? 'accent' : 'ink'; },
+    title: function (a) { var g = MISSION.gc(MISSION.airport(st.from), a); return '<strong>' + CYL.escapeHtml(a.name) + '</strong><span class="muted">' + CYL.fmt(a.lat, 4) + '°, ' + CYL.fmt(a.lon, 5) + '°</span>' + (a.id === st.from ? '' : '<br>' + CYL.fmt(g.km, 4) + ' km from ' + st.from); },
+    onClick: function (a) { if (a.id !== st.from) { st.from = a.id; sel.set(a.id, true); draw(); } } });
+  var panel = document.getElementById('fig21-controls');
+  var sel = CYL.select({ label: 'Origin', value: st.from, options: AP.map(function (a) { return { value: a.id, label: a.name }; }), onChange: function (v) { st.from = v; draw(); } });
+  var sR = CYL.slider({ label: 'Design range', min: 1000, max: 16000, step: 100, value: st.R, unit: 'km', color: 'good', onInput: function (v) { st.R = v; draw(); } });
+  var roN = CYL.readout('Routes covered'), roF = CYL.readout('Longest route covered'), roX = CYL.readout('Farthest destination');
+  var bars = CYL.el('div', { class: 'bars route-bars', role: 'list', 'aria-label': 'Great-circle distances from the origin' });
+  panel.appendChild(CYL.el('div', { class: 'two-col' }, [
+    CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Market' }), sel.el, sR.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'polite' }, [roN.el, roF.el, roX.el])]),
+    CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Distances' }), bars])
+  ]));
+  CYL.renderMath(panel);
+  function draw() {
+    var o = MISSION.airport(st.from);
+    routeHandles.forEach(function (h) { h.remove(); }); routeHandles = [];
+    var list = AP.filter(function (a) { return a.id !== o.id; }).map(function (a) { return { a: a, d: MISSION.gc(o, a).km }; }).sort(function (p, q) { return p.d - q.d; });
+    var n = 0, longest = 0;
+    list.forEach(function (r) {
+      var ok = r.d <= st.R;
+      if (ok) { n++; longest = Math.max(longest, r.d); }
+      MISSION.gcPath(o, r.a, 72).forEach(function (piece) { if (piece.length > 1) routeHandles.push(chart.polyline(piece, { color: ok ? 'good' : 'muted', width: ok ? 2 : 1.2, dashed: !ok })); });
+    });
+    pts.set(AP);
+    roN.set(n + ' of ' + list.length);
+    roF.set(longest ? CYL.fmt(longest, 4) + ' km (' + CYL.fmt(longest / 1.852, 4) + ' nmi)' : 'none');
+    var far = list[list.length - 1];
+    roX.set(far.a.city + ', ' + CYL.fmt(far.d, 4) + ' km');
+    bars.innerHTML = '';
+    var max = far.d;
+    list.forEach(function (r) {
+      var ok = r.d <= st.R;
+      var fill = CYL.el('span', { class: 'bar-fill ' + (ok ? 'bar-good' : 'bar-warn') }); fill.style.width = (r.d / max * 100) + '%';
+      bars.appendChild(CYL.el('div', { class: 'bar-row', role: 'listitem' }, [CYL.el('div', { class: 'bar-label', text: r.a.city }), CYL.el('div', { class: 'bar-track' }, [fill, CYL.el('span', { class: 'bar-value', text: CYL.fmt(r.d, 4) + ' km' })])]));
+    });
+    chart.setAriaLabel('Great-circle routes from ' + o.name + ': ' + n + ' of ' + list.length + ' destinations lie within a design range of ' + st.R + ' km.');
+  }
+  draw();
+});
+
+/* ---------- Figure 2.2: wingspans and the ICAO codes ---------- */
+CYL.ready(function () {
+  'use strict';
+  var LATER = [
+    { name: 'Airbus A320', year: 1987, b: 35.8 }, { name: 'Boeing 737-800 (winglets)', year: 1997, b: 35.8 }, { name: 'Boeing 777-300ER', year: 2003, b: 64.8 },
+    { name: 'Airbus A380', year: 2005, b: 79.8 }, { name: 'Boeing 787-9', year: 2013, b: 60.1 }, { name: 'Airbus A350-900', year: 2013, b: 64.75 },
+    { name: 'Boeing 777-9, tips folded', year: 2020, b: 64.85 }, { name: 'Boeing 777-9, tips extended', year: 2020, b: 71.75 }
+  ];
+  var T = AERO.DATA.filter(function (d) { return d.role === 'transport'; });
+  var chart = AERO.chart(document.getElementById('fig22-stage'), {
+    x: { label: 'Year of first flight', min: 1915, max: 2025, format: String }, y: { label: 'Wingspan \\(b\\) (m)', min: 0, max: 90 }, height: 340,
+    ariaLabel: 'Wingspan of transport aircraft against year, with horizontal lines at the ICAO code limits of 15, 24, 36, 52, 65 and 80 metres.',
+    legend: [{ label: 'Transports (Module 1 data)', color: 't' }, { label: 'Later aircraft (published spans)', color: 'warn', shape: 'diamond' }]
+  });
+  MISSION.ICAO_CODES.forEach(function (c) { chart.hline(c.max, { color: 'muted', label: 'code ' + c.code + ' < ' + c.max + ' m' }); });
+  chart.points(T, { x: function (d) { return d.year; }, y: function (d) { return d.b; }, color: 't', r: 4.5,
+    title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + '</span><br>span ' + CYL.fmt(d.b, 3) + ' m, code ' + MISSION.icaoCode(d.b); } });
+  chart.points(LATER, { x: function (d) { return d.year; }, y: function (d) { return d.b; }, color: 'warn', shape: 'diamond', r: 5,
+    title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + '</span><br>span ' + CYL.fmt(d.b, 3) + ' m, code ' + MISSION.icaoCode(d.b); } });
+  var st = { code: 'C', S: 122 };
+  var panel = document.getElementById('fig22-controls');
+  var sel = CYL.select({ label: 'Gate code', value: st.code, options: MISSION.ICAO_CODES.map(function (c) { return { value: c.code, label: 'Code ' + c.code + ' (span under ' + c.max + ' m)' }; }), onChange: function (v) { st.code = v; draw(); } });
+  var sS = CYL.slider({ label: 'Wing area \\(S\\)', min: 20, max: 900, step: 1, value: st.S, unit: 'm²', onInput: function (v) { st.S = v; draw(); } });
+  var roA = CYL.readout('Largest aspect ratio \\(b_{\\max}^2/S\\)'), roC = CYL.readout('Mean chord at that span');
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Span limit calculator' }));
+  [sel, sS].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roA.el, roC.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var b = MISSION.ICAO_CODES.filter(function (c) { return c.code === st.code; })[0].max;
+    roA.set(CYL.fmt(b * b / st.S, 3)); roC.set(CYL.fmt(st.S / b, 3) + ' m');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D2R = Math.PI / 180;
+  var c = Math.sin(43.68 * D2R) * Math.sin(49.19 * D2R) + Math.cos(43.68 * D2R) * Math.cos(49.19 * D2R) * Math.cos((-123.18 + 79.63) * D2R);
+  var d = 6371 * Math.acos(c);
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1',
+    type: 'numeric',
+    prompt: 'Toronto Pearson (YYZ) is at \\(43.68^\\circ\\text{N}\\), \\(79.63^\\circ\\text{W}\\) and Vancouver (YVR) at \\(49.19^\\circ\\text{N}\\), \\(123.18^\\circ\\text{W}\\). Find the great-circle distance between them.',
+    label: '\\(d =\\)', answer: d, unit: 'km',
+    hints: ['West is negative: \\(\\Delta\\lambda = -123.18 - (-79.63) = -43.55^\\circ\\). Its cosine does not care about the sign.', '\\(\\cos\\theta = \\sin\\phi_1\\sin\\phi_2 + \\cos\\phi_1\\cos\\phi_2\\cos\\Delta\\lambda\\), then \\(d = 6371\\,\\theta\\) with \\(\\theta\\) in radians.'],
+    explain: 'You can type the whole calculation: 6371*acos(sin(43.68deg)*sin(49.19deg)+cos(43.68deg)*cos(49.19deg)*cos(43.55deg)).',
+    solution: '\\[ \\cos\\theta = \\sin 43.68^\\circ\\sin 49.19^\\circ + \\cos 43.68^\\circ\\cos 49.19^\\circ\\cos 43.55^\\circ = ' + CYL.fmtTex(c, 4) + ' \\]\\[ \\theta = ' + CYL.fmtTex(Math.acos(c) / D2R, 4) + '^\\circ = ' + CYL.fmtTex(Math.acos(c), 4) + '\\ \\text{rad}, \\qquad d = 6371(' + CYL.fmtTex(Math.acos(c), 4) + ') = ' + CYL.fmtTex(d, 4) + '\\ \\text{km} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2',
+    type: 'numeric',
+    prompt: 'A route carries \\(2000\\) passengers a day each way. An airline plans 10 departures a day each way and expects a load factor of 0.85. How many seats should each aircraft have?',
+    label: 'seats \\(=\\)', answer: 2000 / (10 * 0.85),
+    hints: ['Each departure carries \\(Q/n\\) passengers on average.', 'Only a fraction \\(LF\\) of the seats is filled: seats \\(= Q/(n\\,LF)\\).'],
+    explain: 'About 235 seats; in practice the airline would choose between available sizes, perhaps 220 or 250.',
+    solution: '\\[ \\text{seats} = \\frac{2000}{10(0.85)} = 235.3 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3',
+    type: 'mc',
+    prompt: 'Which of these is the best-written requirement?',
+    choices: [
+      { html: 'The landing field length shall not exceed 1800 m at maximum landing weight, sea level, ISA, dry runway.', correct: true, feedback: 'Yes: one quantity, a number with a unit, the conditions, and it can be verified by analysis and flight test.' },
+      { html: 'The aircraft shall have excellent short-field performance.', feedback: '"Excellent" cannot be measured or verified.' },
+      { html: 'The aircraft should be quiet and cheap to operate.', feedback: 'Two requirements in one, neither of them measurable.' },
+      { html: 'The landing field length shall be 1800 m.', feedback: 'Close, but it gives no conditions (weight, altitude, temperature, runway state), and "be 1800 m" rather than "not exceed" is not what is meant.' }
+    ],
+    explain: 'Specific, measurable, with conditions, verifiable.'
+  });
+});
+</script>
+</body>
+</html>

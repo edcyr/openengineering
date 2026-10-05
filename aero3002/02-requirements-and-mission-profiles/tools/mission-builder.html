@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Profile Builder · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Build a mission profile from segments (takeoff, climb, cruise, loiter, combat, descent, landing), draw it against time or distance, add up its time and distance, multiply the mission-segment weight fractions, and download the results.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  .mb-presets { margin: 0.6rem 0 1rem; }
+  .mb-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: seg; }
+  .mb-seg { padding: 10px 12px; border: 1px solid var(--line); border-left: 5px solid var(--segc, var(--line-strong)); border-radius: var(--radius); background: var(--bg-elev); }
+  .mb-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .mb-n { min-width: 1.8em; font-weight: 800; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .mb-head select { min-width: 9.5rem; }
+  .mb-head .spacer { flex: 1 1 auto; }
+  .mb-icon { min-width: 34px; padding: 4px 8px; }
+  .mb-fields { display: flex; flex-wrap: wrap; gap: 8px 12px; margin: 8px 0 0; }
+  .mb-fields .field { flex: 0 1 8.5rem; }
+  .mb-fields input { width: 100%; }
+  .mb-out { margin: 8px 0 0; color: var(--ink-muted); font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+  .mb-out strong { color: var(--ink); }
+  .mb-add { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 12px 0 0; }
+  .mb-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .mb-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .mb-tile p { margin: 0; }
+  .mb-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .mb-tile .val { margin-top: 2px; color: var(--ink); font-size: 1.35rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  #mb-table td, #mb-table th { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #mb-table td:nth-child(2), #mb-table th:nth-child(2) { text-align: left; }
+  #mb-table tfoot th, #mb-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+</style>
+</head>
+<body data-page="builder" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Mission profiles and weight fractions</p>
+    <h1>Mission Profile Builder</h1>
+    <p class="lede">Assemble a mission from segments, as sizing does: start from a typical profile or a blank one, set each segment's altitude, speed, distance or time, and see the profile drawn, its time and distance added up, and its weight fractions multiplied into the mission fuel fraction. Use it to check the examples of Lessons 5 and 6, and for your own design.</p>
+  </header>
+
+  <section id="build">
+    <h2>Build a mission</h2>
+    <div class="mb-presets">
+      <p class="pl-label small muted" id="mb-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+      <div class="chip-row" id="mb-presets" role="group" aria-labelledby="mb-presets-label"></div>
+    </div>
+    <figure class="figure wide" aria-labelledby="mb-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="mb-stage"></div>
+        <div class="viz-controls" id="mb-controls"></div>
+      </div>
+      <figcaption id="mb-fig-cap"><strong>Figure T.1</strong> The mission as altitude against time or distance, colored by segment type: climb green, cruise blue, loiter amber, combat orange, descent and ground segments gray. Numbers mark the end of each segment, where the aircraft weighs \(W_i\).</figcaption>
+    </figure>
+    <div class="mb-totals" id="mb-totals"></div>
+    <ol class="mb-list" id="mb-list" aria-label="Mission segments"></ol>
+    <div class="mb-add">
+      <div class="field"><label for="mb-add-type">New segment</label><select id="mb-add-type"></select></div>
+      <button type="button" class="btn" id="mb-add-btn">Add segment</button>
+      <button type="button" class="btn small" id="mb-csv">Download CSV</button>
+      <span class="small muted" id="mb-msg" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2>Segment by segment</h2>
+    <div class="table-wrap">
+      <table class="data" id="mb-table">
+        <caption>Distance, time and weight fraction of each segment. \(W_i/W_0\) is the weight at the end of the segment as a fraction of the takeoff weight.</caption>
+        <thead><tr><th scope="col">\(i\)</th><th scope="col">Segment</th><th scope="col">Distance (km)</th><th scope="col">Time (min)</th><th scope="col">Altitude at end (km)</th><th scope="col">\(W_i/W_{i-1}\)</th><th scope="col">\(W_i/W_0\)</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Segment models for initial sizing (historical fractions from Raymer, Table 3.2)</caption>
+        <thead><tr><th scope="col">Segment</th><th scope="col">Time and distance</th><th scope="col">Weight fraction \(W_i/W_{i-1}\)</th></tr></thead>
+        <tbody>
+          <tr><td>Warmup and takeoff</td><td>Time as entered; no distance</td><td>Historical: 0.970</td></tr>
+          <tr><td>Climb</td><td>\(t = \Delta h/\overline{RC}\), \(d = \overline{V}t\)</td><td>Historical: 0.985</td></tr>
+          <tr><td>Cruise</td><td>\(t = R/V\) at the current altitude</td><td>Breguet: \(\exp[-RC/(V\,L/D)]\)</td></tr>
+          <tr><td>Loiter</td><td>Time as entered; distance not counted toward the range</td><td>Endurance: \(\exp[-EC/(L/D)]\)</td></tr>
+          <tr><td>Combat</td><td>Time as entered; no distance counted</td><td>As entered; for example \(1 - C(\TW)t\) at full thrust</td></tr>
+          <tr><td>Descent</td><td>\(d = \Delta h/\tan\gamma_d\), \(t = d/\overline{V}\)</td><td>As entered (often taken as 1, counting descent fuel with the landing)</td></tr>
+          <tr><td>Landing and taxi</td><td>Time as entered; no distance</td><td>Historical: 0.995</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The mission fraction is the product \(W_x/W_0 = \prod W_i/W_{i-1}\), and the fuel fraction with the 6% allowance for reserve and trapped fuel is \(\Wf/\Wo = 1.06(1 - W_x/W_0)\). If the profile already contains explicit reserve segments (a diversion, a hold), the allowance double-counts part of the reserve: switch it off to see the difference. The tool does not model weight dropped in flight (weapons released, cargo air-dropped); Module 3 shows how. Your mission is saved in this browser, so it is still here when you come back.</p>
+    <p>See <a href="../lessons/05-mission-profiles.html">Lesson 5</a> for the profiles and the timeline, and <a href="../lessons/06-reserves.html">Lesson 6</a> for reserves and the endurance equation.</p>
+  </section>
+</main>
+
+<script>
+/* ======================================================================
+   Mission Profile Builder: segments → profile, totals, weight fractions
+   ====================================================================== */
+CYL.ready(function () {
+  'use strict';
+  var TYPES = {
+    takeoff: { label: 'Warmup and takeoff', fields: [['t', 'Time (min)', 15], ['f', '\\(W_i/W_{i-1}\\)', 0.970]] },
+    climb: { label: 'Climb', fields: [['h2', 'To altitude (km)', 11], ['rc', 'Avg. climb rate (m/s)', 9], ['v', 'Avg. speed (km/h)', 600], ['f', '\\(W_i/W_{i-1}\\)', 0.985]] },
+    cruise: { label: 'Cruise', fields: [['d', 'Distance (km)', 1000], ['v', 'Speed (km/h)', 850], ['LD', '\\(L/D\\)', 16], ['C', '\\(C\\) (1/h)', 0.55]] },
+    loiter: { label: 'Loiter', fields: [['t', 'Time (min)', 30], ['LD', '\\(L/D\\)', 18], ['C', '\\(C\\) (1/h)', 0.4]] },
+    combat: { label: 'Combat', fields: [['t', 'Time (min)', 5], ['f', '\\(W_i/W_{i-1}\\)', 0.90]] },
+    descent: { label: 'Descent', fields: [['h2', 'To altitude (km)', 0], ['gam', 'Angle (°)', 3], ['v', 'Avg. speed (km/h)', 600], ['f', '\\(W_i/W_{i-1}\\)', 1]] },
+    landing: { label: 'Landing and taxi', fields: [['t', 'Time (min)', 10], ['f', '\\(W_i/W_{i-1}\\)', 0.995]] }
+  };
+  var COLOR = { takeoff: 'muted', climb: 'good', cruise: 'z', loiter: 'warn', combat: 'r', descent: 'muted', landing: 'muted' };
+  function S(type, o) { var s = { type: type }; TYPES[type].fields.forEach(function (f) { s[f[0]] = f[2]; }); return Object.assign(s, o || {}); }
+  var PRESETS = {
+    transport: { label: 'Transport, 5000 km', segs: function () { return [S('takeoff'), S('climb'), S('cruise', { d: 4595 }), S('descent', { h2: 0.45 }), S('loiter', { t: 30 }), S('landing')]; } },
+    alternate: { label: 'Transport with alternate', segs: function () { return [S('takeoff'), S('climb'), S('cruise', { d: 4595 }), S('descent', { h2: 0.45 }), S('climb', { h2: 6, rc: 10, v: 500 }), S('cruise', { d: 250, v: 700, LD: 14, C: 0.6 }), S('descent', { h2: 0.45, v: 450 }), S('loiter', { t: 30 }), S('landing')]; } },
+    combat: { label: 'Combat radius, 900 km', segs: function () { return [S('takeoff', { t: 10 }), S('climb', { h2: 10, rc: 60, v: 800 }), S('cruise', { d: 840, v: 900, LD: 10, C: 0.9 }), S('combat', { t: 5, f: 0.90 }), S('cruise', { d: 840, v: 900, LD: 10, C: 0.9 }), S('descent', { h2: 0, gam: 5, v: 700 }), S('loiter', { t: 20, LD: 11, C: 0.8 }), S('landing')]; } },
+    patrol: { label: 'Patrol, 6 h on station', segs: function () { return [S('takeoff'), S('climb', { h2: 6, rc: 7, v: 450 }), S('cruise', { d: 600, v: 600, LD: 14, C: 0.6 }), S('descent', { h2: 0.5, v: 450 }), S('loiter', { t: 360, LD: 16, C: 0.5 }), S('climb', { h2: 6, rc: 7, v: 450 }), S('cruise', { d: 600, v: 600, LD: 14, C: 0.6 }), S('descent', { h2: 0, v: 450 }), S('landing')]; } },
+    ferry: { label: 'Ferry, 8000 km', segs: function () { return [S('takeoff'), S('climb'), S('cruise', { d: 7595 }), S('descent', { h2: 0 }), S('landing')]; } },
+    blank: { label: 'Blank', segs: function () { return [S('takeoff'), S('landing')]; } }
+  };
+  var KEY = 'builder:mission';
+  var st = { segs: null, x: 'time', allowance: true };
+  var saved = CYL.store.get(KEY, null);
+  if (saved && Array.isArray(saved.segs) && saved.segs.every(function (s) { return s && TYPES[s.type]; })) { st.segs = saved.segs; st.x = saved.x === 'distance' ? 'distance' : 'time'; st.allowance = saved.allowance !== false; }
+  else st.segs = PRESETS.transport.segs();
+  function save() { CYL.store.set(KEY, { segs: st.segs, x: st.x, allowance: st.allowance }); }
+
+  /* ---------- the calculation ---------- */
+  function num(v, d) { v = +v; return isFinite(v) ? v : d; }
+  function compute() {
+    var h = 0, T = 0, X = 0, w = 1, rows = [], ptsT = [[0, 0]], ptsX = [[0, 0]];
+    st.segs.forEach(function (s, i) {
+      var dt = 0, dx = 0, f = 1, h0 = h, note = '';
+      if (s.type === 'takeoff' || s.type === 'landing' || s.type === 'combat') { dt = num(s.t, 0) / 60; f = num(s.f, 1); if (s.type === 'landing') h = 0; }
+      else if (s.type === 'climb') { var dh = Math.max(0, num(s.h2, h) - h); dt = dh * 1000 / Math.max(0.1, num(s.rc, 9)) / 3600; dx = num(s.v, 600) * dt; f = num(s.f, 0.985); h = Math.max(h, num(s.h2, h)); if (num(s.h2, h) < h0) note = 'already above that altitude'; }
+      else if (s.type === 'cruise') { dx = Math.max(0, num(s.d, 0)); dt = dx / Math.max(1, num(s.v, 850)); f = Math.exp(-dx * num(s.C, 0.5) / (Math.max(1, num(s.v, 850)) * Math.max(0.5, num(s.LD, 15)))); }
+      else if (s.type === 'loiter') { dt = Math.max(0, num(s.t, 0)) / 60; f = Math.exp(-dt * num(s.C, 0.4) / Math.max(0.5, num(s.LD, 15))); }
+      else if (s.type === 'descent') { var dd = Math.max(0, h - num(s.h2, 0)); dx = dd / Math.tan(Math.max(0.5, num(s.gam, 3)) * Math.PI / 180); dt = dx / Math.max(1, num(s.v, 600)); f = num(s.f, 1); h = Math.min(h, Math.max(0, num(s.h2, 0))); if (num(s.h2, 0) > h0) note = 'already below that altitude'; }
+      f = Math.max(0.01, Math.min(1, f));
+      w *= f; T += dt; X += dx;
+      var segPtsT = [[T - dt, h0], [T, h]], segPtsX = [[X - dx, h0], [X, h]];
+      if (s.type === 'cruise' || s.type === 'loiter' || s.type === 'combat') { segPtsT = [[T - dt, h0], [T, h0]]; segPtsX = [[X - dx, h0], [X, h0]]; }
+      rows.push({ i: i + 1, s: s, dt: dt, dx: dx, f: f, w: w, h: h, note: note, pT: segPtsT, pX: segPtsX });
+    });
+    return { rows: rows, T: T, X: X, wx: w, ff: (st.allowance ? 1.06 : 1) * (1 - w) };
+  }
+
+  /* ---------- the chart ---------- */
+  var chart = AERO.chart(document.getElementById('mb-stage'), {
+    x: { label: 'Time (h)', min: 0, max: 10 }, y: { label: 'Altitude (km)', min: -0.4, max: 13 }, height: 340,
+    ariaLabel: 'Mission profile: altitude against time.'
+  });
+  var handles = [];
+  var panel = document.getElementById('mb-controls');
+  var xSel = CYL.select({ label: 'Horizontal axis', value: st.x, options: [{ value: 'time', label: 'Time (h)' }, { value: 'distance', label: 'Distance (km)' }], onChange: function (v) { st.x = v; save(); update(); } });
+  var allow = CYL.toggle({ label: 'Add the 6% fuel allowance', value: st.allowance, onChange: function (v) { st.allowance = v; save(); update(); } });
+  var ro = { wx: CYL.readout('Mission fraction \\(W_x/W_0\\)'), ff: CYL.readout('Fuel fraction \\(\\Wf/\\Wo\\)'), X: CYL.readout('Distance flown'), T: CYL.readout('Total time') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'View and results' }));
+  panel.appendChild(xSel.el);
+  panel.appendChild(CYL.el('div', { style: 'margin:6px 0 10px' }, [allow.el]));
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'polite' }, [ro.wx.el, ro.ff.el, ro.X.el, ro.T.el]));
+  panel.appendChild(CYL.el('p', { class: 'small muted', text: 'Distance counts climb, cruise and descent; loiter and combat add time but no range.' }));
+  CYL.renderMath(panel);
+
+  function hm(h) { var m = Math.round(h * 60); return Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  function km(x) { return CYL.fmt(x, 4).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' km'; }
+
+  /* ---------- the segment editor ---------- */
+  var list = document.getElementById('mb-list'), totals = document.getElementById('mb-totals');
+  var outs = [];
+  function buildList() {
+    list.innerHTML = ''; outs = [];
+    st.segs.forEach(function (s, i) {
+      var li = CYL.el('li', { class: 'mb-seg' });
+      li.style.setProperty('--segc', AERO.paint(COLOR[s.type]));
+      var typeSel = CYL.el('select', { 'aria-label': 'Type of segment ' + (i + 1) });
+      Object.keys(TYPES).forEach(function (k) { typeSel.appendChild(CYL.el('option', { value: k, text: TYPES[k].label })); });
+      typeSel.value = s.type;
+      typeSel.addEventListener('change', function () { st.segs[i] = S(typeSel.value); save(); buildList(); update(); });
+      function btn(txt, label, fn, dis) { var b = CYL.el('button', { type: 'button', class: 'btn small mb-icon', 'aria-label': label, text: txt }); if (dis) b.disabled = true; b.addEventListener('click', fn); return b; }
+      var head = CYL.el('div', { class: 'mb-head' }, [
+        CYL.el('span', { class: 'mb-n', text: String(i + 1) }), typeSel, CYL.el('span', { class: 'spacer' }),
+        btn('\u2191', 'Move segment ' + (i + 1) + ' up', function () { var a = st.segs.splice(i, 1)[0]; st.segs.splice(i - 1, 0, a); save(); buildList(); update(); }, i === 0),
+        btn('\u2193', 'Move segment ' + (i + 1) + ' down', function () { var a = st.segs.splice(i, 1)[0]; st.segs.splice(i + 1, 0, a); save(); buildList(); update(); }, i === st.segs.length - 1),
+        btn('\u2715', 'Remove segment ' + (i + 1), function () { st.segs.splice(i, 1); save(); buildList(); update(); }, st.segs.length <= 1)
+      ]);
+      var fields = CYL.el('div', { class: 'mb-fields' });
+      TYPES[s.type].fields.forEach(function (f) {
+        var id = 'mb-' + i + '-' + f[0];
+        var inp = CYL.el('input', { type: 'number', id: id, step: 'any', inputmode: 'decimal', value: String(s[f[0]]) });
+        inp.addEventListener('input', function () { var v = parseFloat(inp.value); if (isFinite(v)) { s[f[0]] = v; save(); update(); } });
+        fields.appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: f[1] }), inp]));
+      });
+      var out = CYL.el('p', { class: 'mb-out', 'aria-live': 'off' });
+      outs.push(out);
+      li.appendChild(head); li.appendChild(fields); li.appendChild(out);
+      list.appendChild(li);
+    });
+    CYL.renderMath(list);
+  }
+
+  function update() {
+    var r = compute(), useT = st.x === 'time';
+    handles.forEach(function (h) { h.remove(); }); handles = [];
+    var xmax = useT ? Math.max(0.5, r.T) : Math.max(100, r.X), ymax = 0.5;
+    r.rows.forEach(function (q) { ymax = Math.max(ymax, q.h, (useT ? q.pT : q.pX)[0][1]); });
+    chart.setAxes({ x: { label: useT ? 'Time (h)' : 'Distance (km)', min: 0, max: xmax * 1.04 }, y: { max: Math.max(2, Math.ceil(ymax * 1.15)) } });
+    r.rows.forEach(function (q) {
+      var p = useT ? q.pT : q.pX;
+      handles.push(chart.polyline(p, { color: COLOR[q.s.type], width: 3 }));
+      handles.push(chart.text(p[p.length - 1], String(q.i), { color: 'muted', weight: 700, dx: 3, dy: -6 }));
+    });
+    chart.setAriaLabel('Mission profile with ' + r.rows.length + ' segments: ' + r.rows.map(function (q) { return q.i + ' ' + TYPES[q.s.type].label.toLowerCase(); }).join(', ') + '. Total ' + hm(r.T) + ', ' + km(r.X) + ', mission fraction ' + CYL.fmt(r.wx, 4) + '.');
+    ro.wx.set(CYL.fmt(r.wx, 4)); ro.ff.set(CYL.fmt(r.ff, 4)); ro.X.set(km(r.X)); ro.T.set(hm(r.T));
+    r.rows.forEach(function (q, k) {
+      if (!outs[k]) return;
+      outs[k].innerHTML = (q.dx ? km(q.dx) + ' · ' : '') + hm(q.dt) + ' · \\(W_{' + q.i + '}/W_{' + (q.i - 1) + '} = ' + CYL.fmtTex(q.f, 4) + '\\) · \\(W_{' + q.i + '}/W_0 = ' + CYL.fmtTex(q.w, 4) + '\\)' + (q.note ? ' · <em>' + q.note + '</em>' : '');
+      CYL.renderMath(outs[k]);
+    });
+    totals.innerHTML = '';
+    [['Distance flown', km(r.X)], ['Total time', hm(r.T)], ['Mission fraction \\(W_x/W_0\\)', CYL.fmt(r.wx, 4)], ['Fuel fraction \\(\\Wf/\\Wo\\)' + (st.allowance ? ' (×1.06)' : ''), CYL.fmt(r.ff, 4)]].forEach(function (p) {
+      totals.appendChild(CYL.el('div', { class: 'mb-tile' }, [CYL.el('p', { class: 'lab', html: p[0] }), CYL.el('p', { class: 'val', text: p[1] })]));
+    });
+    CYL.renderMath(totals);
+    var tb = document.querySelector('#mb-table tbody'), tf = document.querySelector('#mb-table tfoot');
+    tb.innerHTML = '';
+    r.rows.forEach(function (q) {
+      tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: String(q.i) }), CYL.el('td', { text: TYPES[q.s.type].label }), CYL.el('td', { text: q.dx ? CYL.fmt(q.dx, 4) : '0' }), CYL.el('td', { text: CYL.fmt(q.dt * 60, 3) }), CYL.el('td', { text: CYL.fmt(q.h, 3) }), CYL.el('td', { text: CYL.fmtFixed(q.f, 4) }), CYL.el('td', { text: CYL.fmtFixed(q.w, 4) })]));
+    });
+    tf.innerHTML = '';
+    tf.appendChild(CYL.el('tr', null, [CYL.el('th', { scope: 'row', colspan: '2', text: 'Mission' }), CYL.el('td', { text: CYL.fmt(r.X, 4) }), CYL.el('td', { text: CYL.fmt(r.T * 60, 4) }), CYL.el('td', { text: '' }), CYL.el('td', { text: '' }), CYL.el('td', { text: CYL.fmtFixed(r.wx, 4) })]));
+  }
+
+  /* ---------- presets, adding, CSV ---------- */
+  var pr = document.getElementById('mb-presets');
+  Object.keys(PRESETS).forEach(function (k) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', text: PRESETS[k].label });
+    b.addEventListener('click', function () { st.segs = PRESETS[k].segs(); save(); buildList(); update(); document.getElementById('mb-msg').textContent = 'Loaded: ' + PRESETS[k].label + '.'; });
+    pr.appendChild(b);
+  });
+  var addSel = document.getElementById('mb-add-type');
+  Object.keys(TYPES).forEach(function (k) { addSel.appendChild(CYL.el('option', { value: k, text: TYPES[k].label })); });
+  addSel.value = 'cruise';
+  document.getElementById('mb-add-btn').addEventListener('click', function () {
+    var at = st.segs.length && st.segs[st.segs.length - 1].type === 'landing' ? st.segs.length - 1 : st.segs.length;
+    st.segs.splice(at, 0, S(addSel.value)); save(); buildList(); update();
+    document.getElementById('mb-msg').textContent = 'Added ' + TYPES[addSel.value].label.toLowerCase() + ' as segment ' + (at + 1) + '.';
+  });
+  document.getElementById('mb-csv').addEventListener('click', function () {
+    var r = compute(), lines = ['segment,type,distance_km,time_min,altitude_end_km,Wi_over_Wi-1,Wi_over_W0,inputs'];
+    r.rows.forEach(function (q) {
+      var inp = TYPES[q.s.type].fields.map(function (f) { return f[0] + '=' + q.s[f[0]]; }).join(' ');
+      lines.push([q.i, TYPES[q.s.type].label, q.dx.toFixed(1), (q.dt * 60).toFixed(1), q.h.toFixed(2), q.f.toFixed(5), q.w.toFixed(5), '"' + inp + '"'].join(','));
+    });
+    lines.push(['total', '', r.X.toFixed(1), (r.T * 60).toFixed(1), '', '', r.wx.toFixed(5), '"Wf/W0=' + r.ff.toFixed(5) + (st.allowance ? ' with 1.06 allowance' : '') + '"'].join(','));
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob);
+    var a = CYL.el('a', { href: url, download: 'mission-profile.csv' });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    document.getElementById('mb-msg').textContent = 'Downloaded mission-profile.csv.';
+  });
+  window.__builder = { compute: compute, presets: PRESETS, state: st, load: function (k) { st.segs = PRESETS[k].segs(); buildList(); update(); } };   // for QA scripts
+  buildList(); update();
+});
+</script>
+</body>
+</html>

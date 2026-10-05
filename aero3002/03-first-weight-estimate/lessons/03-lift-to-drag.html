@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estimating L/D from the Sketch · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="Estimating the maximum lift-to-drag ratio before any aerodynamic analysis: wetted area from the sketch, the equivalent skin-friction coefficient, the wetted aspect ratio, and the L/D to use in cruise and loiter for jets and propeller aircraft.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  .sw-table td, .sw-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sw-table td:first-child, .sw-table th:first-child { text-align: left; }
+  .sw-table tfoot td, .sw-table tfoot th { border-top: 2px solid var(--line); font-weight: 700; }
+  /* Figures 3.1 and 3.2: wetted-area diagrams (static SVG, colours from the theme tokens) */
+  .wa-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .wa-panel { border: 1px solid var(--line); border-radius: 10px; background: var(--viz-bg); padding: 10px 10px 8px; }
+  .wa-panel svg { display: block; width: 100%; height: auto; }
+  .wa-panel .wa-title { margin: 0 0 4px; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
+  .wa-panel .wa-eq { margin: 6px 0 0; font-size: 0.86rem; color: var(--ink-muted); text-align: center; }
+  .wa-grid-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .wa svg text { font: 12.5px system-ui, -apple-system, 'Segoe UI', sans-serif; fill: var(--ink-muted); }
+  .wa svg text.sub { font-size: 9.5px; }
+  .wa svg text.strong { fill: var(--ink); font-weight: 600; }
+  .wa .ln { stroke: var(--c-axis); stroke-width: 1; fill: none; }
+  .wa .dash { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 4 3; fill: none; }
+  .wa .dim { stroke: var(--ink-faint); stroke-width: 1; fill: none; }
+  .wa .hatch-line { stroke: var(--c-surface); stroke-width: 1.2; }
+  .wa .wing { fill: var(--c-z-soft); stroke: var(--c-z); stroke-width: 1.6; }
+  .wa .wing-edge { stroke: var(--c-z); stroke-width: 3; fill: none; stroke-linecap: round; }
+  .wa .tail { fill: var(--c-t-soft); stroke: var(--c-t); stroke-width: 1.6; }
+  .wa .fus { fill: var(--c-r-soft); stroke: var(--c-r); stroke-width: 1.6; }
+  .wa .nac { fill: var(--c-v-soft); stroke: var(--c-v); stroke-width: 1.6; }
+  .wa .buried { stroke: var(--c-surface); stroke-width: 1.2; stroke-dasharray: 3 2; }
+  .wa-legend { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px 16px; font-size: 0.86rem; color: var(--ink-muted); }
+  .wa-legend li { display: flex; gap: 8px; align-items: baseline; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 2px solid; flex: none; transform: translateY(1px); }
+  .sw.wing { background: var(--c-z-soft); border-color: var(--c-z); }
+  .sw.tail { background: var(--c-t-soft); border-color: var(--c-t); }
+  .sw.fus { background: var(--c-r-soft); border-color: var(--c-r); }
+  .sw.nac { background: var(--c-v-soft); border-color: var(--c-v); }
+  .sw-bar { display: flex; height: 30px; margin: 4px 0 6px; border-radius: 6px; overflow: hidden; font-size: 0.8rem; font-weight: 600; }
+  .sw-bar > span { display: flex; align-items: center; justify-content: center; border: 2px solid; color: var(--ink); white-space: nowrap; overflow: hidden; }
+  .sw-bar > span + span { border-left-width: 0; }
+  .sw-bar .wing { background: var(--c-z-soft); border-color: var(--c-z); }
+  .sw-bar .tail { background: var(--c-t-soft); border-color: var(--c-t); }
+  .sw-bar .fus { background: var(--c-r-soft); border-color: var(--c-r); }
+  .sw-bar .nac { background: var(--c-v-soft); border-color: var(--c-v); }
+</style>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 40 min</p>
+    <h1>Estimating L/D from the Sketch</h1>
+    <p class="lede">The Breguet equations need a lift-to-drag ratio, but there is no drag analysis yet: only a sketch. Fortunately, the sketch already holds the two numbers that matter most, the span and the wetted area. Together with a skin-friction coefficient typical of the class, they give an \(\LDmax\) good enough to size the aircraft, long before a full drag build-up is possible.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Estimate the wetted area of wings, tails and fuselage from a sketch.</li>
+      <li>Estimate \(\CDz\) with the equivalent skin-friction method, \(\CDz = C_{fe}\Swet/\Sref\).</li>
+      <li>Compute the wetted aspect ratio and \(\LDmax = \tfrac12\sqrt{\pi e A_{\text{wet}}/C_{fe}}\).</li>
+      <li>Choose the \(L/D\) for cruise and loiter for jet and propeller aircraft.</li>
+    </ul>
+  </section>
+
+  <section id="wetted">
+    <h2>Wetted area from the sketch</h2>
+    <p>Zero-lift drag at subsonic speeds is mostly skin friction, so it grows with the area the air touches: the <strong>wetted area</strong> \(\Swet\). Quick estimates come from the views of a sketch:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Wetted area (quick approximations)</p>
+      \[ \text{Wings and tails:}\ \ \Swet \approx S_{\text{exposed}}\left(1.977 + 0.52\,\tfrac{t}{c}\right) \]
+      \[ \text{Fuselage:}\ \ \Swet \approx 3.4\,\frac{A_{\text{top}} + A_{\text{side}}}{2} \]
+      <p>\(S_{\text{exposed}}\) is the planform area outside the fuselage; a little more than twice this area is wetted (top and bottom, plus a thickness correction). \(A_{\text{top}}\) and \(A_{\text{side}}\) are the projected areas of the fuselage in the top and side views. Add nacelles, pods and external stores the same way.</p>
+    </div>
+    <figure class="figure wide wa" aria-labelledby="fig31a-cap">
+      <div class="wa-grid">
+        <div class="wa-panel">
+          <p class="wa-title">(a) Exposed planform</p>
+          <svg viewBox="0 0 250 200" role="img" aria-label="Top view of a wing crossing a fuselage. The two wing panels outside the fuselage are shaded as the exposed planform; the part of the wing inside the fuselage is hatched and is not wetted.">
+            <defs><pattern id="wa-hatch-a" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+            <polygon class="wing" points="111,103 18,134 18,152 111,157"/>
+            <polygon class="wing" points="139,103 232,134 232,152 139,157"/>
+            <path class="fus" d="M111,16 C111,8 118,4 125,4 C132,4 139,8 139,16 L139,170 C139,182 132,190 125,190 C118,190 111,182 111,170 Z"/>
+            <polygon fill="url(#wa-hatch-a)" class="buried" points="111,103 125,98 139,103 139,157 125,158 111,157"/>
+            <line class="ln" x1="60" y1="140" x2="60" y2="172"/>
+            <text x="60" y="186" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan class="sub" dy="3.5">exp</tspan><tspan dy="-3.5"></tspan></text>
+            <line class="ln" x1="190" y1="140" x2="190" y2="172"/>
+            <text x="190" y="186" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan class="sub" dy="3.5">exp</tspan><tspan dy="-3.5"></tspan></text>
+            <line class="ln" x1="139" y1="128" x2="190" y2="90"/>
+            <text x="244" y="56" text-anchor="end">inside the</text>
+            <text x="244" y="70" text-anchor="end">fuselage:</text>
+            <text x="244" y="84" text-anchor="end">not wetted</text>
+            <text x="6" y="38"><tspan font-style="italic">S</tspan><tspan class="sub" dy="3.5">ref</tspan><tspan dy="-3.5"> counts</tspan></text>
+            <text x="6" y="52">the hatched part;</text>
+            <text x="6" y="66"><tspan font-style="italic">S</tspan><tspan class="sub" dy="3.5">wet</tspan><tspan dy="-3.5"> does not</tspan></text>
+          </svg>
+          <p class="wa-eq">Area outside the fuselage, in the top view</p>
+        </div>
+        <div class="wa-panel">
+          <p class="wa-title">(b) Wing or tail section</p>
+          <svg viewBox="0 0 250 200" role="img" aria-label="Airfoil section. The air wets the upper and the lower surface, each a little longer than the chord, so the wetted area is slightly more than twice the exposed planform, more for a thicker section.">
+            <path class="wing-edge" d="M24,104 C24,86 60,78 105,79 C160,81 205,96 228,104"/>
+            <path class="wing-edge" d="M24,104 C24,118 60,124 105,123 C160,121 205,111 228,104"/>
+            <path d="M24,104 C24,86 60,78 105,79 C160,81 205,96 228,104 C205,111 160,121 105,123 C60,124 24,118 24,104 Z" fill="var(--c-z-soft)" stroke="none" opacity="0.8"/>
+            <text x="125" y="62" text-anchor="middle">upper surface ≈ <tspan font-style="italic">S</tspan><tspan class="sub" dy="3.5">exp</tspan><tspan dy="-3.5"></tspan></text>
+            <text x="125" y="146" text-anchor="middle">lower surface ≈ <tspan font-style="italic">S</tspan><tspan class="sub" dy="3.5">exp</tspan><tspan dy="-3.5"></tspan></text>
+            <line class="dim" x1="24" y1="170" x2="228" y2="170"/>
+            <line class="dim" x1="24" y1="164" x2="24" y2="176"/><line class="dim" x1="228" y1="164" x2="228" y2="176"/>
+            <text x="126" y="189" text-anchor="middle">chord <tspan font-style="italic">c</tspan></text>
+            <line class="dim" x1="92" y1="79" x2="92" y2="123"/>
+            <text x="98" y="106" font-style="italic">t</text>
+          </svg>
+          <p class="wa-eq">Both sides wetted, plus a little for thickness</p>
+        </div>
+        <div class="wa-panel">
+          <p class="wa-title">(c) Fuselage views</p>
+          <svg viewBox="0 0 250 200" role="img" aria-label="Top and side views of a fuselage with their projected areas shaded, and a circular cross-section. The wetted area is about 3.4 times the average of the two projected areas; a circular cylinder would give pi times.">
+            <text x="10" y="18">top view</text>
+            <path class="fus" d="M12,52 C12,40 30,34 52,34 L182,34 C208,35 228,46 234,52 C228,58 208,69 182,70 L52,70 C30,70 12,64 12,52 Z"/>
+            <text x="123" y="56" text-anchor="middle" class="strong"><tspan font-style="italic">A</tspan><tspan class="sub" dy="3.5">top</tspan><tspan dy="-3.5"></tspan></text>
+            <text x="10" y="96">side view</text>
+            <path class="fus" d="M12,136 C12,122 30,114 52,114 L190,114 C212,114 228,116 236,119 L236,126 C222,142 206,150 186,150 L52,150 C30,150 12,148 12,136 Z"/>
+            <text x="123" y="138" text-anchor="middle" class="strong"><tspan font-style="italic">A</tspan><tspan class="sub" dy="3.5">side</tspan><tspan dy="-3.5"></tspan></text>
+            <line class="dash" x1="12" y1="34" x2="236" y2="34"/><line class="dash" x1="12" y1="70" x2="236" y2="70"/>
+            <line class="dim" x1="12" y1="172" x2="236" y2="172"/>
+            <line class="dim" x1="12" y1="166" x2="12" y2="178"/><line class="dim" x1="236" y1="166" x2="236" y2="178"/>
+            <text x="124" y="191" text-anchor="middle">length <tspan font-style="italic">L</tspan></text>
+          </svg>
+          <p class="wa-eq">Projected areas of the top and side views</p>
+        </div>
+      </div>
+      <figcaption id="fig31a-cap"><strong>Figure 3.1</strong> What the approximations measure. (a) Only the planform outside the fuselage, \(S_{\text{exposed}}\), is wetted; the reference area \(\Sref\) also counts the hatched part inside. (b) The air wets both surfaces, each a little longer than the chord, so \(\Swet\) is just over twice \(S_{\text{exposed}}\): the factor is \(1.977 + 0.52\,t/c\), or 2.04 at \(t/c = 0.12\). (c) The fuselage is wrapped around its top and side views. For a circular cylinder of diameter \(d\), the wetted area \(\pi d L\) is exactly \(\pi\) times the average projected area \(dL\); the 3.4 is an empirical value that fits real fuselages.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 3.1 — The business jet's wetted area</p>
+      <p>The sketch shows a wing of \(\Sref = 28\ \text{m}^2\) and aspect ratio 8, of which 85% is exposed, with \(t/c = 0.12\); exposed tails of \(6.0\ \text{m}^2\) (horizontal) and \(4.5\ \text{m}^2\) (vertical) with \(t/c = 0.10\); a fuselage \(14\ \text{m}\) long and \(1.8\ \text{m}\) in diameter whose top and side views each cover 85% of the bounding rectangle; and two nacelles of \(6\ \text{m}^2\) wetted area each. Find the total wetted area and \(\Swet/\Sref\).</p>
+      <figure class="figure wa" aria-labelledby="fig32-cap">
+        <div class="wa-grid wa-grid-2">
+          <div class="wa-panel">
+            <p class="wa-title">Top view</p>
+            <svg viewBox="0 0 300 304" role="img" aria-label="Top view of the business jet to scale: a swept wing of 15.0 metre span whose exposed panels are shaded blue and whose part inside the fuselage is hatched, a fuselage 14 metres long and 1.8 metres wide inside its dashed bounding rectangle, two nacelles on the rear fuselage, and a T-tail: the swept horizontal tail sits on top of the fin, above and behind the end of the fuselage.">
+              <defs><pattern id="wa-hatch-b" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line class="hatch-line" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+              <polygon class="wing" points="136.5,122.9 37.5,159 37.5,175 136.5,160"/>
+              <polygon class="wing" points="163.5,122.9 262.5,159 262.5,175 163.5,160"/>
+              <path class="fus" d="M136.5,62 C136.5,42 143,30 150,30 C157,30 163.5,42 163.5,62 L163.5,214 C163.5,228 157,240 150,240 C143,240 136.5,228 136.5,214 Z"/>
+              <polygon fill="url(#wa-hatch-b)" class="buried" points="136.5,122.9 150,118 163.5,122.9 163.5,160 150,158 136.5,160"/>
+              <rect class="dash" x="136.5" y="30" width="27" height="210"/>
+              <line class="ln" x1="131" y1="194" x2="136.5" y2="194"/><line class="ln" x1="169" y1="194" x2="163.5" y2="194"/>
+              <rect class="nac" x="117" y="178" width="14" height="33" rx="6"/>
+              <rect class="nac" x="169" y="178" width="14" height="33" rx="6"/>
+              <rect class="tail" x="148" y="200" width="4" height="46" rx="1.5"/>
+              <polygon class="tail" points="150,224 108,248 108,260 150,246 192,260 192,248"/>
+              <text x="199" y="250">horizontal tail</text>
+              <text x="199" y="264">on top of the fin</text>
+              <line class="dim" x1="37.5" y1="280" x2="262.5" y2="280"/>
+              <line class="dim" x1="37.5" y1="274" x2="37.5" y2="286"/><line class="dim" x1="262.5" y1="274" x2="262.5" y2="286"/>
+              <text x="150" y="298" text-anchor="middle">span <tspan font-style="italic">b</tspan> = √(8 × 28) = 15.0 m</text>
+              <line class="dim" x1="12" y1="30" x2="28" y2="30"/><line class="dim" x1="12" y1="240" x2="28" y2="240"/>
+              <line class="dim" x1="20" y1="30" x2="20" y2="88"/><line class="dim" x1="20" y1="108" x2="20" y2="240"/>
+              <text x="20" y="102" text-anchor="middle">14 m</text>
+              <text x="150" y="20" text-anchor="middle">1.8 m</text>
+            </svg>
+          </div>
+          <div class="wa-panel">
+            <p class="wa-title">Side view</p>
+            <svg viewBox="0 50 300 210" role="img" aria-label="Side view of the business jet to scale: the fuselage inside its dashed 14 by 1.8 metre bounding rectangle, the low wing, a nacelle on the rear fuselage, and a T-tail with the horizontal tail on top of the fin.">
+              <rect class="dash" x="40" y="116.5" width="212" height="27"/>
+              <polygon class="tail" points="210,117 246,119 256,82 235,82"/>
+              <rect class="tail" x="234" y="80" width="24" height="4" rx="1.5"/>
+              <path class="fus" d="M40,132 C40,120 55,116.5 75,116.5 L215,116.5 C235,117 248,119 252,121 L252,127 C238,138 222,143.5 200,143.5 L75,143.5 C55,143.5 40,142 40,132 Z"/>
+              <rect class="wing" x="128" y="139" width="44" height="5" rx="2"/>
+              <rect class="nac" x="188" y="111" width="33" height="14" rx="6"/>
+              <line class="dim" x1="40" y1="170" x2="252" y2="170"/>
+              <line class="dim" x1="40" y1="164" x2="40" y2="176"/><line class="dim" x1="252" y1="164" x2="252" y2="176"/>
+              <text x="146" y="190" text-anchor="middle">14 m</text>
+              <line class="dim" x1="24" y1="116.5" x2="36" y2="116.5"/><line class="dim" x1="24" y1="143.5" x2="36" y2="143.5"/>
+              <line class="dim" x1="30" y1="116.5" x2="30" y2="143.5"/>
+              <text x="26" y="106" text-anchor="middle">1.8 m</text>
+              <line class="ln" x1="246" y1="70" x2="246" y2="80"/>
+              <text x="246" y="64" text-anchor="middle">T-tail</text>
+              <text x="150" y="230" text-anchor="middle">dashed: the bounding rectangle;</text>
+              <text x="150" y="246" text-anchor="middle">each fuselage view fills 85% of it</text>
+            </svg>
+          </div>
+        </div>
+        <ul class="wa-legend">
+          <li><span class="sw wing" aria-hidden="true"></span><span><strong>Wing:</strong> \(\Sref = 28\ \text{m}^2\), \(A = 8\), 85% exposed, \(t/c = 0.12\)</span></li>
+          <li><span class="sw tail" aria-hidden="true"></span><span><strong>Tails:</strong> \(6.0 + 4.5\ \text{m}^2\) exposed, \(t/c = 0.10\)</span></li>
+          <li><span class="sw fus" aria-hidden="true"></span><span><strong>Fuselage:</strong> \(14 \times 1.8\ \text{m}\), each view 85% of the rectangle</span></li>
+          <li><span class="sw nac" aria-hidden="true"></span><span><strong>Nacelles:</strong> two, \(6\ \text{m}^2\) wetted each</span></li>
+        </ul>
+        <figcaption id="fig32-cap"><strong>Figure 3.2</strong> The business jet of Example 3.1, drawn to scale from the data in the example (the wing taper and sweep are illustrative). Each colour is one line of the wetted-area build-up.</figcaption>
+      </figure>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{Wing: } 0.85(28)(1.977 + 0.52(0.12)) = 23.8(2.039) = 48.5\ \text{m}^2 \]
+          \[ \text{Tails: } (6.0 + 4.5)(1.977 + 0.052) = 21.3\ \text{m}^2 \]
+          \[ A_{\text{top}} = A_{\text{side}} = 0.85(14)(1.8) = 21.4\ \text{m}^2, \qquad \text{fuselage: } 3.4(21.4) = 72.8\ \text{m}^2 \]
+          <div class="table-wrap">
+            <table class="data sw-table">
+              <caption>Wetted area build-up</caption>
+              <thead><tr><th scope="col">Component</th><th scope="col">\(\Swet\) (m²)</th><th scope="col">Share</th></tr></thead>
+              <tbody>
+                <tr><td><span class="sw wing" aria-hidden="true"></span> Wing</td><td>48.5</td><td>31%</td></tr>
+                <tr><td><span class="sw tail" aria-hidden="true"></span> Tails</td><td>21.3</td><td>14%</td></tr>
+                <tr><td><span class="sw fus" aria-hidden="true"></span> Fuselage</td><td>72.8</td><td>47%</td></tr>
+                <tr><td><span class="sw nac" aria-hidden="true"></span> Nacelles</td><td>12.0</td><td>8%</td></tr>
+              </tbody>
+              <tfoot><tr><th scope="row">Total</th><td>154.7</td><td>100%</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="sw-bar" role="img" aria-label="Shares of the wetted area: wing 31 percent, tails 14 percent, fuselage 47 percent, nacelles 8 percent.">
+            <span class="wing" style="flex: 48.5">Wing 31%</span><span class="tail" style="flex: 21.3">14%</span><span class="fus" style="flex: 72.8">Fuselage 47%</span><span class="nac" style="flex: 12.0">8%</span>
+          </div>
+          \[ \frac{\Swet}{\Sref} = \frac{154.7}{28} = 5.52 \approx 5.5 \]
+          <p>Almost half the wetted area of a business jet is fuselage: a small aircraft must still have a cabin people can sit in. That is one reason small jets have lower \(L/D\) than airliners.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="cfe">
+    <h2>Zero-lift drag: the equivalent skin friction</h2>
+    <p>Real aircraft have more drag than flat-plate skin friction alone: form drag, interference, gaps, antennas, leakage. These are all lumped into an <strong>equivalent skin-friction coefficient</strong> \(C_{fe}\), measured on existing aircraft of each type:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Equivalent skin-friction method</p>
+      \[ \CDz = C_{fe}\,\frac{\Swet}{\Sref} \]
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Equivalent skin-friction coefficients for subsonic flight (source: Raymer, Table 12.3)</caption>
+        <thead><tr><th scope="col">Type of aircraft</th><th scope="col">\(C_{fe}\)</th></tr></thead>
+        <tbody id="cfe-rows"></tbody>
+      </table>
+    </div>
+    <p>Light aircraft have higher \(C_{fe}\) than airliners: fixed landing gear, exposed engines, less careful finish and, above all, a lower Reynolds number, at which skin friction is higher.</p>
+  </section>
+
+  <section id="wetted-ar">
+    <h2>The wetted aspect ratio</h2>
+    <p>Substitute \(\CDz = C_{fe}\Swet/\Sref\) into Module 1's \(\LDmax = \tfrac12\sqrt{\pi A e/\CDz}\), with \(A = b^2/\Sref\). The reference area cancels:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Maximum \(L/D\) from the sketch</p>
+      \[ A_{\text{wet}} = \frac{b^2}{\Swet} = \frac{A}{\Swet/\Sref}, \qquad \LDmax = \frac12\sqrt{\frac{\pi e\,\colL{A_{\text{wet}}}}{C_{fe}}} \]
+      <p>Span gives lift efficiently (induced drag falls with \(b^2\)); wetted area costs friction drag. Their ratio is what matters. Take \(e\) about 0.75 to 0.85 for a first estimate (Module 9 estimates it properly).</p>
+    </div>
+    <p>Plotted against \(A_{\text{wet}}\), the \(\LDmax\) of real aircraft falls in a band for each class, and a first estimate can be read off the band. The formula above is the physics behind those bands; it is a little optimistic because it ignores trim, compressibility and the drag of things the sketch does not show, so many designers take a few percent off.</p>
+    <div class="example">
+      <p class="example-title">Example 3.2 — The business jet's \(L/D\)</p>
+      <p>With \(A = 8\), \(\Swet/\Sref = 5.5\), \(C_{fe} = 0.0030\) (civil transport) and \(e = 0.75\), find \(A_{\text{wet}}\), \(\CDz\), \(\LDmax\), and the \(L/D\) to use in cruise.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ A_{\text{wet}} = \frac{8}{5.5} = 1.455, \qquad \CDz = 0.0030(5.5) = 0.0165 \]
+          \[ \LDmax = \frac12\sqrt{\frac{\pi(0.75)(1.455)}{0.0030}} = \frac12\sqrt{1142} = 16.9 \]
+          <p>A jet gets its best range at \(L/D = 0.866\,\LDmax\) (Module 1, Lesson 6), so cruise uses \(0.866(16.9) = 14.6\). The 45-minute loiter reserve uses \(\LDmax = 16.9\).</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.3</strong> \(\LDmax\) against wetted aspect ratio, \(\tfrac12\sqrt{\pi e A_{\text{wet}}/C_{fe}}\), for each type of aircraft in the \(C_{fe}\) table (gray), with the chosen type in blue. Set the aspect ratio and the wetted-area ratio of a sketch to place it. A longer span helps; a bigger fuselage for the same wing hurts.</figcaption>
+    </figure>
+  </section>
+
+  <section id="cruise-loiter">
+    <h2>Which \(L/D\) for cruise and loiter</h2>
+    <p>An aircraft does not fly every segment at \(\LDmax\). What it maximizes depends on how its fuel consumption varies with speed:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>\(L/D\) for the Breguet segments</caption>
+        <thead><tr><th scope="col">Engine</th><th scope="col">Cruise (best range)</th><th scope="col">Loiter (best endurance)</th></tr></thead>
+        <tbody>
+          <tr><td>Jet</td><td>\(0.866\,\LDmax\)</td><td>\(\LDmax\)</td></tr>
+          <tr><td>Propeller</td><td>\(\LDmax\)</td><td>\(0.866\,\LDmax\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A jet burns fuel in proportion to thrust, so it loiters where drag is least (\(\LDmax\)) and cruises a little faster, where speed times \(L/D\) is greatest. A propeller engine burns fuel in proportion to power, drag times speed, so it cruises at \(\LDmax\) and loiters slower, where power is least, at \(0.866\,\LDmax\). Lesson 4 shows why from the fuel consumption.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Wings and tails: \(\Swet \approx S_{\text{exposed}}(1.977 + 0.52\,t/c)\); fuselage: \(\Swet \approx 3.4(A_{\text{top}} + A_{\text{side}})/2\).</li>
+      <li>\(\CDz = C_{fe}\Swet/\Sref\), with \(C_{fe}\) about 0.0030 for transports and 0.0055 for light singles.</li>
+      <li>\(A_{\text{wet}} = b^2/\Swet\) and \(\LDmax = \tfrac12\sqrt{\pi e A_{\text{wet}}/C_{fe}}\).</li>
+      <li>Jets cruise at \(0.866\,\LDmax\) and loiter at \(\LDmax\); propeller aircraft the other way round.</li>
+      <li>Next, <a href="04-fuel-consumption.html">Lesson 4</a> estimates the propulsive ingredient, \(C\).</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- C_fe table (from SIZING.CFE) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('cfe-rows');
+  SIZING.CFE.forEach(function (c) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { text: c.cfe.toFixed(4) })])); });
+});
+
+/* ---------- Figure 3.3: L/D max against wetted aspect ratio ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { A: 8, ratio: 5.5, e: 0.75, cfe: 'transport' };
+  function cfe() { return SIZING.CFE.filter(function (c) { return c.id === st.cfe; })[0].cfe; }
+  var chart = AERO.chart(document.getElementById('fig31-stage'), {
+    x: { label: 'Wetted aspect ratio \\(A_{\\text{wet}} = b^2/\\Swet\\)', min: 0, max: 3 }, y: { label: '\\(\\LDmax\\)', min: 0, max: 30 }, height: 340,
+    ariaLabel: 'Maximum lift-to-drag ratio against wetted aspect ratio: square-root curves for each skin-friction coefficient, with the sketch marked.'
+  });
+  SIZING.CFE.forEach(function (c) { chart.fn(function (a) { return SIZING.ldmaxWet(a, c.cfe, st.e); }, { color: 'muted', width: 1 }); });
+  var cur = chart.fn(function (a) { return SIZING.ldmaxWet(a, cfe(), st.e); }, { color: 'z', width: 2.8 });
+  var mk = chart.marker([1.45, 16.9], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig31-controls');
+  var sel = CYL.select({ label: 'Type of aircraft (\\(C_{fe}\\))', value: st.cfe, options: SIZING.CFE.map(function (c) { return { value: c.id, label: c.label + ' (' + c.cfe.toFixed(4) + ')' }; }), onChange: function (v) { st.cfe = v; draw(); } });
+  var sA = CYL.slider({ label: 'Aspect ratio \\(A\\)', min: 2, max: 14, step: 0.1, value: st.A, color: 'z', onInput: function (v) { st.A = v; draw(); } });
+  var sR = CYL.slider({ label: '\\(\\Swet/\\Sref\\)', min: 2, max: 9, step: 0.05, value: st.ratio, onInput: function (v) { st.ratio = v; draw(); } });
+  var sE = CYL.slider({ label: 'Oswald factor \\(e\\)', min: 0.6, max: 0.95, step: 0.01, value: st.e, onInput: function (v) { st.e = v; draw(); } });
+  var ro = { aw: CYL.readout('\\(A_{\\text{wet}}\\)'), cd: CYL.readout('\\(\\CDz\\)'), ld: CYL.readout('\\(\\LDmax\\)', { color: 'z' }), lj: CYL.readout('Jet cruise / loiter \\(L/D\\)'), lp: CYL.readout('Propeller cruise / loiter \\(L/D\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The sketch' }));
+  [sel, sA, sR, sE].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.aw.el, ro.cd.el, ro.ld.el, ro.lj.el, ro.lp.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var aw = st.A / st.ratio, ld = SIZING.ldmaxWet(aw, cfe(), st.e);
+    chart.redraw(); mk.set([aw, Math.min(30, ld)]);
+    ro.aw.set(CYL.fmt(aw, 3)); ro.cd.set(CYL.fmt(cfe() * st.ratio, 3)); ro.ld.set(CYL.fmt(ld, 3));
+    ro.lj.set(CYL.fmt(0.866 * ld, 3) + ' / ' + CYL.fmt(ld, 3)); ro.lp.set(CYL.fmt(ld, 3) + ' / ' + CYL.fmt(0.866 * ld, 3));
+    chart.setAriaLabel('Sketch with wetted aspect ratio ' + CYL.fmt(aw, 3) + ' and skin-friction coefficient ' + cfe() + ': maximum lift-to-drag ratio ' + CYL.fmt(ld, 3) + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1',
+    type: 'numeric',
+    prompt: 'A wing has an exposed area of \\(60\\ \\text{m}^2\\) and a thickness ratio \\(t/c = 0.14\\). Estimate its wetted area.',
+    label: '\\(\\Swet =\\)', answer: 60 * (1.977 + 0.52 * 0.14), unit: 'm²',
+    hints: ['\\(\\Swet \\approx S_{\\text{exposed}}(1.977 + 0.52\\,t/c)\\).'],
+    explain: 'A little more than twice the exposed area: top, bottom, and the extra length around a thick section.',
+    solution: '\\[ \\Swet = 60(1.977 + 0.52(0.14)) = 60(2.050) = 123.0\\ \\text{m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2',
+    type: 'numeric',
+    prompt: 'A transport sketch has \\(A = 9\\) and \\(\\Swet/\\Sref = 6.0\\). With \\(C_{fe} = 0.0030\\) and \\(e = 0.8\\), estimate \\(\\LDmax\\).',
+    label: '\\(\\LDmax =\\)', answer: 0.5 * Math.sqrt(Math.PI * 0.8 * 1.5 / 0.003),
+    hints: ['\\(A_{\\text{wet}} = A/(\\Swet/\\Sref) = 9/6\\).', '\\(\\LDmax = \\tfrac12\\sqrt{\\pi e A_{\\text{wet}}/C_{fe}}\\).'],
+    explain: 'Equivalently, \\(\\CDz = 0.0030(6) = 0.018\\) and \\(\\tfrac12\\sqrt{\\pi(9)(0.8)/0.018} = 17.7\\).',
+    solution: '\\[ A_{\\text{wet}} = \\frac{9}{6.0} = 1.5, \\qquad \\LDmax = \\frac12\\sqrt{\\frac{\\pi(0.8)(1.5)}{0.0030}} = \\frac12\\sqrt{1257} = 17.7 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3',
+    type: 'mc',
+    prompt: 'A turboprop patrol aircraft has \\(\\LDmax = 15\\). Which \\(L/D\\) should the first sizing use for its long loiter on station?',
+    choices: [
+      { html: '15, \\(\\LDmax\\)', feedback: 'That is right for a jet. A propeller aircraft loiters slower, where power is least.' },
+      { html: '13.0, \\(0.866\\,\\LDmax\\)', correct: true, feedback: 'Yes: for a propeller aircraft, minimum power, and so best endurance, is at \\(0.866\\,\\LDmax\\).' },
+      { html: '17.3, \\(\\LDmax/0.866\\)', feedback: 'No aircraft flies above its \\(\\LDmax\\).' },
+      { html: '7.5, half of \\(\\LDmax\\)', feedback: 'Far too low: that would be a very inefficient flight condition.' }
+    ],
+    explain: 'Propeller aircraft: cruise at \\(\\LDmax\\), loiter at \\(0.866\\,\\LDmax\\). Jets the other way round.'
+  });
+});
+</script>
+</body>
+</html>

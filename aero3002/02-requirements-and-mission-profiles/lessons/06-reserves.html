@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuel Reserves, Winds and Design Range · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Why aircraft carry reserve fuel and how much the rules require (VFR, IFR, US airline domestic and international, ICAO), holding fuel from the endurance equation, headwinds and the equivalent still-air distance, and how a route becomes a design range.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  .rule-table td:first-child { font-weight: 600; }
+  .fuel-stack { display: flex; height: 34px; margin: 8px 0 4px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--bg-sunken); }
+  .fuel-stack span { display: block; height: 100%; }
+  .fs-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 8px; padding: 0; list-style: none; font-size: 0.82rem; color: var(--ink-muted); }
+  .fs-key i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; vertical-align: -1px; }
+</style>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 35 min</p>
+    <h1>Fuel Reserves, Winds and Design Range</h1>
+    <p class="lede">Every airliner lands with fuel it hoped never to need. The rules decide how much, and on a long flight it is several tonnes: weight that must be lifted and carried all the way. Add the winds, which make the same route longer one way than the other, and the "design range" in a requirement turns out to be quite a bit more than the distance on the map.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Explain what reserve fuel is for, and summarize the main fuel rules for general aviation and airlines.</li>
+      <li>Compute holding fuel with the Breguet endurance equation, and total reserves with a fuel rule.</li>
+      <li>Convert a ground distance flown against a wind into an equivalent still-air distance.</li>
+      <li>Build a design range from a route: great circle, routing allowance, winds, and reserves carried as fuel.</li>
+    </ul>
+  </section>
+
+  <section id="why">
+    <h2>What reserves are for</h2>
+    <p>The flight plan assumes forecast winds, the planned route and altitude, and a landing on arrival. Reality differs. Reserve fuel covers:</p>
+    <ul>
+      <li><strong>Contingency:</strong> stronger headwinds, a lower or longer route given by air traffic control, a heavier aircraft than planned.</li>
+      <li><strong>Diversion:</strong> weather or a closed runway at the destination: a missed approach, then a climb and cruise to an <strong>alternate</strong> airport.</li>
+      <li><strong>Holding:</strong> circling in a holding pattern while waiting for a landing slot.</li>
+    </ul>
+    <p>In sizing, reserves are carried on every flight but (normally) never burned, so they behave like payload that cannot be sold. They are accounted for either as explicit mission segments (a diversion, a loiter) or with a simple allowance, the factor 1.06 in \(\Wf/\Wo = 1.06(1 - W_x/W_0)\) of Lesson 5, which covers reserves and trapped fuel together.</p>
+  </section>
+
+  <section id="rules">
+    <h2>The fuel rules</h2>
+    <div class="table-wrap">
+      <table class="data rule-table">
+        <caption>Fuel required, simplified (after 14 CFR Parts 91 and 121, and ICAO Annex 6)</caption>
+        <thead><tr><th scope="col">Operation</th><th scope="col">Fuel required beyond the trip to the destination</th></tr></thead>
+        <tbody>
+          <tr><td>Visual flight rules (aeroplanes)</td><td>30 min at normal cruising speed by day, 45 min at night</td></tr>
+          <tr><td>Instrument flight rules</td><td>Fuel to the alternate airport (when one is required), then 45 min at normal cruising speed</td></tr>
+          <tr><td>US airlines, domestic</td><td>Fuel to the most distant alternate, then 45 min at normal cruising fuel consumption</td></tr>
+          <tr><td>US airlines, international (turbine aircraft other than turboprops)</td><td>10% of the total flight time at normal cruising fuel consumption, then fuel to the most distant alternate, then 30 min of holding at 1500 ft above the alternate</td></tr>
+          <tr><td>ICAO and European rules (turbine aeroplanes)</td><td>Contingency fuel (typically 5% of the trip fuel), alternate fuel, and a final reserve of 30 min of holding at 1500 ft (450 m); plus taxi fuel and any extra the captain decides</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Canada's Aviation Regulations have equivalent rules. Real operations add many details (when an alternate is required, reduced contingency with better flight planning, fuel for extended operations over water), but for conceptual design these rules set the size of the reserve, and a customer's requirement usually names one: "5000 km with international reserves".</p>
+  </section>
+
+  <section id="holding">
+    <h2>Holding fuel and the endurance equation</h2>
+    <p>Holding is flown for time, not distance. In Breguet's derivation, keep the time instead of dividing by the speed, and the result is the endurance equation. A jet holds at the speed for \(\LDmax\), where the drag, and so the fuel flow, is least:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Breguet endurance (jet), and holding fuel</p>
+      \[ E = \frac{1}{C}\,\colL{\frac{L}{D}}\,\ln\frac{W_{i-1}}{W_i} \qquad\Longleftrightarrow\qquad \frac{W_i}{W_{i-1}} = \exp\left[-\frac{E\,C}{L/D}\right] \]
+      <p>\(E\) in hours with \(C\) in 1/h. For loiter, a high-bypass turbofan has \(C\) of about 0.4/h (0.5/h in cruise). The fuel burned is \(W_{i-1}\left(1 - W_i/W_{i-1}\right)\).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 6.1 — Thirty minutes in the hold</p>
+      <p>A narrow-body starts a 30-minute hold at \(62\,000\ \text{kg}\), with \(\LDmax = 18\) and \(C = 0.4/\text{h}\). How much fuel does it burn?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \frac{W_i}{W_{i-1}} = \exp\left[-\frac{0.5(0.4)}{18}\right] = e^{-0.01111} = 0.98895 \]
+          \[ W_{\text{fuel}} = 62\,000(1 - 0.98895) = 685\ \text{kg} \]
+          <p>Over a short time the exponential is almost linear: \(W\,EC/(L/D) = 62\,000(0.5)(0.4)/18 = 689\ \text{kg}\). That is simply drag times \(C\) times time: a fuel flow of about \(1380\ \text{kg/h}\). Real holding fuel flows are often higher, since aircraft hold at low altitude, where engines are less efficient, and not always at the best speed: treat this as a first estimate.</p>
+        </div>
+      </details>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 6.2 — An international reserve</p>
+      <p>A wide-body plans a 7.0-hour flight burning an average of \(5600\ \text{kg/h}\) in cruise. Its alternate is \(400\ \text{km}\) from the destination and needs \(2900\ \text{kg}\) of fuel; holding burns \(4400\ \text{kg/h}\). Find the reserve under the US international rule, and compare it with the ICAO rule with 5% contingency (take the trip fuel as \(7.0 \times 5600\ \text{kg}\)).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{US: } 0.10(7.0)(5600) + 2900 + 0.5(4400) = 3920 + 2900 + 2200 = 9020\ \text{kg} \]
+          \[ \text{ICAO: } 0.05(7.0)(5600) + 2900 + 0.5(4400) = 1960 + 2900 + 2200 = 7060\ \text{kg} \]
+          <p>Either way, the reserve is about a fifth of the trip fuel of \(39\,200\ \text{kg}\), and it must be carried, and paid for, on every flight.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> The fuel load of a flight under each rule. The bar divides the fuel at the gate into taxi, trip, contingency, alternate and final reserve; the chart shows the reserves as a share of the trip fuel against flight time. The fixed parts (alternate and holding) weigh most on short flights; percentage rules add reserves in proportion to the trip. Fuel flows are illustrative.</figcaption>
+    </figure>
+  </section>
+
+  <section id="winds">
+    <h2>Winds: the equivalent still-air distance</h2>
+    <p>Breguet gives range through the air. Against a headwind \(w\), the ground speed is \(V - w\), so the flight takes longer, and during that time the aircraft flies a longer distance through the air. The <strong>equivalent still-air distance</strong> (ESAD) is the air distance that uses the same fuel:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Equivalent still-air distance</p>
+      \[ t = \frac{d_{\text{ground}}}{V - w}, \qquad d_{\text{air}} = V\,t = d_{\text{ground}}\,\frac{V}{V - w} \]
+      <p>\(V\) is the true airspeed; \(w\) is the average headwind component (negative for a tailwind).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 6.3 — Westbound across the Atlantic</p>
+      <p>A \(5600\ \text{km}\) route is flown at a true airspeed of \(850\ \text{km/h}\). Westbound, the average headwind component is \(90\ \text{km/h}\) (about 50 kt). Eastbound, the same wind is a tailwind. Find the still-air distance each way.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{West: } 5600\,\frac{850}{850 - 90} = 6263\ \text{km}, \qquad \text{East: } 5600\,\frac{850}{850 + 90} = 5064\ \text{km} \]
+          <p>The westbound flight needs 12% more range than the map distance, and 24% more than the eastbound flight. Average headwinds are not symmetric either: the jet streams blow from the west at cruise altitudes, strongest in winter.</p>
+        </div>
+      </details>
+    </div>
+    <p>Route studies do not use the average day. They use a wind that is not exceeded on most days of the year (85% of days is a common choice), so that the aircraft can fly the route nonstop with a full load almost every day.</p>
+    <figure class="figure wide" aria-labelledby="fig62-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig62-stage"></div>
+        <div class="viz-controls" id="fig62-controls"></div>
+      </div>
+      <figcaption id="fig62-cap"><strong>Figure 6.2</strong> Equivalent still-air distance against the average wind component for a route (headwinds positive). The curve is not symmetric: a headwind costs more than the same tailwind saves, because the aircraft spends more time in it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="design-range">
+    <h2>From a route to a design range</h2>
+    <p>Putting Lessons 2, 5 and 6 together, the range requirement for a route is built in steps:</p>
+    <ol>
+      <li><strong>Great-circle distance</strong> between the airports (Lesson 2).</li>
+      <li><strong>Routing allowance:</strong> airways, departure and arrival procedures and air traffic control make the flown distance a few percent longer.</li>
+      <li><strong>Winds:</strong> convert to the still-air distance for the design wind, in the more demanding direction.</li>
+      <li><strong>Reserves</strong> by the operating rule: carried as fuel, on top of the trip fuel, not added to the range.</li>
+    </ol>
+    <div class="example">
+      <p class="example-title">Example 6.4 — London to Ottawa, westbound</p>
+      <p>The great-circle distance is \(5347\ \text{km}\) (Example 2.2). Allow 4% for routing and an average headwind of \(60\ \text{km/h}\) at \(850\ \text{km/h}\). What still-air range must the aircraft have, with reserves on top?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ d_{\text{ground}} = 1.04(5347) = 5561\ \text{km}, \qquad d_{\text{air}} = 5561\,\frac{850}{850 - 60} = 5983\ \text{km} \]
+          <p>About \(6000\ \text{km}\) of still-air range, 12% more than the map distance, with the reserve fuel of the chosen rule carried in addition. A manufacturer that wanted this city pair (and the many like it) would set the design range to at least this, at the design payload.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Reserves cover contingency, diversion to an alternate and holding; they are carried, not planned to be burned.</li>
+      <li>Rules: IFR 45 min; US international airlines 10% of flight time + alternate + 30 min hold; ICAO 5% contingency + alternate + 30 min final reserve.</li>
+      <li>Endurance: \(E = (1/C)(L/D)\ln(W_{i-1}/W_i)\); jets hold at \(\LDmax\).</li>
+      <li>Still-air distance \(= d_{\text{ground}}\,V/(V - w)\): headwinds cost more than tailwinds save.</li>
+      <li>Design range = great circle + routing + winds, at the design payload, with reserves carried as fuel.</li>
+      <li>Next, <a href="07-trade-studies.html">Lesson 7</a> asks what all these requirements cost, and how a concept is chosen to meet them.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 6.1: the fuel stack under each rule ---------- */
+CYL.ready(function () {
+  'use strict';
+  var RULES = {
+    ifr: { label: 'IFR (alternate + 45 min)', cont: function () { return 0; }, final: 0.75, altn: true },
+    dom: { label: 'US airline, domestic (alternate + 45 min)', cont: function () { return 0; }, final: 0.75, altn: true },
+    intl: { label: 'US airline, international (10% time + alternate + 30 min hold)', cont: function (s) { return 0.10 * s.t * s.ff; }, final: 0.5, altn: true, hold: true },
+    icao: { label: 'ICAO (5% contingency + alternate + 30 min hold)', cont: function (s) { return 0.05 * s.t * s.ff; }, final: 0.5, altn: true, hold: true }
+  };
+  var st = { rule: 'intl', t: 7, ff: 5600, alt: 2900, hf: 4400, taxi: 400 };
+  var COLS = { taxi: 'var(--ink-faint)', trip: 'var(--c-z)', cont: 'var(--c-warn)', alt: 'var(--c-r)', fin: 'var(--c-t)' };
+  var stage = document.getElementById('fig61-stage');
+  var chart = AERO.chart(stage, {
+    x: { label: 'Flight time (h)', min: 0.5, max: 14 }, y: { label: 'Reserves as a share of trip fuel', min: 0, max: 1, format: function (v) { return Math.round(v * 100) + '%'; } }, height: 300,
+    ariaLabel: 'Reserve fuel as a share of trip fuel against flight time under the chosen rule: large on short flights and falling with flight time.'
+  });
+  function parts(s, t) {
+    var r = RULES[s.rule], trip = t * s.ff;
+    return { taxi: s.taxi, trip: trip, cont: r.cont({ t: t, ff: s.ff }), alt: r.altn ? s.alt : 0, fin: r.final * (r.hold ? s.hf : s.ff) };
+  }
+  function share(t) { var p = parts(st, t); return (p.cont + p.alt + p.fin) / p.trip; }
+  var curve = chart.fn(share, { color: 'warn', width: 2.6 });
+  var mk = chart.marker([st.t, share(st.t)], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig61-controls');
+  var sel = CYL.select({ label: 'Rule', value: st.rule, options: Object.keys(RULES).map(function (k) { return { value: k, label: RULES[k].label }; }), onChange: function (v) { st.rule = v; draw(); } });
+  function sl(k, label, min, max, step, unit) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, onInput: function (v) { st[k] = v; draw(); } }); }
+  var ss = [sl('t', 'Flight time', 0.5, 14, 0.1, 'h'), sl('ff', 'Cruise fuel flow', 1500, 12000, 100, 'kg/h'), sl('alt', 'Fuel to the alternate', 500, 6000, 100, 'kg'), sl('hf', 'Holding fuel flow', 1000, 9000, 100, 'kg/h')];
+  var bar = CYL.el('div', { class: 'fuel-stack', role: 'img' });
+  var key = CYL.el('ul', { class: 'fs-key', 'aria-hidden': 'true', html: '<li><i style="background:var(--ink-faint)"></i>Taxi</li><li><i style="background:var(--c-z)"></i>Trip</li><li><i style="background:var(--c-warn)"></i>Contingency</li><li><i style="background:var(--c-r)"></i>Alternate</li><li><i style="background:var(--c-t)"></i>Final reserve</li>' });
+  var ro = { trip: CYL.readout('Trip fuel'), res: CYL.readout('Reserves'), tot: CYL.readout('Total fuel at the gate') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Fuel plan' }));
+  panel.appendChild(sel.el); ss.forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(bar); panel.appendChild(key);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.trip.el, ro.res.el, ro.tot.el]));
+  function kg(x) { return CYL.fmt(x, 4).replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') + ' kg'; }
+  function draw() {
+    var p = parts(st, st.t), res = p.cont + p.alt + p.fin, tot = p.taxi + p.trip + res;
+    curve.draw(); mk.set([st.t, Math.min(1, share(st.t))]);
+    bar.innerHTML = '';
+    ['taxi', 'trip', 'cont', 'alt', 'fin'].forEach(function (k) { var s = CYL.el('span'); s.style.width = (p[k] / tot * 100) + '%'; s.style.background = COLS[k]; bar.appendChild(s); });
+    bar.setAttribute('aria-label', 'Fuel at the gate ' + kg(tot) + ': taxi ' + kg(p.taxi) + ', trip ' + kg(p.trip) + ', contingency ' + kg(p.cont) + ', alternate ' + kg(p.alt) + ', final reserve ' + kg(p.fin) + '.');
+    ro.trip.set(kg(p.trip)); ro.res.set(kg(res) + ' (' + Math.round(res / p.trip * 100) + '% of trip)'); ro.tot.set(kg(tot));
+  }
+  draw();
+});
+
+/* ---------- Figure 6.2: still-air distance and the wind ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { d: 5600, V: 850, w: 90 };
+  var chart = AERO.chart(document.getElementById('fig62-stage'), {
+    x: { label: 'Average wind component \\(w\\) (km/h, headwind positive)', min: -200, max: 200 }, y: { label: 'Still-air distance (km)', min: 0, max: 10000 }, height: 320,
+    ariaLabel: 'Equivalent still-air distance against wind component: a curve rising faster for headwinds than it falls for tailwinds, with the ground distance as a horizontal line.'
+  });
+  var gl = chart.hline(st.d, { color: 'muted', label: 'ground distance' });
+  var cv = chart.fn(function (w) { return st.d * st.V / (st.V - w); }, { color: 'z', width: 2.6 });
+  var mk = chart.marker([st.w, st.d * st.V / (st.V - st.w)], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig62-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var ss = [sl('d', 'Ground distance', 1000, 9000, 50, 'km'), sl('V', 'True airspeed', 400, 950, 10, 'km/h', 'v'), sl('w', 'Headwind component', -200, 200, 5, 'km/h', 'r')];
+  var ro = { a: CYL.readout('Still-air distance'), t: CYL.readout('Flight time'), x: CYL.readout('Extra range needed') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Route and wind' }));
+  ss.forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.t.el, ro.x.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var a = st.d * st.V / (st.V - st.w), t = st.d / (st.V - st.w);
+    chart.setAxes({ y: { max: Math.max(4000, Math.ceil(st.d * st.V / (st.V - 200) / 1000) * 1000) } });
+    gl.set(st.d); cv.draw(); mk.set([st.w, a]);
+    ro.a.set(CYL.fmt(a, 4) + ' km'); ro.t.set(Math.floor(t) + ' h ' + Math.round((t % 1) * 60) + ' min'); ro.x.set((a >= st.d ? '+' : '') + CYL.fmt((a / st.d - 1) * 100, 3) + '%');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var f = Math.exp(-0.75 * 0.45 / 15);
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1',
+    type: 'numeric',
+    prompt: 'A regional jet starts a 45-minute hold at \\(30\\,000\\ \\text{kg}\\), with \\(\\LDmax = 15\\) and \\(C = 0.45/\\text{h}\\). Estimate the fuel burned in the hold.',
+    label: 'Fuel \\(=\\)', answer: 30000 * (1 - f), unit: 'kg',
+    hints: ['\\(E = 0.75\\ \\text{h}\\). The endurance equation gives \\(W_i/W_{i-1} = \\exp[-EC/(L/D)]\\).', 'Fuel burned \\(= W_{i-1}(1 - W_i/W_{i-1})\\).'],
+    explain: 'Remember to convert 45 minutes to 0.75 hours, since \\(C\\) is per hour.',
+    solution: '\\[ \\frac{W_i}{W_{i-1}} = \\exp\\left[-\\frac{0.75(0.45)}{15}\\right] = ' + CYL.fmtTex(f, 5) + ' \\]\\[ \\text{fuel} = 30\\,000(1 - ' + CYL.fmtTex(f, 5) + ') = ' + CYL.fmtTex(30000 * (1 - f), 4) + '\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2',
+    type: 'numeric',
+    prompt: 'A \\(4800\\ \\text{km}\\) route is flown at a true airspeed of \\(820\\ \\text{km/h}\\) against an average headwind component of \\(70\\ \\text{km/h}\\). What is the equivalent still-air distance?',
+    label: '\\(d_{\\text{air}} =\\)', answer: 4800 * 820 / 750, unit: 'km',
+    hints: ['The ground speed is \\(V - w = 750\\ \\text{km/h}\\).', '\\(d_{\\text{air}} = d_{\\text{ground}}\\,V/(V - w)\\).'],
+    explain: 'The aircraft needs 448 km more range than the map distance on this route.',
+    solution: '\\[ d_{\\text{air}} = 4800\\,\\frac{820}{820 - 70} = 5248\\ \\text{km} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3',
+    type: 'numeric',
+    prompt: 'Under the US international rule, find the reserve fuel for a 6.0-hour flight burning \\(4800\\ \\text{kg/h}\\) in cruise, with \\(2600\\ \\text{kg}\\) needed to reach the alternate and a holding fuel flow of \\(4000\\ \\text{kg/h}\\).',
+    label: 'Reserve \\(=\\)', answer: 0.1 * 6 * 4800 + 2600 + 0.5 * 4000, unit: 'kg',
+    hints: ['Three parts: 10% of the flight time at cruise fuel flow, the alternate fuel, and 30 minutes of holding.'],
+    explain: 'The 10% is of the flight time (0.6 h of cruise fuel), not 10% of the fuel on board.',
+    solution: '\\[ 0.10(6.0)(4800) + 2600 + 0.5(4000) = 2880 + 2600 + 2000 = 7480\\ \\text{kg} \\]'
+  });
+});
+</script>
+</body>
+</html>

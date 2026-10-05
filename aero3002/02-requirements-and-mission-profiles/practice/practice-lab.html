@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Unlimited randomized problems on design requirements and mission profiles: great-circle distances, market and fleet arithmetic, span limits, payload-range, one-engine-out climb, approach speed and field length, mission timelines, reserves and winds, and trade studies, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<script src="../assets/js/world-land.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: real airports, illustrative aircraft and missions with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>route-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. route-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>6371*acos(sin(45.32deg)*sin(51.47deg)+cos(45.32deg)*cos(51.47deg)*cos(75.22deg))</code></td><td>\(5347\)</td></tr>
+          <tr><td><code>1800/(8*0.8)</code></td><td>\(281.3\)</td></tr>
+          <tr><td><code>830/0.58*16.5*ln(78000/63600)</code></td><td>\(4819\)</td></tr>
+          <tr><td><code>0.5*1.225*(140*0.5144/1.23)^2*2.6/9.81</code></td><td>\(556.5\)</td></tr>
+          <tr><td><code>2*(1/10+0.024)</code></td><td>\(0.248\)</td></tr>
+          <tr><td><code>62000*(1-exp(-0.5*0.4/18))</code></td><td>\(685.1\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Add <code>deg</code> after an angle in degrees inside <code>sin</code>, <code>cos</code> and <code>tan</code>. Use \(g = 9.81\ \text{m/s}^2\), sea-level density \(\rho = 1.225\ \text{kg/m}^3\) unless a problem gives another, \(R_E = 6371\ \text{km}\), \(1\ \text{kt} = 0.5144\ \text{m/s}\) and \(1\ \text{nmi} = 1.852\ \text{km}\). Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>18000/(1-1.06*(1-0.9507*exp(-5000*0.55/(850*16)))-0.5)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var G = 9.81, D2R = Math.PI / 180, KT = 1852 / 3600, RE = 6371;
+  var KGM2 = '\\ \\text{kg/m}^2', KMH = '\\ \\text{km/h}', MS = '\\ \\text{m/s}', KG = '\\ \\text{kg}', KM = '\\ \\text{km}', M2 = '\\ \\text{m}^2', MM = '\\ \\text{m}', MIN = '\\ \\text{min}', KGH = '\\ \\text{kg/h}', PH = '/\\text{h}';
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function isaRho(h) { var T = 288.15 - 0.0065 * h; return 101325 * Math.pow(T / 288.15, 5.25588) / (287.05 * T); }
+  function coord(a) { return m(nn(Math.abs(a.lat)) + '^\\circ\\text{' + (a.lat >= 0 ? 'N' : 'S') + '}') + ', ' + m(nn(Math.abs(a.lon)) + '^\\circ\\text{' + (a.lon >= 0 ? 'E' : 'W') + '}'); }
+  var AP = MISSION.AIRPORTS;
+  var HIST = 0.970 * 0.985 * 0.995;
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 Great-circle distance (Lesson 2) ---------- */
+  function genRoute(rng) {
+    var a, b, g;
+    do { a = rng.pick(AP); b = rng.pick(AP); g = MISSION.gc(a, b); } while (a === b || g.km < 400);
+    var kind = pickW(rng, [['km', 3], ['nmi', 2]]), spec, right, wrong;
+    var dl = b.lon - a.lon;
+    var sol = M('\\Delta\\lambda = ' + nn(b.lon) + ' - (' + nn(a.lon) + ') = ' + n4(dl) + '^\\circ') +
+      M('\\cos\\theta = \\sin(' + nn(a.lat) + '^\\circ)\\sin(' + nn(b.lat) + '^\\circ) + \\cos(' + nn(a.lat) + '^\\circ)\\cos(' + nn(b.lat) + '^\\circ)\\cos(' + n4(dl) + '^\\circ) = ' + n4(g.cos)) +
+      M('\\theta = ' + n4(g.theta) + '^\\circ = ' + n4(g.rad) + '\\ \\text{rad}, \\qquad d = 6371(' + n4(g.rad) + ') = ' + n4(g.km) + KM + ' = ' + n4(g.nmi) + '\\ \\text{nmi}');
+    var prompt = b.city + ' (' + b.id + ') is at ' + coord(b) + ' and ' + a.city + ' (' + a.id + ') at ' + coord(a) + '. ';
+    var flat = 111.19 * Math.sqrt(Math.pow(b.lat - a.lat, 2) + Math.pow(dl * Math.cos((a.lat + b.lat) / 2 * D2R), 2));
+    if (kind === 'km') {
+      spec = { type: 'numeric', prompt: prompt + 'Find the great-circle distance from ' + a.city + ' to ' + b.city + '.', label: '\\(d =\\)', answer: g.km, unit: 'km' };
+      right = { value: typed(g.km) }; wrong = { value: typed(wrongOf(g.km, [RE * g.theta, flat, RE * Math.acos(Math.cos((b.lat - a.lat) * D2R)) ])) };
+    } else {
+      spec = { type: 'fields', prompt: prompt + 'Find the central angle between them and the great-circle distance in nautical miles (\\(1\\ \\text{nmi} = 1.852\\ \\text{km}\\)).',
+        fields: [{ name: 'th', label: '\\(\\theta =\\)', answer: g.theta, unit: '°' }, { name: 'nmi', label: '\\(d =\\)', answer: g.nmi, unit: 'nmi' }] };
+      right = { th: typed(g.theta), nmi: typed(g.nmi) }; wrong = { th: typed(g.theta), nmi: typed(wrongOf(g.nmi, [g.km, g.km * 1.852])) };
+    }
+    spec.hints = ['Use signed coordinates: north and east positive, so ' + m('\\lambda_{' + b.id + '} - \\lambda_{' + a.id + '} = ' + nn(b.lon) + ' - (' + nn(a.lon) + ')') + '.',
+      '\\(\\cos\\theta = \\sin\\phi_1\\sin\\phi_2 + \\cos\\phi_1\\cos\\phi_2\\cos\\Delta\\lambda\\), then \\(d = R_E\\theta\\) with \\(R_E = 6371\\ \\text{km}\\) and \\(\\theta\\) in radians.'];
+    spec.solution = sol;
+    spec.explain = 'Type it in one go, for example 6371*acos(sin(' + a.lat + 'deg)*sin(' + b.lat + 'deg)+cos(' + a.lat + 'deg)*cos(' + b.lat + 'deg)*cos(' + (+dl.toFixed(2)) + 'deg)).';
+    var lines = MISSION.gcPath(a, b, 72).filter(function (p) { return p.length > 1; }).map(function (p) { return { pts: p, color: 'good', width: 2.4 }; });
+    return { spec: spec, view: {
+      title: 'The route on a latitude–longitude grid', aria: 'Great-circle route from ' + a.city + ' to ' + b.city + ' on a latitude-longitude grid, with the other airports of the module.',
+      x: { label: 'Longitude (degrees)', min: -180, max: 180, ticks: [-180, -120, -60, 0, 60, 120, 180] }, y: { label: 'Latitude (degrees)', min: -60, max: 90, ticks: [-60, -30, 0, 30, 60, 90] },
+      land: true,
+      bg: { list: AP, x: function (d) { return d.lon; }, y: function (d) { return d.lat; }, title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } },
+      lines: lines, marker: { at: [b.lon, b.lat], label: b.id },
+      readouts: [{ label: 'Central angle \\(\\theta\\)', tex: n4(g.theta) + '^\\circ' }, { label: '\\(d\\)', tex: g4(g.km) + KM }, { label: '\\(d\\)', tex: g4(g.nmi) + '\\ \\text{nmi}' }],
+      note: 'On a flat map the shortest route looks curved.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Market, fleet and span (Lesson 2) ---------- */
+  function genMarket(rng) {
+    var kind = pickW(rng, [['seats', 3], ['deps', 2], ['fleet', 2], ['span', 2]]), spec, right, wrong, view;
+    if (kind === 'seats' || kind === 'deps') {
+      var Q = rng.pick(range(600, 4000, 100)), LF = rng.pick([0.75, 0.78, 0.8, 0.82, 0.85, 0.88]), n, seats;
+      if (kind === 'seats') {
+        n = rng.pick(range(3, 16, 1)); seats = Q / (n * LF);
+        spec = { type: 'numeric', prompt: 'A route carries ' + m(grp(Q)) + ' passengers a day in each direction. An airline plans ' + n + ' departures a day each way with an average load factor of ' + nn(LF) + '. How many seats should each aircraft have?',
+          label: 'seats \\(=\\)', answer: seats };
+        spec.hints = ['Each departure carries \\(Q/n\\) passengers on average.', 'Only a fraction \\(LF\\) of the seats is filled: seats \\(= Q/(n\\,LF)\\).'];
+        spec.solution = M('\\text{seats} = \\frac{' + grp(Q) + '}{' + n + '(' + nn(LF) + ')} = ' + n4(seats));
+        right = { value: typed(seats) }; wrong = { value: typed(wrongOf(seats, [Q / n, Q * LF / n])) };
+      } else {
+        seats = rng.pick([70, 90, 100, 120, 150, 160, 180, 200, 220, 250, 280, 300]);
+        if (Q / (seats * LF) > 30) Q = Math.round(seats * LF * rng.pick(range(4, 24, 1)) / 100) * 100 + 50;
+        if (Q / (seats * LF) < 2) Q = Math.round(seats * LF * 3.3 / 100) * 100;
+        var exact = Q / (seats * LF); n = Math.ceil(exact - 1e-9);
+        if (Math.abs(n - exact) < 0.02) { Q += 100; exact = Q / (seats * LF); n = Math.ceil(exact - 1e-9); }
+        spec = { type: 'numeric', prompt: 'A route carries ' + m(grp(Q)) + ' passengers a day in each direction. With ' + seats + '-seat aircraft and an average load factor of ' + nn(LF) + ', how many departures a day each way are needed? Give a whole number.',
+          label: '\\(n =\\)', answer: n };
+        spec.hints = ['\\(n = Q/(\\text{seats}\\times LF)\\).', 'Round up: a fraction of a departure is not a flight.'];
+        spec.solution = M('n = \\frac{' + grp(Q) + '}{' + seats + '(' + nn(LF) + ')} = ' + n4(exact) + '\\ \\Rightarrow\\ ' + n + '\\ \\text{departures a day each way}');
+        right = { value: String(n) }; wrong = { value: typed(wrongOf(n, [Math.floor(exact) || 1, Math.ceil(Q / seats) === n ? n + 2 : Math.ceil(Q / seats)])) };
+      }
+      var LFv = LF, Qv = Q;
+      view = { title: 'Seats against departures', aria: 'Seats needed against departures a day, a falling curve, with this problem marked.',
+        x: { label: 'Departures a day each way \\(n\\)', min: 1, max: Math.max(20, n + 4) }, y: { label: 'Seats per aircraft', min: 0, max: Math.max(400, Math.ceil(Q / LF / 2 / 100) * 100) },
+        curves: [{ f: function (x) { return Qv / (x * LFv); }, color: 'z' }], marker: { at: kind === 'seats' ? [n, seats] : [n, Q / (n * LF)], label: '' },
+        readouts: [{ label: 'Demand \\(Q\\)', tex: grp(Q) + '\\ \\text{a day}' }, { label: 'Load factor', tex: nn(LF) }, kind === 'seats' ? { label: 'Seats', tex: n4(seats) } : { label: 'Departures', tex: String(n) }],
+        note: 'Fewer, larger aircraft or more, smaller ones: the same demand on one curve.' };
+    } else if (kind === 'fleet') {
+      var dep = rng.pick(range(4, 24, 1)), blk = rng.pick(range(1, 5, 0.25)), turn = rng.pick([0.5, 0.75, 1]), hrs = rng.pick([16, 17, 18]);
+      var cyc = 2 * (blk + turn), per = Math.floor(hrs / cyc + 1e-9);
+      if (per < 1) { blk = 1.5; cyc = 2 * (blk + turn); per = Math.floor(hrs / cyc + 1e-9); }
+      var N = Math.ceil(dep / per - 1e-9);
+      spec = { type: 'numeric', prompt: 'An airline flies ' + dep + ' round trips a day on a route. Each flight takes ' + m(nn(blk) + '\\ \\text{h}') + ' block to block, each turnaround ' + m(nn(turn * 60) + MIN) + ', and an aircraft can operate ' + hrs + ' hours a day. How many aircraft does the route need (before spares)?',
+        label: 'aircraft \\(=\\)', answer: N };
+      spec.hints = ['A round trip takes \\(2(t_{\\text{block}} + t_{\\text{turn}}) = ' + n4(cyc) + '\\ \\text{h}\\).', 'Each aircraft flies \\(\\lfloor ' + hrs + '/' + n4(cyc) + '\\rfloor = ' + per + '\\) round trips a day; divide and round up.'];
+      spec.solution = M('2(' + nn(blk) + ' + ' + nn(turn) + ') = ' + n4(cyc) + '\\ \\text{h}, \\qquad \\left\\lfloor\\frac{' + hrs + '}{' + n4(cyc) + '}\\right\\rfloor = ' + per + ', \\qquad \\left\\lceil\\frac{' + dep + '}{' + per + '}\\right\\rceil = ' + N);
+      right = { value: String(N) }; wrong = { value: typed(wrongOf(N, [Math.ceil(dep * cyc / 24), Math.ceil(dep / Math.floor(hrs / (blk + turn))), N + 1])) };
+      var perv = per;
+      view = { title: 'Aircraft needed', aria: 'Aircraft needed against round trips a day: a staircase, with this problem marked.',
+        x: { label: 'Round trips a day', min: 0, max: 26 }, y: { label: 'Aircraft', min: 0, max: Math.max(6, Math.ceil(26 / per) + 1) },
+        curves: [{ f: function (x) { return Math.ceil(x / perv - 1e-9); }, color: 'z' }], marker: { at: [dep, N], label: '' },
+        readouts: [{ label: 'Round trip', tex: n4(cyc) + '\\ \\text{h}' }, { label: 'Trips per aircraft a day', tex: String(per) }, { label: 'Aircraft', tex: String(N) }],
+        note: 'The staircase is why schedules are planned so carefully: one more trip can mean one more aircraft.' };
+    } else {
+      var code = rng.pick(MISSION.ICAO_CODES.slice(1)), S = rng.pick(code.code === 'B' ? range(30, 70, 1) : code.code === 'C' ? range(80, 135, 1) : code.code === 'D' ? range(180, 300, 5) : code.code === 'E' ? range(300, 480, 5) : range(480, 860, 10));
+      var A = code.max * code.max / S;
+      spec = { type: 'numeric', prompt: 'A new aircraft must fit ICAO code ' + code.code + ' gates (wingspan under ' + m(code.max + MM) + '). Its wing area is ' + m(nn(S) + M2) + '. What is the largest aspect ratio its wing can have?',
+        label: '\\(A_{\\max} =\\)', answer: A };
+      spec.hints = ['Aspect ratio is \\(A = b^2/S\\).', 'Use the largest span the code allows: \\(b_{\\max} = ' + code.max + '\\ \\text{m}\\).'];
+      spec.solution = M('A_{\\max} = \\frac{b_{\\max}^2}{S} = \\frac{' + code.max + '^2}{' + nn(S) + '} = ' + n4(A));
+      right = { value: typed(A) }; wrong = { value: typed(wrongOf(A, [code.max / S, S / code.max])) };
+      var bv = code.max;
+      view = { title: 'Span limit and aspect ratio', aria: 'Largest aspect ratio against wing area for this span limit, with this problem marked.',
+        x: { label: 'Wing area \\(S\\) (m²)', min: 0, max: S * 2 }, y: { label: 'Largest aspect ratio', min: 0, max: Math.max(20, A * 1.6) },
+        curves: [{ f: function (x) { return bv * bv / x; }, color: 'z' }], marker: { at: [S, A], label: '' },
+        readouts: [{ label: 'Span limit', tex: code.max + MM }, { label: 'Wing area', tex: nn(S) + M2 }, { label: '\\(A_{\\max}\\)', tex: n4(A) }],
+        note: 'A bigger wing in the same box has a lower aspect ratio.' };
+    }
+    spec.explain = kind === 'span' ? 'Airports limit the span, so a heavier aircraft with a bigger wing pays in aspect ratio, and so in induced drag.' : 'Market arithmetic sets the size of the aircraft and how many will be sold.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 Payload–range (Lesson 3) ---------- */
+  function genPR(rng) {
+    var OEW = rng.pick(range(14000, 60000, 1000)), MTOW = Math.round(OEW * rng.pick(range(1.7, 2.0, 0.02)) / 500) * 500;
+    var PLmax = Math.round((MTOW - OEW) * rng.pick(range(0.42, 0.55, 0.01)) / 100) * 100;
+    var Fmax = Math.round(((MTOW - OEW - PLmax) + (MTOW - OEW) * rng.pick(range(0.12, 0.3, 0.02))) / 100) * 100;
+    var Fres = Math.round(MTOW * rng.pick([0.03, 0.035, 0.04]) / 100) * 100;
+    var V = rng.pick(range(740, 880, 10)), C = rng.pick([0.5, 0.52, 0.55, 0.58, 0.6, 0.62, 0.65]), LD = rng.pick(range(13, 18, 0.5));
+    var p = { OEW: OEW, MTOW: MTOW, PLmax: PLmax, Fmax: Fmax, Fres: Fres, V: V, C: C, LD: LD }, pr = MISSION.payloadRange(p), k = pr.k;
+    var kind = pickW(rng, [['A', 3], ['B', 2], ['C', 2], ['pl', 3], ['rng', 2]]), spec, right, wrong, mk;
+    var given = 'An aircraft has ' + m('\\text{OEW} = ' + grp(OEW) + KG) + ' (with crew), ' + m('\\text{MTOW} = ' + grp(MTOW) + KG) + ', a maximum payload of ' + m(grp(PLmax) + KG) + ' and a fuel capacity of ' + m(grp(Fmax) + KG) + '. It cruises at ' + m(nn(V) + KMH) + ' with ' + m('C = ' + nn(C) + PH) + ' and ' + m('L/D = ' + nn(LD)) + ', and keeps ' + m(grp(Fres) + KG) + ' of reserve fuel. ';
+    var kTex = M('\\frac{V}{C}\\frac{L}{D} = \\frac{' + nn(V) + '}{' + nn(C) + '}(' + nn(LD) + ') = ' + g4(k) + KM);
+    if (kind === 'A') {
+      var endA = OEW + PLmax + Fres;
+      spec = { type: 'numeric', prompt: given + 'Find its range at maximum payload (point A).', label: '\\(R_A =\\)', answer: pr.A[0], unit: 'km' };
+      spec.hints = ['At A it takes off at MTOW with maximum payload; the fuel is what is left, and it fits in the tanks.', 'It lands at \\(\\text{OEW} + P_{\\max} + W_{\\text{res}}\\): \\(R = (V/C)(L/D)\\ln(\\text{TOW}/W_{\\text{land}})\\).'];
+      spec.solution = kTex + M('W_{\\text{land}} = ' + grp(OEW) + ' + ' + grp(PLmax) + ' + ' + grp(Fres) + ' = ' + grp(endA) + KG + ', \\qquad R_A = ' + g4(k) + '\\ln\\frac{' + grp(MTOW) + '}{' + grp(endA) + '} = ' + n4(pr.A[0]) + KM);
+      right = { value: typed(pr.A[0]) }; wrong = { value: typed(wrongOf(pr.A[0], [k * Math.log(MTOW / (OEW + PLmax)), k * (MTOW - endA) / MTOW * 1.2])) };
+      mk = pr.A;
+    } else if (kind === 'B') {
+      spec = { type: 'fields', prompt: given + 'Find the payload and the range at point B, where the tanks are full at MTOW.',
+        fields: [{ name: 'pb', label: '\\(P_B =\\)', answer: pr.B[1], unit: 'kg' }, { name: 'rb', label: '\\(R_B =\\)', answer: pr.B[0], unit: 'km' }] };
+      spec.hints = ['At B, TOW = MTOW and the fuel is the full capacity: \\(P_B = \\text{MTOW} - \\text{OEW} - W_{\\text{fuel,max}}\\).', 'It lands at \\(\\text{OEW} + P_B + W_{\\text{res}}\\).'];
+      spec.solution = M('P_B = ' + grp(MTOW) + ' - ' + grp(OEW) + ' - ' + grp(Fmax) + ' = ' + grp(pr.B[1]) + KG) + kTex + M('R_B = ' + g4(k) + '\\ln\\frac{' + grp(MTOW) + '}{' + grp(OEW + pr.B[1] + Fres) + '} = ' + n4(pr.B[0]) + KM);
+      right = { pb: typed(pr.B[1]), rb: typed(pr.B[0]) }; wrong = { pb: typed(pr.B[1]), rb: typed(wrongOf(pr.B[0], [k * Math.log(MTOW / (OEW + pr.B[1])), pr.A[0]])) };
+      mk = pr.B;
+    } else if (kind === 'C') {
+      spec = { type: 'numeric', prompt: given + 'Find its ferry range: full tanks, no payload.', label: '\\(R_C =\\)', answer: pr.C[0], unit: 'km' };
+      spec.hints = ['With no payload and full tanks, it takes off at \\(\\text{OEW} + W_{\\text{fuel,max}}\\), below MTOW.', 'It lands at \\(\\text{OEW} + W_{\\text{res}}\\).'];
+      spec.solution = kTex + M('R_C = ' + g4(k) + '\\ln\\frac{' + grp(OEW + Fmax) + '}{' + grp(OEW + Fres) + '} = ' + n4(pr.C[0]) + KM);
+      right = { value: typed(pr.C[0]) }; wrong = { value: typed(wrongOf(pr.C[0], [k * Math.log(MTOW / (OEW + Fres)), k * Math.log((OEW + Fmax) / OEW)])) };
+      mk = pr.C;
+    } else if (kind === 'pl') {
+      var R = Math.round((pr.A[0] + (pr.B[0] - pr.A[0]) * rng.pick(range(0.25, 0.75, 0.05))) / 50) * 50, P = pr.payloadAt(R), Wl = MTOW * Math.exp(-R / k);
+      spec = { type: 'numeric', prompt: given + 'How much payload can it carry over ' + m(grp(R) + KM) + '? (That distance lies between points A and B.)', label: '\\(P =\\)', answer: P, unit: 'kg' };
+      spec.hints = ['Between A and B it takes off at MTOW; Breguet gives the landing weight: \\(W_{\\text{land}} = \\text{MTOW}\\,e^{-R/[(V/C)(L/D)]}\\).', 'The payload is what is left: \\(P = W_{\\text{land}} - \\text{OEW} - W_{\\text{res}}\\).'];
+      spec.solution = kTex + M('W_{\\text{land}} = ' + grp(MTOW) + '\\,e^{-' + grp(R) + '/' + g4(k) + '} = ' + n4(Wl) + KG + ', \\qquad P = ' + n4(Wl) + ' - ' + grp(OEW) + ' - ' + grp(Fres) + ' = ' + n4(P) + KG);
+      right = { value: typed(P) }; wrong = { value: typed(wrongOf(P, [Wl - OEW, MTOW - OEW - Fres - MTOW * R / k])) };
+      mk = [R, P];
+    } else {
+      var P2 = Math.round((pr.B[1] + (PLmax - pr.B[1]) * rng.pick(range(0.2, 0.8, 0.1))) / 100) * 100, R2 = pr.rangeAt(P2);
+      spec = { type: 'numeric', prompt: given + 'How far can it carry a payload of ' + m(grp(P2) + KG) + '? (That payload lies between points A and B.)', label: '\\(R =\\)', answer: R2, unit: 'km' };
+      spec.hints = ['Between A and B the aircraft takes off at MTOW, trading payload for fuel.', 'It lands at \\(\\text{OEW} + P + W_{\\text{res}}\\); use Breguet.'];
+      spec.solution = kTex + M('R = ' + g4(k) + '\\ln\\frac{' + grp(MTOW) + '}{' + grp(OEW) + ' + ' + grp(P2) + ' + ' + grp(Fres) + '} = ' + n4(R2) + KM);
+      right = { value: typed(R2) }; wrong = { value: typed(wrongOf(R2, [k * Math.log(MTOW / (OEW + P2)), k * Math.log((OEW + P2 + Fmax) / (OEW + P2 + Fres))])) };
+      mk = [R2, P2];
+    }
+    spec.explain = 'The flat part is limited by the structure, the first slope by MTOW, the second by the tanks.';
+    var outline = pr.outline.map(function (q) { return [q[0], q[1] / 1000]; });
+    return { spec: spec, view: {
+      title: 'The payload–range diagram', aria: 'Payload-range diagram of this aircraft with the problem\'s point marked.',
+      x: { label: 'Range (km)', min: 0, max: Math.ceil(pr.C[0] * 1.1 / 1000) * 1000 }, y: { label: 'Payload (t)', min: 0, max: Math.ceil(PLmax * 1.3 / 1000) },
+      lines: [{ pts: outline, color: 'z', width: 2.6 }], texts: [{ at: [pr.A[0], PLmax / 1000], s: 'A' }, { at: [pr.B[0], pr.B[1] / 1000], s: 'B' }, { at: [pr.C[0], 0], s: 'C' }],
+      marker: { at: [mk[0], mk[1] / 1000], label: '' },
+      readouts: [{ label: 'A', tex: g4(pr.A[0]) + KM + ',\\ ' + n4(PLmax / 1000) + '\\ \\text{t}' }, { label: 'B', tex: g4(pr.B[0]) + KM + ',\\ ' + n4(pr.B[1] / 1000) + '\\ \\text{t}' }, { label: 'C (ferry)', tex: g4(pr.C[0]) + KM }],
+      note: 'Breguet with a fixed reserve; the whole flight treated as cruise.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 One-engine-inoperative climb (Lesson 4) ---------- */
+  function genClimb(rng) {
+    var N = rng.pick([2, 2, 3, 4]), segs = MISSION.GRADIENTS.filter(function (s) { return !s.allEngines && s.g[N] > 0; }), s = rng.pick(segs), Gr = s.g[N], f = N / (N - 1);
+    var LD = rng.pick(range(7, 14, 0.5)), TW = f * (1 / LD + Gr);
+    var kind = pickW(rng, [['tw', 3], ['grad', 2], ['ld', 2]]), spec, right, wrong, mk;
+    var seg = s.label.toLowerCase() + ' (' + s.config.charAt(0).toLowerCase() + s.config.slice(1) + ')';
+    if (kind === 'tw') {
+      spec = { type: 'numeric', prompt: 'A ' + N + '-engine transport has ' + m('L/D = ' + nn(LD)) + ' in the ' + seg + '. What thrust-to-weight ratio does it need to meet the ' + s.label.toLowerCase() + ' climb gradient with one engine inoperative?', label: '\\(\\TW =\\)', answer: TW };
+      spec.hints = ['For ' + N + ' engines the ' + s.label.toLowerCase() + ' gradient is ' + (Gr * 100).toFixed(1) + '%, \\(G = ' + nn(Gr) + '\\).', '\\(\\TW = \\frac{N}{N-1}\\left(\\frac{1}{L/D} + G\\right)\\).'];
+      spec.solution = M('\\frac{T}{W} = \\frac{' + N + '}{' + (N - 1) + '}\\left(\\frac{1}{' + nn(LD) + '} + ' + nn(Gr) + '\\right) = ' + n4(f) + '(' + n4(1 / LD + Gr) + ') = ' + n4(TW));
+      right = { value: typed(TW) }; wrong = { value: typed(wrongOf(TW, [1 / LD + Gr, f / LD, f * (1 / LD + Gr * 100)])) };
+      mk = [LD, TW];
+    } else if (kind === 'grad') {
+      var tw = rng.pick(range(0.18, 0.36, 0.01)); LD = rng.pick(range(8, 13, 0.5));
+      var Ga = tw / f - 1 / LD;
+      if (Ga <= 0.003) { tw = +(f * (1 / LD + 0.03)).toFixed(2); Ga = tw / f - 1 / LD; }
+      spec = { type: 'numeric', prompt: 'A ' + N + '-engine aircraft has ' + m('\\TW = ' + nn(tw)) + ' (all engines) and ' + m('L/D = ' + nn(LD)) + ' in the ' + seg + '. What climb gradient can it hold with one engine inoperative? Give it in percent.', label: '\\(G =\\)', answer: Ga * 100, unit: '%' };
+      spec.hints = ['With one engine out, the thrust-to-weight ratio is \\(\\frac{N-1}{N}\\) of the all-engine value.', '\\(G = (T/W)_{\\text{OEI}} - 1/(L/D)\\), as a decimal; multiply by 100 for percent.'];
+      spec.solution = M('\\left(\\frac{T}{W}\\right)_{\\text{OEI}} = \\frac{' + (N - 1) + '}{' + N + '}(' + nn(tw) + ') = ' + n4(tw / f) + ', \\qquad G = ' + n4(tw / f) + ' - \\frac{1}{' + nn(LD) + '} = ' + n4(Ga) + ' = ' + n4(Ga * 100) + '\\%') + '<p>' + (Ga >= Gr ? 'That meets' : 'That does not meet') + ' the ' + (Gr * 100).toFixed(1) + '% requirement.</p>';
+      right = { value: typed(Ga * 100) }; wrong = { value: typed(wrongOf(Ga * 100, [(tw - 1 / LD) * 100, Ga])) };
+      TW = tw; mk = [LD, f * (1 / LD + Gr)];
+    } else {
+      var tw2 = rng.pick(range(0.2, 0.34, 0.01)), need = tw2 / f - Gr;
+      if (need <= 0.06) { tw2 = +(f * (0.09 + Gr)).toFixed(2); need = tw2 / f - Gr; }
+      var LDmin = 1 / need;
+      spec = { type: 'numeric', prompt: 'A ' + N + '-engine aircraft has ' + m('\\TW = ' + nn(tw2)) + ' (all engines). What is the lowest ' + m('L/D') + ' in the ' + seg + ' that still meets the ' + s.label.toLowerCase() + ' gradient with one engine inoperative?', label: '\\((L/D)_{\\min} =\\)', answer: LDmin };
+      spec.hints = ['Solve \\(\\TW = \\frac{N}{N-1}\\left(\\frac{1}{L/D} + G\\right)\\) for \\(L/D\\).', '\\(\\frac{1}{L/D} = \\frac{N-1}{N}\\TW - G\\), with \\(G = ' + nn(Gr) + '\\).'];
+      spec.solution = M('\\frac{1}{L/D} = \\frac{' + (N - 1) + '}{' + N + '}(' + nn(tw2) + ') - ' + nn(Gr) + ' = ' + n4(need) + ', \\qquad \\left(\\frac{L}{D}\\right)_{\\min} = ' + n4(LDmin));
+      right = { value: typed(LDmin) }; wrong = { value: typed(wrongOf(LDmin, [1 / (tw2 - Gr), 1 / (tw2 / f)])) };
+      TW = tw2; LD = LDmin; mk = [LDmin, tw2];
+    }
+    spec.explain = 'With one of ' + N + ' engines failed, the rest must give all the climb thrust: the installed \\(\\TW\\) is \\(' + N + '/' + (N - 1) + '\\) of what the climb needs.';
+    var fN = f, GN = Gr;
+    return { spec: spec, view: {
+      title: 'Thrust-to-weight ratio for the climb', aria: 'Required thrust-to-weight ratio against climb L/D for this number of engines and segment, with the problem marked.',
+      x: { label: 'Climb \\(L/D\\)', min: 5, max: 16 }, y: { label: 'Required \\(\\TW\\)', min: 0, max: 0.6 },
+      curves: [{ f: function (x) { return fN * (1 / x + GN); }, color: 'r' }], marker: { at: [Math.max(5, Math.min(16, mk[0])), Math.min(0.6, mk[1])], label: '' },
+      readouts: [{ label: 'Engines', tex: String(N) }, { label: 'Gradient \\(G\\)', tex: nn(Gr * 100) + '\\%' }, { label: '\\(\\TW\\) required at this \\(L/D\\)', tex: n4(fN * (1 / LD + GN)) }],
+      note: 'Above the curve the aircraft meets the requirement; below, it does not.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 Approach speed, wing loading and field length (Lesson 4) ---------- */
+  function genApproach(rng) {
+    var kind = pickW(rng, [['ws', 3], ['vref', 2], ['field', 2], ['to', 2]]), spec, right, wrong;
+    var CL = rng.pick(range(1.8, 3.2, 0.1)), Vref = rng.pick(range(105, 150, 1)), elev = rng.pick([0, 0, 0, 500, 1000, 1500]), rho = isaRho(elev);
+    var Vs = Vref * KT / 1.23, WS = 0.5 * rho * Vs * Vs * CL / G;
+    var where = elev ? 'at an airport ' + elev + ' m above sea level (' + m('\\rho = ' + n4(rho) + '\\ \\text{kg/m}^3') + ')' : 'at sea level';
+    if (kind === 'ws') {
+      spec = { type: 'numeric', prompt: 'An aircraft must approach at no more than ' + m('V_{\\text{REF}} = ' + Vref + '\\ \\text{kt}') + ' ' + where + '. Its landing ' + m('C_{L_{\\max}} = ' + nn(CL)) + '. What is the largest landing wing loading?', label: '\\(\\WS \\le\\)', answer: WS, unit: 'kg/m²' };
+      spec.hints = ['\\(1\\ \\text{kt} = 0.5144\\ \\text{m/s}\\), and \\(V_{SR} = V_{\\text{REF}}/1.23\\).', '\\(\\WS = \\tfrac12\\rho V_{SR}^2 C_{L_{\\max}}/g\\), in kg/m².'];
+      spec.solution = M('V_{SR} = \\frac{' + Vref + '(0.5144)}{1.23} = ' + n4(Vs) + MS + ', \\qquad \\frac{W}{S} = \\frac{\\tfrac12(' + n4(rho) + ')(' + n4(Vs) + ')^2(' + nn(CL) + ')}{9.81} = ' + n4(WS) + KGM2);
+      right = { value: typed(WS) }; wrong = { value: typed(wrongOf(WS, [WS * 1.23 * 1.23, WS * G])) };
+    } else if (kind === 'vref') {
+      var ws = rng.pick(range(250, 650, 10)); Vs = Math.sqrt(2 * ws * G / (rho * CL)); Vref = 1.23 * Vs / KT; WS = ws;
+      spec = { type: 'numeric', prompt: 'An aircraft lands at a wing loading of ' + m(nn(ws) + KGM2) + ' ' + where + ', with ' + m('C_{L_{\\max}} = ' + nn(CL)) + '. What is its approach speed ' + m('V_{\\text{REF}} = 1.23\\,V_{SR}') + ' in knots?', label: '\\(V_{\\text{REF}} =\\)', answer: Vref, unit: 'kt' };
+      spec.hints = ['\\(V_{SR} = \\sqrt{2(W/S)g/(\\rho C_{L_{\\max}})}\\), with \\(W/S\\) in kg/m².', 'Multiply by 1.23, then divide by 0.5144 for knots.'];
+      spec.solution = M('V_{SR} = \\sqrt{\\frac{2(' + nn(ws) + ')(9.81)}{' + n4(rho) + '(' + nn(CL) + ')}} = ' + n4(Vs) + MS + ', \\qquad V_{\\text{REF}} = \\frac{1.23(' + n4(Vs) + ')}{0.5144} = ' + n4(Vref) + '\\ \\text{kt}');
+      right = { value: typed(Vref) }; wrong = { value: typed(wrongOf(Vref, [Vs / KT, 1.23 * Vs])) };
+    } else if (kind === 'field') {
+      var sl = rng.pick(range(700, 1900, 25)), sf = sl / 0.6;
+      spec = { type: 'fields', prompt: 'Flight tests show a landing distance of ' + m(grp(sl) + MM) + ' from 50 ft to a stop at maximum landing weight. What landing field length does an airline need, on a dry and on a wet runway?',
+        fields: [{ name: 'dry', label: 'Dry:', answer: sf, unit: 'm' }, { name: 'wet', label: 'Wet:', answer: 1.15 * sf, unit: 'm' }] };
+      spec.hints = ['The landing distance must fit within 60% of the runway.', 'A wet runway needs 15% more than the dry field length.'];
+      spec.solution = M('s_{\\text{dry}} = \\frac{' + grp(sl) + '}{0.6} = ' + n4(sf) + MM + ', \\qquad s_{\\text{wet}} = 1.15(' + n4(sf) + ') = ' + n4(1.15 * sf) + MM);
+      right = { dry: typed(sf), wet: typed(1.15 * sf) }; wrong = { dry: typed(sl * 1.6), wet: typed(1.15 * sf) };
+      return { spec: Object.assign(spec, { explain: 'The 60% rule covers the gap between a test pilot\'s landing and an everyday one.' }), view: {
+        title: 'Landing field length', aria: 'Required field length against landing distance, dry and wet, with this problem marked.',
+        x: { label: 'Demonstrated landing distance (m)', min: 500, max: 2200 }, y: { label: 'Field length (m)', min: 0, max: 4500 },
+        curves: [{ f: function (x) { return x / 0.6; }, color: 'z', label: 'dry' }, { f: function (x) { return 1.15 * x / 0.6; }, color: 'r', label: 'wet' }], marker: { at: [sl, sf], label: '' },
+        readouts: [{ label: 'Landing distance', tex: grp(sl) + MM }, { label: 'Dry', tex: g4(sf) + MM }, { label: 'Wet', tex: g4(1.15 * sf) + MM }], note: 'Required field = distance / 0.6, then 15% more if wet.' },
+        test: { right: [right], wrong: [wrong] } };
+    } else {
+      var ratio = rng.pick([0.8, 0.82, 0.85, 0.88, 0.9]);
+      spec = { type: 'fields', prompt: 'A transport must approach at no more than ' + m('V_{\\text{REF}} = ' + Vref + '\\ \\text{kt}') + ' ' + where + ', with a landing ' + m('C_{L_{\\max}} = ' + nn(CL)) + '. Its maximum landing weight is ' + Math.round(ratio * 100) + '% of ' + m('\\Wo') + '. Find the largest landing wing loading and the takeoff wing loading it allows.',
+        fields: [{ name: 'l', label: '\\((W/S)_{\\text{land}} =\\)', answer: WS, unit: 'kg/m²' }, { name: 't', label: '\\((W/S)_{\\text{TO}} =\\)', answer: WS / ratio, unit: 'kg/m²' }] };
+      spec.hints = ['\\(V_{SR} = V_{\\text{REF}}/1.23\\), then \\((W/S)_{\\text{land}} = \\tfrac12\\rho V_{SR}^2C_{L_{\\max}}/g\\).', 'The wing is the same at takeoff, but the aircraft is heavier: divide by \\(W_{\\text{land}}/\\Wo = ' + nn(ratio) + '\\).'];
+      spec.solution = M('V_{SR} = ' + n4(Vs) + MS + ', \\qquad \\left(\\frac{W}{S}\\right)_{\\text{land}} = ' + n4(WS) + KGM2 + ', \\qquad \\left(\\frac{W}{S}\\right)_{\\text{TO}} = \\frac{' + n4(WS) + '}{' + nn(ratio) + '} = ' + n4(WS / ratio) + KGM2);
+      right = { l: typed(WS), t: typed(WS / ratio) }; wrong = { l: typed(WS), t: typed(WS * ratio) };
+    }
+    spec.explain = 'An approach-speed requirement is a wing-loading limit: better flaps (a higher \\(C_{L_{\\max}}\\)) allow a smaller wing.';
+    var rv = rho, cv = CL;
+    return { spec: spec, view: {
+      title: 'Approach speed and wing loading', aria: 'Largest landing wing loading against approach speed for this maximum lift coefficient, with the problem marked.',
+      x: { label: '\\(V_{\\text{REF}}\\) (kt)', min: Math.min(80, Math.floor(Vref / 10) * 10 - 10), max: Math.max(170, Math.ceil(Vref / 10) * 10 + 10) }, y: { label: 'Landing \\(\\WS\\) (kg/m²)', min: 0, max: Math.max(1000, Math.ceil(WS * 1.2 / 100) * 100) },
+      curves: [{ f: function (v) { var s = v * KT / 1.23; return 0.5 * rv * s * s * cv / G; }, color: 'z' }], marker: { at: [Vref, WS], label: '' },
+      readouts: [{ label: '\\(V_{\\text{REF}}\\)', tex: n4(Vref) + '\\ \\text{kt}' }, { label: '\\(V_{SR}\\)', tex: n4(Vs) + MS }, { label: 'Landing \\(\\WS\\)', tex: n4(WS) + KGM2 }],
+      note: 'Approach category C ends at 140 kt, D at 165 kt.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Mission timeline (Lesson 5) ---------- */
+  function genMission(rng) {
+    var h = rng.pick(range(8, 12.5, 0.5)), rc = rng.pick(range(6, 14, 0.5)), vcl = rng.pick(range(450, 700, 10)), gam = rng.pick([2.5, 2.8, 3, 3.2, 3.5]), vcr = rng.pick(range(700, 900, 10)), vd = rng.pick(range(500, 650, 10));
+    var R = rng.pick(range(1200, 9000, 100)), taxi = rng.pick([12, 15, 18, 20, 25]);
+    var tc = h * 1000 / rc / 60, dc = vcl * tc / 60, dd = h / Math.tan(gam * D2R), cr = R - dc - dd, tcr = cr / vcr * 60, td = dd / vd * 60, tb = taxi + tc + tcr + td;
+    var kind = pickW(rng, [['climb', 3], ['descent', 2], ['cruise', 3], ['block', 2]]), spec, right, wrong, mk;
+    var climbTxt = 'climbs to ' + m(nn(h * 1000) + MM) + ' at an average of ' + m(nn(rc) + MS) + ' and ' + m(nn(vcl) + KMH);
+    var descTxt = 'descends at ' + m(nn(gam) + '^\\circ');
+    if (kind === 'climb') {
+      spec = { type: 'fields', prompt: 'A jet ' + climbTxt + '. Find the time to climb and the horizontal distance covered.',
+        fields: [{ name: 't', label: '\\(t_{\\text{climb}} =\\)', answer: tc, unit: 'min' }, { name: 'd', label: '\\(d_{\\text{climb}} =\\)', answer: dc, unit: 'km' }] };
+      spec.hints = ['\\(t = h/\\overline{RC}\\), in seconds; divide by 60 for minutes.', '\\(d = \\overline{V}t\\), with \\(t\\) in hours.'];
+      spec.solution = M('t = \\frac{' + grp(h * 1000) + '}{' + nn(rc) + '} = ' + n4(tc * 60) + '\\ \\text{s} = ' + n4(tc) + MIN + ', \\qquad d = ' + nn(vcl) + '\\,\\frac{' + n4(tc) + '}{60} = ' + n4(dc) + KM);
+      right = { t: typed(tc), d: typed(dc) }; wrong = { t: typed(tc), d: typed(wrongOf(dc, [vcl * tc, vcl * tc * 60 / 3600 * 60])) };
+      mk = [dc, h];
+    } else if (kind === 'descent') {
+      spec = { type: 'numeric', prompt: 'An airliner cruising at ' + m(nn(h * 1000) + MM) + ' ' + descTxt + ' to the runway. How far from the destination must it start its descent?', label: '\\(d_{\\text{descent}} =\\)', answer: dd, unit: 'km' };
+      spec.hints = ['The descent is a straight line: \\(\\tan\\gamma_d = h/d\\).', '\\(d = h/\\tan\\gamma_d\\) with \\(h\\) in km.'];
+      spec.solution = M('d = \\frac{' + nn(h) + '\\ \\text{km}}{\\tan ' + nn(gam) + '^\\circ} = \\frac{' + nn(h) + '}{' + n4(Math.tan(gam * D2R)) + '} = ' + n4(dd) + KM);
+      right = { value: typed(dd) }; wrong = { value: typed(wrongOf(dd, [h / Math.sin(gam * D2R) * 1.5, h * Math.tan(gam * D2R), h / gam])) };
+      mk = [R - dd, h];
+    } else if (kind === 'cruise') {
+      if (cr < 100) { R = Math.ceil((dc + dd + 600) / 100) * 100; cr = R - dc - dd; tcr = cr / vcr * 60; tb = taxi + tc + tcr + td; }
+      spec = { type: 'numeric', prompt: 'On a ' + m(grp(R) + KM) + ' trip, a jet ' + climbTxt + ', then ' + descTxt + ' at the end. How far does it cruise?', label: '\\(d_{\\text{cruise}} =\\)', answer: cr, unit: 'km' };
+      spec.hints = ['Climb distance: \\(d = \\overline{V}h/\\overline{RC}\\) (watch the units); descent distance: \\(h/\\tan\\gamma_d\\).', 'The cruise is what is left: \\(R - d_{\\text{climb}} - d_{\\text{descent}}\\).'];
+      spec.solution = M('d_{\\text{climb}} = ' + nn(vcl) + '\\,\\frac{' + grp(h * 1000) + '/' + nn(rc) + '}{3600} = ' + n4(dc) + KM + ', \\qquad d_{\\text{descent}} = \\frac{' + nn(h) + '}{\\tan ' + nn(gam) + '^\\circ} = ' + n4(dd) + KM) +
+        M('d_{\\text{cruise}} = ' + grp(R) + ' - ' + n4(dc) + ' - ' + n4(dd) + ' = ' + n4(cr) + KM);
+      right = { value: typed(cr) }; wrong = { value: typed(wrongOf(cr, [R - dc, R - dd, R])) };
+      mk = [dc + cr, h];
+    } else {
+      if (cr < 100) { R = Math.ceil((dc + dd + 600) / 100) * 100; cr = R - dc - dd; tcr = cr / vcr * 60; tb = taxi + tc + tcr + td; }
+      spec = { type: 'numeric', prompt: 'On a ' + m(grp(R) + KM) + ' trip, a jet taxis for ' + m(taxi + MIN) + ' in total, ' + climbTxt + ', cruises at ' + m(nn(vcr) + KMH) + ', and ' + descTxt + ' at an average of ' + m(nn(vd) + KMH) + '. Find the block time in minutes.', label: '\\(t_{\\text{block}} =\\)', answer: tb, unit: 'min' };
+      spec.hints = ['Find the climb and descent distances first; the cruise covers the rest of the trip.', 'Add the times: taxi + climb (\\(h/\\overline{RC}\\)) + cruise (\\(d/V\\)) + descent (\\(d/\\overline{V}\\)).'];
+      spec.solution = M('t_{\\text{climb}} = ' + n4(tc) + MIN + ',\\ d_{\\text{climb}} = ' + n4(dc) + KM + ', \\qquad d_{\\text{descent}} = ' + n4(dd) + KM + ',\\ t_{\\text{descent}} = ' + n4(td) + MIN) +
+        M('d_{\\text{cruise}} = ' + n4(cr) + KM + ',\\ t_{\\text{cruise}} = ' + n4(tcr) + MIN + ', \\qquad t_{\\text{block}} = ' + taxi + ' + ' + n4(tc) + ' + ' + n4(tcr) + ' + ' + n4(td) + ' = ' + n4(tb) + MIN);
+      right = { value: typed(tb) }; wrong = { value: typed(wrongOf(tb, [taxi + R / vcr * 60, tc + tcr + td])) };
+      mk = [R, 0];
+    }
+    spec.explain = 'Climb and descent cover part of the trip distance; only the rest is cruise.';
+    var hc = h, crv = Math.max(0, R - dc - dd);
+    return { spec: spec, view: {
+      title: 'The flight with true distances', aria: 'Altitude against distance for this flight, with the problem\'s point marked.',
+      x: { label: 'Distance (km)', min: 0, max: Math.ceil(R * 1.08 / 100) * 100 }, y: { label: 'Altitude (km)', min: 0, max: 14 },
+      lines: [{ pts: [[0, 0], [dc, hc]], color: 'good', width: 2.6 }, { pts: [[dc, hc], [dc + crv, hc]], color: 'z', width: 2.6 }, { pts: [[dc + crv, hc], [dc + crv + dd, 0]], color: 'muted', width: 2.6 }],
+      marker: { at: mk, label: '' },
+      readouts: [{ label: 'Climb', tex: n4(dc) + KM + ',\\ ' + n4(tc) + MIN }, { label: 'Cruise', tex: n4(crv) + KM }, { label: 'Descent', tex: n4(dd) + KM }],
+      note: 'The vertical scale is stretched: the real profile is almost flat.' }, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Reserves and winds (Lesson 6) ---------- */
+  function genReserve(rng) {
+    var kind = pickW(rng, [['hold', 3], ['intl', 2], ['icao', 2], ['esad', 2], ['wind', 2]]), spec, right, wrong, view;
+    if (kind === 'hold') {
+      var W = rng.pick(range(15000, 250000, 5000)), E = rng.pick([20, 30, 45, 60]), LD = rng.pick(range(14, 20, 0.5)), C = rng.pick([0.35, 0.4, 0.45, 0.5, 0.55]);
+      var f = Math.exp(-E / 60 * C / LD), fuel = W * (1 - f);
+      spec = { type: 'numeric', prompt: 'A jet starts a ' + E + '-minute hold at ' + m(grp(W) + KG) + ', with ' + m('\\LDmax = ' + nn(LD)) + ' and ' + m('C = ' + nn(C) + PH) + '. Estimate the fuel burned in the hold.', label: 'Fuel \\(=\\)', answer: fuel, unit: 'kg' };
+      spec.hints = ['Convert the time to hours: \\(E = ' + nn(E / 60) + '\\ \\text{h}\\). Then \\(W_i/W_{i-1} = \\exp[-EC/(L/D)]\\).', 'Fuel burned \\(= W_{i-1}(1 - W_i/W_{i-1})\\).'];
+      spec.solution = M('\\frac{W_i}{W_{i-1}} = \\exp\\left[-\\frac{' + n4(E / 60) + '(' + nn(C) + ')}{' + nn(LD) + '}\\right] = ' + CYL.fmtTex(f, 5) + ', \\qquad \\text{fuel} = ' + grp(W) + '(1 - ' + CYL.fmtTex(f, 5) + ') = ' + n4(fuel) + KG);
+      right = { value: typed(fuel) }; wrong = { value: typed(wrongOf(fuel, [W * (1 - Math.exp(-E * C / LD)), W * E / 60 * C])) };
+      var Wv = W, Cv = C, Lv = LD;
+      view = { title: 'Holding fuel against time', aria: 'Fuel burned against holding time for this aircraft, with the problem marked.',
+        x: { label: 'Holding time (min)', min: 0, max: 75 }, y: { label: 'Fuel (kg)', min: 0, max: Math.ceil(W * (1 - Math.exp(-1.25 * C / LD)) * 1.15 / 100) * 100 },
+        curves: [{ f: function (t) { return Wv * (1 - Math.exp(-t / 60 * Cv / Lv)); }, color: 'warn' }], marker: { at: [E, fuel], label: '' },
+        readouts: [{ label: 'Weight fraction', tex: CYL.fmtTex(f, 5) }, { label: 'Fuel', tex: n4(fuel) + KG }, { label: 'Fuel flow', tex: g4(fuel / (E / 60)) + KGH }], note: 'Almost a straight line: over a short hold, fuel is close to drag × C × time.' };
+    } else if (kind === 'intl' || kind === 'icao') {
+      var t = rng.pick(range(3, 14, 0.5)), ff = rng.pick(range(2000, 9000, 100)), alt = rng.pick(range(1500, 6000, 100)), hf = Math.round(ff * rng.pick([0.75, 0.8, 0.85]) / 100) * 100;
+      var cont = (kind === 'intl' ? 0.10 : 0.05) * t * ff, res = cont + alt + 0.5 * hf;
+      var rule = kind === 'intl' ? 'the US international rule (10% of the flight time at cruise fuel flow, the alternate, and 30 minutes of holding)' : 'the ICAO rule with 5% contingency (5% of the trip fuel, the alternate, and a 30-minute final reserve at the holding fuel flow); take the trip fuel as the flight time times the cruise fuel flow';
+      spec = { type: 'numeric', prompt: 'A flight of ' + m(nn(t) + '\\ \\text{h}') + ' burns ' + m(grp(ff) + KGH) + ' in cruise. Reaching the alternate needs ' + m(grp(alt) + KG) + ', and holding burns ' + m(grp(hf) + KGH) + '. Find the reserve fuel under ' + rule + '.', label: 'Reserve \\(=\\)', answer: res, unit: 'kg' };
+      spec.hints = [kind === 'intl' ? 'Contingency: \\(0.10\\times\\) flight time \\(\\times\\) cruise fuel flow.' : 'Contingency: \\(0.05\\times\\) trip fuel, with trip fuel \\(= t\\times\\) fuel flow.', 'Add the alternate fuel and 30 minutes (0.5 h) at the holding fuel flow.'];
+      spec.solution = M((kind === 'intl' ? '0.10' : '0.05') + '(' + nn(t) + ')(' + grp(ff) + ') + ' + grp(alt) + ' + 0.5(' + grp(hf) + ') = ' + g4(cont) + ' + ' + grp(alt) + ' + ' + g4(0.5 * hf) + ' = ' + g4(res) + KG);
+      right = { value: typed(res) }; wrong = { value: typed(wrongOf(res, [cont + alt + hf, (kind === 'intl' ? 0.05 : 0.10) * t * ff + alt + 0.5 * hf, cont + alt])) };
+      var pc = kind === 'intl' ? 0.1 : 0.05, ffv = ff, fx = alt + 0.5 * hf;
+      view = { title: 'Reserve against flight time', aria: 'Reserve fuel against flight time under this rule, with the problem marked.',
+        x: { label: 'Flight time (h)', min: 0, max: 15 }, y: { label: 'Reserve (kg)', min: 0, max: Math.ceil((pc * 15 * ff + fx) * 1.1 / 1000) * 1000 },
+        curves: [{ f: function (x) { return pc * x * ffv + fx; }, color: 'warn' }], marker: { at: [t, res], label: '' },
+        readouts: [{ label: 'Contingency', tex: g4(cont) + KG }, { label: 'Alternate + hold', tex: g4(fx) + KG }, { label: 'Reserve', tex: g4(res) + KG }], note: 'The fixed part (alternate and hold) dominates short flights.' };
+    } else {
+      var d = rng.pick(range(1500, 9000, 100)), V = rng.pick(range(700, 920, 10)), w = rng.pick(range(20, 150, 5)) * (rng.next() < 0.75 ? 1 : -1), air = d * V / (V - w);
+      if (kind === 'esad') {
+        spec = { type: 'numeric', prompt: 'A ' + m(grp(d) + KM) + ' route is flown at a true airspeed of ' + m(nn(V) + KMH) + ' with an average ' + (w > 0 ? 'headwind' : 'tailwind') + ' component of ' + m(nn(Math.abs(w)) + KMH) + '. What is the equivalent still-air distance?', label: '\\(d_{\\text{air}} =\\)', answer: air, unit: 'km' };
+        spec.hints = ['The ground speed is \\(V - w\\), with \\(w\\) positive for a headwind and negative for a tailwind.', '\\(d_{\\text{air}} = d_{\\text{ground}}\\,V/(V - w)\\).'];
+        spec.solution = M('d_{\\text{air}} = ' + grp(d) + '\\,\\frac{' + nn(V) + '}{' + nn(V) + (w > 0 ? ' - ' : ' + ') + nn(Math.abs(w)) + '} = ' + n4(air) + KM);
+        right = { value: typed(air) }; wrong = { value: typed(wrongOf(air, [d * V / (V + w), d + w * d / V * 2, d])) };
+      } else {
+        var Ra = rng.pick(range(2000, 10000, 100)); w = Math.abs(w); d = Ra * (V - w) / V; air = Ra;
+        spec = { type: 'numeric', prompt: 'An aircraft has a still-air range of ' + m(grp(Ra) + KM) + ' (with its reserves on board) at a true airspeed of ' + m(nn(V) + KMH) + '. What is the longest route it can fly against an average headwind component of ' + m(nn(w) + KMH) + '?', label: '\\(d_{\\text{ground}} =\\)', answer: d, unit: 'km' };
+        spec.hints = ['Invert the still-air distance: \\(d_{\\text{ground}} = d_{\\text{air}}(V - w)/V\\).', 'The time aloft is the same as in still air: \\(t = d_{\\text{air}}/V\\), and the ground speed is \\(V - w\\).'];
+        spec.solution = M('d_{\\text{ground}} = ' + grp(Ra) + '\\,\\frac{' + nn(V) + ' - ' + nn(w) + '}{' + nn(V) + '} = ' + n4(d) + KM);
+        right = { value: typed(d) }; wrong = { value: typed(wrongOf(d, [Ra * V / (V + w), Ra - w])) };
+      }
+      var dv = d, Vv = V;
+      view = { title: 'Still-air distance and wind', aria: 'Equivalent still-air distance against wind component for this route, with the problem marked.',
+        x: { label: 'Wind component (km/h, headwind positive)', min: -200, max: 200 }, y: { label: 'Still-air distance (km)', min: 0, max: Math.ceil(d * V / (V - 200) * 1.05 / 1000) * 1000 },
+        curves: [{ f: function (x) { return dv * Vv / (Vv - x); }, color: 'z' }], hline: { y: d, label: 'ground distance' }, marker: { at: [w, air], label: '' },
+        readouts: [{ label: 'Ground distance', tex: g4(d) + KM }, { label: 'Still-air distance', tex: g4(air) + KM }, { label: 'Ground speed', tex: nn(V - w) + KMH }], note: 'A headwind costs more than the same tailwind saves.' };
+    }
+    spec.explain = kind === 'hold' ? 'Jets hold at \\(\\LDmax\\), where drag and fuel flow are lowest.' : kind === 'esad' || kind === 'wind' ? 'Range comes from the air distance; the wind changes how much ground it covers.' : 'Reserves are carried on every flight, so they are part of the design, not just of operations.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Trades: decision matrix, growth factor, cost of range (Lesson 7) ---------- */
+  function genTrade(rng) {
+    var kind = pickW(rng, [['score', 2], ['growth', 3], ['w0', 3]]), spec, right, wrong, view;
+    if (kind === 'score') {
+      var names = rng.pick([['fuel burn', 'cost', 'risk'], ['range', 'price', 'noise'], ['field length', 'cost', 'maintainability'], ['payload', 'speed', 'risk']]);
+      var w1 = rng.pick(range(0.2, 0.6, 0.05)), w2 = rng.pick(range(0.1, 0.9 - w1, 0.05)), w3 = +(1 - w1 - w2).toFixed(2);
+      if (w3 < 0.05) { w2 = +(w2 - 0.1).toFixed(2); w3 = +(1 - w1 - w2).toFixed(2); }
+      var s = [rng.pick([1, 2, 3, 4, 5]), rng.pick([1, 2, 3, 4, 5]), rng.pick([1, 2, 3, 4, 5])], S = w1 * s[0] + w2 * s[1] + w3 * s[2];
+      spec = { type: 'numeric', prompt: 'A decision matrix weights ' + names[0] + ' ' + nn(w1) + ', ' + names[1] + ' ' + nn(w2) + ' and ' + names[2] + ' ' + nn(w3) + '. A concept scores ' + s[0] + ', ' + s[1] + ' and ' + s[2] + ' on them (5 is best). What is its weighted score?', label: '\\(S =\\)', answer: S };
+      spec.hints = ['\\(S = \\sum w_i s_i\\).', 'Check that the weights add to 1.'];
+      spec.solution = M('S = ' + nn(w1) + '(' + s[0] + ') + ' + nn(w2) + '(' + s[1] + ') + ' + nn(w3) + '(' + s[2] + ') = ' + n4(S));
+      right = { value: typed(S) }; wrong = { value: typed(wrongOf(S, [(s[0] + s[1] + s[2]) / 3 + 0.4, s[0] + s[1] + s[2]])) };
+      var r23 = w2 + w3, k2 = w2 / r23, k3 = w3 / r23, sv = s;
+      view = { title: 'Score against the first weight', aria: 'The concept\'s weighted score against the weight on the first criterion, the others scaled in proportion, with the problem marked.',
+        x: { label: 'Weight on ' + names[0], min: 0, max: 1 }, y: { label: 'Weighted score', min: 0, max: 5.5 },
+        curves: [{ f: function (x) { return x * sv[0] + (1 - x) * (k2 * sv[1] + k3 * sv[2]); }, color: 'z' }], marker: { at: [w1, S], label: '' },
+        readouts: [{ label: 'Weights', tex: nn(w1) + ',\\ ' + nn(w2) + ',\\ ' + nn(w3) }, { label: 'Scores', tex: s.join(',\\ ') }, { label: '\\(S\\)', tex: n4(S) }], note: 'A steep line means the ranking depends strongly on that weight.' };
+    } else {
+      var Wp = rng.pick(range(2000, 40000, 500)), V = rng.pick(range(700, 900, 10)), C = rng.pick([0.5, 0.55, 0.6, 0.65]), LD = rng.pick(range(14, 19, 0.5)), fe = rng.pick(range(0.45, 0.58, 0.01));
+      var R = rng.pick(range(1500, 8000, 250));
+      function ffOf(r) { return 1.06 * (1 - HIST * Math.exp(-r * C / (V * LD))); }
+      var ffR = ffOf(R), den = 1 - ffR - fe;
+      while (den < 0.1) { R -= 500; ffR = ffOf(R); den = 1 - ffR - fe; if (R < 1000) { fe = +(fe - 0.05).toFixed(2); R = 3000; ffR = ffOf(R); den = 1 - ffR - fe; } }
+      var W0 = Wp / den;
+      if (kind === 'growth') {
+        var dP = rng.pick(range(100, 2000, 50)), ffg = rng.pick(range(0.15, 0.4, 0.01)), feg = rng.pick(range(0.42, 0.58, 0.01));
+        if (1 - ffg - feg < 0.1) feg = +(0.9 - ffg).toFixed(2);
+        var gf = 1 / (1 - ffg - feg), dW = dP * gf;
+        spec = { type: 'numeric', prompt: 'A design has ' + m('\\Wf/\\Wo = ' + nn(ffg)) + ' and ' + m('\\We/\\Wo = ' + nn(feg)) + '. A new requirement adds ' + m(grp(dP) + KG) + ' of fixed equipment. With the fractions held fixed, how much does the takeoff weight grow?', label: '\\(\\Delta\\Wo =\\)', answer: dW, unit: 'kg' };
+        spec.hints = ['The growth factor is \\(1/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).', 'Multiply it by the added weight.'];
+        spec.solution = M('\\Delta\\Wo = \\frac{' + grp(dP) + '}{1 - ' + nn(ffg) + ' - ' + nn(feg) + '} = \\frac{' + grp(dP) + '}{' + n4(1 - ffg - feg) + '} = ' + n4(dW) + KG);
+        right = { value: typed(dW) }; wrong = { value: typed(wrongOf(dW, [dP, dP / (1 - feg), dP * (1 + ffg + feg)])) };
+        var g2 = gf;
+        view = { title: 'Growth of the takeoff weight', aria: 'Takeoff weight increase against added weight: a straight line whose slope is the growth factor, with the problem marked.',
+          x: { label: 'Added weight (kg)', min: 0, max: 2200 }, y: { label: 'Increase in \\(\\Wo\\) (kg)', min: 0, max: Math.ceil(2200 * gf / 1000) * 1000 },
+          curves: [{ f: function (x) { return g2 * x; }, color: 'z' }], marker: { at: [dP, dW], label: '' },
+          readouts: [{ label: 'Growth factor', tex: n4(gf) }, { label: '\\(\\Delta\\Wo\\)', tex: n4(dW) + KG }], note: 'Every kilogram added costs several at takeoff.' };
+      } else {
+        spec = { type: 'numeric', prompt: 'A jet transport carries ' + m(grp(Wp) + KG) + ' of crew and payload, cruises at ' + m(nn(V) + KMH) + ' with ' + m('L/D = ' + nn(LD)) + ' and ' + m('C = ' + nn(C) + PH) + ', and has ' + m('\\We/\\Wo = ' + nn(fe)) + '. With ' + m('\\Wf/\\Wo = 1.06[1 - 0.970(0.985)(0.995)e^{-RC/(V\\,L/D)}]') + ', estimate ' + m('\\Wo') + ' for a design range of ' + m(grp(R) + KM) + '.', label: '\\(\\Wo =\\)', answer: W0, unit: 'kg' };
+        spec.hints = ['Cruise fraction: \\(e^{-' + grp(R) + '(' + nn(C) + ')/(' + nn(V) + '(' + nn(LD) + '))}\\); multiply by \\(0.970(0.985)(0.995) = 0.9507\\).', '\\(\\Wf/\\Wo = 1.06(1 - W_x/W_0)\\), then \\(\\Wo = W_{\\text{payload}}/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).'];
+        var ex = Math.exp(-R * C / (V * LD));
+        spec.solution = M('e^{-' + grp(R) + '(' + nn(C) + ')/(' + nn(V) + '(' + nn(LD) + '))} = ' + n4(ex)) + M('\\frac{W_x}{W_0} = 0.9507(' + n4(ex) + ') = ' + n4(HIST * ex) + ', \\qquad \\frac{\\Wf}{\\Wo} = 1.06(1 - ' + n4(HIST * ex) + ') = ' + n4(ffR)) +
+          M('\\Wo = \\frac{' + grp(Wp) + '}{1 - ' + n4(ffR) + ' - ' + nn(fe) + '} = \\frac{' + grp(Wp) + '}{' + n4(den) + '} = ' + n4(W0) + KG);
+        right = { value: typed(W0) }; wrong = { value: typed(wrongOf(W0, [Wp / (1 - (1 - ex) - fe), Wp / (1 - fe), Wp / (1 - 1.06 * (1 - ex) - fe)])) };
+        var p = { Wp: Wp, C: C, V: V, LD: LD, fe: fe };
+        view = { title: 'Takeoff weight against design range', aria: 'Takeoff weight against design range for this aircraft, rising steeply toward the range wall, with the problem marked.',
+          x: { label: 'Design range (km)', min: 0, max: Math.max(R * 1.6, 4000) }, y: { label: '\\(\\Wo\\) (t)', min: 0, max: Math.ceil(W0 / 1000 * 2.5) },
+          curves: [{ f: function (r) { var dd = 1 - 1.06 * (1 - HIST * Math.exp(-r * p.C / (p.V * p.LD))) - p.fe; return dd > 0.01 ? p.Wp / dd / 1000 : NaN; }, color: 'z' }], marker: { at: [R, W0 / 1000], label: '' },
+          readouts: [{ label: '\\(\\Wf/\\Wo\\)', tex: n4(ffR) }, { label: '\\(\\Wo\\)', tex: g4(W0) + KG }, { label: 'Growth factor', tex: n4(1 / den) }], note: 'The curve steepens toward the range wall, where nothing is left for payload.' };
+      }
+    }
+    spec.explain = kind === 'score' ? 'Weights are judgments: always check how the ranking changes when they change.' : 'Requirements cost takeoff weight, through the small denominator \\(1 - \\Wf/\\Wo - \\We/\\Wo\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l02: L(2, '02-requirements.html', 'Where Requirements Come From'), l03: L(3, '03-payload-range.html', 'Payload, Range and the Payload–Range Diagram'),
+    l04: L(4, '04-certification.html', 'Certification and Performance Requirements'), l05: L(5, '05-mission-profiles.html', 'Mission Profiles'),
+    l06: L(6, '06-reserves.html', 'Fuel Reserves, Winds and Design Range'), l07: L(7, '07-trade-studies.html', 'Trade Studies')
+  };
+  var CATS = [
+    { id: 'route', label: 'Great-circle distance', gen: genRoute, lessons: [LES.l02] },
+    { id: 'market', label: 'Market, fleet and span', gen: genMarket, lessons: [LES.l02] },
+    { id: 'prange', label: 'Payload–range', gen: genPR, lessons: [LES.l03] },
+    { id: 'climb', label: 'Engine-out climb', gen: genClimb, lessons: [LES.l04] },
+    { id: 'approach', label: 'Approach and field length', gen: genApproach, lessons: [LES.l04] },
+    { id: 'mission', label: 'Mission timeline', gen: genMission, lessons: [LES.l05] },
+    { id: 'reserve', label: 'Reserves and winds', gen: genReserve, lessons: [LES.l06] },
+    { id: 'trade', label: 'Trades and growth', gen: genTrade, lessons: [LES.l07] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.land && MISSION.drawLand) MISSION.drawLand(ch);
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like range-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="Twelve printable problems on the first estimate of takeoff weight: the sizing equation, empty-weight trends and units, technology factors, wetted area and L/D, propeller fuel consumption, mission fuel fractions, iteration, payload drops and sensitivities, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from a first takeoff weight and the empty-weight trends in two units, through the wetted area and \(L/D\) of a regional jet and a turboprop against a jet, to a full sizing, a payload drop and the growth factor. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">First Weight Estimate · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Use \(g = 9.81\ \text{m/s}^2\), \(1\ \text{lb} = 0.4536\ \text{kg}\), \(1\ \text{lb/(hp h)} = 0.6083\ \text{kg/(kW h)}\), and give answers to 4 significant figures. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A covers the sizing equation and empty-weight trends, Part B \(L/D\) and fuel consumption, and Part C fuel fractions, closing the loop and sensitivities. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units unless a problem asks otherwise, \(g = 9.81\ \text{m/s}^2\), answers to 4 significant figures. Convert with \(1\ \text{lb} = 0.4536\ \text{kg}\) and \(1\ \text{lb/(hp h)} = 0.6083\ \text{kg/(kW h)}\). Jets cruise at \(0.866\,\LDmax\) and loiter at \(\LDmax\); propeller aircraft the other way round. The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · The sizing equation and empty weight</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 1–2</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Lift-to-drag ratio and fuel consumption</h2>
+    <p class="ws-part-sub">Problems 5–8 · Basic to challenge · Lessons 3–5</p>
+    <div class="ws-list" data-from="5" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Fuel fraction, closing the loop, sensitivity</h2>
+    <p class="ws-part-sub">Problems 9–12 · Basic to challenge · Lessons 5–7</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Crew, payload and a first takeoff weight', level: 1, lessons: ['l01', 'l06'], units: 'kg',
+      statementHTML: T`<p>A light business jet carries 7 passengers at \(100\ \text{kg}\) each with baggage, \(200\ \text{kg}\) of cargo and 2 pilots at \(90\ \text{kg}\) each. Its fuel fraction is 0.27 and its empty-weight fraction at the converged weight is 0.56.</p>`,
+      parts: [
+        part('a', T`Find \(W_{\text{crew}} + W_{\text{payload}}\).`, T`\(1080\ \text{kg}\)`, { wp: 1080 }),
+        part('b', T`Find \(\Wo\).`, T`\(\Wo = 1080/0.17 = 6353\ \text{kg}\)`, { W0: 6352.9 }),
+        part('c', T`Find the empty and fuel weights, and check that the parts add up.`, T`\(\We = 3558\ \text{kg}\), \(\Wf = 1715\ \text{kg}\); \(1080 + 3558 + 1715 = 6353\)`, { We: 3557.6, Wf: 1715.3 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 2, title: 'Trends in pounds and kilograms', level: 1, lessons: ['l02'], units: 'kg, lb',
+      statementHTML: T`<p>The jet-trainer trend is \(\We/\Wo = 1.59\,\Wo^{-0.10}\) with \(\Wo\) in lb.</p>`,
+      parts: [
+        part('a', T`Convert the coefficient for \(\Wo\) in kg.`, T`\(A_{\text{kg}} = 1.59(0.4536)^{0.10} = 1.469\)`, { A: 1.4691 }),
+        part('b', T`Find \(\We/\Wo\) for a \(5500\ \text{kg}\) trainer, both with the kg form and with the lb form.`, T`\(0.6209\) both ways (\(5500\ \text{kg} = 12\,125\ \text{lb}\))`, { fe: 0.62091 }),
+        part('c', T`What would a student get by putting 5500 into the lb form? By what percentage is that wrong?`, T`\(0.6720\): 8.2% too high`, { wrong: 0.67199 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 3, title: 'Checking the trend against a real aircraft', level: 2, lessons: ['l02'], units: 'lb',
+      statementHTML: T`<p>The Boeing 737-200 has \(\Wo = 117\,500\ \text{lb}\) and \(\We = 60\,980\ \text{lb}\). The jet-transport trend is \(\We/\Wo = 1.02\,\Wo^{-0.06}\) (lb).</p>`,
+      parts: [
+        part('a', T`Find the 737's actual empty-weight fraction and the trend's value at its weight.`, T`Actual \(0.5190\); trend \(0.5063\)`, { act: 0.51898, tr: 0.50629 }),
+        part('b', T`Find the ratio of actual to trend.`, T`\(1.025\): 2.5% above the trend`, { r: 1.0251 }),
+        part('c', T`What technology factor would make the trend fit the 737 exactly? Would you use it for a new design?`, T`\(K_{\text{tech}} = 1.025\); only for a design of the 737's technology, not a new one`, { k: 1.0251 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 4, title: 'Variable sweep and composites', level: 2, lessons: ['l02'], units: 'kg',
+      statementHTML: T`<p>A fighter of \(18\,000\ \text{kg}\) uses the trend \(\We/\Wo = 2.1115\,\Wo^{-0.13}\) (kg).</p>`,
+      parts: [
+        part('a', T`Find the empty-weight fraction from the trend alone.`, T`\(0.5907\)`, { fe: 0.59074 }),
+        part('b', T`The design has a variable-sweep wing. Find the fraction.`, T`\(0.5907(1.04) = 0.6144\)`, { fe2: 0.61437 }),
+        part('c', T`It also has a composite structure credited with a technology factor of 0.92. Find the fraction, and the empty weight at \(18\,000\ \text{kg}\).`, T`\(0.5652\); \(\We = 10\,170\ \text{kg}\)`, { fe3: 0.56522, We: 10174 })
+      ],
+      figure: null, space: 40 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'A wetted-area build-up', level: 1, lessons: ['l03'], units: 'm²',
+      statementHTML: T`<p>A regional jet sketch has a wing of \(\Sref = 70\ \text{m}^2\), 85% exposed, with \(t/c = 0.12\); exposed tails of \(18\ \text{m}^2\) in total with \(t/c = 0.10\); a fuselage \(30\ \text{m}\) long and \(2.7\ \text{m}\) in diameter whose top and side views each fill 85% of their rectangles; and two nacelles of \(12\ \text{m}^2\) wetted area each.</p>`,
+      parts: [
+        part('a', T`Find the wetted areas of the wing and the tails.`, T`Wing \(121.3\ \text{m}^2\); tails \(36.5\ \text{m}^2\)`, { wing: 121.34, tails: 36.52 }),
+        part('b', T`Find the wetted area of the fuselage.`, T`\(A_{\text{top}} = 68.85\ \text{m}^2\); \(\Swet = 234.1\ \text{m}^2\)`, { fus: 234.09 }),
+        part('c', T`Find the total wetted area and \(\Swet/\Sref\).`, T`\(416.0\ \text{m}^2\); \(5.94\)`, { tot: 415.96, ratio: 5.9422 })
+      ],
+      figure: null, space: 50 }),
+
+    prob({ n: 6, title: 'L/D from the sketch', level: 2, lessons: ['l03'], units: '—',
+      statementHTML: T`<p>The regional jet of Problem 5 has aspect ratio 9.5. Take \(C_{fe} = 0.0030\) and \(e = 0.8\).</p>`,
+      parts: [
+        part('a', T`Find the wetted aspect ratio and \(\CDz\).`, T`\(A_{\text{wet}} = 1.599\); \(\CDz = 0.01783\)`, { aw: 1.5987, cd0: 0.017827 }),
+        part('b', T`Find \(\LDmax\).`, T`\(18.30\)`, { ld: 18.299 }),
+        part('c', T`Which \(L/D\) should be used for its cruise and for its loiter?`, T`Cruise \(0.866(18.30) = 15.85\); loiter \(18.30\)`, { cr: 15.847 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 7, title: 'A turboprop\'s fuel consumption', level: 1, lessons: ['l04'], units: 'kg/(kW h), 1/h, km',
+      statementHTML: T`<p>A turboprop has \(c_P = 0.5\ \text{lb/(hp h)}\) and \(\eta_p = 0.82\), cruising at \(480\ \text{km/h}\).</p>`,
+      parts: [
+        part('a', T`Express \(c_P\) in kg/(kW h).`, T`\(0.3041\)`, { cb: 0.30414 }),
+        part('b', T`Find the equivalent \(C\) in cruise.`, T`\(0.4851/\text{h}\)`, { C: 0.48514 }),
+        part('c', T`Find \(V/C\), both from (b) and from the speed-free formula.`, T`\(989.4\ \text{km}\) both ways`, { vc: 989.41 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 8, title: 'Jet or propeller?', level: 3, lessons: ['l03', 'l04', 'l05'], units: '—',
+      statementHTML: T`<p>Two aircraft with \(\LDmax = 15\) fly a \(1200\ \text{km}\) cruise. The turboprop of Problem 7 flies at \(480\ \text{km/h}\); a jet flies at \(750\ \text{km/h}\) with \(C = 0.7/\text{h}\).</p>`,
+      parts: [
+        part('a', T`Find the turboprop's cruise fraction.`, T`\(L/D = 15\); \(0.9223\)`, { fp: 0.92233 }),
+        part('b', T`Find the jet's cruise fraction.`, T`\(L/D = 12.99\); \(0.9174\)`, { fj: 0.91739 }),
+        part('c', T`Which burns less fuel, by how much, and what does the jet offer in return?`, T`The turboprop burns 7.8% of its weight against 8.3%; the jet takes 1.6 h instead of 2.5 h`, null)
+      ],
+      figure: null, space: 50 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'The mission fuel fraction', level: 1, lessons: ['l05'], units: '—',
+      statementHTML: T`<p>A jet with \(\LDmax = 15\) flies: takeoff (0.970), climb (0.985), cruise \(3000\ \text{km}\) at \(800\ \text{km/h}\) with \(C = 0.6/\text{h}\), loiter 30 minutes with \(C = 0.5/\text{h}\), landing (0.995).</p>`,
+      parts: [
+        part('a', T`Find the cruise and loiter fractions.`, T`Cruise \(0.8410\); loiter \(0.9835\)`, { f3: 0.84096, f4: 0.98347 }),
+        part('b', T`Find \(W_x/W_0\).`, T`\(0.7863\)`, { wx: 0.78626 }),
+        part('c', T`Find \(\Wf/\Wo\) with the 6% allowance.`, T`\(0.2266\)`, { ff: 0.22656 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 10, title: 'Closing the loop', level: 2, lessons: ['l06'], units: 'kg',
+      statementHTML: T`<p>The jet of Problem 9 carries \(2000\ \text{kg}\) of crew and payload. Use \(\We/\Wo = 0.9727\,\Wo^{-0.06}\) (kg).</p>`,
+      parts: [
+        part('a', T`From a guess of \(15\,000\ \text{kg}\), find the next estimate of \(\Wo\).`, T`\(\We/\Wo = 0.5463\); \(\Wo = 8805\ \text{kg}\)`, { W1: 8805.3 }),
+        part('b', T`Iterate to convergence.`, T`\(\Wo = 9445\ \text{kg}\), \(\We/\Wo = 0.5617\)`, { W0: 9444.7 }),
+        part('c', T`Find the empty and fuel weights.`, T`\(\We = 5305\ \text{kg}\), \(\Wf = 2140\ \text{kg}\)`, { We: 5304.9, Wf: 2139.8 })
+      ],
+      figure: null, space: 50 }),
+
+    prob({ n: 11, title: 'A payload drop', level: 3, lessons: ['l06'], units: 'kg',
+      statementHTML: T`<p>A twin-turboprop patrol aircraft (\(\We/\Wo = 0.9228\,\Wo^{-0.05}\), kg) with \(360\ \text{kg}\) of crew carries \(1500\ \text{kg}\) of stores, which it drops on station. Mission fractions: takeoff 0.970, climb 0.985, cruise out 0.93, drop, cruise back 0.93, loiter 0.985, landing 0.995.</p>`,
+      parts: [
+        part('a', T`From a guess of \(12\,000\ \text{kg}\), find the fuel \(\Wf = 1.06(\Wo - W_{\text{drop}} - W_x)\) and the next estimate of \(\Wo\).`, T`\(\Wf = 2277\ \text{kg}\); \(\Wo = 9780\ \text{kg}\)`, { Wf: 2277.3, W1: 9779.8 }),
+        part('b', T`Iterate to convergence and give \(\Wo\) and \(\Wf\).`, T`\(\Wo = 8173\ \text{kg}\), \(\Wf = 1506\ \text{kg}\)`, { W0: 8173.4, Wf2: 1506.2 }),
+        part('c', T`Size the same aircraft bringing the stores home (ordinary fuel fraction). How much does the drop save?`, T`\(\Wf/\Wo = 0.2015\), \(\Wo = 8758\ \text{kg}\): the drop saves \(585\ \text{kg}\)`, { Wnd: 8757.9 })
+      ],
+      figure: null, space: 60 }),
+
+    prob({ n: 12, title: 'Sensitivity to payload', level: 3, lessons: ['l07'], units: 'kg',
+      statementHTML: T`<p>Return to the jet of Problems 9 and 10 (\(\Wo = 9445\ \text{kg}\)).</p>`,
+      parts: [
+        part('a', T`Resize it with \(2200\ \text{kg}\) of crew and payload.`, T`\(\Wo = 10\,255\ \text{kg}\)`, { W2: 10255 }),
+        part('b', T`Find the true growth factor and the percentage increase in \(\Wo\).`, T`\(4.05\); \(+8.6\%\)`, { g: 4.0522 }),
+        part('c', T`Find the fixed-fraction growth factor, and explain the difference.`, T`\(1/(1 - 0.2266 - 0.5617) = 4.72\); larger, because it ignores the fall of \(\We/\Wo\) with weight`, { gf: 4.7223 })
+      ],
+      figure: null, space: 45 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; g = 9.81 m/s^2; 1 lb = 0.4536 kg; 1 lb/(hp h) = 0.6083 kg/(kW h); 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside the Conceptual Design Process · Design Requirements and Mission Profiles</title>
+<meta name="description" content="The conceptual design process step by step: requirements, the initial sketch, first sizing, layout, analysis, sizing and trade studies; rubber and fixed engines; the phases and reviews of a program; and why decisions made early commit most of the cost.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  /* The conceptual design process (Figure 1.1): an inline SVG flowchart, colors from the module tokens */
+  .flow { display: block; width: 100%; max-width: 640px; height: auto; margin: 0 auto; padding: 10px 6px; }
+  .flow text { font-family: var(--font-sans); fill: var(--ink); pointer-events: none; }
+  .flow .box { fill: var(--bg-elev); stroke: var(--line-strong); stroke-width: 1.5; cursor: pointer; transition: fill 0.15s; }
+  .flow .box:hover, .flow .box:focus-visible { fill: var(--accent-soft); outline: none; }
+  .flow .box.is-on { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+  .flow .box.analysis { rx: 6; }
+  .flow .link { fill: none; stroke: var(--ink-faint); stroke-width: 1.6; }
+  .flow .loop { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 6 4; }
+  .flow .head { fill: var(--ink-faint); }
+  .flow .loophead { fill: var(--accent); }
+  .flow .tag { font-size: 11px; fill: var(--ink-muted); }
+  .flow-text { min-height: 9em; }
+  .phase-table td:first-child { white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body data-page="l01" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 1 · 35 min</p>
+    <h1>Inside the Conceptual Design Process</h1>
+    <p class="lede">Module 1 ended with the design wheel: requirements, concept, analysis, sizing, and around again. This lesson opens the wheel up into the steps a conceptual designer actually takes, shows where each one is covered in this course, and explains why the few months of conceptual design decide most of what an aircraft will cost.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>List the steps of conceptual design in order, from requirements to a sized baseline, and explain where the loops are.</li>
+      <li>Distinguish rubber-engine sizing from fixed-engine sizing, and compute the thrust a rubber engine must give.</li>
+      <li>Describe the conceptual, preliminary and detail design phases, and the reviews that close them.</li>
+      <li>Explain why design freedom falls and committed cost rises fastest in the earliest phase.</li>
+    </ul>
+  </section>
+
+  <section id="process">
+    <h2>From the wheel to a process</h2>
+    <p>The design wheel says that design goes round in circles. It does not say where to start, or what to do first. There is a usual order in which a conceptual designer works, and Figure 1.1 lays it out as a flowchart. Notice two things about it. First, the aircraft is <em>sized</em> twice: once from a sketch and historical data, before anything is drawn properly, and again after the layout has been analyzed. Second, the arrows going back up are as important as the ones going down.</p>
+
+    <figure class="figure" aria-labelledby="fig11-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig11-stage"></div>
+        <div class="viz-controls" id="fig11-controls"></div>
+      </div>
+      <figcaption id="fig11-cap"><strong>Figure 1.1</strong> The conceptual design process, after Raymer. Select a step (click it, or use Tab and Enter) to read what happens there and where this course covers it. The dashed arrow is the main loop: if the analyzed design does not meet the requirements, or a trade study finds a better one, the layout is revised and analyzed again.</figcaption>
+    </figure>
+
+    <p>The first pass through the top of the chart can take a single afternoon: a rough sketch, a weight estimate from historical fractions (Module 1, Lesson 7), and a guess at the wing and engine size. The value of the quick pass is that it shows at once whether the requirements are sensible. A requirement that leads to an absurd gross weight is better discovered on the first day than in the third month.</p>
+    <aside class="callout note">
+      <p class="callout-title">Requirements first, or an idea first?</p>
+      <p>Textbooks start with requirements, and military programs usually do. In practice, design often starts the other way round: a new engine, a new structure or a new configuration suggests an aircraft, and the requirements are worked out to show what it could do for a customer. The process is the same; only the entry point differs.</p>
+    </aside>
+  </section>
+
+  <section id="rubber">
+    <h2>Rubber engines and fixed engines</h2>
+    <p>Early in conceptual design, the engine is not yet chosen. The answer is the <strong>rubber engine</strong>: the designer assumes an engine of the right type that can be scaled to exactly the thrust (or power) the aircraft needs, with its weight, size and fuel consumption scaled with it. Sizing then finds the wing area and the engine size together, so that every requirement is just met.</p>
+    <p>Later, or whenever an existing engine must be used, the designer switches to <strong>fixed-engine sizing</strong>: the thrust is given, and the question becomes what the aircraft can do with it. Usually the fixed engine is a little too big or too small, so one requirement is exceeded and the design is no longer exactly optimal. The trade study then asks whether a new engine is worth its development cost.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Thrust the rubber engine must give</p>
+      \[ T_{\text{total}} = \left(\frac{T}{W}\right)\colW{\Wo}\,g, \qquad T_{\text{engine}} = \frac{T_{\text{total}}}{N} \]
+      <p>\(\TW\) is the takeoff thrust-to-weight ratio from the sizing (Module 5 shows where it comes from), \(\Wo\) in kg, \(N\) the number of engines.</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 1.1 — Rubber engine or fixed engine?</p>
+      <p>A first sizing of a twin-engine transport gives \(\Wo = 72\,000\ \text{kg}\) and \(\TW = 0.30\). (a) What takeoff thrust must each rubber engine give? (b) Two existing engines are available: engine X with \(120\ \text{kN}\) and engine Y with \(98\ \text{kN}\) each. What \(\TW\) does each give, and what would you report?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ T_{\text{total}} = 0.30(72\,000)(9.81) = 211\,900\ \text{N}, \qquad T_{\text{engine}} = \frac{211\,900}{2} = 105.9\ \text{kN} \]
+          \[ \text{X: } \frac{T}{W} = \frac{2(120\,000)}{72\,000(9.81)} = 0.340, \qquad \text{Y: } \frac{T}{W} = \frac{2(98\,000)}{72\,000(9.81)} = 0.277 \]
+          <p>Engine Y is about 8% short of the thrust the requirements need: some requirement (probably field length or one-engine-out climb, Lesson 4) would not be met. Engine X has 13% more thrust than needed, so it meets every requirement, but its extra weight, drag and cost would make the aircraft heavier than the rubber-engine design. A rubber engine would be X scaled to \(105.9/120 = 0.88\) of its thrust. The report to the program: X works with a weight penalty; a derivative of X with about 12% less thrust would be ideal.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="phases">
+    <h2>Phases, reviews and the baseline</h2>
+    <p>Conceptual design ends when the team has a <strong>baseline</strong>: one configuration, sized and analyzed well enough that the company (or the customer) can decide whether to go on. The phases that follow, and the reviews that close them, are summarized below. The review names are those of systems engineering practice; companies use their own names, but the idea of a formal gate between phases is universal.</p>
+    <div class="table-wrap">
+      <table class="data phase-table">
+        <caption>The phases of an aircraft program</caption>
+        <thead><tr><th scope="col">Phase</th><th scope="col">Question answered</th><th scope="col">Typical team and tools</th><th scope="col">Ends with</th></tr></thead>
+        <tbody>
+          <tr><td>Requirements</td><td>What does the customer need, and what will the rules allow?</td><td>Market analysis, customer discussions, operations analysis</td><td>A requirements document; a System Requirements Review</td></tr>
+          <tr><td>Conceptual design</td><td>What will it look like, weigh and cost, and can it meet the requirements?</td><td>A small team; statistical and simple analytical methods; many configurations, quick trades</td><td>A sized baseline, often a proposal; the launch or go-ahead decision</td></tr>
+          <tr><td>Preliminary design</td><td>Will the baseline really work, in depth?</td><td>Specialist groups in every discipline; wind-tunnel tests, finite elements, CFD; the outer shape lofted precisely</td><td>A frozen configuration; a Preliminary Design Review</td></tr>
+          <tr><td>Detail design</td><td>How is every part made, joined and inspected?</td><td>Hundreds to thousands of engineers; drawings or 3D models of every part, tooling, production planning</td><td>Released design; a Critical Design Review; first flight and certification testing</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Large civil programs usually take five years or more from launch to the first delivery. The conceptual phase before launch can be short, a few months, or can continue for years as a company studies a market and waits for the right engine or the right customer.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Integrated product teams</p>
+      <p>Older programs passed the design down a line: the configuration group handed it to aerodynamics, then to structures, then to manufacturing. Problems were found late. Since the 1990s, most companies organize the work in integrated product teams, with design, analysis, manufacturing, maintenance and cost specialists working on each part of the aircraft together from the start. This is called integrated product development.</p>
+    </aside>
+  </section>
+
+  <section id="freedom">
+    <h2>Freedom, knowledge and committed cost</h2>
+    <p>At the start of a program the designers know very little about their aircraft, but they can change anything. By the time they know a great deal, almost nothing can be changed cheaply. Meanwhile, the decisions taken early (the configuration, the wing loading, the engine, the materials) fix most of the cost of building and operating the aircraft long before that money is actually spent. Figure 1.2 shows the usual picture.</p>
+    <figure class="figure wide" aria-labelledby="fig12-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig12-stage"></div>
+        <div class="viz-controls" id="fig12-controls"></div>
+      </div>
+      <figcaption id="fig12-cap"><strong>Figure 1.2</strong> Design freedom, knowledge about the design, cost committed and cost spent through a program. The curves are illustrative: their shape follows the figures common in systems engineering texts, not data from a particular program. Move through the program to read the values.</figcaption>
+    </figure>
+    <p>The lesson for a conceptual designer is not that early decisions are final; it is that they are <em>expensive to reverse</em>. Changing a wing loading in the second week costs an afternoon of calculation. Changing it after the wing is in production can cost the program. That is why so much effort goes into requirements and trade studies (Lessons 2 to 7), and why even a quick first sizing is worth doing carefully.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Conceptual design runs from requirements through an initial sketch and a first sizing, a layout, analysis in every discipline, and sizing with trade studies, looping back until a baseline meets the requirements.</li>
+      <li>A rubber engine is scaled to exactly the thrust needed, \(T = (\TW)\,\Wo g\); a fixed engine is a real engine, and the aircraft is then sized around it.</li>
+      <li>Phases end at formal reviews: requirements, conceptual (baseline and go-ahead), preliminary (frozen configuration), detail (every part released).</li>
+      <li>Most of the cost is committed in the earliest phases, when knowledge is lowest and changes are cheapest.</li>
+      <li>Next, <a href="02-requirements.html">Lesson 2</a> looks at the start of the chart: where requirements come from.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 1.1: the conceptual design process ---------- */
+CYL.ready(function () {
+  'use strict';
+  var STEPS = [
+    { t: 'Requirements', x: 220, y: 12, w: 200, mod: 'Module 2 (this module)', body: 'Payload, range or radius, speed, field lengths, climb, certification basis, cost. They come from customers, markets and regulators (Lessons 2 to 6), and they are not frozen: trade studies feed back into them.' },
+    { t: 'Concept and initial sketch', x: 220, y: 72, w: 200, mod: 'Module 2, Lesson 7; Module 6', body: 'A first configuration: wing, fuselage, tail, engines and landing gear, sketched just carefully enough to estimate wetted area and weights. Often several sketches, compared later.' },
+    { t: 'First weight estimate', x: 220, y: 132, w: 200, mod: 'Module 3', body: 'Takeoff weight from the mission and historical fractions: the sizing equation of Module 1, Lesson 7, with a fuel fraction built segment by segment from the mission profile (Lesson 5).' },
+    { t: 'Airfoil, geometry, T/W and W/S', x: 220, y: 192, w: 200, mod: 'Modules 4 and 5', body: 'Choose the airfoil, aspect ratio, sweep and taper; then the thrust-to-weight ratio and wing loading that meet the takeoff, landing, climb and speed requirements.' },
+    { t: 'Configuration layout', x: 220, y: 252, w: 200, mod: 'Modules 6 to 8', body: 'A proper drawing: fuselage sized around the payload, engines installed, landing gear placed, fuel tanks and subsystems arranged. This is the aircraft that will be analyzed.' },
+    { t: 'Aerodynamics', x: 10, y: 330, w: 140, an: true, mod: 'Module 9', body: 'Lift curve, maximum lift, the drag build-up from the wetted areas of the layout, and the drag polar.' },
+    { t: 'Weights and balance', x: 165, y: 330, w: 140, an: true, mod: 'Module 10', body: 'Component weights from statistical equations, a better empty weight, and the center of gravity.' },
+    { t: 'Stability and control', x: 320, y: 330, w: 140, an: true, mod: 'Module 11', body: 'Static margin, tail volume and control power: is the aircraft stable and controllable with the tail it has?' },
+    { t: 'Performance and cost', x: 475, y: 330, w: 155, an: true, mod: 'Module 12', body: 'Range, field lengths, climb and ceiling with the analyzed aerodynamics, weights and engine; acquisition and operating cost.' },
+    { t: 'Sizing and trade studies', x: 220, y: 410, w: 200, mod: 'Module 12', body: 'Resize with the analyzed data, then vary wing loading, thrust-to-weight ratio, aspect ratio and the requirements themselves to find the best design (carpet plots). If the baseline fails a requirement, or a better one exists, revise the layout.' },
+    { t: 'Baseline: meets the requirements?', x: 220, y: 470, w: 200, mod: 'End of conceptual design', body: 'When a sized, analyzed layout meets every requirement and the trades say it is the best available, it becomes the baseline handed to preliminary design.' }
+  ];
+  var NSV = 'http://www.w3.org/2000/svg';
+  function mk(tag, attrs) { var e = document.createElementNS(NSV, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  var svg = mk('svg', { viewBox: '0 0 640 512', class: 'flow', role: 'group', 'aria-label': 'Flowchart of the conceptual design process: eleven steps from requirements to a baseline, with a loop back from sizing and trade studies to the layout and the requirements' });
+  var defs = mk('defs', {});
+  var m1 = mk('marker', { id: 'f11-arr', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }); m1.appendChild(mk('path', { d: 'M0 0L10 5L0 10z', class: 'head' }));
+  var m2 = mk('marker', { id: 'f11-loop', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }); m2.appendChild(mk('path', { d: 'M0 0L10 5L0 10z', class: 'loophead' }));
+  defs.appendChild(m1); defs.appendChild(m2); svg.appendChild(defs);
+  var H = 40, boxes = [];
+  function cx(s) { return s.x + s.w / 2; }
+  // straight links down the spine, the fan-out to the four analyses and the fan-in to sizing
+  [[0, 1], [1, 2], [2, 3], [3, 4], [9, 10]].forEach(function (p) {
+    var a = STEPS[p[0]], b = STEPS[p[1]];
+    svg.appendChild(mk('path', { d: 'M' + cx(a) + ' ' + (a.y + H) + ' V' + (b.y - 2), class: 'link', 'marker-end': 'url(#f11-arr)' }));
+  });
+  [5, 6, 7, 8].forEach(function (i) {
+    var a = STEPS[4], b = STEPS[i], c = STEPS[9];
+    svg.appendChild(mk('path', { d: 'M' + cx(a) + ' ' + (a.y + H) + ' V' + (a.y + H + 16) + ' H' + cx(b) + ' V' + (b.y - 2), class: 'link', 'marker-end': 'url(#f11-arr)' }));
+    svg.appendChild(mk('path', { d: 'M' + cx(b) + ' ' + (b.y + H) + ' V' + (c.y - 18) + ' H' + cx(c) + ' V' + (c.y - 2), class: 'link', 'marker-end': 'url(#f11-arr)' }));
+  });
+  // the loops: sizing back to the layout (right), and back to the requirements (left)
+  svg.appendChild(mk('path', { d: 'M420 430 H632 V272 H424', class: 'loop', 'marker-end': 'url(#f11-loop)' }));
+  svg.appendChild(mk('path', { d: 'M220 430 H6 V32 H216', class: 'loop', 'marker-end': 'url(#f11-loop)' }));
+  var t1 = mk('text', { x: 626, y: 292, 'text-anchor': 'end', class: 'tag' }); t1.textContent = 'revise the layout'; svg.appendChild(t1);
+  var t2 = mk('text', { x: 14, y: 200, class: 'tag' }); t2.textContent = 'relax or change'; svg.appendChild(t2);
+  var t3 = mk('text', { x: 14, y: 214, class: 'tag' }); t3.textContent = 'a requirement'; svg.appendChild(t3);
+  STEPS.forEach(function (s, i) {
+    var r = mk('rect', { x: s.x, y: s.y, width: s.w, height: H, rx: s.an ? 18 : 6, class: 'box', tabindex: '0', role: 'button', 'aria-label': s.t });
+    r.addEventListener('click', function () { choose(i); });
+    r.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(i); } });
+    svg.appendChild(r); boxes.push(r);
+    var words = s.t.split(' '), lines = [s.t];
+    if (s.t.length > (s.an ? 15 : 24)) { var k = Math.ceil(words.length / 2); lines = [words.slice(0, k).join(' '), words.slice(k).join(' ')]; }
+    lines.forEach(function (L, j) {
+      var tx = mk('text', { x: cx(s), y: s.y + H / 2 + 5 + (j - (lines.length - 1) / 2) * 15, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700 });
+      tx.textContent = L; svg.appendChild(tx);
+    });
+  });
+  document.getElementById('fig11-stage').appendChild(svg);
+  var panel = document.getElementById('fig11-controls');
+  var title = CYL.el('p', { class: 'viz-title' }), body = CYL.el('p'), mod = CYL.el('p', { class: 'small muted' });
+  panel.appendChild(CYL.el('div', { class: 'flow-text', 'aria-live': 'polite' }, [title, body, mod]));
+  function choose(i) {
+    boxes.forEach(function (g, k) { g.classList.toggle('is-on', k === i); g.setAttribute('aria-pressed', String(k === i)); });
+    title.textContent = (i + 1) + ' · ' + STEPS[i].t; body.textContent = STEPS[i].body; mod.textContent = 'In this course: ' + STEPS[i].mod + '.';
+  }
+  choose(0);
+});
+
+/* ---------- Figure 1.2: freedom, knowledge and committed cost (illustrative) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var E = 1 - Math.exp(-4.8);
+  function committed(t) { return (1 - Math.exp(-1.2 * t)) / E; }
+  function spent(t) { return Math.pow(t / 4, 2.6); }
+  function knowledge(t) { return 0.08 + 0.92 * Math.pow(t / 4, 0.75); }
+  function freedom(t) { return 1 - 0.92 * committed(t); }
+  var chart = AERO.chart(document.getElementById('fig12-stage'), {
+    x: { label: 'Program time (phases, not to scale)', min: 0, max: 4, ticks: [0.5, 1.5, 2.5, 3.5], format: function (v) { return ['Conceptual', 'Preliminary', 'Detail', 'Production'][Math.floor(v)] || ''; } },
+    y: { label: 'Fraction of the final value', min: 0, max: 1, format: function (v) { return Math.round(v * 100) + '%'; } }, height: 340,
+    ariaLabel: 'Four illustrative curves through a program: design freedom falls from 100 percent, knowledge rises slowly, cost committed rises to about 70 percent by the end of conceptual design, and cost spent rises late.',
+    legend: [{ label: 'Cost committed', color: 'r', line: true }, { label: 'Cost spent', color: 'r', line: true, dashed: true }, { label: 'Knowledge about the design', color: 'z', line: true }, { label: 'Design freedom', color: 'good', line: true }]
+  });
+  chart.fn(committed, { color: 'r', width: 2.6 });
+  chart.fn(spent, { color: 'r', width: 2.2, dashed: true });
+  chart.fn(knowledge, { color: 'z', width: 2.4 });
+  chart.fn(freedom, { color: 'good', width: 2.4 });
+  [1, 2, 3].forEach(function (x) { chart.vline(x, { color: 'muted', width: 1 }); });
+  var vl = chart.vline(1, { color: 'accent', dashed: false, width: 2 });
+  var panel = document.getElementById('fig12-controls');
+  var st = { t: 1 };
+  var s = CYL.slider({ label: 'Point in the program', min: 0, max: 4, step: 0.05, value: 1, format: function (v) { return v < 1 ? 'conceptual' : v < 2 ? 'preliminary' : v < 3 ? 'detail' : v < 4 ? 'production' : 'in service'; }, onInput: function (v) { st.t = v; draw(); } });
+  var ro = { c: CYL.readout('Cost committed', { color: 'r' }), s: CYL.readout('Cost spent'), k: CYL.readout('Knowledge', { color: 'z' }), f: CYL.readout('Freedom', { color: 'good' }) };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Through the program' }));
+  panel.appendChild(s.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.c.el, ro.s.el, ro.k.el, ro.f.el]));
+  panel.appendChild(CYL.el('p', { class: 'small muted', text: 'Illustrative values: real programs differ, but the order of the curves does not.' }));
+  function pct(x) { return Math.round(x * 100) + '%'; }
+  function draw() {
+    vl.set(st.t);
+    ro.c.set(pct(committed(st.t))); ro.s.set(pct(spent(st.t))); ro.k.set(pct(knowledge(st.t))); ro.f.set(pct(freedom(st.t)));
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l01-q1',
+    type: 'numeric',
+    prompt: 'A first sizing of a twin-engine aircraft gives \\(\\Wo = 60\\,000\\ \\text{kg}\\) and \\(\\TW = 0.28\\). What takeoff thrust must each rubber engine give?',
+    label: '\\(T_{\\text{engine}} =\\)', answer: 0.28 * 60000 * 9.81 / 2 / 1000, unit: 'kN',
+    hints: ['The total thrust is \\((\\TW)\\,\\Wo g\\), with \\(\\Wo\\) in kg and \\(g = 9.81\\ \\text{m/s}^2\\).', 'Divide by the number of engines, and by 1000 for kN.'],
+    explain: 'Thrust is a force: multiply the mass by \\(g\\) before you apply \\(\\TW\\).',
+    solution: '\\[ T_{\\text{engine}} = \\frac{0.28(60\\,000)(9.81)}{2} = 82\\,400\\ \\text{N} = 82.4\\ \\text{kN} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l01-q2',
+    type: 'mc',
+    prompt: 'Which of these decisions belongs to conceptual design?',
+    choices: [
+      { html: 'Choosing between two engines and a high or low wing, and setting the wing loading.', correct: true, feedback: 'Yes: configuration, engine and the main sizing parameters are conceptual-design decisions.' },
+      { html: 'Choosing the fastener spacing on the wing skin.', feedback: 'That is detail design: it needs the structure to be fully defined.' },
+      { html: 'Designing the tooling for the fuselage barrel.', feedback: 'Tooling is planned in detail design, for production.' },
+      { html: 'Running the certification flight tests.', feedback: 'Flight testing follows detail design and first flight.' }
+    ],
+    explain: 'Conceptual design decides what the aircraft is; later phases decide how it is built.'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l01-q3',
+    type: 'mc',
+    prompt: 'A program has spent about 5% of its development budget at the end of conceptual design. Why does it still matter so much to get conceptual design right?',
+    choices: [
+      { html: 'Because the decisions taken by then already commit most of the eventual cost, and reversing them later is expensive.', correct: true, feedback: 'Yes: committed cost runs far ahead of spent cost.' },
+      { html: 'Because conceptual design is the most expensive phase.', feedback: 'It is one of the cheapest phases; that is the point of Figure 1.2.' },
+      { html: 'Because nothing can be changed after conceptual design.', feedback: 'Things can be changed, but at a rapidly increasing cost.' },
+      { html: 'Because certification is granted at the end of conceptual design.', feedback: 'Certification comes at the end of testing, years later.' }
+    ],
+    explain: 'Cheap decisions early, expensive consequences later: a few weeks of good trade studies can save years of redesign.'
+  });
+});
+</script>
+</body>
+</html>

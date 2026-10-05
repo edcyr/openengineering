@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payload, Range and the Payload–Range Diagram · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Payload and the weights an operator uses (OEW, MZFW, MTOW, MLW, fuel capacity), and the payload–range diagram built with the Breguet range equation: its three corner points, what limits each segment, and how a design payload and range sit on it.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  .wt-table td:first-child { font-weight: 600; white-space: nowrap; }
+  .wstack { display: flex; height: 30px; margin: 6px 0 2px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--bg-sunken); }
+  .wstack span { display: block; height: 100%; }
+  .wstack .w-oew { background: var(--c-t); opacity: 0.75; }
+  .wstack .w-pl { background: var(--c-z); opacity: 0.8; }
+  .wstack .w-fuel { background: var(--c-good); opacity: 0.75; }
+  .wstack .w-res { background: var(--c-warn); opacity: 0.85; }
+  .wstack-key { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; list-style: none; font-size: 0.82rem; color: var(--ink-muted); }
+  .wstack-key i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px; vertical-align: -1px; }
+</style>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 40 min</p>
+    <h1>Payload, Range and the Payload–Range Diagram</h1>
+    <p class="lede">An aircraft does not have "a range". It can fly a full load a certain distance, trade some load for fuel to go farther, and fly farthest of all empty. The payload–range diagram shows the whole trade on one chart. It is the first thing an airline asks to see, and building it needs only the weights and Module 1's Breguet equation.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Define payload and the weights operators use (OEW, ZFW, MZFW, MTOW, MLW, fuel capacity) and relate them to the takeoff-weight build-up.</li>
+      <li>Compute payload from passengers and baggage with standard masses.</li>
+      <li>Construct a payload–range diagram from the weights and the Breguet equation, and explain what limits each segment.</li>
+      <li>Find the payload that can be carried over a given range, and the range for a given payload.</li>
+    </ul>
+  </section>
+
+  <section id="weights">
+    <h2>Payload and the operator's weights</h2>
+    <p>Sizing builds the takeoff weight as \(\Wo = W_{\text{crew}} + W_{\text{payload}} + \Wf + \We\). An airline uses a different set of names for the same idea, and the two are worth connecting:</p>
+    <div class="table-wrap">
+      <table class="data wt-table">
+        <caption>The weights of an aircraft, from the lightest up</caption>
+        <thead><tr><th scope="col">Weight</th><th scope="col">What it includes</th><th scope="col">In sizing terms</th></tr></thead>
+        <tbody>
+          <tr><td>Empty weight</td><td>Structure, engines, landing gear, systems, fixed equipment (the manufacturer's empty weight)</td><td>\(\We\), approximately</td></tr>
+          <tr><td>Operating empty weight (OEW)</td><td>Empty weight plus crew, catering, water, unusable fuel and oil: everything needed to operate, except payload and usable fuel</td><td>\(\We + W_{\text{crew}}\)</td></tr>
+          <tr><td>Zero-fuel weight (ZFW)</td><td>OEW plus payload. Its maximum, <strong>MZFW</strong>, is a structural limit: fuel in the wing relieves wing bending, so the heaviest load without fuel is limited</td><td>\(\Wo - \Wf\)</td></tr>
+          <tr><td>Takeoff weight (TOW)</td><td>ZFW plus fuel. Its maximum, <strong>MTOW</strong>, is the design gross weight</td><td>\(\Wo\) at MTOW</td></tr>
+          <tr><td>Landing weight</td><td>TOW less the fuel burned. Its maximum, <strong>MLW</strong>, is set by the landing gear and structure</td><td>\(W_x\), the end of the mission</td></tr>
+          <tr><td>Fuel capacity</td><td>The usable fuel the tanks can hold, by volume times density (jet fuel is about \(0.8\ \text{kg/L}\))</td><td>The largest possible \(\Wf\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Payload</strong> is what the customer pays to carry: passengers, their baggage and cargo for an airliner; the weapons, sensors or cargo of a military aircraft. Crew is not payload. For passengers, designers and operators use <strong>standard masses</strong>. This module uses \(100\ \text{kg}\) per passenger with baggage and \(90\ \text{kg}\) per crew member, round values typical of initial sizing; regulators publish their own (for example, European rules use \(84\ \text{kg}\) for an adult, including hand baggage, plus a standard mass for checked bags).</p>
+  </section>
+
+  <section id="diagram">
+    <h2>Building the payload–range diagram</h2>
+    <p>Fix the aircraft (OEW, MTOW, maximum payload, fuel capacity) and its cruise (\(V\), \(C\), \(L/D\)). Hold back a reserve of fuel \(W_{\text{res}}\) that is never planned to be burned (Lesson 6). Then, for any takeoff weight and payload, every kilogram of fuel above the reserve is burned in a Breguet cruise from the takeoff weight down to the landing weight, \(\text{OEW} + \text{payload} + W_{\text{res}}\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Range for a payload \(P\) (Breguet, fixed reserve)</p>
+      \[ R = \colV{\frac{V}{C}}\,\colL{\frac{L}{D}}\,\ln\frac{\text{TOW}}{\text{OEW} + P + W_{\text{res}}}, \qquad \text{TOW} = \min\bigl(\text{MTOW},\ \text{OEW} + P + W_{\text{fuel,max}}\bigr) \]
+      <p>A simplified model: it treats the whole flight as cruise. Real diagrams add the fuel for taxi, takeoff, climb and descent (Lesson 5) and use detailed performance data, but they have exactly the same shape.</p>
+    </div>
+    <p>Three corner points define the diagram:</p>
+    <div class="grid-cards">
+      <div class="card card-z"><h3>A: maximum payload</h3><p>Maximum payload at MTOW: the fuel is whatever is left, \(\text{MTOW} - \text{OEW} - P_{\max}\). From zero range up to A, the payload is limited by the structure (MZFW) and the line is flat.</p></div>
+      <div class="card card-good"><h3>B: full tanks at MTOW</h3><p>Beyond A, every kilogram of payload left behind is a kilogram of fuel added, at constant MTOW, until the tanks are full: \(P_B = \text{MTOW} - \text{OEW} - W_{\text{fuel,max}}\).</p></div>
+      <div class="card card-t"><h3>C: ferry range</h3><p>Beyond B, the tanks are full, so the only way to go farther is to carry less: the aircraft takes off lighter than MTOW. With no payload at all, it reaches the ferry range.</p></div>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 3.1 — The diagram of a narrow-body twin</p>
+      <p>An illustrative 150-seat twin has \(\text{OEW} = 42\,000\ \text{kg}\) (including crew), \(\text{MTOW} = 78\,000\ \text{kg}\), a maximum payload of \(19\,000\ \text{kg}\) and a fuel capacity of \(20\,000\ \text{kg}\). It cruises at \(830\ \text{km/h}\) with \(C = 0.58/\text{h}\) and an effective \(L/D = 16.5\), and keeps \(2600\ \text{kg}\) of reserve fuel. Find the corner points A, B and C.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The range factor is \((V/C)(L/D) = (830/0.58)(16.5) = 23\,610\ \text{km}\).</p>
+          <p><strong>A:</strong> TOW = MTOW = 78 000 kg; fuel \(= 78\,000 - 42\,000 - 19\,000 = 17\,000\ \text{kg}\), which fits in the tanks. Landing weight \(42\,000 + 19\,000 + 2600 = 63\,600\ \text{kg}\).</p>
+          \[ R_A = 23\,610\ln\frac{78\,000}{63\,600} = 23\,610(0.2041) = 4819\ \text{km} \]
+          <p><strong>B:</strong> full tanks at MTOW leave \(P_B = 78\,000 - 42\,000 - 20\,000 = 16\,000\ \text{kg}\); landing weight \(60\,600\ \text{kg}\).</p>
+          \[ R_B = 23\,610\ln\frac{78\,000}{60\,600} = 5960\ \text{km} \]
+          <p><strong>C:</strong> no payload, full tanks: TOW \(= 62\,000\ \text{kg}\), landing weight \(44\,600\ \text{kg}\).</p>
+          \[ R_C = 23\,610\ln\frac{62\,000}{44\,600} = 7778\ \text{km} \]
+        </div>
+      </details>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> The payload–range diagram of Example 3.1. Drag the mission range to read the largest payload, the number of passengers and how the takeoff weight divides into operating empty weight, payload, fuel burned and reserve. Change the aircraft to see which corner each weight moves. The numbers are illustrative, similar in size to the 737 and A320 families but not data for either.</figcaption>
+    </figure>
+  </section>
+
+  <section id="design-point">
+    <h2>The design point</h2>
+    <p>The requirement "150 passengers over 5000 km" is one point on this chart: the <strong>design payload</strong> at the <strong>design range</strong>. The design payload is usually less than the maximum payload, since a full cabin of passengers with their bags weighs less than the structure can carry; the difference is space for cargo on shorter flights. For the aircraft to meet the requirement, the design point must lie on or below its payload–range line.</p>
+    <div class="example">
+      <p class="example-title">Example 3.2 — Full cabin, and the longest flight</p>
+      <p>For the aircraft of Example 3.1: (a) How far can it carry a full cabin of 150 passengers at \(100\ \text{kg}\) each? (b) On a \(5500\ \text{km}\) route, how much payload can it carry?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>(a) \(P = 150(100) = 15\,000\ \text{kg}\), which is less than \(P_B = 16\,000\ \text{kg}\): the point lies between B and C, so the tanks are full and the aircraft takes off below MTOW.</p>
+          \[ \text{TOW} = 42\,000 + 15\,000 + 20\,000 = 77\,000\ \text{kg} \]
+          \[ R = 23\,610\ln\frac{77\,000}{42\,000 + 15\,000 + 2600} = 6048\ \text{km} \]
+          <p>(b) \(5500\ \text{km}\) lies between A (4819) and B (5960): takeoff at MTOW, and the landing weight follows from Breguet:</p>
+          \[ W_{\text{land}} = 78\,000\,e^{-5500/23\,610} = 61\,790\ \text{kg}, \qquad P = 61\,790 - 42\,000 - 2600 = 17\,190\ \text{kg} \]
+          <p>That is 150 passengers (15 000 kg) plus about 2.2 t of cargo.</p>
+        </div>
+      </details>
+    </div>
+    <aside class="callout warning">
+      <p class="callout-title">Range is sold at a payload</p>
+      <p>Brochure ranges usually assume a stated number of passengers, a standard mass for each, and stated reserves. Comparing two aircraft by "range" without checking those assumptions is comparing two different points on two different diagrams.</p>
+    </aside>
+  </section>
+
+  <section id="levers">
+    <h2>What moves the diagram</h2>
+    <ul>
+      <li><strong>A better range factor</strong> \((V/C)(L/D)\) (new engines, a better wing) stretches the whole diagram to the right in proportion.</li>
+      <li><strong>A higher MTOW</strong> (a stronger structure, often a later version of the type) moves A and B to the right: more fuel at the same payload.</li>
+      <li><strong>More fuel capacity</strong> (an extra tank) moves B down and to the right and extends the ferry range, but helps only where the tanks were the limit.</li>
+      <li><strong>A lighter OEW</strong> helps everywhere: every kilogram saved is a kilogram of payload or fuel.</li>
+    </ul>
+    <p>Families of aircraft are planned on this chart: a stretched version trades range for payload, a long-range version adds MTOW and tanks. Lesson 7 shows how much a kilogram of OEW, or a kilometre of range, costs in takeoff weight.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>OEW = empty weight + crew and operating items; ZFW = OEW + payload (limited by MZFW); TOW = ZFW + fuel (limited by MTOW and by tank capacity).</li>
+      <li>Payload–range: flat at maximum payload to A; trade payload for fuel at MTOW to B (full tanks); then fly lighter to the ferry range C.</li>
+      <li>With Breguet and a fixed reserve: \(R = (V/C)(L/D)\ln[\text{TOW}/(\text{OEW} + P + W_{\text{res}})]\).</li>
+      <li>The design payload at the design range must lie on or below the line.</li>
+      <li>Next, <a href="04-certification.html">Lesson 4</a> adds the requirements that come from the airworthiness rules.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 3.1: the payload–range diagram ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = Object.assign({}, MISSION.NARROWBODY, { R: 5500 });
+  var chart = AERO.chart(document.getElementById('fig31-stage'), {
+    x: { label: 'Range \\(R\\) (km)', min: 0, max: 9000 }, y: { label: 'Payload (t)', min: 0, max: 24 }, height: 340,
+    ariaLabel: 'Payload-range diagram: payload in tonnes against range in kilometres, flat at the maximum payload to point A, sloping down to point B and more steeply to the ferry range C.',
+    legend: [{ label: 'Payload–range line', color: 'z', line: true }, { label: 'Design payload (full cabin)', color: 'warn', line: true, dashed: true }]
+  });
+  var area = chart.polyline([], { color: 'z', width: 0, fill: 'z', fillOpacity: 0.1, closed: true });
+  var line = chart.polyline([], { color: 'z', width: 2.6 });
+  var cab = chart.hline(15, { color: 'warn', label: 'full cabin' });
+  var lab = { A: chart.text([0, 0], 'A', { weight: 700, color: 'z', dx: 4, dy: -8 }), B: chart.text([0, 0], 'B', { weight: 700, color: 'z', dx: 6, dy: -6 }), C: chart.text([0, 0], 'C', { weight: 700, color: 'z', dx: 6, dy: -6 }) };
+  var vl = chart.vline(5500, { color: 'accent', width: 1.5 });
+  var mk = chart.marker([5500, 17], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig31-controls');
+  var sR = CYL.slider({ label: 'Mission range', min: 0, max: 9000, step: 50, value: st.R, unit: 'km', color: 'v', onInput: function (v) { st.R = v; draw(); } });
+  function sl(k, label, min, max, step, unit) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, onInput: function (v) { st[k] = v; draw(); } }); }
+  var sMT = sl('MTOW', 'MTOW', 60000, 95000, 500, 'kg'), sOE = sl('OEW', 'OEW (with crew)', 34000, 50000, 250, 'kg'), sPL = sl('PLmax', 'Maximum payload', 10000, 24000, 250, 'kg'),
+    sF = sl('Fmax', 'Fuel capacity', 10000, 32000, 250, 'kg'), sLD = sl('LD', 'Effective \\(L/D\\)', 12, 22, 0.1), sC = sl('C', '\\(C\\)', 0.45, 0.9, 0.01, '/h');
+  var ro = { pl: CYL.readout('Largest payload'), pax: CYL.readout('Passengers at 100 kg'), tow: CYL.readout('Takeoff weight'), fuel: CYL.readout('Fuel burned + reserve'), lim: CYL.readout('Limited by') };
+  var stack = CYL.el('div', { class: 'wstack', role: 'img' }), keys = CYL.el('ul', { class: 'wstack-key', 'aria-hidden': 'true', html: '<li><i style="background:var(--c-t)"></i>OEW</li><li><i style="background:var(--c-z)"></i>Payload</li><li><i style="background:var(--c-good)"></i>Fuel burned</li><li><i style="background:var(--c-warn)"></i>Reserve</li>' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Mission' }));
+  panel.appendChild(sR.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.pl.el, ro.pax.el, ro.tow.el, ro.fuel.el, ro.lim.el]));
+  panel.appendChild(stack); panel.appendChild(keys);
+  var more = CYL.el('details', { class: 'reveal' }, [CYL.el('summary', { text: 'Change the aircraft' }), CYL.el('div', null, [sMT.el, sOE.el, sPL.el, sF.el, sLD.el, sC.el,
+    CYL.button('Reset to Example 3.1', function () { Object.assign(st, MISSION.NARROWBODY); [[sMT, 'MTOW'], [sOE, 'OEW'], [sPL, 'PLmax'], [sF, 'Fmax'], [sLD, 'LD'], [sC, 'C']].forEach(function (p) { p[0].set(st[p[1]], true); }); draw(); }, { small: true })])]);
+  panel.appendChild(more);
+  CYL.renderMath(panel);
+  function t(x) { return CYL.fmt(x / 1000, 3) + ' t'; }
+  function draw() {
+    if (st.PLmax > st.MTOW - st.OEW) st.PLmax = st.MTOW - st.OEW;
+    var pr = MISSION.payloadRange(st), pts = pr.outline.map(function (p) { return [p[0], p[1] / 1000]; });
+    chart.setAxes({ x: { max: Math.max(9000, Math.ceil(pr.C[0] / 1000) * 1000 + 500) } });
+    sR.el.querySelector('input').max = String(Math.ceil(pr.C[0] / 50) * 50);
+    if (st.R > pr.C[0]) st.R = Math.floor(pr.C[0] / 50) * 50;
+    line.set(pts); area.set(pts.concat([[pr.C[0], 0], [0, 0]]));
+    lab.A.set([pr.A[0], pr.A[1] / 1000]); lab.B.set([pr.B[0], pr.B[1] / 1000]); lab.C.set([pr.C[0], 0]);
+    var P = pr.payloadAt(st.R);
+    vl.set(st.R); mk.set([st.R, P / 1000]);
+    var tow = Math.min(st.MTOW, st.OEW + P + st.Fmax), burn = tow - st.OEW - P - st.Fres;
+    var lim = st.R <= pr.A[0] ? 'maximum payload (structure)' : st.R <= pr.B[0] ? 'MTOW: payload traded for fuel' : 'fuel capacity: tanks full';
+    ro.pl.set(t(P)); ro.pax.set(String(Math.min(st.seats, Math.floor(P / st.mPax))) + (P / st.mPax > st.seats ? ' (cabin full) + ' + t(P - st.seats * st.mPax) + ' cargo' : ''));
+    ro.tow.set(t(tow) + (tow < st.MTOW - 1 ? ' (below MTOW)' : ' (MTOW)')); ro.fuel.set(t(burn) + ' + ' + t(st.Fres)); ro.lim.set(lim);
+    stack.innerHTML = '';
+    [['w-oew', st.OEW], ['w-pl', P], ['w-fuel', burn], ['w-res', st.Fres]].forEach(function (q) { var s = CYL.el('span', { class: q[0] }); s.style.width = (q[1] / st.MTOW * 100) + '%'; stack.appendChild(s); });
+    stack.setAttribute('aria-label', 'Takeoff weight ' + t(tow) + ': OEW ' + t(st.OEW) + ', payload ' + t(P) + ', fuel burned ' + t(burn) + ', reserve ' + t(st.Fres) + '.');
+    chart.setAriaLabel('Payload-range diagram: A at ' + CYL.fmt(pr.A[0], 4) + ' km with ' + t(pr.A[1]) + ', B at ' + CYL.fmt(pr.B[0], 4) + ' km with ' + t(pr.B[1]) + ', ferry range ' + CYL.fmt(pr.C[0], 4) + ' km. At ' + st.R + ' km the payload is ' + t(P) + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var k = 800 / 0.6 * 15;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1',
+    type: 'numeric',
+    prompt: 'A regional jet has \\(\\text{OEW} = 30\\,000\\ \\text{kg}\\), \\(\\text{MTOW} = 52\\,000\\ \\text{kg}\\) and a maximum payload of \\(12\\,000\\ \\text{kg}\\), and keeps \\(1800\\ \\text{kg}\\) of reserve fuel. With \\(V = 800\\ \\text{km/h}\\), \\(C = 0.6/\\text{h}\\) and \\(L/D = 15\\), what is its range at maximum payload (point A)? Its tanks are large enough.',
+    label: '\\(R_A =\\)', answer: k * Math.log(52000 / 43800), unit: 'km',
+    hints: ['At A the aircraft takes off at MTOW with maximum payload; it lands at \\(\\text{OEW} + P_{\\max} + W_{\\text{res}}\\).', '\\(R = (V/C)(L/D)\\ln(\\text{TOW}/W_{\\text{land}})\\) with \\((V/C)(L/D) = 20\\,000\\ \\text{km}\\).'],
+    explain: 'The reserve stays in the tanks: it is part of the landing weight.',
+    solution: '\\[ W_{\\text{land}} = 30\\,000 + 12\\,000 + 1800 = 43\\,800\\ \\text{kg} \\]\\[ R_A = \\frac{800}{0.6}(15)\\ln\\frac{52\\,000}{43\\,800} = 20\\,000(0.1716) = 3432\\ \\text{km} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2',
+    type: 'fields',
+    prompt: 'The same jet has a fuel capacity of \\(13\\,000\\ \\text{kg}\\). Find the payload at point B (full tanks at MTOW), and the takeoff weight for the ferry flight (full tanks, no payload).',
+    fields: [{ name: 'pb', label: '\\(P_B =\\)', answer: 52000 - 30000 - 13000, unit: 'kg' }, { name: 'tow', label: 'Ferry TOW \\(=\\)', answer: 30000 + 13000, unit: 'kg' }],
+    hints: ['At B, TOW = MTOW and fuel = capacity, so the payload is what is left.', 'For the ferry flight, TOW = OEW + full fuel, well below MTOW.'],
+    explain: 'The ferry flight takes off 9 t below MTOW: the tanks, not the structure, limit it.',
+    solution: '\\[ P_B = 52\\,000 - 30\\,000 - 13\\,000 = 9000\\ \\text{kg} \\]\\[ \\text{TOW}_{\\text{ferry}} = 30\\,000 + 13\\,000 = 43\\,000\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3',
+    type: 'mc',
+    prompt: 'Why does the payload–range line fall more steeply beyond B than between A and B?',
+    choices: [
+      { html: 'Beyond B the tanks are full: leaving payload behind no longer adds fuel, it only makes the aircraft lighter, which buys less range per kilogram.', correct: true, feedback: 'Yes: between A and B each kilogram of payload becomes a kilogram of fuel; beyond B it becomes nothing.' },
+      { html: 'Beyond B the aircraft exceeds MTOW.', feedback: 'Beyond B the aircraft takes off below MTOW.' },
+      { html: 'Beyond B the engines use more fuel per hour.', feedback: '\\(C\\) is the same everywhere in this model.' },
+      { html: 'Because the reserve fuel is used beyond B.', feedback: 'The reserve is never planned to be burned.' }
+    ],
+    explain: 'The slope of each segment tells you what limits it: structure (flat), MTOW (trading payload for fuel), tank volume (flying lighter).'
+  });
+});
+</script>
+</body>
+</html>

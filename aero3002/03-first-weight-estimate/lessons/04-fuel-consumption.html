@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engines and Fuel Consumption · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="Specific fuel consumption for first sizing: thrust-specific fuel consumption of jets and its units, power-specific fuel consumption and propeller efficiency, the equivalent C of a propeller aircraft, and why jets and propeller aircraft cruise and loiter at different lift-to-drag ratios.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  .sfc td, .sfc th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sfc td:first-child, .sfc th:first-child { text-align: left; }
+  .ff-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .ff-pair > div + div { border-left: 1px solid var(--line); }
+  .ff-pair .ff-head { margin: 10px 14px 0; font-size: 0.86rem; font-weight: 700; color: var(--ink); }
+  @media (max-width: 680px) { .ff-pair > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+  #derivations h3 { margin: 1.4rem 0 0.4rem; font-size: 1rem; }
+  #derivations h3:first-child { margin-top: 0.2rem; }
+  .opt-table td:nth-child(n+3), .opt-table th:nth-child(n+3) { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 35 min</p>
+    <h1>Engines and Fuel Consumption</h1>
+    <p class="lede">The second ingredient of the Breguet equations is the engine's thirst, its specific fuel consumption. Jets and propellers measure it differently, and that difference is not just units: it is why a turboprop and a jet fly the same mission at different speeds and different lift-to-drag ratios.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Define thrust-specific fuel consumption \(C\), convert it between units, and choose typical values for initial sizing.</li>
+      <li>Define power-specific fuel consumption and propeller efficiency, and convert them to an equivalent \(C\).</li>
+      <li>Explain, from the way \(C\) varies with speed, why jets and propeller aircraft cruise and loiter at different \(L/D\).</li>
+    </ul>
+  </section>
+
+  <section id="tsfc">
+    <h2>Jets: thrust-specific fuel consumption</h2>
+    <p>For a jet engine, the fuel burned is roughly proportional to the thrust it gives. Its thrust-specific fuel consumption \(C\) is the <strong>weight</strong> of fuel burned per hour per unit of thrust, so it has units of 1/h (pounds of fuel per hour per pound of thrust, or newtons per hour per newton). Engine data sheets usually give the same consumption as a mass of fuel per unit thrust per second, \(c_T\), in mg/(N s):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Thrust-specific fuel consumption</p>
+      \[ \dot W_{\text{fuel}} = C\,T, \qquad C\ (1/\text{h}) = \frac{c_T\ \bigl(\text{mg/(N s)}\bigr)}{28.33} \]
+      <p>Since \(1/\text{h}\) of fuel weight per unit thrust is \(\dfrac{1}{9.81}\ \text{kg/(N h)} = 28.33\ \text{mg/(N s)}\). A modern high-bypass turbofan in cruise uses about 15 to 17 mg/(N s), a \(C\) of 0.53 to 0.60.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data sfc">
+        <caption>Typical \(C\) for initial sizing, in 1/h (source: Raymer, Table 3.3)</caption>
+        <thead><tr><th scope="col">Engine</th><th scope="col">Cruise</th><th scope="col">Loiter</th></tr></thead>
+        <tbody id="jet-rows"></tbody>
+      </table>
+    </div>
+    <p>Loiter values are lower because loiter is flown at lower speed, where a jet's \(C\) is smaller. Bypass ratio is the big lever: a high-bypass turbofan uses about half the fuel of a turbojet for the same thrust. The business jet's engines are smaller, lower-bypass turbofans than an airliner's, so this module takes \(C = 0.65\) in cruise and \(0.55\) in loiter, between the table's turbofan rows.</p>
+  </section>
+
+  <section id="props">
+    <h2>Propellers: power-specific fuel consumption</h2>
+    <p>A piston engine or turboprop burns fuel in proportion to the <strong>power</strong> it delivers to the shaft. Its <strong>power-specific fuel consumption</strong> \(c_P\) is the mass of fuel burned per unit of shaft power per hour, in kg/(kW h) or, in US units, lb/(hp h). Data sheets often use g/(kW h): \(0.30\ \text{kg/(kW h)}\) is \(300\ \text{g/(kW h)}\). The propeller turns shaft power into thrust power with an efficiency \(\eta_p\): \(TV = \eta_p P\). The fuel burned per unit thrust then grows with speed:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Equivalent \(C\) of a propeller aircraft</p>
+      \[ C = \frac{c_P\,g\,V}{1000\,\eta_p}\quad (c_P\ \text{in kg/(kW h)},\ V\ \text{in m/s}) \]
+      \[ \text{or}\quad C = \frac{c_PV}{550\,\eta_p}\quad (\text{lb/(hp h)},\ \text{ft/s}) \]
+      \[ \frac{V}{C} = \frac{3600\,\eta_p}{c_P\,g}\ \ \text{km} \]
+      <p>For a propeller aircraft \(V/C\), the propulsive factor of Breguet, does not depend on speed. \(1\ \text{lb/(hp h)} = 0.6083\ \text{kg/(kW h)}\).</p>
+    </div>
+    <div class="callout note">
+      <p class="callout-title">Names and symbols</p>
+      <p>For a piston engine, \(c_P\) is usually called the <strong>brake-specific fuel consumption</strong> (BSFC): "brake" power is the power at the output shaft, as measured on a dynamometer brake. Turboprop data are quoted per shaft power or per <em>equivalent</em> shaft power, which adds the small jet thrust of the exhaust (ESFC). Raymer writes this quantity as \(C_{\text{bhp}}\), in lb/(hp h). This course uses \(c_T\) and \(c_P\) for the mass-based consumptions that engine data give, and keeps \(C\), in 1/h, for the thrust-specific form that the Breguet equations use.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data sfc">
+        <caption>Typical \(c_P\) and \(\eta_p\) for initial sizing (source: Raymer, Table 3.4)</caption>
+        <thead><tr><th scope="col">Engine</th><th scope="col">Cruise lb/(hp h)</th><th scope="col">Loiter lb/(hp h)</th><th scope="col">Cruise kg/(kW h)</th><th scope="col">\(\eta_p\)</th></tr></thead>
+        <tbody id="prop-rows"></tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.1 — The \(C\) of a turboprop</p>
+      <p>A turboprop has \(c_P = 0.5\ \text{lb/(hp h)}\) and \(\eta_p = 0.8\) in cruise at \(500\ \text{km/h}\). Find its equivalent \(C\), and \(V/C\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ c_P = 0.5(0.6083) = 0.3041\ \text{kg/(kW h)}, \qquad V = \frac{500}{3.6} = 138.9\ \text{m/s} \]
+          \[ C = \frac{0.3041(9.81)(138.9)}{1000(0.8)} = 0.518/\text{h}, \qquad \frac{V}{C} = \frac{500}{0.518} = 965\ \text{km} \]
+          <p>Check with the speed-free form: \(3600(0.8)/(0.3041 \times 9.81) = 965\ \text{km}\). At 500 km/h the turboprop's \(C\) is about that of a high-bypass turbofan; at lower speeds it is better, at higher speeds worse.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> Equivalent \(C\) against flight speed. A jet's \(C\) is taken as constant (it actually rises slowly with Mach number); a propeller aircraft's rises in proportion to speed. Where the lines cross, a jet becomes the more economical engine: one reason turboprops serve short, slow routes and jets long, fast ones.</figcaption>
+    </figure>
+  </section>
+
+  <section id="why">
+    <h2>Why the best \(L/D\) differs</h2>
+    <p>Lesson 3 gave the rule; the fuel consumption explains it.</p>
+    <ul>
+      <li><strong>Range</strong> is proportional to \((V/C)(L/D)\). For a jet, \(C\) is about constant, so the best range is where \(V(L/D)\) is greatest: \(L/D = 0.866\,\LDmax\), a little faster than \(\LDmax\). For a propeller aircraft, \(V/C\) is constant, so the best range is at \(\LDmax\).</li>
+      <li><strong>Endurance</strong> is proportional to \((1/C)(L/D)\). For a jet, that is greatest at \(\LDmax\). For a propeller aircraft, \(C \propto V\), so endurance is greatest where \((L/D)/V\) is, at minimum power, which is at \(0.866\,\LDmax\), slower than \(\LDmax\).</li>
+    </ul>
+    <details class="reveal" id="derivations">
+      <summary>Derivations: the best \(L/D\) for range and endurance, and the range ratio</summary>
+      <div>
+        <h3>Drag and \(L/D\) against speed</h3>
+        <p>Start from Module 1's parabolic drag polar, \(\CD = \CDz + K\CL^2\), in level flight, where lift equals weight and \(\CL = 2W/(\rho V^2 S)\). Call \(V_{md}\) the speed at which \(K\CL^2 = \CDz\), where the drag is least and \(L/D = \LDmax\), and measure speed by \(u = V/V_{md}\). The zero-lift drag grows with \(V^2\) and the induced drag falls with \(1/V^2\), and at \(u = 1\) each is half the minimum drag:</p>
+        \[ D_0 = \tfrac12 D_{\min}\,u^2, \qquad D_i = \tfrac12 D_{\min}\,u^{-2} \]
+        \[ \frac{D}{D_{\min}} = \frac{u^2 + u^{-2}}{2}, \qquad \frac{L/D}{\LDmax} = \frac{2}{u^2 + u^{-2}} \]
+
+        <h3>Range and endurance of a segment</h3>
+        <p>The engines burn fuel weight at \(C\) times the thrust, and in level flight the thrust equals the drag, \(W/(L/D)\):</p>
+        \[ \frac{\dd W}{\dd t} = -\frac{C\,W}{L/D} \]
+        <p>Divide by \(W\) and integrate over the segment, holding \(V\), \(C\) and \(L/D\) constant as Breguet does. Time gives the endurance, and distance, \(\dd R = V\,\dd t\), the range:</p>
+        \[ E = \frac{1}{C}\,\frac{L}{D}\,\ln\frac{W_{i-1}}{W_i} \]
+        \[ R = \frac{V}{C}\,\frac{L}{D}\,\ln\frac{W_{i-1}}{W_i} \]
+        <p>For a given fuel load the logarithm is fixed. The best endurance maximizes \((1/C)(L/D)\), and the best range maximizes the <strong>range factor</strong> \((V/C)(L/D)\) of Module 2.</p>
+
+        <h3>Jets: \(C\) about constant</h3>
+        <p><strong>Endurance.</strong> Maximize \(L/D\) itself: \(u = 1\), at \(\LDmax\).</p>
+        <p><strong>Range.</strong> Maximize \(V(L/D)\). In terms of \(u\),</p>
+        \[ V\,\frac{L}{D} \;\propto\; u\cdot\frac{2}{u^2 + u^{-2}} = \frac{2}{u + u^{-3}} \]
+        <p>and the denominator is least where</p>
+        \[ \frac{\dd}{\dd u}\left(u + u^{-3}\right) = 1 - 3u^{-4} = 0 \]
+        \[ u = 3^{1/4} = 1.316, \qquad \frac{L/D}{\LDmax} = \frac{2}{\sqrt3 + 1/\sqrt3} = \frac{\sqrt3}{2} = 0.866 \]
+        <p>At that speed \(\CL\) is \(1/\sqrt3\) of its value at \(\LDmax\), so the induced drag is a third of the zero-lift drag.</p>
+
+        <h3>Propellers: \(C\) proportional to \(V\)</h3>
+        <p>With \(C = c_P\,g\,V/(1000\,\eta_p)\) from the propeller section above, \(V/C\) does not depend on speed.</p>
+        <p><strong>Range.</strong> \((V/C)(L/D)\) is proportional to \(L/D\): \(u = 1\), at \(\LDmax\).</p>
+        <p><strong>Endurance.</strong> With \(C\) proportional to \(u\),</p>
+        \[ \frac{1}{C}\,\frac{L}{D} \;\propto\; \frac{L/D}{u} = \frac{2}{u^3 + u^{-1}} \]
+        <p>which is greatest where the power required, \(DV\), is least:</p>
+        \[ \frac{\dd}{\dd u}\left(u^3 + u^{-1}\right) = 3u^2 - u^{-2} = 0 \]
+        \[ u = 3^{-1/4} = 0.760, \qquad \frac{L/D}{\LDmax} = \frac{2}{1/\sqrt3 + \sqrt3} = 0.866 \]
+        <p>Now the induced drag is three times the zero-lift drag. The two \(0.866\) points sit on either side of the peak of the \(L/D\) curve, a factor of \(\sqrt3\) apart in speed.</p>
+
+        <div class="table-wrap">
+          <table class="data opt-table">
+            <caption>The four optima (parabolic drag polar; \(C\), or \(c_P\) and \(\eta_p\), constant)</caption>
+            <thead><tr><th scope="col">Best</th><th scope="col">Maximizes</th><th scope="col">\(D_i/D_0\)</th><th scope="col">\(V/V_{md}\)</th><th scope="col">\(L/D\)</th></tr></thead>
+            <tbody>
+              <tr><td>Jet range</td><td>\(\CL^{1/2}/\CD\)</td><td>1/3</td><td>1.316</td><td>\(0.866\,\LDmax\)</td></tr>
+              <tr><td>Jet endurance, propeller range</td><td>\(\CL/\CD\)</td><td>1</td><td>1</td><td>\(\LDmax\)</td></tr>
+              <tr><td>Propeller endurance</td><td>\(\CL^{3/2}/\CD\)</td><td>3</td><td>0.760</td><td>\(0.866\,\LDmax\)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The "Maximizes" column is how performance texts state the same results. At a fixed weight \(V\) is proportional to \(\CL^{-1/2}\), so \(V(L/D)\) is proportional to \(\CL^{1/2}/\CD\) and \((L/D)/V\) to \(\CL^{3/2}/\CD\).</p>
+
+        <h3>The range ratio</h3>
+        <p>How much does flying at another speed cost? The <strong>range ratio</strong> is the range flown on the same fuel at speed \(u\) divided by the best range, \(R/R_{\text{best}}\). The logarithm is the same for both, so it is simply the ratio of the range factors. The <strong>endurance ratio</strong> \(E/E_{\text{best}}\) is defined the same way. (Do not confuse either with the weight ratio \(W_{i-1}/W_i\) inside the logarithm.) From the expressions above:</p>
+        \[ \text{Jet:}\quad \frac{R}{R_{\text{best}}} = \frac{4}{3^{3/4}\,(u + u^{-3})}, \qquad \frac{E}{E_{\text{best}}} = \frac{2}{u^2 + u^{-2}} \]
+        \[ \text{Propeller:}\quad \frac{R}{R_{\text{best}}} = \frac{2}{u^2 + u^{-2}}, \qquad \frac{E}{E_{\text{best}}} = \frac{4}{3^{3/4}\,(u^3 + u^{-1})} \]
+        <p>These are the percentages Figure 4.2 shows as you move its speed. The optimum is flat. A jet flying 10% faster than its best-range speed keeps 98.7% of its best range, and 10% slower, 98.2%. Airlines use that flatness: their "long-range cruise" speed, about 9% faster than the best-range speed, keeps 99% of the best range and saves time. Flying far from the optimum is another matter: a jet cruising at \(\LDmax\) keeps only 87.7% of its best range.</p>
+        <p>The model holds \(C\) constant and ignores compressibility. A jet airliner's real best-range speed is also limited by the rise in drag near its drag-divergence Mach number (Module 9).</p>
+      </div>
+    </details>
+    <p>The same argument is clearer on a graph. Plot the engine's fuel flow (kg per hour) against speed, as in Figure 4.2:</p>
+    <ul>
+      <li><strong>Endurance</strong>, hours per kilogram of fuel, is greatest where the fuel flow is <em>least</em>: the bottom of the curve.</li>
+      <li><strong>Range</strong>, kilometres per kilogram of fuel, is speed divided by fuel flow. A line from the origin to a point on the curve has slope fuel flow over speed, so range is greatest where that line is <em>shallowest</em>: where it just touches the curve.</li>
+    </ul>
+    <p>A jet's fuel flow follows its thrust, which in steady level flight equals the drag. A propeller aircraft's follows its power, which is drag times speed. Multiplying by \(V\) tilts the curve up on the right, and both points move to a slower speed by the same factor, \(3^{1/4} = 1.32\). With the parabolic drag polar, the speed for least drag \(V_{md}\) is where \(L/D = \LDmax\); the jet's best range is at \(1.32\,V_{md}\), and the propeller's best endurance at \(V_{md}/1.32 = 0.76\,V_{md}\), both at \(L/D = 0.866\,\LDmax\).</p>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz stacked">
+        <div class="viz-stage">
+          <div class="ff-pair">
+            <div><p class="ff-head">(a) Jet: fuel flow follows thrust, \(T = D\)</p><div id="fig42a"></div></div>
+            <div><p class="ff-head">(b) Propeller: fuel flow follows power, \(P = DV\)</p><div id="fig42b"></div></div>
+          </div>
+        </div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> Fuel flow against speed for the same airframe with a jet (a) and a propeller engine (b), relative to the values at the minimum-drag speed \(V_{md}\) (parabolic polar, \(C\) or \(c_P\) and \(\eta_p\) constant). Best endurance is the lowest point of each curve; best range is where a line from the origin touches it. The jet's lowest point is the propeller's tangent point, \(V_{md}\) and \(\LDmax\). Move the speed to see how much range and endurance each loses away from its best.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="fig43-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig43-stage"></div>
+      </div>
+      <figcaption id="fig43-cap"><strong>Figure 4.3</strong> The four operating points on the \(L/D\) curve. Between the propeller's loiter speed and the jet's cruise speed is a factor of \(\sqrt3 = 1.73\) in speed, yet both sit at \(0.866\,\LDmax\): the \(L/D\) curve is flat near its peak, which is why flying a little off the best speed costs so little.</figcaption>
+    </figure>
+    <div class="callout engineering">
+      <p class="callout-title">Does this apply to turboprops?</p>
+      <p>Yes, to a first approximation. A turboprop is a gas turbine driving a propeller, and its fuel flow follows shaft power, so for sizing it is a propeller aircraft: cruise at \(\LDmax\), loiter at \(0.866\,\LDmax\). Several things blur the picture in practice:</p>
+      <ul>
+        <li><strong>Part-power penalty.</strong> Engines burn more fuel per unit power at the low power of a loiter, which is why the loiter values of \(c_P\) in the table above are higher than the cruise values. A gas turbine suffers more than a piston engine, because its efficiency depends strongly on running near its design power, so a turboprop gains less from slowing to the minimum-power speed than the simple rule suggests. Maritime patrol turboprops such as the P-3 Orion often shut down an engine on station so that the others run at a more efficient power setting.</li>
+        <li><strong>A little jet thrust.</strong> The exhaust gives a few percent of the thrust directly (manufacturers quote it as an equivalent shaft power), a small jet-like part on top of the propeller.</li>
+        <li><strong>Propeller efficiency varies.</strong> \(\eta_p\) falls at low speed and above about Mach 0.6, so the true optimum shifts toward the speeds where the propeller is most efficient.</li>
+        <li><strong>Time costs money.</strong> Turboprop airliners usually cruise well above their best-range speed, near maximum cruise power, because crew, maintenance and the number of trips a day are paid for by the hour, and the turbine is most efficient near its rated power. Jets do the same, less dramatically: airlines fly a "long-range cruise" a little faster than the best-range speed for 99% of the best range.</li>
+      </ul>
+      <p>For a first sizing, use the typical values in the tables above. If the requirement fixes the cruise speed, the \(L/D\) at that speed is what belongs in the Breguet equation; Module 9 shows how to find it.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.2 — An hour on station</p>
+      <p>A piston patrol aircraft with \(\LDmax = 12\) loiters for one hour at \(180\ \text{km/h}\), with \(c_P = 0.5\ \text{lb/(hp h)}\) and \(\eta_p = 0.8\). Find the loiter weight fraction.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ C = \frac{0.3041(9.81)(50.0)}{1000(0.8)} = 0.1865/\text{h}, \qquad \frac{L}{D} = 0.866(12) = 10.39 \]
+          \[ \frac{W_i}{W_{i-1}} = \exp\left[-\frac{1(0.1865)}{10.39}\right] = 0.9822 \]
+          <p>Under 2% of the weight for an hour aloft: slow propeller aircraft are very good at loitering, which is why maritime patrol aircraft have propellers.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Jets: \(C\) in 1/h, about 0.9 (turbojet), 0.8 (low-bypass) and 0.5 (high-bypass) in cruise; \({C = c_T[\text{mg/(N s)}]/28.33}\).</li>
+      <li>Propellers: \(C = c_PgV/(1000\,\eta_p)\) with \(c_P\) in kg/(kW h); \(V/C = 3600\,\eta_p/(c_Pg)\) km.</li>
+      <li>Jets: cruise \(0.866\,\LDmax\), loiter \(\LDmax\). Propellers: cruise \(\LDmax\), loiter \(0.866\,\LDmax\).</li>
+      <li>Next, <a href="05-fuel-fraction.html">Lesson 5</a> combines \(L/D\) and \(C\) into the mission's weight fractions.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- SFC tables (from SIZING) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var j = document.getElementById('jet-rows'), p = document.getElementById('prop-rows');
+  SIZING.JET_C.forEach(function (c) { j.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { text: c.cruise.toFixed(1) }), CYL.el('td', { text: c.loiter.toFixed(1) })])); });
+  SIZING.PROP.forEach(function (c) { p.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { text: c.cruise.toFixed(1) }), CYL.el('td', { text: c.loiter.toFixed(1) }), CYL.el('td', { text: c.cruiseSI.toFixed(3) }), CYL.el('td', { text: c.eta.toFixed(1) })])); });
+});
+
+/* ---------- Figure 4.1: equivalent C against speed ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { cb: 0.5, eta: 0.8, cj: 0.5, V: 500 };
+  var K = 0.45359237 / 0.745699872;
+  function pc(V) { return SIZING.propC(st.cb * K, V, st.eta); }
+  var chart = AERO.chart(document.getElementById('fig41-stage'), {
+    x: { label: 'Flight speed \\(V\\) (km/h)', min: 0, max: 1000 }, y: { label: 'Equivalent \\(C\\) (1/h)', min: 0, max: 1.2 }, height: 330,
+    ariaLabel: 'Equivalent fuel consumption against speed: a rising straight line for the propeller and a horizontal line for the jet.',
+    legend: [{ label: 'Propeller', color: 'good', line: true }, { label: 'Jet', color: 'z', line: true }]
+  });
+  var lp = chart.fn(pc, { color: 'good', width: 2.6 });
+  var lj = chart.hline(st.cj, { color: 'z', label: 'jet' });
+  var cross = chart.vline(0, { color: 'muted', label: 'equal' });
+  var mk = chart.marker([st.V, pc(st.V)], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig41-controls');
+  var sCb = CYL.slider({ label: '\\(c_P\\) (lb/(hp h))', min: 0.3, max: 0.7, step: 0.01, value: st.cb, color: 'good', onInput: function (v) { st.cb = v; draw(); } });
+  var sE = CYL.slider({ label: 'Propeller efficiency \\(\\eta_p\\)', min: 0.6, max: 0.9, step: 0.01, value: st.eta, color: 'good', onInput: function (v) { st.eta = v; draw(); } });
+  var sJ = CYL.slider({ label: 'Jet \\(C\\)', min: 0.4, max: 1.0, step: 0.01, value: st.cj, unit: '/h', color: 'z', onInput: function (v) { st.cj = v; draw(); } });
+  var sV = CYL.slider({ label: 'Speed', min: 100, max: 1000, step: 10, value: st.V, unit: 'km/h', color: 'v', onInput: function (v) { st.V = v; draw(); } });
+  var ro = { c: CYL.readout('Propeller \\(C\\) at this speed'), vc: CYL.readout('Propeller \\(V/C\\)'), x: CYL.readout('Speed where they are equal') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Engines' }));
+  [sCb, sE, sJ, sV].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.c.el, ro.vc.el, ro.x.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var vx = st.cj / pc(1);
+    lp.draw(); lj.set(st.cj); cross.set(Math.min(1000, vx)); mk.set([st.V, Math.min(1.2, pc(st.V))]);
+    ro.c.set(CYL.fmt(pc(st.V), 3) + ' /h'); ro.vc.set(CYL.fmt(st.V / pc(st.V), 4) + ' km'); ro.x.set(vx <= 1000 ? CYL.fmt(vx, 3) + ' km/h' : 'above 1000 km/h');
+  }
+  draw();
+});
+
+/* ---------- Figure 4.2: fuel flow against speed, jet and propeller ---------- */
+CYL.ready(function () {
+  'use strict';
+  var Q = Math.pow(3, 0.25);
+  function D(u) { return (u * u + 1 / (u * u)) / 2; }       // drag relative to the minimum (parabolic polar)
+  function P(u) { return u * D(u); }                         // power relative to the power at V_md
+  var st = { u: 1.6 };
+  function mk(id, f, lo, hi, tan, best, worst, yl) {
+    var c = AERO.chart(document.getElementById(id), {
+      x: { label: 'Speed \\(V/V_{md}\\)', min: 0, max: 2.2 }, y: { label: yl, min: 0, max: 2.6 }, height: 300,
+      ariaLabel: id === 'fig42a'
+        ? 'Jet fuel flow, proportional to drag, against speed: the lowest point, best endurance, is at the minimum-drag speed; the line from the origin touches the curve at 1.32 times that speed, best range.'
+        : 'Propeller fuel flow, proportional to power, against speed: the lowest point, best endurance, is at 0.76 times the minimum-drag speed; the line from the origin touches the curve at the minimum-drag speed, best range.'
+    });
+    c.fn(function (x) { return tan * x; }, { color: 'r', width: 1.6, dashed: true, domain: [0, 2.2] });
+    c.fn(f, { color: id === 'fig42a' ? 'z' : 'good', width: 2.8, domain: [lo, hi] });
+    c.marker([best[0], best[1]], { color: 'r', r: 5, ring: false });
+    c.text([best[0], best[1]], 'best range', { color: 'r', anchor: 'end', dx: -8, dy: -12 });
+    c.marker([worst[0], worst[1]], { color: 't', r: 5, ring: false });
+    c.text([worst[0], worst[1]], 'best endurance', { color: 't', anchor: 'start', dx: 4, dy: 26 });
+    var now = c.marker([st.u, f(st.u)], { color: 'accent', r: 6 });
+    return { c: c, now: now, f: f };
+  }
+  var a = mk('fig42a', D, 0.45, 2.2, D(Q) / Q, [Q, D(Q)], [1, 1], 'Fuel flow \\(\\propto D\\) (relative)');
+  var b = mk('fig42b', P, 0.42, 1.62, 1, [1, 1], [1 / Q, P(1 / Q)], 'Fuel flow \\(\\propto DV\\) (relative)');
+  var panel = document.getElementById('fig42-controls');
+  var sU = CYL.slider({ label: 'Speed \\(V/V_{md}\\)', min: 0.5, max: 2, step: 0.01, value: st.u, color: 'accent', onInput: function (v) { st.u = v; draw(); } });
+  var ro = { ld: CYL.readout('\\(L/D\\) as a fraction of \\(\\LDmax\\)'), jr: CYL.readout('Jet range, % of best'), je: CYL.readout('Jet endurance, % of best'),
+             pr: CYL.readout('Propeller range, % of best'), pe: CYL.readout('Propeller endurance, % of best') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Operating speed' }));
+  panel.appendChild(sU.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.ld.el, ro.jr.el, ro.je.el, ro.pr.el, ro.pe.el]));
+  CYL.renderMath(panel);
+  function pct(x) { return CYL.fmt(100 * x, 3) + '%'; }
+  function draw() {
+    var u = st.u;
+    a.now.set([u, D(u)]); b.now.set([u, Math.min(2.6, P(u))]);
+    ro.ld.set(CYL.fmt(1 / D(u), 3));
+    ro.jr.set(pct((u / D(u)) / (Q / D(Q)))); ro.je.set(pct(1 / D(u)));
+    ro.pr.set(pct(1 / D(u))); ro.pe.set(pct(P(1 / Q) / P(u)));
+  }
+  draw();
+});
+
+/* ---------- Figure 4.3: the four operating points on the L/D curve ---------- */
+CYL.ready(function () {
+  'use strict';
+  var Q = Math.pow(3, 0.25);
+  function LD(u) { return 2 / (u * u + 1 / (u * u)); }
+  var c = AERO.chart(document.getElementById('fig43-stage'), {
+    x: { label: 'Speed \\(V/V_{md}\\)', min: 0, max: 2.4 }, y: { label: '\\(L/D\\) as a fraction of \\(\\LDmax\\)', min: 0, max: 1.15 }, height: 320,
+    ariaLabel: 'Lift-to-drag ratio against speed, peaking at the minimum-drag speed. Propeller loiter is at 0.76 times that speed and jet cruise at 1.32 times, both at 0.866 of the maximum; jet loiter and propeller cruise are at the peak.'
+  });
+  c.hline(Math.sqrt(3) / 2, { color: 'muted', label: '0.866', labelDy: 0 });
+  c.fn(LD, { color: 'accent', width: 2.8, domain: [0.25, 2.4] });
+  c.marker([1 / Q, LD(1 / Q)], { color: 'good', r: 6, ring: false });
+  c.text([1 / Q, LD(1 / Q)], 'propeller loiter', { color: 'good', anchor: 'end', dx: -8, dy: -10 });
+  c.marker([1, 1], { color: 'ink', r: 6, ring: false });
+  c.text([1, 1], 'jet loiter = propeller cruise', { color: 'ink', anchor: 'middle', dy: -14 });
+  c.marker([Q, LD(Q)], { color: 'z', r: 6, ring: false });
+  c.text([Q, LD(Q)], 'jet cruise', { color: 'z', anchor: 'start', dx: 8, dy: -10 });
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var K = 0.45359237 / 0.745699872;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'A piston engine has a brake-specific fuel consumption of \\(0.45\\ \\text{lb/(hp h)}\\). Express it in kg/(kW h).',
+    label: '\\(c_P =\\)', answer: 0.45 * K, unit: 'kg/(kW h)',
+    hints: ['\\(1\\ \\text{lb} = 0.4536\\ \\text{kg}\\) and \\(1\\ \\text{hp} = 0.7457\\ \\text{kW}\\).', 'Multiply by 0.4536 and divide by 0.7457, or multiply by 0.6083.'],
+    explain: 'Dividing by the horsepower conversion, not multiplying, is the usual slip.',
+    solution: '\\[ c_P = 0.45\\,\\frac{0.4536}{0.7457} = 0.45(0.6083) = 0.2737\\ \\text{kg/(kW h)} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'The engine of the previous question drives a propeller with \\(\\eta_p = 0.82\\) at \\(300\\ \\text{km/h}\\). What is the equivalent \\(C\\)?',
+    label: '\\(C =\\)', answer: SIZING.propC(0.45 * K, 300, 0.82), unit: '/h',
+    hints: ['\\(C = c_PgV/(1000\\,\\eta_p)\\) with \\(V\\) in m/s.', '\\(V = 300/3.6 = 83.33\\ \\text{m/s}\\).'],
+    explain: 'At this speed the propeller aircraft burns about half the fuel per unit thrust of a high-bypass turbofan.',
+    solution: '\\[ C = \\frac{0.2737(9.81)(83.33)}{1000(0.82)} = 0.273/\\text{h} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'mc',
+    prompt: 'Why does a jet loiter at \\(\\LDmax\\) but cruise at \\(0.866\\,\\LDmax\\)?',
+    choices: [
+      { html: 'Because its \\(C\\) is about constant: endurance \\(\\propto L/D\\) is best at minimum drag, range \\(\\propto V(L/D)\\) a little faster.', correct: true, feedback: 'Yes: fuel flow \\(\\propto\\) thrust \\(=\\) drag, so minimum drag gives the longest time, and adding speed gives the longest distance.' },
+      { html: 'Because its \\(C\\) is proportional to speed.', feedback: 'That is the propeller case, which gives the opposite rule.' },
+      { html: 'Because jets cannot fly at \\(\\LDmax\\) in cruise.', feedback: 'They can, but they would go less far.' },
+      { html: 'Because the loiter is flown at a lower altitude.', feedback: 'Altitude affects the speed for \\(\\LDmax\\), not which \\(L/D\\) is best.' }
+    ],
+    explain: 'Jets: fuel follows thrust. Propellers: fuel follows power.'
+  });
+});
+</script>
+</body>
+</html>

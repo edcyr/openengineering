@@ -10,7 +10,7 @@ SITE="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$(dirname "$SITE")"
 COURSES="ecor1034|.|ECOR 1034|curvilinear-motion cylindrical-coordinates
 maae2101|.|MAAE 2101|mass-moments-of-inertia angular-momentum
-aero3002|conceptual-aircraft-design|AERO 3002|01-history-of-aircraft-design"
+aero3002|conceptual-aircraft-design|AERO 3002|01-history-of-aircraft-design 02-requirements-and-mission-profiles 03-first-weight-estimate"
 
 patch_module() {
   python3 - "$1" "$2" "$3" <<'PY'

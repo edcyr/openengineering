@@ -28,7 +28,9 @@ COURSES = [
        lede='One interactive module for each week of AERO 3002. They teach how a new aircraft is sized and laid out, from the first weight estimate to wing loading, thrust, aerodynamics, weights, stability and performance, using real aircraft data, interactive figures, worked examples and questions with instant feedback.',
        hero='aero3002', kicker='Week', blurb='One module per week on how a new aircraft is sized and laid out, following Raymer, starting with the history of aircraft design.', mark_italic=False,
        modules=[
-         dict(slug='01-history-of-aircraft-design', week=1, mark='1903', desc='From Cayley and the Wright brothers to the wide-body jet, through the numbers designers use: weights, wing and power loading, drag, L/D, sweep and Breguet range, ending with the first weight estimate of a new aircraft.')],
+         dict(slug='01-history-of-aircraft-design', week=1, mark='1903', desc='From Cayley and the Wright brothers to the wide-body jet, through the numbers designers use: weights, wing and power loading, drag, L/D, sweep and Breguet range, ending with the first weight estimate of a new aircraft.'),
+         dict(slug='02-requirements-and-mission-profiles', week=2, mark='RFP', title='Design Requirements and Mission Profiles', desc='Where the numbers of a new design come from: the conceptual design process, requirements from markets, maps and airports, the payload\u2013range diagram, certification rules for field length and engine-out climb, mission profiles, fuel reserves and winds, and trade studies.'),
+         dict(slug='03-first-weight-estimate', week=3, mark='W\u2080', title='The First Estimate of Takeoff Weight', desc='Sizing from a conceptual sketch, step by step: the sizing equation and its iteration, empty-weight trends, L/D from the wetted aspect ratio, jet and propeller fuel consumption, mission fuel fractions, payload drops and sensitivities, with a sizing calculator.')],
        planned={2: 'The design process, requirements and mission profiles', 3: 'The first estimate of takeoff weight', 4: 'Airfoil and wing geometry selection',
                 5: 'Thrust-to-weight ratio and wing loading', 6: 'Configuration layout and fuselage sizing', 7: 'Propulsion selection and integration',
                 8: 'Landing gear and subsystems', 9: 'Aerodynamics: lift and the drag build-up', 10: 'Component weights and center of gravity',
@@ -48,11 +50,13 @@ def module_info(course, m):
         title = title.replace("\\'", "'")
         pages.append(dict(id=pid, num=None if num == 'null' else int(num), title=title, href=href, min=None if mins == 'null' else int(mins)))
     lessons = [p for p in pages if p['id'].startswith('l') and p['num']]
-    tool = next(p['title'] for p in pages if p['id'] == 'explorer')
+    tool_page = next(p for p in pages if p['href'].startswith('tools/'))
+    tool, tool_href = tool_page['title'], tool_page['href']
     z = os.path.join(SITE, course['slug'], 'downloads', m['slug'] + '.zip')
     size = '%.1f MB' % (os.path.getsize(z) / 1e6)
     hours = sum(p['min'] for p in lessons) / 60
-    return dict(m, ns=ns, title=brand if brand != 'History of Aircraft Design' else 'The History of Aircraft Design', lessons=lessons, tool=tool, zip=size, hours=hours)
+    title = m.get('title') or (brand if brand != 'History of Aircraft Design' else 'The History of Aircraft Design')
+    return dict(m, ns=ns, title=title, lessons=lessons, tool=tool, tool_href=tool_href, zip=size, hours=hours)
 
 def hours_text(h):
     r = round(h * 2) / 2
@@ -185,7 +189,7 @@ def card(c, i, m, prefix=''):
     n = m.get('week', i + 1)
     kick = ('Week %d · Module %d' % (n, n)) if c['kicker'] == 'Week' else ('Module %d' % n)
     lessons = '\n'.join('                <li data-id="%s"><a href="%s%s"><span class="num">%d</span><span>%s</span><span class="min">%d min</span></a></li>' % (l['id'], base, l['href'], l['num'], esc(l['title']), l['min']) for l in m['lessons'])
-    extras = ' · '.join('<a href="%s%s">%s</a>' % (base, h, t) for h, t in (('practice/practice-lab.html', 'Practice Lab'), ('practice/quiz.html', 'Self-Check Quiz'), ('practice/worksheet.html', 'Worksheet'), ('tools/explorer.html', esc(m['tool'])), ('reference/cheat-sheet.html', 'Formula Sheet'), ('reference/glossary.html', 'Glossary')))
+    extras = ' · '.join('<a href="%s%s">%s</a>' % (base, h, t) for h, t in (('practice/practice-lab.html', 'Practice Lab'), ('practice/quiz.html', 'Self-Check Quiz'), ('practice/worksheet.html', 'Worksheet'), (m['tool_href'], esc(m['tool'])), ('reference/cheat-sheet.html', 'Formula Sheet'), ('reference/glossary.html', 'Glossary')))
     mark_cls = 'mark' if c['mark_italic'] and len(m['mark']) <= 3 else 'mark mark-sm'
     return '''          <article class="card" data-ns="%s" data-href="%s">
             <div class="card-top">

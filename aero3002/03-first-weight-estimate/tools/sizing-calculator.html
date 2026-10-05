@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sizing Calculator · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="A first-estimate sizing calculator: choose a class of aircraft, the crew and payload, the L/D from a sketch, the engine and a mission with optional combat and payload drop, and see the takeoff weight converge, with every segment fraction and a range trade study.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-note { margin: 6px 0 0; color: var(--ink-muted); font-size: 0.84rem; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sc-table td:first-child, .sc-table th:first-child, .sc-table td:nth-child(2), .sc-table th:nth-child(2) { text-align: left; }
+  .sc-warn { color: var(--c-bad); font-weight: 700; }
+  .sc-fields input:disabled, .sc-fields select:disabled { opacity: 0.45; }
+  .sc-fields .field:has(:disabled) label { opacity: 0.55; }
+</style>
+</head>
+<body data-page="sizer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · First-estimate sizing</p>
+    <h1>Sizing Calculator</h1>
+    <p class="lede">The whole method of this module in one page: pick a class, enter the crew and payload, describe the sketch and the engine, set the mission, and watch the takeoff weight converge. Every intermediate number is shown, so you can check a hand calculation step by step, or size your own design.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="pl-label small muted" id="sc-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="sc-presets" role="group" aria-labelledby="sc-presets-label"></div>
+    <div class="sc-grid" id="sc-grid"></div>
+    <p class="small muted" id="sc-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="sc-totals"></div>
+    <figure class="figure wide" aria-labelledby="sc-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="sc-stage"></div>
+        <div class="viz-controls" id="sc-controls"></div>
+      </div>
+      <figcaption id="sc-fig-cap"><strong>Figure T.1</strong> Left choice: the empty-weight fraction the trend predicts (blue) and the one the design can afford (violet), crossing at the solution; with a payload drop, the affordable curve is computed from the weights segment by segment. Right choice: takeoff weight against the first cruise distance, a trade study around your design point.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="sc-segs">
+        <caption>Mission at the converged takeoff weight</caption>
+        <thead><tr><th scope="col">\(i\)</th><th scope="col">Segment</th><th scope="col">\(L/D\)</th><th scope="col">\(C\) (1/h)</th><th scope="col">\(W_i/W_{i-1}\)</th><th scope="col">\(W_i\) (kg)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="sc-iter">
+        <caption>Iterations</caption>
+        <thead><tr><th scope="col">Step</th><th scope="col">Guess (kg)</th><th scope="col">\(\We/\Wo\)</th><th scope="col">\(\Wf\) (kg)</th><th scope="col">New \(\Wo\) (kg)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="sc-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Empty weight: \(\We/\Wo = A\,\Wo^{\,C}K_{vs}K_{\text{tech}}\), Raymer's Table 3.1 (Lesson 2).</li>
+      <li>\(\LDmax\) from the sketch, \(\tfrac12\sqrt{\pi e A_{\text{wet}}/C_{fe}}\) with \(A_{\text{wet}} = A/(\Swet/\Sref)\), or entered directly (Lesson 3). Jets cruise at \(0.866\,\LDmax\) and loiter at \(\LDmax\); propeller aircraft the other way round.</li>
+      <li>Propeller \(C = c_PgV/(1000\,\eta_p)\) at the segment's speed (Lesson 4).</li>
+      <li>Segments (Lesson 5): takeoff 0.970, climb 0.985, cruise and loiter by Breguet, combat \(1 - C_{\text{combat}}(\TW)t\), landing 0.995. An optional drop subtracts a fixed weight after the first cruise.</li>
+      <li>Each iteration follows the weights through the mission from the guessed \(\Wo\), takes \(\Wf = 1.06(\Wo - W_{\text{drop}} - W_x)\), and computes the new \(\Wo = (W_{\text{crew}} + W_{\text{payload}} + \Wf)/(1 - \We/\Wo)\) (Lesson 6). Without a drop this is exactly the sizing equation.</li>
+    </ul>
+    <p>Your inputs are saved in this browser.</p>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var K = 0.45359237 / 0.745699872;
+  var BASE = { cls: 'jt', kvs: false, tech: 1, crewN: 2, crewKg: 90, paxN: 8, paxKg: 100, cargo: 0,
+    ldMode: 'sketch', A: 8, ratio: 5.5, cfe: 'transport', e: 0.75, ld: 16.9,
+    eng: 'jet', Ccr: 0.65, Clo: 0.55, cbCr: 0.5, cbLo: 0.6, eta: 0.8,
+    R1: 4600, V: 850, drop: 0, R2: 0, combat: 0, tw: 0.9, Ccb: 1.8, E: 45, Vlo: 300 };
+  var PRESETS = {
+    biz: { label: 'Business jet (this module)', v: {} },
+    tprop: { label: 'Regional turboprop', v: { cls: 'tprop', crewN: 3, paxN: 48, cargo: 500, A: 12, ratio: 6.5, cfe: 'transport', e: 0.8, eng: 'prop', cbCr: 0.5, cbLo: 0.6, eta: 0.8, R1: 1500, V: 500, E: 45, Vlo: 300 } },
+    light: { label: 'Light single', v: { cls: 'ga1', crewN: 1, paxN: 3, A: 7.5, ratio: 4.5, cfe: 'light1', e: 0.75, eng: 'prop', cbCr: 0.4, cbLo: 0.5, eta: 0.8, R1: 1200, V: 220, E: 45, Vlo: 180 } },
+    fighter: { label: 'Fighter, 900 km radius', v: { cls: 'fighter', crewN: 1, paxN: 0, cargo: 2000, A: 3.5, ratio: 4.0, cfe: 'aff', e: 0.8, eng: 'jet', Ccr: 0.8, Clo: 0.7, R1: 900, V: 900, R2: 900, combat: 5, tw: 0.9, Ccb: 1.8, E: 20 } },
+    drop: { label: 'Cargo drop (Example 6.2)', v: { cls: 'tprop', crewN: 3, paxN: 0, cargo: 6000, ldMode: 'direct', ld: 14, eng: 'prop', cbCr: 0.5, cbLo: 0.6, eta: 0.8, R1: 1000, V: 500, drop: 6000, R2: 1000, E: 30, Vlo: 300 } }
+  };
+  var KEY = 'sizer:inputs';
+  var st = Object.assign({}, BASE, CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+
+  /* ---------- model ---------- */
+  function ldmax() { return st.ldMode === 'sketch' ? SIZING.ldmaxWet(st.A / st.ratio, SIZING.CFE.filter(function (c) { return c.id === st.cfe; })[0].cfe, st.e) : st.ld; }
+  function segs() {
+    var L = ldmax(), jet = st.eng === 'jet';
+    var Ccr = jet ? st.Ccr : SIZING.propC(st.cbCr * K, st.V, st.eta), Clo = jet ? st.Clo : SIZING.propC(st.cbLo * K, st.Vlo, st.eta);
+    var LDc = jet ? 0.866 * L : L, LDl = jet ? L : 0.866 * L, out = [];
+    out.push({ n: 'Warmup and takeoff', f: 0.970 }, { n: 'Climb', f: 0.985 });
+    if (st.R1 > 0) out.push({ n: 'Cruise ' + st.R1 + ' km', f: SIZING.cruise(st.R1, st.V, Ccr, LDc), ld: LDc, c: Ccr });
+    if (st.drop > 0) out.push({ n: 'Drop ' + st.drop + ' kg', drop: st.drop });
+    if (st.combat > 0) out.push({ n: 'Combat ' + st.combat + ' min', f: 1 - st.Ccb * st.tw * st.combat / 60, c: st.Ccb });
+    if (st.R2 > 0) out.push({ n: 'Cruise ' + st.R2 + ' km', f: SIZING.cruise(st.R2, st.V, Ccr, LDc), ld: LDc, c: Ccr });
+    if (st.E > 0) out.push({ n: 'Loiter ' + st.E + ' min', f: SIZING.loiter(st.E / 60, Clo, LDl), ld: LDl, c: Clo });
+    out.push({ n: 'Landing', f: 0.995 });
+    return out;
+  }
+  function fixed() { return st.crewN * st.crewKg + st.paxN * st.paxKg + st.cargo; }
+  function fly(W0, S) { var w = W0, ws = []; S.forEach(function (s) { w = s.drop ? w - s.drop : w * s.f; ws.push(w); }); return ws; }
+  function fuelOf(W0, S) { var ws = fly(W0, S); return 1.06 * (W0 - st.drop - ws[ws.length - 1]); }
+  function solve(R1) {
+    var keep = st.R1; if (R1 != null) st.R1 = R1;
+    var S = segs(), W = 10 * fixed(), steps = [], ok = false;
+    for (var i = 0; i < 300; i++) {
+      var fe = SIZING.ef(W, st.cls, { kvs: st.kvs, tech: st.tech }), Wf = fuelOf(W, S), Wn = (fixed() + Wf) / (1 - fe);
+      if (!(1 - fe > 0.01) || !isFinite(Wn) || Wn <= 0 || Wn > 5e7 || Wf < 0) break;
+      steps.push([W, fe, Wf, Wn]);
+      if (Math.abs(Wn - W) < 0.5) { W = Wn; ok = true; break; }
+      W = Wn;
+    }
+    if (ok && fly(W, S).some(function (x) { return x <= 0; })) ok = false;
+    st.R1 = keep;
+    return { ok: ok, W0: W, S: S, steps: steps, fe: SIZING.ef(W, st.cls, { kvs: st.kvs, tech: st.tech }) };
+  }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('sc-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options) { return { k: k, label: label, type: 'sel', options: options }; }
+  var BOXES = [
+    { t: 'Class and technology', f: [opt('cls', 'Class of aircraft', SIZING.CLASSES.map(function (c) { return [c.id, c.label]; })), opt('kvs', 'Variable sweep', [['false', 'No'], ['true', 'Yes (×1.04)']]), num('tech', 'Technology factor')] },
+    { t: 'Crew and payload', f: [num('crewN', 'Crew', 1), num('crewKg', 'kg each'), num('paxN', 'Passengers', 1), num('paxKg', 'kg each, with bags'), num('cargo', 'Cargo or stores (kg)')] },
+    { t: 'Aerodynamics', f: [opt('ldMode', 'L/D from', [['sketch', 'The sketch'], ['direct', 'Direct entry']]), num('A', 'Aspect ratio'), num('ratio', 'Swet/Sref'), opt('cfe', 'Cfe type', SIZING.CFE.map(function (c) { return [c.id, c.label + ' (' + c.cfe + ')']; })), num('e', 'Oswald e'), num('ld', '(L/D)max, direct')] },
+    { t: 'Engine', f: [opt('eng', 'Type', [['jet', 'Jet'], ['prop', 'Propeller']]), num('Ccr', 'Jet C cruise (1/h)'), num('Clo', 'Jet C loiter (1/h)'), num('cbCr', 'Propeller \\(c_P\\) cruise (lb/(hp h))'), num('cbLo', 'Propeller \\(c_P\\) loiter (lb/(hp h))'), num('eta', 'Propeller efficiency')] },
+    { t: 'Mission', f: [num('R1', 'Cruise 1 (km)'), num('V', 'Cruise speed (km/h)'), num('drop', 'Drop after cruise 1 (kg)'), num('combat', 'Combat (min)'), num('tw', 'Combat T/W'), num('Ccb', 'Combat C (1/h)'), num('R2', 'Cruise 2 (km)'), num('E', 'Loiter (min)'), num('Vlo', 'Loiter speed, prop (km/h)')] }
+  ];
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' });
+    bx.f.forEach(function (q) {
+      var id = 'sc-' + q.k, el;
+      if (q.type === 'sel') { el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); }); el.addEventListener('change', function () { st[q.k] = q.k === 'kvs' ? el.value === 'true' : el.value; save(); update(); }); }
+      else { el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' }); el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && v >= 0) { st[q.k] = v; save(); update(); } }); }
+      inputs[q.k] = el;
+      f.appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, text: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t }), f]));
+  });
+  CYL.renderMath(grid);                    // field labels such as the propeller's \(c_P\)
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = String(st[k]); }); }
+  function enable() {
+    var sk = st.ldMode === 'sketch', jet = st.eng === 'jet';
+    ['A', 'ratio', 'cfe', 'e'].forEach(function (k) { inputs[k].disabled = !sk; }); inputs.ld.disabled = sk;
+    ['Ccr', 'Clo'].forEach(function (k) { inputs[k].disabled = !jet; }); ['cbCr', 'cbLo', 'eta', 'Vlo'].forEach(function (k) { inputs[k].disabled = jet; });
+    ['tw', 'Ccb'].forEach(function (k) { inputs[k].disabled = !(st.combat > 0); });
+  }
+  var pr = document.getElementById('sc-presets');
+  Object.keys(PRESETS).forEach(function (k) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', text: PRESETS[k].label });
+    b.addEventListener('click', function () { st = Object.assign({}, BASE, PRESETS[k].v); save(); fill(); update(); document.getElementById('sc-msg').textContent = 'Loaded: ' + PRESETS[k].label + '.'; });
+    pr.appendChild(b);
+  });
+
+  /* ---------- outputs ---------- */
+  var chart = AERO.chart(document.getElementById('sc-stage'), { x: { label: '\\(\\Wo\\) (kg)', min: 1000, max: 1e5, log: true }, y: { label: '\\(\\We/\\Wo\\)', min: 0.2, max: 0.9 }, height: 330, ariaLabel: 'Sizing chart' });
+  var c1 = chart.fn(function () { return NaN; }, { color: 'z', width: 2.6, samples: 200 }), c2 = chart.fn(function () { return NaN; }, { color: 't', width: 2.6, samples: 200 });
+  var mk = chart.marker([5000, 0.5], { color: 'accent', r: 6 });
+  var panel = document.getElementById('sc-controls');
+  var view = CYL.select({ label: 'Chart', value: 'curves', options: [{ value: 'curves', label: 'The two curves' }, { value: 'range', label: 'Takeoff weight against cruise 1' }], onChange: function () { update(); } });
+  var ro = { ld: CYL.readout('\\(\\LDmax\\)'), ff: CYL.readout('Fuel fraction \\(\\Wf/\\Wo\\)'), gf: CYL.readout('Growth factor (resized)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'View' }));
+  panel.appendChild(view.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.ld.el, ro.ff.el, ro.gf.el]));
+  CYL.renderMath(panel);
+  function kg(x) { return CYL.fmt(x, 4).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' kg'; }
+  var last = null;
+  function update() {
+    enable();
+    var r = solve(); last = r;
+    var tot = document.getElementById('sc-totals'); tot.innerHTML = '';
+    var tiles = r.ok ? [['Takeoff weight W₀', kg(r.W0)], ['Empty weight', kg(r.fe * r.W0)], ['Fuel', kg(fuelOf(r.W0, r.S))], ['Crew and payload', kg(fixed())], ['Empty-weight fraction', CYL.fmt(r.fe, 4)]] : [['Takeoff weight W₀', 'does not close']];
+    tiles.forEach(function (t) { tot.appendChild(CYL.el('div', { class: 'sc-tile' }, [CYL.el('p', { class: 'lab', text: t[0] }), CYL.el('p', { class: 'val' + (r.ok ? '' : ' sc-warn'), text: t[1] })])); });
+    ro.ld.set(CYL.fmt(ldmax(), 3));
+    if (r.ok) {
+      ro.ff.set(CYL.fmt(fuelOf(r.W0, r.S) / r.W0, 4));
+      var keepC = st.cargo; st.cargo = keepC + 100; var r2 = solve(); st.cargo = keepC;
+      ro.gf.set(r2.ok ? CYL.fmt((r2.W0 - r.W0) / 100, 3) : '—');
+    } else { ro.ff.set('—'); ro.gf.set('—'); }
+    var tb = document.querySelector('#sc-segs tbody'); tb.innerHTML = '';
+    if (r.ok) { var ws = fly(r.W0, r.S); r.S.forEach(function (s, i) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: String(i + 1) }), CYL.el('td', { text: s.n }), CYL.el('td', { text: s.ld ? CYL.fmt(s.ld, 3) : '' }), CYL.el('td', { text: s.c ? CYL.fmt(s.c, 3) : '' }), CYL.el('td', { text: s.drop ? '(drop)' : CYL.fmtFixed(s.f, 4) }), CYL.el('td', { text: CYL.fmt(ws[i], 5) })])); }); }
+    var ti = document.querySelector('#sc-iter tbody'); ti.innerHTML = '';
+    r.steps.slice(0, 25).forEach(function (q, i) { ti.appendChild(CYL.el('tr', null, [CYL.el('td', { text: String(i + 1) }), CYL.el('td', { text: CYL.fmt(q[0], 5) }), CYL.el('td', { text: CYL.fmtFixed(q[1], 4) }), CYL.el('td', { text: CYL.fmt(q[2], 4) }), CYL.el('td', { text: CYL.fmt(q[3], 5) })])); });
+    // chart
+    var c0 = r.ok ? r.W0 : 10 * fixed();
+    if (view.get() === 'curves') {
+      chart.setAxes({ x: { label: '\\(\\Wo\\) (kg)', min: c0 / 5, max: c0 * 5, log: true }, y: { label: '\\(\\We/\\Wo\\)', min: 0.2, max: 0.9 } });
+      c1.setFn(function (w) { return SIZING.ef(w, st.cls, { kvs: st.kvs, tech: st.tech }); });
+      c2.setFn(function (w) { var v = 1 - (fixed() + fuelOf(w, r.S)) / w; return v > 0.2 ? v : NaN; });
+      if (r.ok) { mk.setVisible(true); mk.set([r.W0, r.fe]); } else mk.setVisible(false);
+      chart.setAriaLabel('Trend and affordable empty-weight fractions; ' + (r.ok ? 'they cross at ' + Math.round(r.W0) + ' kg.' : 'they do not cross.'));
+    } else {
+      var Rmax = Math.max(1000, st.R1 * 2);
+      var ys = []; for (var R = Rmax / 40; R <= Rmax; R += Rmax / 40) { var q = solve(R); if (q.ok) ys.push(q.W0); }
+      var ymax = ys.length ? Math.max.apply(null, ys) : c0 * 2;
+      chart.setAxes({ x: { label: 'Cruise 1 distance (km)', min: 0, max: Rmax, log: false }, y: { label: '\\(\\Wo\\) (kg)', min: 0, max: Math.ceil(Math.min(ymax, c0 * 4) * 1.1 / 1000) * 1000 } });
+      c1.setFn(function (R) { var q = solve(R); return q.ok ? q.W0 : NaN; }); c2.setFn(function () { return NaN; });
+      if (r.ok) { mk.setVisible(true); mk.set([st.R1, r.W0]); } else mk.setVisible(false);
+      chart.setAriaLabel('Takeoff weight against the first cruise distance, rising steeply at long range.');
+    }
+  }
+  document.getElementById('sc-csv').addEventListener('click', function () {
+    var r = last || solve(), lines = ['quantity,value'];
+    Object.keys(st).forEach(function (k) { lines.push(k + ',' + st[k]); });
+    lines.push('LDmax,' + ldmax().toFixed(4));
+    if (r.ok) {
+      lines.push('W0_kg,' + r.W0.toFixed(1), 'We_kg,' + (r.fe * r.W0).toFixed(1), 'Wf_kg,' + fuelOf(r.W0, r.S).toFixed(1));
+      var ws = fly(r.W0, r.S); r.S.forEach(function (s, i) { lines.push('"segment ' + (i + 1) + ': ' + s.n + '",' + (s.drop ? 'drop' : s.f.toFixed(5)) + ' (W=' + ws[i].toFixed(1) + ' kg)'); });
+    } else lines.push('W0_kg,does not close');
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob), a = CYL.el('a', { href: url, download: 'sizing.csv' });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    document.getElementById('sc-msg').textContent = 'Downloaded sizing.csv.';
+  });
+  window.__sizer = { solve: solve, state: function () { return st; }, load: function (k) { st = Object.assign({}, BASE, PRESETS[k].v); fill(); update(); return solve(); } };   // for QA scripts
+  fill(); update();
+});
+</script>
+</body>
+</html>

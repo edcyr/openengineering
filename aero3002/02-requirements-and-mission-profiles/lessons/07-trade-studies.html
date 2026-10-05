@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Requirements to a Concept: Trade Studies · Design Requirements and Mission Profiles</title>
+<meta name="description" content="From requirements to a concept: generating configurations with a morphological chart, choosing among them with weighted decision matrices, the cost of a requirement in takeoff weight (the range wall and the growth factor), and the requirements compliance matrix.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  .morph td, .morph th { font-size: 0.9rem; }
+  .morph td:first-child { font-weight: 600; white-space: nowrap; }
+  .dm td, .dm th { text-align: center; font-variant-numeric: tabular-nums; }
+  .dm td:first-child, .dm th:first-child { text-align: left; }
+  .dm tfoot td, .dm tfoot th { border-top: 2px solid var(--line); font-weight: 700; }
+  .comp td:last-child { font-weight: 700; }
+  .comp .ok { color: var(--c-good); }
+  .comp .tbd { color: var(--c-warn); }
+</style>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 40 min</p>
+    <h1>From Requirements to a Concept: Trade Studies</h1>
+    <p class="lede">With the requirements written and the mission drawn, the designer needs a concept, usually several, and a fair way to choose between them. Then comes the question every customer should ask and few do: what does each requirement cost? This lesson closes the design wheel of Lesson 1, from the requirements back to the requirements.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Generate alternative configurations with a morphological chart, and explain how requirements favour one layout over another.</li>
+      <li>Rank concepts with a weighted decision matrix, and test how sensitive the ranking is to the weights.</li>
+      <li>Estimate the cost of a range or payload requirement in takeoff weight, and explain the range wall and the growth factor.</li>
+      <li>Build a requirements compliance matrix, and explain when to go back to the customer.</li>
+    </ul>
+  </section>
+
+  <section id="concepts">
+    <h2>Generating concepts</h2>
+    <p>Conceptual design begins with a sketch, and a designer should draw several. A <strong>morphological chart</strong> keeps the options honest: list each design choice and its alternatives, then build concepts by picking one option from each row.</p>
+    <div class="table-wrap">
+      <table class="data morph">
+        <caption>A morphological chart for a transport aircraft (options, not recommendations)</caption>
+        <thead><tr><th scope="col">Choice</th><th scope="col">Options</th></tr></thead>
+        <tbody>
+          <tr><td>Wing position</td><td>Low · mid · high</td></tr>
+          <tr><td>Wing</td><td>Cantilever, moderate aspect ratio · strut-braced, high aspect ratio · blended wing body</td></tr>
+          <tr><td>Tail</td><td>Conventional · T-tail · V-tail · canard</td></tr>
+          <tr><td>Engines</td><td>Turbofans under the wing · turbofans on the aft fuselage · turboprops on the wing · open rotors at the tail</td></tr>
+          <tr><td>Number of engines</td><td>2 · 3 · 4</td></tr>
+          <tr><td>Landing gear</td><td>Wing-mounted main gear · fuselage pods</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Requirements prune the chart quickly. A short, rough-field requirement favours a high wing (ground clearance for propellers and flaps, an easy cargo floor) and turboprops. Fuel burn favours high aspect ratio and high bypass, both limited by the span box and the ground clearance. A strong noise requirement favours engines shielded by the airframe. History (Module 1) is also a filter: a configuration that has been tried and abandoned many times needs a very good reason to be tried again.</p>
+  </section>
+
+  <section id="selection">
+    <h2>Choosing: the weighted decision matrix</h2>
+    <p>Concepts are compared against <strong>criteria</strong> drawn from the requirements: fuel burn, cost, field performance, technical risk. Each criterion gets a <strong>weight</strong> \(w_i\) (the weights add to 1) and each concept a <strong>score</strong> \(s_{ij}\) on each criterion, say 1 (poor) to 5 (excellent). The total for concept \(j\) is</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Weighted score</p>
+      \[ S_j = \sum_i w_i\,s_{ij}, \qquad \sum_i w_i = 1 \]
+      <p>A <strong>Pugh matrix</strong> is a simpler version: each concept is marked better (+), the same (0) or worse (−) than a reference concept on each criterion.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 7.1 — Three concepts for a new narrow-body</p>
+      <p>Concept A is a conventional low wing with underwing turbofans; B has open rotors at the tail; C has a strut-braced, high-aspect-ratio wing. The team scores them (5 is best; for risk, 5 means least risk):</p>
+      <div class="table-wrap">
+        <table class="data dm">
+          <caption>Scores and weights</caption>
+          <thead><tr><th scope="col">Criterion</th><th scope="col">Weight</th><th scope="col">A</th><th scope="col">B</th><th scope="col">C</th></tr></thead>
+          <tbody>
+            <tr><td>Fuel burn per seat</td><td>0.40</td><td>3</td><td>5</td><td>4</td></tr>
+            <tr><td>Acquisition cost</td><td>0.25</td><td>4</td><td>2</td><td>3</td></tr>
+            <tr><td>Field performance</td><td>0.10</td><td>3</td><td>3</td><td>4</td></tr>
+            <tr><td>Technical risk</td><td>0.25</td><td>5</td><td>2</td><td>3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Which concept ranks first? How sensitive is the answer?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ S_A = 0.40(3) + 0.25(4) + 0.10(3) + 0.25(5) = 3.75 \]
+          \[ S_B = 0.40(5) + 0.25(2) + 0.10(3) + 0.25(2) = 3.30 \]
+          \[ S_C = 0.40(4) + 0.25(3) + 0.10(4) + 0.25(3) = 3.50 \]
+          <p>A ranks first, but by a small margin over C. Raise the weight on fuel burn from 0.40 to just over 0.5 (as a rise in fuel prices might) and the ranking turns over completely, to B, then C, then A: Figure 7.1 shows where the lines cross. A ranking that changes with a small change in the weights is a signal to study the leading concepts in more depth rather than to declare a winner.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> The weighted scores of Example 7.1 as the weight on fuel burn changes (the other weights shrink in proportion so that all four add to 1). Move the sliders to set your own weights. Where two lines cross, the ranking flips.</figcaption>
+    </figure>
+    <aside class="callout warning">
+      <p class="callout-title">Numbers that look objective</p>
+      <p>Scores and weights are judgments, and a matrix can be tuned to give any answer. Use it to make the judgments explicit and to show how sensitive the choice is, not to replace analysis. Where a criterion can be computed (fuel burn, weight, field length), compute it.</p>
+    </aside>
+  </section>
+
+  <section id="cost">
+    <h2>The cost of a requirement</h2>
+    <p>Every requirement costs something. The most useful currency in conceptual design is takeoff weight, since cost, fuel burn and engine size all grow with it. Combine the sizing equation of Module 1 with the mission fuel fraction of Lesson 5:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Takeoff weight as a function of design range</p>
+      \[ \Wo = \frac{W_{\text{crew}} + W_{\text{payload}}}{1 - \dfrac{\Wf}{\Wo} - \dfrac{\We}{\Wo}}, \qquad \frac{\Wf}{\Wo} = 1.06\left[1 - 0.970(0.985)(0.995)\,e^{-R\,C/(V\,L/D)}\right] \]
+      <p>Treat \(\We/\Wo\) as fixed for a first look, or use a statistical trend (Module 3 does it properly). The range enters only through the fuel fraction.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 7.2 — What does 1000 km more range cost?</p>
+      <p>A jet transport carries \(18\,000\ \text{kg}\) of crew and payload, cruises at \(850\ \text{km/h}\) with \(L/D = 16\) and \(C = 0.55/\text{h}\), and has \(\We/\Wo = 0.50\). Find \(\Wo\) for a design range of \(5000\ \text{km}\) and of \(6000\ \text{km}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ R = 5000:\ \ e^{-5000(0.55)/(850(16))} = e^{-0.2022} = 0.8169 \]
+          \[ \frac{\Wf}{\Wo} = 1.06[1 - 0.9507(0.8169)] = 0.2368 \]
+          \[ \Wo = \frac{18\,000}{1 - 0.2368 - 0.50} = \frac{18\,000}{0.2632} = 68\,380\ \text{kg} \]
+          \[ R = 6000:\ \ e^{-0.2426} = 0.7846 \]
+          \[ \frac{\Wf}{\Wo} = 0.2694 \]
+          \[ \Wo = \frac{18\,000}{0.2306} = 78\,060\ \text{kg} \]
+          <p>A 20% longer range costs 14% more takeoff weight, about 9.7 t, with a bigger wing and bigger engines to match, on every aircraft built. If only a few routes in the market need the extra 1000 km, the customer should hear that number before insisting on it.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig72-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig72-stage"></div>
+        <div class="viz-controls" id="fig72-controls"></div>
+      </div>
+      <figcaption id="fig72-cap"><strong>Figure 7.2</strong> Takeoff weight against design range for the aircraft of Example 7.2. The curve steepens without limit: past some range, the fuel and empty-weight fractions leave nothing for the payload, and no aircraft of this technology can close. Better technology (a higher \(L/D\), a lower \(C\) or \(\We/\Wo\)) pushes this range wall out.</figcaption>
+    </figure>
+  </section>
+
+  <section id="growth">
+    <h2>The growth factor</h2>
+    <p>The same equation prices every kilogram added to the aircraft. With the fractions held fixed, \(\Wo\) is proportional to the crew and payload, so</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Growth factor (fixed fractions)</p>
+      \[ \frac{\Delta\Wo}{\Delta W_{\text{payload}}} = \frac{1}{1 - \Wf/\Wo - \We/\Wo} = \frac{\Wo}{W_{\text{crew}} + W_{\text{payload}}} \]
+    </div>
+    <p>In Example 7.2 at \(5000\ \text{km}\), the growth factor is \(1/0.2632 = 3.8\): a requirement that adds \(500\ \text{kg}\) of fixed equipment (a bigger galley, a new avionics suite) adds about \(1900\ \text{kg}\) to the takeoff weight once the wing, engines and fuel have grown to carry it. That is the weight snowball of Module 1 seen from the requirements side. (The empty-weight fraction in reality falls slightly as the aircraft grows, which tempers the factor a little.)</p>
+  </section>
+
+  <section id="compliance">
+    <h2>Closing the loop: the compliance matrix</h2>
+    <p>At each turn of the wheel, the team checks the design against every requirement in a <strong>compliance matrix</strong>: the requirement, the value the current design achieves, how it was shown (analysis, test, inspection), and the margin. For the narrow-body of Lessons 3 and 4 it might begin:</p>
+    <div class="table-wrap">
+      <table class="data comp">
+        <caption>A requirements compliance matrix (first rows)</caption>
+        <thead><tr><th scope="col">Requirement</th><th scope="col">Required</th><th scope="col">Current design</th><th scope="col">Shown by</th><th scope="col">Status</th></tr></thead>
+        <tbody>
+          <tr><td>Range, 150 passengers at 100 kg, reserves</td><td>at least 5000 km</td><td>6048 km (Example 3.2)</td><td>Analysis</td><td class="ok">Met, +21%</td></tr>
+          <tr><td>Approach category</td><td>C (\(V_{\text{REF}} \le 140\ \text{kt}\))</td><td>\(\WS\) set to 556 kg/m² at landing (Example 4.1)</td><td>Analysis</td><td class="ok">Met by design</td></tr>
+          <tr><td>Wingspan</td><td>under 36 m (code C)</td><td>\(A \le 10.6\) at 122 m² (Example 2.3)</td><td>Inspection</td><td class="ok">Met by design</td></tr>
+          <tr><td>Second-segment climb, one engine out</td><td>2.4% gradient</td><td>\(\TW \ge 0.248\) needed (Example 4.2)</td><td>Analysis</td><td class="tbd">Engine not yet chosen</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A large margin is not good news: the 21% range margin above means the aircraft is carrying fuel capacity and weight it does not need for the requirement, so either the requirement can grow (a selling point) or the design can shrink. A requirement that cannot be met at an acceptable weight goes back to the customer with its price attached. That conversation, informed by trades like Example 7.2, is the arrow from "sizing and trade studies" back to "requirements" in Figure 1.1.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Your own design</p>
+      <p>If your course has a design project, start its requirements table, mission profile and compliance matrix now. Every later module adds rows to them, and the Mission Profile Builder will give you the time, distance and weight fractions of your mission.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A morphological chart lists the options for each design choice; requirements and history prune it to a few concepts.</li>
+      <li>Weighted decision matrix: \(S_j = \sum w_i s_{ij}\). Always check how sensitive the ranking is to the weights.</li>
+      <li>Requirements cost takeoff weight: \(\Wo\) rises faster and faster with design range, up to a range wall set by the technology.</li>
+      <li>Growth factor \(= 1/(1 - \Wf/\Wo - \We/\Wo) = \Wo/(W_{\text{crew}} + W_{\text{payload}})\): every added kilogram costs several at takeoff.</li>
+      <li>A compliance matrix tracks every requirement; requirements that are too expensive go back to the customer, with their price.</li>
+      <li>This completes the module. Try the <a href="../practice/practice-lab.html">Practice Lab</a> and the <a href="../practice/quiz.html">Self-Check Quiz</a>; Module 3 turns the mission profile into a full first estimate of the takeoff weight.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 7.1: sensitivity of the weighted decision matrix ---------- */
+CYL.ready(function () {
+  'use strict';
+  var CRIT = ['Fuel burn', 'Cost', 'Field', 'Risk'], W0 = [0.40, 0.25, 0.10, 0.25];
+  var CON = [{ id: 'A', label: 'A: conventional', s: [3, 4, 3, 5], color: 'z' }, { id: 'B', label: 'B: open rotor', s: [5, 2, 3, 2], color: 'r' }, { id: 'C', label: 'C: strut-braced', s: [4, 3, 4, 3], color: 'good' }];
+  var st = { w: W0.slice() };
+  function scoreAt(c, wf) {   // fuel weight wf, others scaled in proportion from the current weights
+    var rest = st.w[1] + st.w[2] + st.w[3] || 1, k = (1 - wf) / rest;
+    return wf * c.s[0] + k * (st.w[1] * c.s[1] + st.w[2] * c.s[2] + st.w[3] * c.s[3]);
+  }
+  var chart = AERO.chart(document.getElementById('fig71-stage'), {
+    x: { label: 'Weight on fuel burn', min: 0, max: 1 }, y: { label: 'Weighted score \\(S_j\\)', min: 1, max: 5 }, height: 320,
+    ariaLabel: 'Weighted score of three concepts against the weight on fuel burn; the lines cross where the ranking changes.',
+    legend: CON.map(function (c) { return { label: c.label, color: c.color, line: true }; })
+  });
+  var lines = CON.map(function (c) { return chart.fn(function (wf) { return scoreAt(c, wf); }, { color: c.color, width: 2.6 }); });
+  var vl = chart.vline(st.w[0], { color: 'accent', width: 1.5 });
+  var panel = document.getElementById('fig71-controls');
+  var sliders = CRIT.map(function (name, i) {
+    return CYL.slider({ label: 'Weight: ' + name.toLowerCase(), min: 0, max: 1, step: 0.01, value: W0[i], onInput: function (v) { setW(i, v); } });
+  });
+  var ro = CON.map(function (c) { return CYL.readout('Concept ' + c.label, { color: c.color }); });
+  var roW = CYL.readout('Ranking');
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Weights (kept summing to 1)' }));
+  sliders.forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, ro.map(function (r) { return r.el; }).concat([roW.el])));
+  panel.appendChild(CYL.button('Reset to Example 7.1', function () { st.w = W0.slice(); sliders.forEach(function (s, i) { s.set(st.w[i], true); }); draw(); }, { small: true }));
+  function setW(i, v) {            // change one weight, scale the others so that the sum stays 1
+    var rest = 0, j; for (j = 0; j < 4; j++) if (j !== i) rest += st.w[j];
+    st.w[i] = v;
+    for (j = 0; j < 4; j++) if (j !== i) st.w[j] = rest > 1e-9 ? st.w[j] * (1 - v) / rest : (1 - v) / 3;
+    sliders.forEach(function (s, k) { if (k !== i) s.set(+st.w[k].toFixed(4), true); });
+    draw();
+  }
+  function draw() {
+    lines.forEach(function (l) { l.draw(); }); vl.set(st.w[0]);
+    var sc = CON.map(function (c) { return { c: c, s: c.s.reduce(function (a, x, k) { return a + st.w[k] * x; }, 0) }; });
+    sc.forEach(function (q, k) { ro[k].set(CYL.fmt(q.s, 3)); });
+    roW.set(sc.slice().sort(function (p, q) { return q.s - p.s; }).map(function (q) { return q.c.id; }).join(' > '));
+  }
+  draw();
+});
+
+/* ---------- Figure 7.2: takeoff weight against design range ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { Wp: 18000, LD: 16, C: 0.55, V: 850, fe: 0.50, R: 5000 };
+  function ff(R) { return 1.06 * (1 - 0.970 * 0.985 * 0.995 * Math.exp(-R * st.C / (st.V * st.LD))); }
+  function W0(R) { var d = 1 - ff(R) - st.fe; return d > 0.005 ? st.Wp / d : NaN; }
+  function wall() { var lo = 0, hi = 200000; for (var i = 0; i < 80; i++) { var m = (lo + hi) / 2; if (1 - ff(m) - st.fe > 0) lo = m; else hi = m; } return lo; }   // where the denominator reaches zero
+  var chart = AERO.chart(document.getElementById('fig72-stage'), {
+    x: { label: 'Design range \\(R\\) (km)', min: 0, max: 14000 }, y: { label: 'Takeoff weight \\(\\Wo\\) (t)', min: 0, max: 300 }, height: 330,
+    ariaLabel: 'Takeoff weight against design range: a curve that rises slowly at first and then steeply toward a vertical asymptote, the range wall.'
+  });
+  var cv = chart.fn(function (R) { var w = W0(R); return isFinite(w) && w < 1e6 ? w / 1000 : NaN; }, { color: 'z', width: 2.6, samples: 300 });
+  var wl = chart.vline(wall(), { color: 'r', label: 'range wall' });
+  var mk = chart.marker([st.R, W0(st.R) / 1000], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig72-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var ss = [sl('R', 'Design range', 500, 14000, 50, 'km', 'v'), sl('Wp', 'Crew and payload', 2000, 60000, 500, 'kg'), sl('LD', 'Cruise \\(L/D\\)', 10, 24, 0.1, null, 'z'), sl('C', '\\(C\\)', 0.4, 0.9, 0.01, '/h', 'r'), sl('fe', '\\(\\We/\\Wo\\)', 0.35, 0.65, 0.005, null, 't')];
+  var ro = { w: CYL.readout('Takeoff weight \\(\\Wo\\)'), f: CYL.readout('Fuel fraction \\(\\Wf/\\Wo\\)'), g: CYL.readout('Growth factor'), d: CYL.readout('Cost of the next 1000 km') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Requirement and technology' }));
+  ss.forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.w.el, ro.f.el, ro.g.el, ro.d.el]));
+  CYL.renderMath(panel);
+  function t(x) { return CYL.fmt(x / 1000, 4) + ' t'; }
+  function draw() {
+    var w = W0(st.R), w2 = W0(st.R + 1000), wa = wall();
+    chart.setAxes({ x: { max: Math.min(60000, Math.max(14000, Math.ceil(Math.max(wa * 1.2, st.R * 1.1) / 1000) * 1000)) } });
+    cv.draw(); wl.set(wa);
+    if (isFinite(w)) {
+      mk.setVisible(true); mk.set([st.R, Math.min(300, w / 1000)]);
+      ro.w.set(t(w)); ro.f.set(CYL.fmt(ff(st.R), 3)); ro.g.set(CYL.fmt(w / st.Wp, 3));
+      ro.d.set(isFinite(w2) ? '+' + t(w2 - w) + ' (+' + CYL.fmt((w2 / w - 1) * 100, 3) + '%)' : 'beyond the range wall');
+    } else {
+      mk.setVisible(false); ro.w.set('does not close'); ro.f.set(CYL.fmt(ff(st.R), 3)); ro.g.set('—'); ro.d.set('—');
+    }
+    chart.setAriaLabel('Takeoff weight against design range; the range wall is at about ' + Math.round(wa / 100) * 100 + ' km. At ' + st.R + ' km the takeoff weight is ' + (isFinite(w) ? t(w) : 'unbounded') + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'numeric',
+    prompt: 'Three criteria have weights 0.5 (fuel burn), 0.3 (cost) and 0.2 (risk). A concept scores 4, 2 and 5 on them. What is its weighted score?',
+    label: '\\(S =\\)', answer: 0.5 * 4 + 0.3 * 2 + 0.2 * 5,
+    hints: ['\\(S = \\sum w_i s_i\\).'],
+    explain: 'A weighted score is only as good as the weights: check what happens when they change.',
+    solution: '\\[ S = 0.5(4) + 0.3(2) + 0.2(5) = 2.0 + 0.6 + 1.0 = 3.6 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'numeric',
+    prompt: 'A design has \\(\\Wf/\\Wo = 0.30\\) and \\(\\We/\\Wo = 0.52\\). A new requirement adds \\(300\\ \\text{kg}\\) of equipment. With the fractions held fixed, how much does the takeoff weight grow?',
+    label: '\\(\\Delta\\Wo =\\)', answer: 300 / 0.18, unit: 'kg',
+    hints: ['The growth factor is \\(1/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).', 'Multiply it by the added weight.'],
+    explain: 'With only 18% of the aircraft left for crew and payload, each added kilogram costs 5.6 kg at takeoff.',
+    solution: '\\[ \\Delta\\Wo = \\frac{300}{1 - 0.30 - 0.52} = \\frac{300}{0.18} = 1667\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'mc',
+    prompt: 'A trade study shows that the last 10% of a customer\'s range requirement adds 8% to the takeoff weight, and that only 3% of the routes in the market need it. What should the design team do?',
+    choices: [
+      { html: 'Take the result to the customer: show the cost of the last 10% and ask whether the requirement is worth it.', correct: true, feedback: 'Yes: requirements are negotiable when their cost is known. That is the loop back to the requirements.' },
+      { html: 'Quietly design to 90% of the range and hope it is accepted.', feedback: 'A requirement that is not met must be discussed openly, not ignored.' },
+      { html: 'Meet the requirement without question: requirements are fixed.', feedback: 'Only regulations are fixed. Customer requirements are traded all the time once their cost is known.' },
+      { html: 'Double the range requirement, to be safe.', feedback: 'That would make the aircraft much heavier for no customer benefit.' }
+    ],
+    explain: 'Trade studies exist to put a price on requirements, so that customers can decide with their eyes open.'
+  });
+});
+</script>
+</body>
+</html>

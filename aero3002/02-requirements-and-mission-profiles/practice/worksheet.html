@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Twelve printable problems on design requirements and mission profiles: rubber engines, great-circle distances, fleets and span limits, payload-range, engine-out climb and approach speed, mission timelines and fuel fractions, reserves and winds, and the cost of range, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from a rubber engine and the route from Ottawa to Vancouver to the payload–range diagram of a regional jet, an approach-speed requirement at a high airport, a mission timeline, international reserves and what 1000 km of range costs. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Requirements and Mission Profiles · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Use \(g = 9.81\ \text{m/s}^2\), \(\rho = 1.225\ \text{kg/m}^3\) at sea level, \(R_E = 6371\ \text{km}\), \(1\ \text{kt} = 0.5144\ \text{m/s}\), \(1\ \text{nmi} = 1.852\ \text{km}\), and give answers to 4 significant figures. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A covers the design process and requirements, Part B payload–range and certification, and Part C missions, reserves and trades. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units unless a problem asks otherwise, \(g = 9.81\ \text{m/s}^2\), \(\rho = 1.225\ \text{kg/m}^3\) at sea level, answers to 4 significant figures. Latitudes are north positive and longitudes east positive; \(R_E = 6371\ \text{km}\); \(1\ \text{kt} = 0.5144\ \text{m/s}\), \(1\ \text{nmi} = 1.852\ \text{km}\). Aircraft and missions are illustrative. The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Process and requirements</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 1–2</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Payload–range and certification</h2>
+    <p class="ws-part-sub">Problems 5–8 · Basic to challenge · Lessons 3–4</p>
+    <div class="ws-list" data-from="5" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Missions, reserves and trades</h2>
+    <p class="ws-part-sub">Problems 9–12 · Basic to challenge · Lessons 5–7</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Rubber engine or real engine', level: 1, lessons: ['l01'], units: 'kg, kN',
+      statementHTML: T`<p>A first sizing of a twin-engine business jet gives \(\Wo = 18\,500\ \text{kg}\) and \(\TW = 0.36\).</p>`,
+      parts: [
+        part('a', T`What takeoff thrust must each rubber engine give?`, T`\(T_{\text{engine}} = 32.67\ \text{kN}\)`, { T: 32.667 }),
+        part('b', T`An existing engine gives \(30.0\ \text{kN}\). What \(\TW\) would two of them give?`, T`\(\TW = 0.3306\)`, { tw: 0.33061 }),
+        part('c', T`By what factor would that engine have to be scaled to become the rubber engine? Which requirements are likely to suffer with the existing engine?`, T`Scale factor \(1.089\); field length and engine-out climb (Lesson 4)`, { sf: 1.0889 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 2, title: 'Ottawa to Vancouver', level: 1, lessons: ['l02'], units: 'degrees, km, nmi',
+      statementHTML: T`<p>Ottawa (YOW) is at \(45.32^\circ\text{N}\), \(75.67^\circ\text{W}\); Vancouver (YVR) at \(49.19^\circ\text{N}\), \(123.18^\circ\text{W}\). Take \(R_E = 6371\ \text{km}\).</p>`,
+      parts: [
+        part('a', T`Find the central angle \(\theta\) between them.`, T`\(\cos\theta = 0.8486\), \(\theta = 31.94^\circ\)`, { th: 31.942 }),
+        part('b', T`Find the great-circle distance in km and in nautical miles.`, T`\(d = 3552\ \text{km} = 1918\ \text{nmi}\)`, { km: 3551.8, nmi: 1917.8 }),
+        part('c', T`A regional jet has a design range of \(3300\ \text{km}\). Can it fly the route nonstop in still air? By how much does it fall short or exceed it?`, T`No: \(252\ \text{km}\) short, before any allowance for winds or routing`, { short: 251.8 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 3, title: 'Seats, departures and a fleet', level: 2, lessons: ['l02'], units: 'passengers, h',
+      statementHTML: T`<p>A route carries \(3000\) passengers a day in each direction, and airlines expect a load factor of 0.82.</p>`,
+      parts: [
+        part('a', T`With 10 departures a day each way, how many seats does each aircraft need?`, T`\(366\) seats`, { seats: 365.85 }),
+        part('b', T`With 180-seat aircraft, how many departures a day each way are needed?`, T`\(20.3 \Rightarrow 21\) departures`, { n: 21 }),
+        part('c', T`For (b), each flight takes \(1.75\ \text{h}\) block to block, each turnaround \(40\ \text{min}\), and each aircraft can operate \(17\ \text{h}\) a day. How many aircraft are needed?`, T`Round trip \(4.83\ \text{h}\), 3 a day per aircraft, \(7\) aircraft`, { N: 7 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 4, title: 'The span box', level: 2, lessons: ['l02'], units: 'm, m²',
+      statementHTML: T`<p>A narrow-body with a \(122\ \text{m}^2\) wing fits ICAO code C (span under \(36\ \text{m}\)). A stretched version needs a \(140\ \text{m}^2\) wing.</p>`,
+      parts: [
+        part('a', T`Find the largest aspect ratio of each wing within code C.`, T`\(10.62\) and \(9.257\)`, { A1: 10.623, A2: 9.2571 }),
+        part('b', T`If the stretched wing kept \(A = 10.4\), what would its span be, and which code would it need?`, T`\(b = 38.16\ \text{m}\): code D`, { b: 38.158 }),
+        part('c', T`Within code C, by what factor is the induced-drag factor \(K = 1/(\pi A e)\) of the stretched wing larger than it would be at \(A = 10.4\) (same \(e\))?`, T`\(10.4/9.257 = 1.123\): 12% more induced drag at the same \(\CL\)`, { r: 1.1235 })
+      ],
+      figure: null, space: 45 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'A payload–range diagram', level: 1, lessons: ['l03'], units: 'kg, km',
+      statementHTML: T`<p>A regional jet has \(\text{OEW} = 26\,000\ \text{kg}\) (with crew), \(\text{MTOW} = 45\,000\ \text{kg}\), a maximum payload of \(10\,500\ \text{kg}\) and a fuel capacity of \(9500\ \text{kg}\), and keeps \(1500\ \text{kg}\) of reserve fuel. It cruises at \(780\ \text{km/h}\) with \(C = 0.62/\text{h}\) and \(L/D = 15\). Treat the whole flight as a Breguet cruise.</p>`,
+      parts: [
+        part('a', T`Find the range at maximum payload (point A).`, T`Range factor \(18\,870\ \text{km}\); \(R_A = 3191\ \text{km}\)`, { RA: 3190.6 }),
+        part('b', T`Find the payload and the range at point B.`, T`\(P_B = 9500\ \text{kg}\), \(R_B = 3694\ \text{km}\)`, { PB: 9500, RB: 3693.9 }),
+        part('c', T`Find the ferry range (point C), and sketch the diagram with A, B and C labelled.`, T`\(R_C = 4819\ \text{km}\)`, { RC: 4818.6 })
+      ],
+      figure: null, space: 55 }),
+
+    prob({ n: 6, title: 'Passengers and range', level: 2, lessons: ['l03'], units: 'kg, km',
+      statementHTML: T`<p>The jet of Problem 5 has 90 seats; take \(100\ \text{kg}\) per passenger with baggage.</p>`,
+      parts: [
+        part('a', T`How far can it carry a full cabin? On which segment of the diagram does that point lie?`, T`\(9000\ \text{kg}\), between B and C (full tanks, TOW \(44\,500\ \text{kg}\)): \(R = 3740\ \text{km}\)`, { R: 3739.8 }),
+        part('b', T`How much payload can it carry over \(3450\ \text{km}\)?`, T`\(W_{\text{land}} = 37\,481\ \text{kg}\); \(P = 9981\ \text{kg}\)`, { P: 9981.3 }),
+        part('c', T`How many passengers can it carry over \(4000\ \text{km}\)?`, T`\(P = 6383\ \text{kg}\): 63 passengers`, { pax: 63 })
+      ],
+      figure: null, space: 55 }),
+
+    prob({ n: 7, title: 'One engine out', level: 2, lessons: ['l04'], units: '—',
+      statementHTML: T`<p>A transport has \(L/D = 10.5\) in the second-segment configuration.</p>`,
+      parts: [
+        part('a', T`As a twin, what \(\TW\) does it need for the second-segment gradient?`, T`\(\TW = 0.2385\)`, { tw2: 0.23848 }),
+        part('b', T`As a four-engine aircraft with the same \(L/D\)?`, T`\(\TW = 0.1670\)`, { tw4: 0.16698 }),
+        part('c', T`The twin is built with \(\TW = 0.30\). What second-segment gradient can it hold with one engine out? By how much does it exceed the requirement?`, T`\(G = 5.48\%\), 3.08 points above 2.4%`, { G: 5.4762 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 8, title: 'An approach-speed requirement at a high airport', level: 3, lessons: ['l04'], units: 'kg/m², m², m',
+      statementHTML: T`<p>An airliner with \(\text{MTOW} = 70\,000\ \text{kg}\) must approach at \(V_{\text{REF}} \le 135\ \text{kt}\) at an airport \(1000\ \text{m}\) above sea level (\(\rho = 1.112\ \text{kg/m}^3\)). Its landing \(C_{L_{\max}}\) is 2.7, and its maximum landing weight is 86% of MTOW.</p>`,
+      parts: [
+        part('a', T`Find the largest landing wing loading.`, T`\(V_{SR} = 56.46\ \text{m/s}\); \((W/S)_{\text{land}} = 487.8\ \text{kg/m}^2\)`, { wsl: 487.79 }),
+        part('b', T`Find the takeoff wing loading this allows, and the smallest wing area.`, T`\(567.2\ \text{kg/m}^2\); \(S \ge 123.4\ \text{m}^2\)`, { wst: 567.19, S: 123.41 }),
+        part('c', T`Tests show a landing distance of \(1450\ \text{m}\). Find the dry and wet landing field lengths. Is a \(2400\ \text{m}\) runway enough?`, T`\(2417\ \text{m}\) dry, \(2779\ \text{m}\) wet: not quite, even dry`, { dry: 2416.7, wet: 2779.2 })
+      ],
+      figure: null, space: 55 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'A mission timeline', level: 1, lessons: ['l05'], units: 'km, min',
+      statementHTML: T`<p>A jet flies a \(3500\ \text{km}\) trip. It taxis for \(20\ \text{min}\) in total, climbs to \(11\,500\ \text{m}\) at an average of \(8.5\ \text{m/s}\) and \(620\ \text{km/h}\), cruises at \(860\ \text{km/h}\), and descends at \(3^\circ\) at an average of \(580\ \text{km/h}\).</p>`,
+      parts: [
+        part('a', T`Find the time and distance of the climb.`, T`\(22.55\ \text{min}\), \(233.0\ \text{km}\)`, { tc: 22.549, dc: 233.01 }),
+        part('b', T`Find the distance and time of the descent.`, T`\(219.4\ \text{km}\), \(22.70\ \text{min}\)`, { dd: 219.43, td: 22.700 }),
+        part('c', T`Find the cruise distance and time, and the block time.`, T`\(3048\ \text{km}\), \(212.6\ \text{min}\); block \(277.9\ \text{min}\) (4 h 38 min)`, { dcr: 3047.6, tb: 277.87 })
+      ],
+      figure: null, space: 50 }),
+
+    prob({ n: 10, title: 'From the timeline to a fuel fraction', level: 2, lessons: ['l05'], units: '—',
+      statementHTML: T`<p>For the mission of Problem 9, take \(L/D = 17\) and \(C = 0.55/\text{h}\) in cruise, and the historical fractions: warmup and takeoff 0.970, climb 0.985, landing 0.995 (counting the descent with the landing).</p>`,
+      parts: [
+        part('a', T`Find the cruise weight fraction.`, T`\(e^{-0.1146} = 0.8917\)`, { fc: 0.89168 }),
+        part('b', T`Find the mission weight fraction \(W_x/W_0\).`, T`\(W_x/W_0 = 0.8477\)`, { wx: 0.84770 }),
+        part('c', T`Find \(\Wf/\Wo\) with the 6% allowance. What does the allowance cover?`, T`\(\Wf/\Wo = 0.1614\); reserves and trapped fuel`, { ff: 0.16144 })
+      ],
+      figure: null, space: 45 }),
+
+    prob({ n: 11, title: 'Reserves and the wind', level: 2, lessons: ['l06'], units: 'kg, km',
+      statementHTML: T`<p>A wide-body plans an \(8.5\ \text{h}\) international flight burning \(6800\ \text{kg/h}\) in cruise. Reaching its alternate needs \(3200\ \text{kg}\); holding burns \(5200\ \text{kg/h}\).</p>`,
+      parts: [
+        part('a', T`Find the reserve fuel under the US international rule.`, T`\(5780 + 3200 + 2600 = 11\,580\ \text{kg}\)`, { r1: 11580 }),
+        part('b', T`Find the reserve under the ICAO rule with 5% contingency (trip fuel \(= 8.5 \times 6800\ \text{kg}\)).`, T`\(2890 + 3200 + 2600 = 8690\ \text{kg}\)`, { r2: 8690 }),
+        part('c', T`The route is \(6900\ \text{km}\) great circle. With a 4% routing allowance and an average headwind of \(80\ \text{km/h}\) at \(870\ \text{km/h}\), what still-air range is needed?`, T`\(7176\ \text{km}\) flown; \(7903\ \text{km}\) still air`, { esad: 7902.7 })
+      ],
+      figure: null, space: 50 }),
+
+    prob({ n: 12, title: 'What range costs', level: 3, lessons: ['l07'], units: 'kg',
+      statementHTML: T`<p>A jet transport carries \(20\,000\ \text{kg}\) of crew and payload, cruises at \(850\ \text{km/h}\) with \(L/D = 17\) and \(C = 0.55/\text{h}\), and has \(\We/\Wo = 0.50\). Use \(\Wf/\Wo = 1.06[1 - 0.970(0.985)(0.995)e^{-RC/(V\,L/D)}]\).</p>`,
+      parts: [
+        part('a', T`Find \(\Wo\) for a design range of \(5500\ \text{km}\).`, T`\(\Wf/\Wo = 0.2426\); \(\Wo = 77\,710\ \text{kg}\)`, { W1: 77708 }),
+        part('b', T`Find \(\Wo\) for \(6500\ \text{km}\). By what percentage does the extra \(1000\ \text{km}\) raise \(\Wo\)?`, T`\(\Wo = 88\,170\ \text{kg}\): 13.5% more`, { W2: 88165 }),
+        part('c', T`At \(5500\ \text{km}\), find the growth factor, and the increase in \(\Wo\) if a new requirement adds \(400\ \text{kg}\) of equipment (fractions fixed).`, T`Growth factor \(3.885\); \(\Delta\Wo = 1554\ \text{kg}\)`, { gf: 3.8854, dW: 1554.2 })
+      ],
+      figure: null, space: 55 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; g = 9.81 m/s^2; rho = 1.225 kg/m^3 at sea level; R_E = 6371 km; 1 kt = 0.5144 m/s; 1 nmi = 1.852 km; 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

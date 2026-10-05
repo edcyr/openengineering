@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Segment Weight Fractions · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="The fuel fraction from the mission profile: historical fractions for takeoff, climb and landing, Breguet fractions for cruise and loiter, a combat fraction from thrust and time, the product over the mission, and a 6% allowance for reserves and trapped fuel.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  .seg-table td, .seg-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .seg-table td:first-child, .seg-table th:first-child, .seg-table td:nth-child(2) { text-align: left; }
+  .seg-table tfoot td, .seg-table tfoot th { border-top: 2px solid var(--line); font-weight: 700; }
+</style>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 40 min</p>
+    <h1>Mission Segment Weight Fractions</h1>
+    <p class="lede">Module 2 wrote the mission down as numbered segments. Now each segment gets its weight fraction: historical values where little fuel is burned and the details are messy, the Breguet equations where most of the fuel goes. Multiplied together, they give the fuel fraction that the sizing equation needs.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Assign a weight fraction to every segment of a mission: historical, cruise, loiter or combat.</li>
+      <li>Compute cruise and loiter fractions with the right \(L/D\) and \(C\) for the engine type.</li>
+      <li>Multiply the segment fractions into \(W_x/W_0\), and apply the allowance for reserves and trapped fuel.</li>
+    </ul>
+  </section>
+
+  <section id="segments">
+    <h2>A fraction for every segment</h2>
+    <p>The aircraft weighs \(W_0\) at takeoff and \(W_i\) at the end of segment \(i\). Each segment is described by \(W_i/W_{i-1}\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Segment weight fractions</p>
+      \[ \text{Warmup and takeoff: } 0.970, \qquad \text{climb: } 0.985, \qquad \text{landing: } 0.995 \]
+      \[ \text{Cruise: } \frac{W_i}{W_{i-1}} = \exp\left[-\frac{R\,C}{V\,(L/D)}\right], \qquad \text{loiter: } \frac{W_i}{W_{i-1}} = \exp\left[-\frac{E\,C}{L/D}\right] \]
+      \[ \text{Combat at full thrust for time } t:\ \ \frac{W_i}{W_{i-1}} = 1 - C\,\frac{T}{W}\,t \]
+      <p>\(R\) in km, \(V\) in km/h, \(E\) and \(t\) in hours, \(C\) in 1/h. \(L/D\) by engine type (Lesson 3): jets cruise at \(0.866\,\LDmax\) and loiter at \(\LDmax\); propeller aircraft the other way round.</p>
+    </div>
+    <p>The historical fractions (source: Raymer, Table 3.2) cover segments whose fuel depends on details not yet known (engine start, taxi, the climb schedule), and that burn a few percent at most. The combat fraction is direct: at full thrust the engines burn \(CT\) of fuel weight per hour, so a time \(t\) burns \(CTt\), a fraction \(C(T/W)t\) of the weight.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Mission fraction and fuel fraction</p>
+      \[ \frac{W_x}{W_0} = \prod_{i=1}^{x}\frac{W_i}{W_{i-1}}, \qquad \frac{\Wf}{\Wo} = 1.06\left(1 - \frac{W_x}{W_0}\right) \]
+      <p>The factor 1.06 allows 6% for reserve and trapped (unusable) fuel. If the mission already includes an explicit reserve, such as the business jet's loiter, the allowance still covers the trapped fuel and a margin.</p>
+    </div>
+  </section>
+
+  <section id="bizjet">
+    <h2>The business jet's mission</h2>
+    <div class="example">
+      <p class="example-title">Example 5.1 — From the profile to \(\Wf/\Wo\)</p>
+      <p>The business jet flies: warmup and takeoff; climb; cruise of \(4600\ \text{km}\) at \(850\ \text{km/h}\) with \(C = 0.65/\text{h}\); a 45-minute loiter with \(C = 0.55/\text{h}\); landing. Its \(\LDmax = 16.9\) (Lesson 3). Find each fraction, \(W_x/W_0\) and \(\Wf/\Wo\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Cruise at \(0.866(16.9) = 14.64\); loiter at \(16.9\).</p>
+          \[ \frac{W_3}{W_2} = \exp\left[-\frac{4600(0.65)}{850(14.64)}\right] = e^{-0.2404} = 0.7864 \]
+          \[ \frac{W_4}{W_3} = \exp\left[-\frac{0.75(0.55)}{16.9}\right] = e^{-0.02441} = 0.9759 \]
+          <div class="table-wrap">
+            <table class="data seg-table">
+              <caption>Segment fractions of the business jet</caption>
+              <thead><tr><th scope="col">\(i\)</th><th scope="col">Segment</th><th scope="col">\(W_i/W_{i-1}\)</th><th scope="col">\(W_i/W_0\)</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Warmup and takeoff</td><td>0.9700</td><td>0.9700</td></tr>
+                <tr><td>2</td><td>Climb</td><td>0.9850</td><td>0.9555</td></tr>
+                <tr><td>3</td><td>Cruise</td><td>0.7864</td><td>0.7514</td></tr>
+                <tr><td>4</td><td>Loiter (reserve)</td><td>0.9759</td><td>0.7332</td></tr>
+                <tr><td>5</td><td>Landing</td><td>0.9950</td><td>0.7295</td></tr>
+              </tbody>
+            </table>
+          </div>
+          \[ \frac{\Wf}{\Wo} = 1.06(1 - 0.7295) = 0.2867 \]
+          <p>The cruise burns about three quarters of the fuel (0.204 of the 0.271 of \(W_0\) burned); every other segment together, the rest. That is why \(L/D\) and \(C\), which enter only the cruise and loiter, dominate the fuel fraction.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> The business jet's weight through its mission, as a fraction of the takeoff weight. Each step down is a segment's fuel. Change the range, \(\LDmax\) and \(C\): only the cruise and loiter steps respond, and the fuel fraction follows.</figcaption>
+    </figure>
+    <aside class="callout note">
+      <p class="callout-title">Range credit for the climb</p>
+      <p>Module 2 showed that the climb covers part of the trip, so the cruise distance is a little less than the range. A first sizing usually takes the whole range as cruise, which is slightly conservative and simple. Either choice is fine if it is stated; the Sizing Calculator lets you enter the cruise distance directly.</p>
+    </aside>
+  </section>
+
+  <section id="military">
+    <h2>Combat and other segments</h2>
+    <div class="example">
+      <p class="example-title">Example 5.2 — Five minutes of combat</p>
+      <p>A fighter fights for 5 minutes at full afterburner, with \(\TW = 0.9\) at that weight and an afterburning \(C = 1.8/\text{h}\) (given for this example). Find the combat fraction.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \frac{W_i}{W_{i-1}} = 1 - 1.8(0.9)\frac{5}{60} = 1 - 0.135 = 0.865 \]
+          <p>Five minutes of combat burn 13.5% of the weight, more than an hour of cruise. Combat time is one of the most expensive numbers in a fighter's requirements.</p>
+        </div>
+      </details>
+    </div>
+    <p>Other segments are built the same way. A low-level dash is a cruise at the dash speed with the low-altitude \(L/D\) and \(C\). A descent is usually counted in the landing fraction. When something is dropped (weapons, cargo, sonobuoys), the weight falls without fuel being burned, and the fractions after the drop depend on the takeoff weight: Lesson 6 shows how to handle that.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Historical fractions: takeoff 0.970, climb 0.985, landing 0.995.</li>
+      <li>Cruise \(\exp[-RC/(V\,L/D)]\), loiter \(\exp[-EC/(L/D)]\), combat \(1 - C(\TW)t\).</li>
+      <li>\(W_x/W_0\) is the product; \(\Wf/\Wo = 1.06(1 - W_x/W_0)\).</li>
+      <li>The business jet: \(\Wf/\Wo = 0.2867\), three quarters of it burned in cruise.</li>
+      <li>Next, <a href="06-closing-the-loop.html">Lesson 6</a> puts the fractions together and closes the sizing.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: weight through the mission ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { R: 4600, LD: 16.9, C: 0.65, Cl: 0.55, E: 45 };
+  var NAMES = ['Start', 'Takeoff', 'Climb', 'Cruise', 'Loiter', 'Landing'];
+  var chart = AERO.chart(document.getElementById('fig51-stage'), {
+    x: { label: 'End of segment \\(i\\)', min: -0.5, max: 5.5, ticks: [0, 1, 2, 3, 4, 5], format: function (v) { return NAMES[Math.round(v)] || ''; } }, y: { label: '\\(W_i/W_0\\)', min: 0.5, max: 1.02 }, height: 330,
+    ariaLabel: 'Weight as a fraction of takeoff weight at the end of each segment of the business jet\'s mission.'
+  });
+  var line = chart.polyline([], { color: 'z', width: 2.6 });
+  var dots = chart.points([], { x: function (p) { return p[0]; }, y: function (p) { return p[1]; }, color: 'z', r: 5 });
+  // values above and to the right of each point; the last one below and to the left, clear of the one before it
+  var vals = NAMES.map(function (n, i) { return chart.text(null, '', i === NAMES.length - 1 ? { anchor: 'end', dx: -8, dy: 18, color: 'ink', size: 11 } : { anchor: 'start', dx: 7, dy: -8, color: 'ink', size: 11 }); });
+  var panel = document.getElementById('fig51-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var ss = [sl('R', 'Cruise range', 500, 10000, 50, 'km', 'v'), sl('LD', '\\(\\LDmax\\)', 8, 24, 0.1, null, 'z'), sl('C', 'Cruise \\(C\\)', 0.4, 1.0, 0.01, '/h', 'r'), sl('Cl', 'Loiter \\(C\\)', 0.3, 0.9, 0.01, '/h', 'r'), sl('E', 'Loiter time', 0, 120, 5, 'min')];
+  var ro = { cr: CYL.readout('Cruise fraction'), lo: CYL.readout('Loiter fraction'), wx: CYL.readout('\\(W_x/W_0\\)'), ff: CYL.readout('\\(\\Wf/\\Wo\\)', { color: 'r' }), sh: CYL.readout('Share burned in cruise') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Mission' }));
+  ss.forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.cr.el, ro.lo.el, ro.wx.el, ro.ff.el, ro.sh.el]));
+  panel.appendChild(CYL.button('Reset to the business jet', function () { st = { R: 4600, LD: 16.9, C: 0.65, Cl: 0.55, E: 45 }; ['R', 'LD', 'C', 'Cl', 'E'].forEach(function (k, i) { ss[i].set(st[k], true); }); draw(); }, { small: true }));
+  CYL.renderMath(panel);
+  function draw() {
+    var f = [0.970, 0.985, SIZING.cruise(st.R, 850, st.C, 0.866 * st.LD), SIZING.loiter(st.E / 60, st.Cl, st.LD), 0.995], w = 1, pts = [[0, 1]];
+    f.forEach(function (q, i) { w *= q; pts.push([i + 1, w]); });
+    chart.setAxes({ y: { min: Math.max(0, Math.floor((w - 0.08) * 10) / 10) } });
+    line.set(pts); dots.set(pts);
+    pts.forEach(function (p, i) { vals[i].set(p, CYL.fmt(p[1], 4)); });
+    var burned = 1 - w, cruise = pts[2][1] - pts[3][1];
+    ro.cr.set(CYL.fmt(f[2], 4)); ro.lo.set(CYL.fmt(f[3], 4)); ro.wx.set(CYL.fmt(w, 4)); ro.ff.set(CYL.fmt(1.06 * burned, 4)); ro.sh.set(Math.round(cruise / burned * 100) + '%');
+    chart.setAriaLabel('Weight fraction through the mission: ' + pts.map(function (p) { return NAMES[p[0]] + ' ' + CYL.fmt(p[1], 4); }).join(', ') + '. Fuel fraction ' + CYL.fmt(1.06 * burned, 4) + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var x1 = 3000 * 0.6 / (800 * 0.866 * 16), wx = 0.97 * 0.985 * 0.80 * 0.98 * 0.995;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1',
+    type: 'numeric',
+    prompt: 'A jet with \\(\\LDmax = 16\\) cruises \\(3000\\ \\text{km}\\) at \\(800\\ \\text{km/h}\\) with \\(C = 0.6/\\text{h}\\). Find the cruise weight fraction.',
+    label: '\\(W_i/W_{i-1} =\\)', answer: Math.exp(-x1),
+    hints: ['A jet cruises at \\(0.866\\,\\LDmax\\).', '\\(W_i/W_{i-1} = \\exp[-RC/(V\\,L/D)]\\).'],
+    explain: 'With \\(\\LDmax\\) instead of \\(0.866\\,\\LDmax\\) the answer would be 0.869: an optimistic error of 2% in a fraction, and much more in \\(\\Wo\\).',
+    solution: '\\[ \\frac{L}{D} = 0.866(16) = 13.86, \\qquad \\frac{W_i}{W_{i-1}} = \\exp\\left[-\\frac{3000(0.6)}{800(13.86)}\\right] = e^{-0.1624} = 0.850 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2',
+    type: 'numeric',
+    prompt: 'A mission has fractions 0.970 (takeoff), 0.985 (climb), 0.80 (cruise), 0.98 (loiter) and 0.995 (landing). Find \\(\\Wf/\\Wo\\) with the 6% allowance.',
+    label: '\\(\\Wf/\\Wo =\\)', answer: 1.06 * (1 - wx),
+    hints: ['Multiply the five fractions to get \\(W_x/W_0\\).', '\\(\\Wf/\\Wo = 1.06(1 - W_x/W_0)\\).'],
+    explain: 'Adding the fuel burned in each segment instead of multiplying the fractions gives almost the same answer here, but the product is the correct form.',
+    solution: '\\[ \\frac{W_x}{W_0} = 0.970(0.985)(0.80)(0.98)(0.995) = 0.7453 \\]\\[ \\frac{\\Wf}{\\Wo} = 1.06(1 - 0.7453) = 0.270 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3',
+    type: 'numeric',
+    prompt: 'A jet with \\(\\LDmax = 15\\) loiters for 30 minutes with \\(C = 0.5/\\text{h}\\). Find the loiter weight fraction.',
+    label: '\\(W_i/W_{i-1} =\\)', answer: Math.exp(-0.5 * 0.5 / 15),
+    hints: ['A jet loiters at \\(\\LDmax\\).', '\\(E = 0.5\\ \\text{h}\\); \\(W_i/W_{i-1} = \\exp[-EC/(L/D)]\\).'],
+    explain: 'Thirty minutes of loiter cost under 2% of the weight.',
+    solution: '\\[ \\frac{W_i}{W_{i-1}} = \\exp\\left[-\\frac{0.5(0.5)}{15}\\right] = e^{-0.01667} = 0.9835 \\]'
+  });
+});
+</script>
+</body>
+</html>

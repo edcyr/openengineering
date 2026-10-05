@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certification and Performance Requirements · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Airworthiness rules as design requirements: the certification basis (Parts 23 and 25), the balanced-field takeoff, the landing field length and the 60% rule, the approach speed and the wing loading it allows, the one-engine-inoperative climb gradients and the thrust-to-weight ratio they demand, and ceilings.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  .grad-table td, .grad-table th { text-align: center; }
+  .grad-table td:first-child, .grad-table th:first-child { text-align: left; }
+  .grad-table td:nth-child(2) { text-align: left; font-size: 0.9em; color: var(--ink-muted); }
+</style>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 40 min</p>
+    <h1>Certification and Performance Requirements</h1>
+    <p class="lede">Some requirements are not negotiable with anyone. To carry passengers, an aircraft must be certified against airworthiness rules, and several of those rules are, in effect, performance requirements: how long a runway it needs, how slowly it approaches, and how well it climbs with an engine failed. This lesson turns three of them into numbers a designer can use.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Identify the certification basis of an aircraft (Parts 23 and 25 and their equivalents) and how it becomes a source of requirements.</li>
+      <li>Explain the balanced field length and the takeoff field length of a transport aircraft.</li>
+      <li>Use the 60% rule and \(V_{\text{REF}} \ge 1.23\,V_{SR}\) to turn a landing requirement into a field length and a maximum wing loading.</li>
+      <li>Compute the thrust-to-weight ratio needed to meet a one-engine-inoperative climb gradient, and explain why twins need more thrust than four-engine aircraft.</li>
+    </ul>
+  </section>
+
+  <section id="rules">
+    <h2>The certification basis</h2>
+    <p>Each country's aviation authority publishes <strong>airworthiness standards</strong>, and an aircraft type is certified against a specific set of them, its <strong>certification basis</strong>. The main families are harmonized closely:</p>
+    <div class="grid-cards">
+      <div class="card card-z"><h3>Normal category</h3><p>US 14 CFR Part 23, EASA CS-23. Aeroplanes with up to 19 passenger seats and a maximum takeoff weight up to 19 000 lb (8618 kg): light aircraft, business turboprops, commuters.</p></div>
+      <div class="card card-r"><h3>Transport category</h3><p>US 14 CFR Part 25, EASA CS-25. Airliners and large business jets. The field-length and climb rules in this lesson are Part 25's.</p></div>
+      <div class="card card-t"><h3>Elsewhere</h3><p>Transport Canada's Airworthiness Manual chapters 523 and 525 correspond to Parts 23 and 25. Military aircraft are qualified against their own standards and specifications (for example, the US MIL-HDBK-516 criteria and MIL-STD-1797 for flying qualities).</p></div>
+    </div>
+    <p>The rules set minimums for safety. They do not say how long a runway the aircraft should need: that is the customer's requirement. They say how that runway length must be <em>measured</em>, with what margins and with which engine failed. That is why the regulations appear in the conceptual designer's toolkit: they decide what a "2100 m field length" actually demands.</p>
+    <aside class="callout note">
+      <p class="callout-title">A simplified summary</p>
+      <p>This lesson states the rules in the simplified form used for conceptual design. The regulations themselves have many more conditions and are amended from time to time; detailed design and certification work from the current text.</p>
+    </aside>
+  </section>
+
+  <section id="takeoff">
+    <h2>Takeoff: the balanced field</h2>
+    <p>A transport aircraft must be able to lose its most critical engine at the worst moment of the takeoff run and still either stop on the runway or continue and climb away. The pilot's decision speed is \(V_1\): an engine failure before \(V_1\) means stop, after \(V_1\) means go.</p>
+    <ul>
+      <li>The <strong>accelerate-stop</strong> distance (accelerate with all engines to \(V_1\), then brake to a stop) grows with \(V_1\).</li>
+      <li>The <strong>accelerate-go</strong> distance (lose an engine at \(V_1\), continue on the remaining engines to a height of \(35\ \text{ft}\)) shrinks as \(V_1\) rises, since less of the run is made on reduced thrust.</li>
+    </ul>
+    <p>Choosing \(V_1\) where the two are equal gives the shortest runway that covers both: the <strong>balanced field length</strong>. Part 25's takeoff field length is, in essence, the greater of the balanced field length and 115% of the all-engines distance to \(35\ \text{ft}\).</p>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> The balanced field, schematically, for an illustrative twin. Move the decision speed \(V_1\): the runway needed is the larger of the accelerate-stop and accelerate-go distances, and is shortest where they cross. Module 5 estimates these distances from \(\WS\), \(\TW\) and \(\CLmax\) with empirical methods.</figcaption>
+    </figure>
+  </section>
+
+  <section id="landing">
+    <h2>Landing: the 60% rule and the approach speed</h2>
+    <p>Two Part 25 rules shape the landing requirement:</p>
+    <ul>
+      <li>The landing distance is measured from \(50\ \text{ft}\) above the threshold to a full stop, approaching at a reference speed \(V_{\text{REF}}\) of at least \(1.23\) times the reference stall speed in the landing configuration, \(V_{SR}\). (Older rules used \(1.3\,V_S\), with a stall speed defined differently.)</li>
+      <li>Airline operating rules then require the demonstrated landing distance to fit within <strong>60%</strong> of the runway, so the landing field length is the distance divided by 0.6. On a wet runway it is 15% longer again.</li>
+    </ul>
+    <div class="key-formula">
+      <p class="key-formula-title">Landing field length and the approach-speed limit on wing loading</p>
+      \[ s_{\text{field}} = \frac{s_{\text{land}}}{0.6}, \qquad V_{SR} = \frac{V_{\text{REF}}}{1.23}, \qquad \left(\frac{W}{S}\right)_{\text{land}} \le \frac{\tfrac12\rho\,V_{SR}^2\,\colL{C_{L_{\max},\text{land}}}}{g} \]
+      <p>The last is the stall-speed equation of Module 1, Lesson 4, solved for \(\WS\) (in kg/m²). It applies at the landing weight; divide by \(W_{\text{land}}/\Wo\) to get the takeoff wing loading.</p>
+    </div>
+    <p>Airports and air traffic control group aircraft into <strong>approach categories</strong> by their threshold speed, roughly \(V_{\text{REF}}\) at maximum landing weight: A below 91 kt, B 91 to 120 kt, C 121 to 140 kt, D 141 to 165 kt, E 166 to 210 kt. Most airliners are C or D. A customer may require, say, category C, which is an upper limit on \(V_{\text{REF}}\).</p>
+    <div class="example">
+      <p class="example-title">Example 4.1 — From the approach category to the wing</p>
+      <p>A new narrow-body must be approach category C (\(V_{\text{REF}} \le 140\ \text{kt}\)) at sea level, and its flaps are expected to give \(C_{L_{\max}} = 2.6\) in the landing configuration. (a) What is the largest landing wing loading? (b) If the maximum landing weight is 85% of \(\Wo\), what takeoff wing loading does that allow? (c) Tests show a landing distance of \(1350\ \text{m}\). What field length is required, dry and wet?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ V_{\text{REF}} = 140(0.5144) = 72.02\ \text{m/s}, \qquad V_{SR} = \frac{72.02}{1.23} = 58.55\ \text{m/s} \]
+          \[ \text{(a)}\ \left(\frac{W}{S}\right)_{\text{land}} \le \frac{\tfrac12(1.225)(58.55)^2(2.6)}{9.81} = 556.6\ \text{kg/m}^2 \]
+          \[ \text{(b)}\ \frac{W}{S} = \frac{556.6}{0.85} = 654.8\ \text{kg/m}^2 \]
+          \[ \text{(c)}\ s_{\text{field}} = \frac{1350}{0.6} = 2250\ \text{m dry}, \qquad 1.15(2250) = 2588\ \text{m wet} \]
+          <p>For comparison, an A320 at its maximum takeoff weight has a wing loading of about \(640\ \text{kg/m}^2\). One customer requirement and one regulation have already fixed the wing area to within a few percent, before the wing is even drawn.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> The largest landing wing loading allowed by an approach speed, for several maximum lift coefficients, with the approach-category boundaries. Better flaps (a higher \(C_{L_{\max}}\)) allow a smaller wing for the same approach speed, which is why so much effort goes into high-lift systems.</figcaption>
+    </figure>
+  </section>
+
+  <section id="climb">
+    <h2>Climb with an engine failed</h2>
+    <p>After an engine fails at \(V_1\), the aircraft must climb away over obstacles. Part 25 (section 121) sets minimum <strong>climb gradients</strong>, the height gained per distance flown, for each part of the departure and for a go-around, with the critical engine inoperative. The requirement is stricter for aircraft with more engines, because they lose a smaller share of their thrust when one fails.</p>
+    <div class="table-wrap">
+      <table class="data grad-table">
+        <caption>Minimum climb gradients, 14 CFR / CS 25.121 (one engine inoperative unless noted)</caption>
+        <thead><tr><th scope="col">Segment</th><th scope="col">Configuration</th><th scope="col">2 engines</th><th scope="col">3 engines</th><th scope="col">4 engines</th></tr></thead>
+        <tbody id="grad-rows"></tbody>
+      </table>
+    </div>
+    <p>In a steady climb at a small angle \(\gamma\), the excess of thrust over drag lifts the weight: \(T - D = W\sin\gamma \approx W G\), where \(G\) is the gradient. Dividing by \(W\), with \(D/W = 1/(L/D)\), gives the thrust-to-weight ratio needed on the remaining engines. The full-thrust \(\TW\) of the aircraft is \(N/(N-1)\) times that:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Thrust-to-weight ratio for a one-engine-inoperative climb gradient</p>
+      \[ \frac{T}{W} = \frac{N}{N-1}\left(\frac{1}{\colL{L/D}} + G\right) \]
+      <p>\(L/D\) in the climb configuration (flaps at the takeoff setting, gear up for the second segment; typically 8 to 12 for a transport), \(G\) as a decimal (2.4% is 0.024). For an all-engines requirement, drop the factor \(N/(N-1)\).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.2 — Why twins have more thrust</p>
+      <p>A transport has \(L/D = 10\) in the second-segment configuration. Find the thrust-to-weight ratio needed to meet the second-segment gradient as a twin, a three-engine and a four-engine aircraft.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ N = 2:\ \ \frac{T}{W} = \frac{2}{1}(0.100 + 0.024) = 0.248 \]
+          \[ N = 3:\ \ \frac{T}{W} = \frac{3}{2}(0.100 + 0.027) = 0.191 \]
+          \[ N = 4:\ \ \frac{T}{W} = \frac{4}{3}(0.100 + 0.030) = 0.173 \]
+          <p>A twin loses half its thrust when an engine fails, so it must carry 43% more installed thrust than a four-engine aircraft to climb the same way. In return, it has fewer engines to buy and maintain, and the extra thrust gives it a shorter takeoff and a faster climb when both engines work. These values are at the climb speed and temperature; corrected to the static sea-level thrust the engine is rated at, they are larger still.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig43-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig43-stage"></div>
+        <div class="viz-controls" id="fig43-controls"></div>
+      </div>
+      <figcaption id="fig43-cap"><strong>Figure 4.3</strong> Thrust-to-weight ratio needed for each climb requirement against the climb-configuration \(L/D\), for two, three and four engines. Choose a segment; the marked point is the chosen \(L/D\) and number of engines.</figcaption>
+    </figure>
+  </section>
+
+  <section id="ceilings">
+    <h2>Ceilings and other performance requirements</h2>
+    <ul>
+      <li>The <strong>service ceiling</strong> is the altitude at which the best rate of climb has fallen to \(100\ \text{ft/min}\) (\(0.5\ \text{m/s}\)); the <strong>cruise ceiling</strong> uses \(300\ \text{ft/min}\) (\(1.5\ \text{m/s}\)). An airliner's requirement is usually an initial cruise altitude it must reach at MTOW, with that residual climb rate.</li>
+      <li>Military requirements add maneuver performance: a sustained turn load factor at a given speed and altitude, or a <strong>specific excess power</strong> \(P_s = V(T - D)/W\), the rate at which the aircraft can gain energy height.</li>
+      <li>General aviation adds its own: Part 23 aircraft have long been held to low stall speeds (61 kt for single-engine aeroplanes), which limits their wing loading just as the approach category limits an airliner's.</li>
+    </ul>
+    <p>Each of these, like the landing and climb rules above, becomes a line on the \(\TW\)–\(\WS\) chart of Module 5. The design point must satisfy all of them at once.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>The certification basis (Part 23 or 25, or equivalents) turns safety rules into performance requirements.</li>
+      <li>Takeoff field length: the greater of the balanced field length (engine failure at \(V_1\)) and 115% of the all-engines distance to 35 ft.</li>
+      <li>Landing: \(V_{\text{REF}} \ge 1.23\,V_{SR}\); field length \(= s_{\text{land}}/0.6\) (×1.15 wet); an approach-speed limit is a wing-loading limit, \((W/S) \le \tfrac12\rho V_{SR}^2\CLmax/g\).</li>
+      <li>One engine out: \(\TW = \frac{N}{N-1}\left(1/(L/D) + G\right)\), with \(G\) = 2.4%, 2.7%, 3.0% in the second segment for 2, 3, 4 engines.</li>
+      <li>Next, <a href="05-mission-profiles.html">Lesson 5</a> describes the mission the aircraft must fly.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Climb gradient table (from MISSION.GRADIENTS) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('grad-rows');
+  function pc(g) { return g === 0 ? 'positive' : (g * 100).toFixed(1) + '%'; }
+  MISSION.GRADIENTS.forEach(function (s) {
+    tb.appendChild(CYL.el('tr', null, [CYL.el('th', { scope: 'row', text: s.label + (s.allEngines ? ' (all engines)' : '') }), CYL.el('td', { text: s.config }), CYL.el('td', { text: pc(s.g[2]) }), CYL.el('td', { text: pc(s.g[3]) }), CYL.el('td', { text: pc(s.g[4]) })]));
+  });
+});
+
+/* ---------- Figure 4.1: the balanced field (schematic) ---------- */
+CYL.ready(function () {
+  'use strict';
+  // Illustrative twin: ground roll to rotation 1500 m with all engines; braking 900 m from rotation speed; 2 s reaction; air distance to 35 ft 350 m
+  function AS(v) { return 1500 * v * v + 900 * v * v + 140 * v / 0.9; }
+  function AG(v) { return 1500 * v * v + 3000 * (1 - v * v) + 350; }
+  var AEO = 1.15 * (1500 + 280);
+  var vb, lo = 0.8, hi = 1; for (var i = 0; i < 60; i++) { var mid = (lo + hi) / 2; if (AS(mid) < AG(mid)) lo = mid; else hi = mid; } vb = (lo + hi) / 2;
+  var st = { v: 0.86 };
+  var chart = AERO.chart(document.getElementById('fig41-stage'), {
+    x: { label: 'Decision speed \\(V_1\\) as a fraction of the rotation speed', min: 0.8, max: 1 }, y: { label: 'Distance (m)', min: 1400, max: 2700 }, height: 330,
+    ariaLabel: 'Accelerate-stop distance rising and accelerate-go distance falling with the decision speed; they cross at the balanced field length, about 2120 metres, above the line for 115 percent of the all-engines distance.',
+    legend: [{ label: 'Accelerate-stop', color: 'r', line: true }, { label: 'Accelerate-go (one engine out)', color: 'z', line: true }, { label: '115% all engines', color: 'good', line: true, dashed: true }]
+  });
+  chart.fn(AS, { color: 'r', width: 2.4 });
+  chart.fn(AG, { color: 'z', width: 2.4 });
+  chart.hline(AEO, { color: 'good', label: '1.15 × all engines' });
+  var vl = chart.vline(st.v, { color: 'accent', width: 1.5 });
+  var mk = chart.marker([st.v, 0], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig41-controls');
+  var s = CYL.slider({ label: '\\(V_1/V_R\\)', min: 0.8, max: 1, step: 0.005, value: st.v, color: 'v', onInput: function (v) { st.v = v; draw(); } });
+  var ro = { as: CYL.readout('Accelerate-stop', { color: 'r' }), ag: CYL.readout('Accelerate-go', { color: 'z' }), need: CYL.readout('Runway needed'), bal: CYL.readout('Balanced field length') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Decision speed' }));
+  panel.appendChild(s.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.as.el, ro.ag.el, ro.need.el, ro.bal.el]));
+  panel.appendChild(CYL.button('Balance the field', function () { st.v = vb; s.set(vb, true); draw(); }, { small: true }));
+  panel.appendChild(CYL.el('p', { class: 'small muted', text: 'Illustrative distances, not data for a particular aircraft.' }));
+  CYL.renderMath(panel);
+  function m(x) { return CYL.fmt(x, 4) + ' m'; }
+  function draw() {
+    var need = Math.max(AS(st.v), AG(st.v), AEO);
+    vl.set(st.v); mk.set([st.v, Math.max(AS(st.v), AG(st.v))]);
+    ro.as.set(m(AS(st.v))); ro.ag.set(m(AG(st.v))); ro.need.set(m(need)); ro.bal.set(m(Math.max(AS(vb), AEO)) + ' at ' + CYL.fmt(vb, 3));
+  }
+  draw();
+});
+
+/* ---------- Figure 4.2: approach speed and landing wing loading ---------- */
+CYL.ready(function () {
+  'use strict';
+  var KT = 1852 / 3600, st = { cl: 2.6, v: 140 };
+  function ws(v, cl) { var vs = v * KT / 1.23; return 0.5 * 1.225 * vs * vs * cl / 9.81; }
+  var chart = AERO.chart(document.getElementById('fig42-stage'), {
+    x: { label: 'Approach speed \\(V_{\\text{REF}}\\) (kt)', min: 80, max: 170 }, y: { label: 'Largest landing \\(\\WS\\) (kg/m²)', min: 0, max: 900 }, height: 330,
+    ariaLabel: 'Largest landing wing loading against approach speed for maximum lift coefficients from 1.6 to 3.2, rising with the square of the speed, with the approach category boundaries at 91, 121, 141 and 166 knots.'
+  });
+  [1.6, 2.0, 2.4, 2.8, 3.2].forEach(function (c) { chart.fn(function (v) { return ws(v, c); }, { color: 'muted', width: 1.4, label: 'CLmax ' + c.toFixed(1) }); });
+  var cur = chart.fn(function (v) { return ws(v, st.cl); }, { color: 'z', width: 2.8 });
+  [[91, 'A | B'], [121, 'B | C'], [141, 'C | D'], [166, 'D | E']].forEach(function (p) { chart.vline(p[0], { color: 'warn', width: 1.2, label: p[1] }); });
+  var mk = chart.marker([st.v, ws(st.v, st.cl)], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig42-controls');
+  var sC = CYL.slider({ label: '\\(C_{L_{\\max}}\\) (landing)', min: 1.4, max: 3.4, step: 0.05, value: st.cl, color: 'z', onInput: function (v) { st.cl = v; draw(); } });
+  var sV = CYL.slider({ label: '\\(V_{\\text{REF}}\\)', min: 80, max: 170, step: 1, value: st.v, unit: 'kt', color: 'v', onInput: function (v) { st.v = v; draw(); } });
+  var ro = { vs: CYL.readout('\\(V_{SR} = V_{\\text{REF}}/1.23\\)'), ws: CYL.readout('Largest landing \\(\\WS\\)'), cat: CYL.readout('Approach category') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Landing requirement' }));
+  [sC, sV].forEach(function (x) { panel.appendChild(x.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.vs.el, ro.ws.el, ro.cat.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    cur.draw(); mk.set([st.v, ws(st.v, st.cl)]);
+    var c = MISSION.APPROACH_CATS.filter(function (q) { return st.v >= q.lo && st.v < q.hi; })[0];
+    ro.vs.set(CYL.fmt(st.v / 1.23, 3) + ' kt (' + CYL.fmt(st.v * KT / 1.23, 3) + ' m/s)');
+    ro.ws.set(CYL.fmt(ws(st.v, st.cl), 3) + ' kg/m²');
+    ro.cat.set(c ? c.cat : 'beyond E');
+  }
+  draw();
+});
+
+/* ---------- Figure 4.3: thrust-to-weight ratio for the climb gradients ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { seg: 'second', LD: 10, N: 2 };
+  function seg() { return MISSION.GRADIENTS.filter(function (s) { return s.id === st.seg; })[0]; }
+  function tw(N, LD) { var s = seg(), f = s.allEngines ? 1 : N / (N - 1); return f * (1 / LD + s.g[N]); }
+  var chart = AERO.chart(document.getElementById('fig43-stage'), {
+    x: { label: 'Climb-configuration \\(L/D\\)', min: 6, max: 16 }, y: { label: 'Required \\(\\TW\\)', min: 0, max: 0.45 }, height: 330,
+    ariaLabel: 'Required thrust-to-weight ratio against climb lift-to-drag ratio for two, three and four engines; the twin curve is highest.',
+    legend: [{ label: '2 engines', color: 'r', line: true }, { label: '3 engines', color: 'good', line: true }, { label: '4 engines', color: 'z', line: true }]
+  });
+  var c2 = chart.fn(function (x) { return tw(2, x); }, { color: 'r', width: 2.4 }), c3 = chart.fn(function (x) { return tw(3, x); }, { color: 'good', width: 2.4 }), c4 = chart.fn(function (x) { return tw(4, x); }, { color: 'z', width: 2.4 });
+  var mk = chart.marker([st.LD, tw(st.N, st.LD)], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig43-controls');
+  var sel = CYL.select({ label: 'Requirement', value: st.seg, options: MISSION.GRADIENTS.map(function (s) { return { value: s.id, label: s.label + (s.allEngines ? ' (all engines)' : '') }; }), onChange: function (v) { st.seg = v; draw(); } });
+  var selN = CYL.select({ label: 'Number of engines', value: st.N, options: [2, 3, 4].map(function (n) { return { value: n, label: String(n) }; }), onChange: function (v) { st.N = +v; draw(); } });
+  var sLD = CYL.slider({ label: '\\(L/D\\) in the climb', min: 6, max: 16, step: 0.1, value: st.LD, color: 'z', onInput: function (v) { st.LD = v; draw(); } });
+  var ro = { g: CYL.readout('Gradient \\(G\\)'), tw: CYL.readout('Required \\(\\TW\\)'), cfg: CYL.readout('Configuration') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Climb requirement' }));
+  [sel, selN, sLD].forEach(function (x) { panel.appendChild(x.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.g.el, ro.tw.el, ro.cfg.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    c2.draw(); c3.draw(); c4.draw(); mk.set([st.LD, tw(st.N, st.LD)]);
+    var s = seg(), g = s.g[st.N];
+    ro.g.set(g === 0 ? 'positive (taken as 0)' : (g * 100).toFixed(1) + '%'); ro.tw.set(CYL.fmt(tw(st.N, st.LD), 3)); ro.cfg.set(s.config);
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var vs = 130 * 1852 / 3600 / 1.23, q2 = 0.5 * 1.225 * vs * vs * 2.4 / 9.81;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'A three-engine transport has \\(L/D = 9\\) in the second-segment configuration. What thrust-to-weight ratio does it need to meet the second-segment climb gradient with one engine inoperative?',
+    label: '\\(\\TW =\\)', answer: 1.5 * (1 / 9 + 0.027),
+    hints: ['For three engines the second-segment gradient is 2.7%, \\(G = 0.027\\).', '\\(\\TW = \\frac{N}{N-1}\\left(\\frac{1}{L/D} + G\\right)\\) with \\(N = 3\\).'],
+    explain: 'With one engine of three failed, the other two must give the whole climb thrust, so the installed \\(\\TW\\) is 3/2 of what the climb needs.',
+    solution: '\\[ \\frac{T}{W} = \\frac{3}{2}\\left(\\frac{1}{9} + 0.027\\right) = 1.5(0.1381) = 0.207 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'A customer requires \\(V_{\\text{REF}} \\le 130\\ \\text{kt}\\) at sea level. The landing \\(C_{L_{\\max}}\\) is 2.4. What is the largest landing wing loading?',
+    label: '\\(\\WS \\le\\)', answer: q2, unit: 'kg/m²',
+    hints: ['Convert: \\(1\\ \\text{kt} = 0.5144\\ \\text{m/s}\\). Then \\(V_{SR} = V_{\\text{REF}}/1.23\\).', '\\(\\WS = \\tfrac12\\rho V_{SR}^2 C_{L_{\\max}}/g\\) in kg/m².'],
+    explain: 'Forgetting the factor 1.23 (using \\(V_{\\text{REF}}\\) as the stall speed) gives a wing loading 51% too high.',
+    solution: '\\[ V_{SR} = \\frac{130(0.5144)}{1.23} = ' + CYL.fmtTex(vs, 4) + '\\ \\text{m/s}, \\qquad \\frac{W}{S} = \\frac{\\tfrac12(1.225)(' + CYL.fmtTex(vs, 4) + ')^2(2.4)}{9.81} = ' + CYL.fmtTex(q2, 4) + '\\ \\text{kg/m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'numeric',
+    prompt: 'Flight tests show that an airliner lands from \\(50\\ \\text{ft}\\) to a stop in \\(1500\\ \\text{m}\\) at its maximum landing weight. What landing field length (dry) does it need for airline operations?',
+    label: '\\(s_{\\text{field}} =\\)', answer: 1500 / 0.6, unit: 'm',
+    hints: ['The demonstrated distance must fit within 60% of the runway.'],
+    explain: 'The margin covers the difference between a test pilot\'s landing and an everyday one, in any weather.',
+    solution: '\\[ s_{\\text{field}} = \\frac{1500}{0.6} = 2500\\ \\text{m} \\]'
+  });
+});
+</script>
+</body>
+</html>

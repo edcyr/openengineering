@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Check Quiz · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Fifteen fixed questions on Lessons 1–7 of the Design Requirements and Mission Profiles module, with a score, a worked solution for every question and a printable results sheet.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<style>
+  /* ---- Page-specific styles (design tokens only) ---- */
+  .quiz-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0;
+    list-style: none;
+  }
+  .quiz-facts > li {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .quiz-fact-value { display: block; font-size: 1.3rem; font-weight: 750; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .quiz-fact-label { display: block; margin-top: 2px; font-size: 0.84rem; color: var(--ink-muted); }
+
+  .quiz-rules { margin: 0; padding-left: 1.2em; }
+  .quiz-rules > li { margin: 0 0 0.45em; }
+  .quiz-rules > li:last-child { margin-bottom: 0; }
+  .quiz-subhead { margin: 0 0 8px; font-size: 1.02rem; font-weight: 700; }
+  .quiz-type-table { margin: 0; }
+  .quiz-type-table td code { white-space: nowrap; }
+
+  .quiz-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+  }
+  .quiz-toolbar-label { font-size: 0.84rem; font-weight: 650; color: var(--ink-muted); }
+  .quiz-host .q-set { margin-top: 0; }
+  .quiz-host .q-solution-body .quiz-review-link { margin-top: 0.6em; font-size: 0.9em; color: var(--ink-muted); }
+
+  .quiz-breakdown { margin: 18px 0 22px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .quiz-breakdown-title { margin: 0 0 4px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .quiz-breakdown-summary { margin: 0 0 10px; color: var(--ink-muted); font-size: 0.92rem; }
+  .quiz-breakdown .table-wrap { margin: 0; }
+  .quiz-breakdown td, .quiz-breakdown th { vertical-align: top; }
+  .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 7px 12px; }
+  /* table.data in module.css sets tbody th to 650: match its specificity so the muted titles stay regular weight */
+  .quiz-breakdown table.data tbody th { font-weight: 400; }
+  .quiz-breakdown table.data tbody th a { font-weight: 650; }
+  .quiz-breakdown .quiz-lesson-title { color: var(--ink-muted); }
+  .quiz-breakdown .quiz-score-cell { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Phones: the long lesson titles would wrap to 3–5 lines each; "Lesson N" (a link) is enough there */
+  @media (max-width: 560px) {
+    .quiz-breakdown .quiz-lesson-title { display: none; }
+    .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 6px 10px; }
+  }
+
+  .quiz-next { margin: 0; padding-left: 1.2em; }
+  .quiz-next > li { margin: 0 0 0.45em; }
+
+  @media print {
+    .quiz-toolbar { display: none !important; }
+    /* Printing before submitting gives every question on paper, whichever layout is on screen */
+    .quiz-host[data-state="open"] .q-set .q-card[hidden] { display: block !important; }
+    .quiz-host[data-state="open"] .q-set-dots,
+    .quiz-host[data-state="open"] .q-set-progress,
+    .quiz-host[data-state="open"] .q-set-confirm { display: none !important; }
+  }
+</style>
+</head>
+<body data-page="quiz" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 35 min</p>
+    <h1>Self-Check Quiz</h1>
+    <p class="lede">Fifteen questions on the core skills of Lessons 1–7: the design process and the rubber engine, great-circle distances and requirements, the payload–range diagram, engine-out climb and approach speed, mission timelines, reserves and winds, and the cost of a range requirement. Submit to see your score and a worked solution for every question.</p>
+  </header>
+
+  <section id="before">
+    <h2>Before you start</h2>
+
+    <ul class="quiz-facts" aria-label="Quiz at a glance">
+      <li><span class="quiz-fact-value">15</span><span class="quiz-fact-label">questions</span></li>
+      <li><span class="quiz-fact-value">≈ 35 min</span><span class="quiz-fact-label">estimated time</span></li>
+      <li><span class="quiz-fact-value">L1–L7</span><span class="quiz-fact-label">lessons covered</span></li>
+      <li><span class="quiz-fact-value">Instant</span><span class="quiz-fact-label">score and solutions</span></li>
+    </ul>
+
+    <div class="two-col">
+      <div>
+        <p class="quiz-subhead">How it works</p>
+        <ul class="quiz-rules">
+          <li>Work on your own with a calculator and scrap paper. Try it without notes first: that shows you what you really know.</li>
+          <li>Nothing is marked until you press <strong>Submit quiz</strong>. Until then you can move between questions and change any answer.</li>
+          <li>Each question is either right or wrong. When a question has several boxes, every box must be right.</li>
+          <li>After you submit, you see your score, a review of every question with a worked solution, and a results sheet you can print or save as a PDF.</li>
+          <li id="quiz-l10-note">Use \(g = 9.81\ \text{m/s}^2\), \(\rho = 1.225\ \text{kg/m}^3\) at sea level, \(R_E = 6371\ \text{km}\) and \(1\ \text{kt} = 0.5144\ \text{m/s}\), unless a question says otherwise.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="quiz-subhead">Typing answers</p>
+        <div class="table-wrap quiz-type-table">
+          <table class="data">
+            <caption class="visually-hidden">How to type common answers</caption>
+            <thead><tr><th scope="col">To enter</th><th scope="col">Type</th></tr></thead>
+            <tbody>
+              <tr><td>\(6371\arccos(0.3830)\)</td><td><code>6371*acos(0.3830)</code></td></tr>
+              <tr><td>\(\cos 263.57^\circ\)</td><td><code>cos(263.57deg)</code></td></tr>
+              <tr><td>\(\tfrac{850}{0.55}(17)\ln\tfrac{110\,000}{88\,500}\)</td><td><code>850/0.55*17*ln(110000/88500)</code></td></tr>
+              <tr><td>\(11/\tan 3^\circ\)</td><td><code>11/tan(3deg)</code></td></tr>
+              <tr><td>\(180\,000(1 - e^{-0.5(0.45)/19})\)</td><td><code>180000*(1-exp(-0.5*0.45/19))</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Each box shows how it read your entry (for example <span class="nowrap">= 7.2</span>), so you can check it before you submit. Type only the number; the unit is shown next to the box.</p>
+      </div>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">How close is close enough?</p>
+      <p>Answers are accepted within \(1\%\) of the exact value, so three or four significant figures are plenty. Typing the calculation itself, such as <code>0.5*1.225*(125*0.5144/1.23)^2*2.8/9.81</code>, avoids rounding errors. Watch the units: knots to m/s before you square a speed, minutes to hours when \(C\) is per hour, and radians for an arc length.</p>
+    </aside>
+  </section>
+
+  <section id="quiz">
+    <h2>The quiz</h2>
+    <div class="quiz-toolbar" id="quiz-toolbar" hidden>
+      <span class="quiz-toolbar-label" id="quiz-layout-label">Show</span>
+      <div class="chip-row" role="group" aria-labelledby="quiz-layout-label">
+        <button type="button" class="chip" data-layout="paged" aria-pressed="true">One at a time</button>
+        <button type="button" class="chip" data-layout="all" aria-pressed="false">All on one page</button>
+      </div>
+    </div>
+    <div class="quiz-host" id="quiz-host"></div>
+    <noscript><p class="callout warning">This quiz needs JavaScript. Turn it on in your browser settings and reload the page.</p></noscript>
+  </section>
+
+  <section id="after">
+    <h2>After the quiz</h2>
+    <p>Use your results to decide what to do next. After you submit, the <strong>Results by lesson</strong> table under your score links straight to the lessons behind any questions you missed.</p>
+    <ul class="quiz-next">
+      <li>Missed a question? Read its worked solution, then revisit the lesson it points to.</li>
+      <li>Want more practice? The <a href="practice-lab.html">Practice Lab</a> generates unlimited problems on every skill in this quiz (great circles, market and span, payload–range, engine-out climb, approach and field length, mission timelines, reserves and winds, trades), each with hints and a full solution.</li>
+      <li>Prefer pen and paper? Try the <a href="worksheet.html">Printable Worksheet</a>.</li>
+      <li>Keep the <a href="../reference/cheat-sheet.html">Formula Sheet</a> next to you while you review.</li>
+      <li>Then press <strong>Retake quiz</strong> and aim for 15 out of 15.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ==========================================================================================
+   Self-Check Quiz: the 15 fixed questions.
+   Keep ids, order and choices stable.
+   Question order is fixed, and every mc question sets shuffle:false, so its choices appear on screen
+   exactly in the order listed here.
+   Standard CYLQuiz question fields (short = the title printed in the Question column of the results
+   sheet) plus custom fields that CYLQuiz ignores:
+     lesson       registry id of the lesson the question tests ('l01' … 'l07')
+     finalAnswer  the expected final answer (HTML with TeX), stated explicitly
+     choices[].aria  plain-text wording of a choice for screen readers
+   The numbers deliberately differ from every worked example and lesson check.
+   ========================================================================================== */
+window.CYL_QUIZ_QUESTIONS = (function () {
+  'use strict';
+  var T = String.raw;
+  function review(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return '<p class="quiz-review-link">Review: <a href="' + CYL.url(p.href) + '">Lesson ' + p.num + ' · ' + p.title + '</a></p>';
+  }
+  var D2R = Math.PI / 180;
+  var q2 = 0.27 * 95000 * 9.81 / 2 / 1000;
+  var q3c = Math.sin(49.19 * D2R) * Math.sin(35.77 * D2R) + Math.cos(49.19 * D2R) * Math.cos(35.77 * D2R) * Math.cos((140.39 + 123.18) * D2R), q3 = 6371 * Math.acos(q3c);
+  var q4 = 52 * 52 / 280;
+  var q6 = 850 / 0.55 * 17 * Math.log(110000 / 88500);
+  var q8 = 2 * (1 / 11 + 0.024);
+  var q9v = 125 * 0.5144 / 1.23, q9 = 0.5 * 1.225 * q9v * q9v * 2.8 / 9.81;
+  var q12 = 3000 - 200 - 11 / Math.tan(3 * D2R);
+  var q13 = 180000 * (1 - Math.exp(-0.5 * 0.45 / 19));
+  var q14 = 7000 * 880 / 780;
+  var q15e = Math.exp(-6000 * 0.55 / (860 * 17)), q15f = 1.06 * (1 - 0.970 * 0.985 * 0.995 * q15e), q15 = 25000 / (1 - q15f - 0.48);
+
+  return [
+    /* ---------- Q1 · Lesson 1 · the rubber engine ---------- */
+    {
+      id: 'quiz-q01', lesson: 'l01', type: 'mc', shuffle: false,
+      short: 'What a rubber engine is',
+      prompt: T`In conceptual design, what is a "rubber engine"?`,
+      choices: [
+        { html: T`An engine of the chosen type assumed to scale to exactly the thrust the aircraft needs, with its weight and fuel consumption scaled with it`, aria: 'An engine of the chosen type assumed to scale to exactly the thrust needed', correct: true },
+        { html: T`An existing engine whose thrust is fixed, around which the aircraft is sized`, aria: 'An existing engine with fixed thrust', feedback: T`That is fixed-engine sizing, the opposite approach.` },
+        { html: T`An engine mounted on flexible pylons to reduce vibration`, aria: 'An engine on flexible pylons', feedback: T`"Rubber" refers to its size, not its mounting.` },
+        { html: T`A placeholder used only for military aircraft`, aria: 'A placeholder for military aircraft only', feedback: T`Rubber-engine sizing is used for every kind of aircraft early in design.` }
+      ],
+      finalAnswer: T`A: an engine scaled to exactly the thrust needed`,
+      explain: T`<p>Sizing with a rubber engine finds the wing and the engine size together, so that every requirement is just met.</p>`,
+      solution: T`<p>The rubber engine is scaled to exactly the required thrust, with weight, size and fuel consumption scaled with it. Once a real engine is chosen, the designer switches to fixed-engine sizing.</p>` + review('l01')
+    },
+
+    /* ---------- Q2 · Lesson 1 · rubber engine thrust ---------- */
+    {
+      id: 'quiz-q02', lesson: 'l01', type: 'numeric', unit: 'kN',
+      short: 'Thrust of each rubber engine',
+      prompt: T`A first sizing of a twin-engine transport gives \(\Wo = 95\,000\ \text{kg}\) and \(\TW = 0.27\). What takeoff thrust must each rubber engine give?`,
+      label: T`\(T_{\text{engine}} =\)`, answer: q2,
+      finalAnswer: T`\(T_{\text{engine}} = 125.8\ \text{kN}\)`,
+      explain: T`<p>\(T = (\TW)\,\Wo g\), shared between the engines.</p>`,
+      solution: T`\[ T_{\text{engine}} = \frac{0.27(95\,000)(9.81)}{2} = 125\,800\ \text{N} = 125.8\ \text{kN} \]` + review('l01')
+    },
+
+    /* ---------- Q3 · Lesson 2 · great-circle distance across the date line ---------- */
+    {
+      id: 'quiz-q03', lesson: 'l02', type: 'numeric', unit: 'km',
+      short: 'Great-circle distance, Vancouver to Tokyo',
+      prompt: T`Vancouver (YVR) is at \(49.19^\circ\text{N}\), \(123.18^\circ\text{W}\) and Tokyo Narita (NRT) at \(35.77^\circ\text{N}\), \(140.39^\circ\text{E}\). Find the great-circle distance between them.`,
+      label: T`\(d =\)`, answer: q3,
+      finalAnswer: T`\(d = 7503\ \text{km}\)`,
+      explain: T`<p>West is negative, so \(\Delta\lambda = 140.39 - (-123.18) = 263.57^\circ\). Its cosine equals that of \(96.43^\circ\), the short way across the Pacific.</p>`,
+      solution: T`\[ \cos\theta = \sin 49.19^\circ\sin 35.77^\circ + \cos 49.19^\circ\cos 35.77^\circ\cos 263.57^\circ \]\[ \cos\theta = 0.4424 + 0.5303(-0.1120) = 0.3830 \]\[ \theta = 67.48^\circ = 1.1777\ \text{rad}, \qquad d = 6371(1.1777) = 7503\ \text{km} \]` + review('l02')
+    },
+
+    /* ---------- Q4 · Lesson 2 · span limit ---------- */
+    {
+      id: 'quiz-q04', lesson: 'l02', type: 'numeric',
+      short: 'Largest aspect ratio within code D',
+      prompt: T`A wide-body must fit ICAO code D gates (wingspan under \(52\ \text{m}\)). Its wing area is \(280\ \text{m}^2\). What is the largest aspect ratio it can have?`,
+      label: T`\(A_{\max} =\)`, answer: q4,
+      finalAnswer: T`\(A_{\max} = 9.66\)`,
+      explain: T`<p>\(A = b^2/S\) with the largest span the code allows.</p>`,
+      solution: T`\[ A_{\max} = \frac{52^2}{280} = \frac{2704}{280} = 9.66 \]` + review('l02')
+    },
+
+    /* ---------- Q5 · Lesson 2 · threshold and objective ---------- */
+    {
+      id: 'quiz-q05', lesson: 'l02', type: 'mc', shuffle: false,
+      short: 'Threshold and objective values',
+      prompt: T`A military requirement gives a combat radius with a threshold of \(900\ \text{km}\) and an objective of \(1100\ \text{km}\). What does this mean?`,
+      choices: [
+        { html: T`The radius must lie between 900 and 1100 km; more than 1100 km is not allowed`, aria: 'Between 900 and 1100 km only', feedback: T`The objective is a goal, not an upper limit.` },
+        { html: T`900 km is the minimum acceptable; 1100 km is what the customer would like, if it is affordable`, aria: '900 km is the minimum acceptable; 1100 km is desired if affordable', correct: true },
+        { html: T`1100 km is required; 900 km is a goal for a later version`, aria: '1100 km required, 900 km later', feedback: T`It is the other way round.` },
+        { html: T`The two numbers are for different missions`, aria: 'Different missions', feedback: T`Both describe the same requirement.` }
+      ],
+      finalAnswer: T`B: threshold minimum, objective desired`,
+      explain: T`<p>The gap between threshold and objective is where trade studies decide what is worth paying for.</p>`,
+      solution: T`<p>The threshold is the minimum acceptable value; the objective is the desired value, to be met if the cost is acceptable.</p>` + review('l02')
+    },
+
+    /* ---------- Q6 · Lesson 3 · range at maximum payload ---------- */
+    {
+      id: 'quiz-q06', lesson: 'l03', type: 'numeric', unit: 'km',
+      short: 'Range at maximum payload (point A)',
+      prompt: T`An aircraft has \(\text{OEW} = 60\,000\ \text{kg}\), \(\text{MTOW} = 110\,000\ \text{kg}\), a maximum payload of \(25\,000\ \text{kg}\) and keeps \(3500\ \text{kg}\) of reserve fuel. It cruises at \(850\ \text{km/h}\) with \(C = 0.55/\text{h}\) and \(L/D = 17\). Its tanks are large enough. Find its range at maximum payload.`,
+      label: T`\(R_A =\)`, answer: q6,
+      finalAnswer: T`\(R_A = 5714\ \text{km}\)`,
+      explain: T`<p>At A it takes off at MTOW and lands at \(\text{OEW} + P_{\max} + W_{\text{res}}\).</p>`,
+      solution: T`\[ \frac{V}{C}\frac{L}{D} = \frac{850}{0.55}(17) = 26\,270\ \text{km}, \qquad W_{\text{land}} = 60\,000 + 25\,000 + 3500 = 88\,500\ \text{kg} \]\[ R_A = 26\,270\ln\frac{110\,000}{88\,500} = 26\,270(0.2175) = 5714\ \text{km} \]` + review('l03')
+    },
+
+    /* ---------- Q7 · Lesson 3 · point B and the ferry flight ---------- */
+    {
+      id: 'quiz-q07', lesson: 'l03', type: 'fields',
+      short: 'Payload at point B and ferry takeoff weight',
+      prompt: T`The aircraft of Question 6 has a fuel capacity of \(35\,000\ \text{kg}\). Find the payload at point B (full tanks at MTOW) and the takeoff weight for the ferry flight (full tanks, no payload).`,
+      fields: [
+        { name: 'pb', label: T`\(P_B =\)`, answer: 15000, unit: 'kg' },
+        { name: 'tow', label: T`Ferry TOW \(=\)`, answer: 95000, unit: 'kg' }
+      ],
+      finalAnswer: T`\(P_B = 15\,000\ \text{kg}\), ferry TOW \(= 95\,000\ \text{kg}\)`,
+      explain: T`<p>At B the tanks are full at MTOW; on the ferry flight the tanks are full and nothing else is carried.</p>`,
+      solution: T`\[ P_B = 110\,000 - 60\,000 - 35\,000 = 15\,000\ \text{kg}, \qquad \text{TOW}_{\text{ferry}} = 60\,000 + 35\,000 = 95\,000\ \text{kg} \]<p>The ferry flight takes off 15 t below MTOW: the tanks, not the structure, limit it.</p>` + review('l03')
+    },
+
+    /* ---------- Q8 · Lesson 4 · engine-out climb ---------- */
+    {
+      id: 'quiz-q08', lesson: 'l04', type: 'numeric',
+      short: 'Thrust-to-weight ratio for the second segment, twin',
+      prompt: T`A twin-engine transport has \(L/D = 11\) in the second-segment configuration. What thrust-to-weight ratio does it need to meet the second-segment climb gradient with one engine inoperative?`,
+      label: T`\(\TW =\)`, answer: q8,
+      finalAnswer: T`\(\TW = 0.230\)`,
+      explain: T`<p>For two engines the second-segment gradient is 2.4%; one engine must give all the climb thrust.</p>`,
+      solution: T`\[ \frac{T}{W} = \frac{2}{1}\left(\frac{1}{11} + 0.024\right) = 2(0.1149) = 0.230 \]` + review('l04')
+    },
+
+    /* ---------- Q9 · Lesson 4 · approach speed and wing loading ---------- */
+    {
+      id: 'quiz-q09', lesson: 'l04', type: 'numeric', unit: 'kg/m²',
+      short: 'Largest landing wing loading for an approach speed',
+      prompt: T`An airliner must approach at \(V_{\text{REF}} \le 125\ \text{kt}\) at sea level, with a landing \(C_{L_{\max}} = 2.8\). What is the largest landing wing loading?`,
+      label: T`\(\WS \le\)`, answer: q9,
+      finalAnswer: T`\(\WS = 477.7\ \text{kg/m}^2\)`,
+      explain: T`<p>\(V_{SR} = V_{\text{REF}}/1.23\), then the stall-speed equation solved for \(\WS\).</p>`,
+      solution: T`\[ V_{SR} = \frac{125(0.5144)}{1.23} = 52.28\ \text{m/s}, \qquad \frac{W}{S} = \frac{\tfrac12(1.225)(52.28)^2(2.8)}{9.81} = 477.7\ \text{kg/m}^2 \]` + review('l04')
+    },
+
+    /* ---------- Q10 · Lesson 4 · balanced field ---------- */
+    {
+      id: 'quiz-q10', lesson: 'l04', type: 'mc', shuffle: false,
+      short: 'The balanced field length',
+      prompt: T`What is the balanced field length of a transport aircraft?`,
+      choices: [
+        { html: T`The all-engines takeoff distance to 35 ft, multiplied by 1.15`, aria: 'All-engines distance times 1.15', feedback: T`That is the other half of the takeoff field length rule.` },
+        { html: T`The landing distance divided by 0.6`, aria: 'Landing distance over 0.6', feedback: T`That is the landing field length.` },
+        { html: T`The runway length at the decision speed \(V_1\) for which the accelerate-stop and accelerate-go distances, with an engine failure at \(V_1\), are equal`, aria: 'The length where accelerate-stop and accelerate-go distances are equal', correct: true },
+        { html: T`The runway length at which takeoff and landing distances are equal`, aria: 'Where takeoff and landing distances are equal', feedback: T`Balance refers to stopping and going after an engine failure.` }
+      ],
+      finalAnswer: T`C: accelerate-stop equals accelerate-go`,
+      explain: T`<p>Choosing \(V_1\) where the two are equal gives the shortest runway that covers both outcomes of an engine failure.</p>`,
+      solution: T`<p>Accelerate-stop grows with \(V_1\) and accelerate-go shrinks; where they cross is the balanced field length. The takeoff field length is the greater of it and 115% of the all-engines distance.</p>` + review('l04')
+    },
+
+    /* ---------- Q11 · Lesson 5 · climb time and distance ---------- */
+    {
+      id: 'quiz-q11', lesson: 'l05', type: 'fields',
+      short: 'Time and distance to climb',
+      prompt: T`A long-range jet climbs to \(12\,000\ \text{m}\) at an average rate of climb of \(8\ \text{m/s}\) and an average horizontal speed of \(620\ \text{km/h}\). Find the time to climb and the horizontal distance covered.`,
+      fields: [
+        { name: 't', label: T`\(t_{\text{climb}} =\)`, answer: 25, unit: 'min' },
+        { name: 'd', label: T`\(d_{\text{climb}} =\)`, answer: 620 * 1500 / 3600, unit: 'km' }
+      ],
+      finalAnswer: T`\(t = 25\ \text{min}\), \(d = 258.3\ \text{km}\)`,
+      explain: T`<p>\(t = h/\overline{RC}\), \(d = \overline{V}t\).</p>`,
+      solution: T`\[ t = \frac{12\,000}{8} = 1500\ \text{s} = 25\ \text{min}, \qquad d = 620\,\frac{1500}{3600} = 258.3\ \text{km} \]` + review('l05')
+    },
+
+    /* ---------- Q12 · Lesson 5 · cruise distance ---------- */
+    {
+      id: 'quiz-q12', lesson: 'l05', type: 'numeric', unit: 'km',
+      short: 'Cruise distance after climb and descent',
+      prompt: T`On a \(3000\ \text{km}\) trip, a jet covers \(200\ \text{km}\) in its climb to \(11\,000\ \text{m}\) and descends at \(3^\circ\) at the end. How far does it cruise?`,
+      label: T`\(d_{\text{cruise}} =\)`, answer: q12,
+      finalAnswer: T`\(d_{\text{cruise}} = 2590\ \text{km}\)`,
+      explain: T`<p>The descent covers \(h/\tan\gamma_d\); the cruise is what is left.</p>`,
+      solution: T`\[ d_{\text{descent}} = \frac{11\ \text{km}}{\tan 3^\circ} = 209.9\ \text{km}, \qquad d_{\text{cruise}} = 3000 - 200 - 209.9 = 2590\ \text{km} \]` + review('l05')
+    },
+
+    /* ---------- Q13 · Lesson 6 · holding fuel ---------- */
+    {
+      id: 'quiz-q13', lesson: 'l06', type: 'numeric', unit: 'kg',
+      short: 'Fuel for a 30-minute hold',
+      prompt: T`A wide-body starts a 30-minute hold at \(180\,000\ \text{kg}\), with \(\LDmax = 19\) and \(C = 0.45/\text{h}\). Estimate the fuel burned in the hold.`,
+      label: T`Fuel \(=\)`, answer: q13,
+      finalAnswer: T`Fuel \(= 2119\ \text{kg}\)`,
+      explain: T`<p>Endurance equation: \(W_i/W_{i-1} = \exp[-EC/(L/D)]\) with \(E\) in hours.</p>`,
+      solution: T`\[ \frac{W_i}{W_{i-1}} = \exp\left[-\frac{0.5(0.45)}{19}\right] = 0.98823, \qquad \text{fuel} = 180\,000(1 - 0.98823) = 2119\ \text{kg} \]` + review('l06')
+    },
+
+    /* ---------- Q14 · Lesson 6 · still-air distance ---------- */
+    {
+      id: 'quiz-q14', lesson: 'l06', type: 'numeric', unit: 'km',
+      short: 'Equivalent still-air distance against a headwind',
+      prompt: T`A \(7000\ \text{km}\) route is flown at a true airspeed of \(880\ \text{km/h}\) against an average headwind component of \(100\ \text{km/h}\). What is the equivalent still-air distance?`,
+      label: T`\(d_{\text{air}} =\)`, answer: q14,
+      finalAnswer: T`\(d_{\text{air}} = 7897\ \text{km}\)`,
+      explain: T`<p>\(d_{\text{air}} = d_{\text{ground}}\,V/(V - w)\).</p>`,
+      solution: T`\[ d_{\text{air}} = 7000\,\frac{880}{880 - 100} = 7897\ \text{km} \]<p>The aircraft needs 13% more range than the map distance on this route.</p>` + review('l06')
+    },
+
+    /* ---------- Q15 · Lesson 7 · takeoff weight for a design range ---------- */
+    {
+      id: 'quiz-q15', lesson: 'l07', type: 'numeric', unit: 'kg',
+      short: 'Takeoff weight for a design range',
+      prompt: T`A jet transport carries \(25\,000\ \text{kg}\) of crew and payload over a design range of \(6000\ \text{km}\), cruising at \(860\ \text{km/h}\) with \(L/D = 17\) and \(C = 0.55/\text{h}\). Its empty-weight fraction is 0.48. With \(\Wf/\Wo = 1.06[1 - 0.970(0.985)(0.995)e^{-RC/(V\,L/D)}]\), estimate \(\Wo\).`,
+      label: T`\(\Wo =\)`, answer: q15,
+      finalAnswer: T`\(\Wo = 94\,660\ \text{kg}\)`,
+      explain: T`<p>Find the fuel fraction from the mission, then use the sizing equation.</p>`,
+      solution: T`\[ e^{-6000(0.55)/(860(17))} = e^{-0.2257} = 0.7979, \qquad \frac{\Wf}{\Wo} = 1.06[1 - 0.9507(0.7979)] = 0.2559 \]\[ \Wo = \frac{25\,000}{1 - 0.2559 - 0.48} = \frac{25\,000}{0.2641} = 94\,660\ \text{kg} \]` + review('l07')
+    }
+  ];
+})();
+</script>
+
+<script>
+/* ---------- The quiz: CYLQuiz.set in quiz mode, with a paged / all-on-one-page layout switch ---------- */
+CYL.ready(function () {
+  'use strict';
+  var QUESTIONS = window.CYL_QUIZ_QUESTIONS;
+  var host = document.getElementById('quiz-host');
+  var toolbar = document.getElementById('quiz-toolbar');
+  var chips = Array.prototype.slice.call(toolbar.querySelectorAll('[data-layout]'));
+  var l10Note = document.getElementById('quiz-l10-note');
+  var LAYOUT_KEY = 'quiz:selfcheck:layout';
+  var STORAGE_KEY = 'selfcheck-v1';       // bump if the questions ever change (saved answers are keyed by it)
+
+  // Rules list: add a line about saving (only when the browser really keeps it across reloads).
+  if (CYL.store.available()) {
+    l10Note.parentNode.insertBefore(CYL.el('li', {
+      text: 'Your answers are saved in this browser as you go, so reloading the page does not lose them.'
+    }), l10Note);
+  }
+
+  var layout = CYL.store.get(LAYOUT_KEY, 'paged') === 'all' ? 'all' : 'paged';
+  var set = null;
+
+  function build() {
+    var responses = null;
+    if (set) {
+      responses = set.questions.map(function (q) { return q.getResponse(); });
+      set.el.parentNode.removeChild(set.el);
+    }
+    set = CYLQuiz.set(host, QUESTIONS, {
+      mode: 'quiz',
+      layout: layout,
+      storageKey: STORAGE_KEY,
+      intro: 'Answer in any order and change answers freely: nothing is marked until you press <strong>Submit quiz</strong>.',
+      onComplete: function () { refresh(); }
+    });
+    // The previous layout's answers win over the (possibly 250 ms old) saved copy.
+    if (responses) set.questions.forEach(function (q, i) { q.setResponse(responses[i]); });
+    var retake = set.retake;
+    set.retake = function () { var r = retake.apply(set, arguments); refresh(); return r; };
+    refresh();
+  }
+
+  // The layout switch only matters before submitting (the review always lists every question).
+  function refresh() {
+    var done = set.isSubmitted();
+    toolbar.hidden = done;
+    host.setAttribute('data-state', done ? 'submitted' : 'open');   // print CSS: before submitting, print every question
+    var intro = set.el.querySelector('.q-set-intro');           // "nothing is marked until…" no longer applies
+    if (intro) intro.hidden = done;
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-layout') === layout ? 'true' : 'false'); });
+    labelChoices();
+    if (done) renderBreakdown();
+  }
+
+  /* Accessible names for the radio buttons and checkboxes. CYLQuiz names each one from its <label>, but
+     browsers take little or no text from KaTeX output (Chrome gives "" for \(5\ \text{m}\)), so every choice
+     spec carries a plain-text 'aria' string. After submitting, the review tag ("Correct answer", "Your
+     answer") is added to the name, as it is to the visible label. */
+  var SPEC_BY_ID = {};
+  QUESTIONS.forEach(function (q) { SPEC_BY_ID[q.id] = q; });
+  function labelChoices() {
+    Array.prototype.forEach.call(set.el.querySelectorAll('.q-card'), function (card) {
+      var spec = SPEC_BY_ID[card.getAttribute('data-qid')];
+      if (!spec || !spec.choices) return;
+      Array.prototype.forEach.call(card.querySelectorAll('.q-choice'), function (lab) {
+        var input = lab.querySelector('input');
+        var c = input && spec.choices[+input.value];
+        if (!c || !c.aria) return;
+        var tag = lab.querySelector('.q-choice-tag');
+        input.setAttribute('aria-label', c.aria + (tag ? ' (' + tag.textContent + ')' : ''));
+      });
+    });
+  }
+
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      var want = c.getAttribute('data-layout');
+      if (want === layout || set.isSubmitted()) return;
+      layout = want;
+      CYL.store.set(LAYOUT_KEY, layout);
+      build();
+      c.focus();
+    });
+  });
+
+  /* Results by lesson: a small table added to the score summary after submitting. */
+  function lessonInfo(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return p ? { num: p.num, title: p.title, href: CYL.url(p.href) } : { num: '', title: id, href: '#' };
+  }
+  function renderBreakdown() {
+    var results = set.el.querySelector('.q-set-results');
+    if (!results) return;
+    var old = results.querySelector('.quiz-breakdown');
+    if (old) old.parentNode.removeChild(old);
+
+    var sc = set.score();
+    var groups = [], byId = {};
+    sc.results.forEach(function (r) {
+      var id = QUESTIONS[r.index].lesson;
+      if (!byId[id]) { byId[id] = { id: id, nums: [], correct: 0 }; groups.push(byId[id]); }
+      byId[id].nums.push(r.position + 1);
+      if (r.correct) byId[id].correct += 1;
+    });
+
+    var tbody = CYL.el('tbody');
+    var toReview = [];
+    groups.forEach(function (g) {
+      var info = lessonInfo(g.id);
+      var all = g.correct === g.nums.length;
+      if (!all) toReview.push('<a href="' + info.href + '">Lesson ' + info.num + '</a>');
+      tbody.appendChild(CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'row', html: '<a href="' + info.href + '">Lesson ' + info.num + '</a>' +
+          ' <span class="quiz-lesson-title">· ' + info.title + '</span>' }),
+        CYL.el('td', { text: g.nums.join(', ') }),
+        CYL.el('td', { class: 'quiz-score-cell ' + (all ? 'c-good' : 'c-bad'),
+          text: (all ? '✓ ' : '✗ ') + g.correct + ' of ' + g.nums.length })
+      ]));
+    });
+
+    var table = CYL.el('table', { class: 'data' }, [
+      CYL.el('caption', { class: 'visually-hidden', text: 'Quiz results grouped by lesson' }),
+      CYL.el('thead', {}, [CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'col', text: 'Lesson' }),
+        CYL.el('th', { scope: 'col', text: 'Questions' }),
+        CYL.el('th', { scope: 'col', text: 'Correct' })
+      ])]),
+      tbody
+    ]);
+    var summary = toReview.length
+      ? 'Revisit ' + (toReview.length === 1 ? toReview[0] : toReview.slice(0, -1).join(', ') + ' and ' + toReview[toReview.length - 1]) +
+        ', then open the worked solutions below.'
+      : 'Every lesson is fully correct. Well done.';
+    var box = CYL.el('div', { class: 'quiz-breakdown' }, [
+      CYL.el('p', { class: 'quiz-breakdown-title', text: 'Results by lesson' }),
+      CYL.el('p', { class: 'quiz-breakdown-summary', html: summary }),
+      CYL.el('div', { class: 'table-wrap' }, [table])
+    ]);
+    // Above the name / print row, so the "Show only questions I missed" chip stays next to the cards it filters.
+    var namebox = results.querySelector('.q-set-namebox');
+    results.insertBefore(box, namebox || results.querySelector('.q-set-review-note') || null);
+  }
+
+  build();
+  toolbar.hidden = set.isSubmitted();
+});
+</script>
+</body>
+</html>

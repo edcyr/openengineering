@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Closing the Sizing Loop · The First Estimate of Takeoff Weight</title>
+<meta name="description" content="Solving the sizing equation: the iteration for the business jet, checking the answer, and missions that drop payload, where the fuel depends on the takeoff weight and the weights are followed segment by segment.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/sizing.js"></script>
+<style>
+  .iter-table td, .iter-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .iter-table td:first-child, .iter-table th:first-child { text-align: left; }
+</style>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 40 min</p>
+    <h1>Closing the Sizing Loop</h1>
+    <p class="lede">All the ingredients are on the table: the crew and payload, the empty-weight trend, and a fuel fraction built from \(L/D\), \(C\) and the mission. This lesson puts them together and sizes the business jet, checks the answer, and then deals with a harder case: missions that drop part of their weight on the way.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Solve the sizing equation by iteration to a converged \(\Wo\), and split it into empty, fuel and fixed weights.</li>
+      <li>Check a sizing result for consistency and plausibility.</li>
+      <li>Size an aircraft whose mission drops payload, following its weight segment by segment.</li>
+    </ul>
+  </section>
+
+  <section id="bizjet">
+    <h2>Sizing the business jet</h2>
+    <p>Lessons 1 to 5 gave everything the sizing equation needs:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The business jet</p>
+      \[ \Wo = \frac{980}{1 - 0.2867 - 0.9727\,\Wo^{-0.06}} \]
+      <p>Crew and payload \(980\ \text{kg}\) (Lesson 1); fuel fraction 0.2867 (Lesson 5); jet-transport trend in kg (Lesson 2).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 6.1 — Iterate to convergence</p>
+      <p>Starting from \(10\,000\ \text{kg}\), iterate until \(\Wo\) changes by less than 1 kg. Then find the empty and fuel weights.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <div class="table-wrap">
+            <table class="data iter-table">
+              <caption>Iterations</caption>
+              <thead><tr><th scope="col">Iteration</th><th scope="col">Guess (kg)</th><th scope="col">\(\We/\Wo\)</th><th scope="col">New \(\Wo\) (kg)</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>10 000</td><td>0.5598</td><td>6382</td></tr>
+                <tr><td>2</td><td>6382</td><td>0.5750</td><td>7088</td></tr>
+                <tr><td>3</td><td>7088</td><td>0.5714</td><td>6908</td></tr>
+                <tr><td>4</td><td>6908</td><td>0.5723</td><td>6951</td></tr>
+                <tr><td>5</td><td>6951</td><td>0.5721</td><td>6941</td></tr>
+                <tr><td>6</td><td>6941</td><td>0.5722</td><td>6943</td></tr>
+                <tr><td>7</td><td>6943</td><td>0.5721</td><td>6943</td></tr>
+              </tbody>
+            </table>
+          </div>
+          \[ \Wo = 6943\ \text{kg}, \qquad \We = 0.5721(6943) = 3972\ \text{kg}, \qquad \Wf = 0.2867(6943) = 1990\ \text{kg} \]
+          <p>Check: \(980 + 1990 + 3972 = 6942\ \text{kg}\), equal to \(\Wo\) within rounding.</p>
+        </div>
+      </details>
+    </div>
+    <p>The guesses overshoot and undershoot, each time by less: the error shrinks by a factor of about 4 per iteration here. Convergence is fast because the empty-weight fraction changes slowly with weight. A spreadsheet does it in one column; the Sizing Calculator does it as you type.</p>
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> The iteration, guess by guess, for the business jet and for the cargo-dropping transport of Example 6.2. Change the first guess: every guess converges to the same \(\Wo\), and the drop mission converges more slowly because its fuel depends on \(\Wo\) too.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check-result">
+    <h2>Is the answer sensible?</h2>
+    <p>A converged number is not necessarily a right one. Before going on:</p>
+    <ul>
+      <li><strong>Add it up.</strong> Crew, payload, fuel and empty weight must sum to \(\Wo\).</li>
+      <li><strong>Compare with real aircraft.</strong> Light business jets with about eight seats weigh about 6 to 8 t at takeoff, so 6.9 t is plausible. A result far outside the range of existing aircraft of the class means an input is wrong or the class does not fit.</li>
+      <li><strong>Check the fractions.</strong> An empty-weight fraction outside about 0.3 to 0.7, or a denominator below about 0.1, is a warning: the design is close to the range wall and every error will be amplified.</li>
+      <li><strong>Record the assumptions.</strong> Class, technology factor, \(\LDmax\), \(C\), the mission. Every later module will revisit one of them.</li>
+    </ul>
+  </section>
+
+  <section id="drops">
+    <h2>Missions that drop payload</h2>
+    <p>When a mission drops weight (bombs, cargo, sonobuoys, a fire-retardant load), the weight after the drop is not a fixed fraction of \(\Wo\): it is the weight before the drop <em>minus</em> a fixed number of kilograms. The fuel burned after the drop then depends on \(\Wo\), and the simple fuel fraction no longer exists. The remedy is to follow the weight through the mission:</p>
+    <ol>
+      <li>Guess \(\Wo\).</li>
+      <li>Step through the segments: \(W_i = W_{i-1}(W_i/W_{i-1})\) for each flight segment, \(W_i = W_{i-1} - W_{\text{drop}}\) at the drop.</li>
+      <li>The fuel burned is \(\Wo - W_{\text{drop}} - W_x\); add 6%: \(\Wf = 1.06(\Wo - W_{\text{drop}} - W_x)\).</li>
+      <li>New \(\Wo = (W_{\text{crew}} + W_{\text{payload}} + \Wf)/(1 - \We/\Wo)\), with the payload including the dropped weight. Repeat.</li>
+    </ol>
+    <div class="example">
+      <p class="example-title">Example 6.2 — Air-dropping cargo</p>
+      <p>A twin-turboprop transport (the twin-turboprop trend, \(\We/\Wo = 0.9228\,\Wo^{-0.05}\) in kg) with a crew of 3 (\(270\ \text{kg}\)) carries \(6000\ \text{kg}\) of cargo \(1000\ \text{km}\), air-drops it, and returns. Mission: takeoff 0.970, climb 0.985, cruise \(1000\ \text{km}\) (fraction 0.92867), drop, cruise \(1000\ \text{km}\) back (0.92867), 30-minute loiter (0.98474), landing 0.995. (The cruise and loiter fractions use \(\LDmax = 14\), \(c_P = 0.5\) and \(0.6\ \text{lb/(hp h)}\), \(\eta_p = 0.8\).) Size it, and compare with the same aircraft bringing the cargo back.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>At the converged \(\Wo = 23\,897\ \text{kg}\), following the weight:</p>
+          \[ W_3 = 23\,897(0.970)(0.985)(0.92867) = 21\,204\ \text{kg} \]
+          \[ W_4 = 21\,204 - 6000 = 15\,204\ \text{kg} \]
+          \[ W_x = 15\,204(0.92867)(0.98474)(0.995) = 13\,835\ \text{kg} \]
+          \[ \Wf = 1.06(23\,897 - 6000 - 13\,835) = 4306\ \text{kg} \]
+          \[ \frac{\We}{\Wo} = 0.9228(23\,897)^{-0.05} = 0.5574 \]
+          \[ \Wo = \frac{270 + 6000 + 4306}{1 - 0.5574} = 23\,897\ \text{kg} \ \checkmark \]
+          <p>From a guess of \(20\,000\ \text{kg}\) the iteration takes about ten steps (Figure 6.1). If the cargo stayed aboard, the ordinary fuel fraction would apply, \(1.06(1 - 0.970 \cdot 0.985 \cdot 0.92867^2 \cdot 0.98474 \cdot 0.995) = 0.2042\), and \(\Wo = 26\,040\ \text{kg}\): flying home empty saves 2.1 t of takeoff weight.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Iterate \(\Wo = (W_{\text{crew}} + W_{\text{payload}})/(1 - \Wf/\Wo - \We/\Wo)\) from a guess; it converges in a handful of steps.</li>
+      <li>The business jet: \(\Wo = 6943\ \text{kg}\), \(\We = 3972\ \text{kg}\), \(\Wf = 1990\ \text{kg}\).</li>
+      <li>Check the sum, compare with real aircraft, watch the denominator, and record the assumptions.</li>
+      <li>With a drop, follow the weights segment by segment: \(\Wf = 1.06(\Wo - W_{\text{drop}} - W_x)\).</li>
+      <li>Next, <a href="07-sensitivities.html">Lesson 7</a> asks how the answer changes when the inputs do.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 6.1: the iteration, guess by guess ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BIZ = { ff: 0.28669, fixed: 980, cls: 'jt' };
+  var DROP = { cls: 'tprop', crew: 270, cargo: 6000, fcr: 0.928674, flo: 0.984737 };
+  function bizNext(W) { return BIZ.fixed / (1 - BIZ.ff - SIZING.ef(W, BIZ.cls)); }
+  function dropNext(W) {
+    var w = W * 0.970 * 0.985 * DROP.fcr - DROP.cargo;
+    w *= DROP.fcr * DROP.flo * 0.995;
+    var Wf = 1.06 * (W - DROP.cargo - w);
+    return (DROP.crew + DROP.cargo + Wf) / (1 - SIZING.ef(W, DROP.cls));
+  }
+  var st = { which: 'biz', guess: 10000, cargo: 6000 };
+  var chart = AERO.chart(document.getElementById('fig61-stage'), {
+    x: { label: 'Iteration', min: 0, max: 12, ticks: [0, 2, 4, 6, 8, 10, 12] }, y: { label: '\\(\\Wo\\) (kg)', min: 0, max: 20000 }, height: 320,
+    ariaLabel: 'Takeoff weight guess against iteration number, converging to the sized value.'
+  });
+  var conv = chart.hline(0, { color: 'good', label: 'converged' });
+  var line = chart.polyline([], { color: 'z', width: 2 });
+  var dots = chart.points([], { x: function (p) { return p[0]; }, y: function (p) { return p[1]; }, color: 'z', r: 4.5 });
+  var panel = document.getElementById('fig61-controls');
+  var sel = CYL.select({ label: 'Aircraft', value: st.which, options: [{ value: 'biz', label: 'Business jet (Example 6.1)' }, { value: 'drop', label: 'Cargo drop (Example 6.2)' }], onChange: function (v) { st.which = v; st.guess = v === 'biz' ? 10000 : 20000; sG.set(st.guess, true); draw(); } });
+  var sG = CYL.slider({ label: 'First guess', min: 2000, max: 60000, step: 500, value: st.guess, unit: 'kg', color: 'v', onInput: function (v) { st.guess = v; draw(); } });
+  var sC = CYL.slider({ label: 'Cargo dropped (Example 6.2)', min: 1000, max: 12000, step: 250, value: st.cargo, unit: 'kg', onInput: function (v) { st.cargo = v; draw(); } });
+  var ro = { w: CYL.readout('Converged \\(\\Wo\\)'), n: CYL.readout('Iterations to 1 kg'), f: CYL.readout('Error ratio per step') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Iteration' }));
+  [sel, sG, sC].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.w.el, ro.n.el, ro.f.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    DROP.cargo = st.cargo;
+    sC.el.style.opacity = st.which === 'drop' ? '1' : '0.45';
+    var next = st.which === 'biz' ? bizNext : dropNext, W = st.guess, pts = [[0, W]], n = 0;
+    for (var i = 1; i <= 60; i++) { var Wn = next(W); if (!isFinite(Wn) || Wn <= 0) break; if (i <= 12) pts.push([i, Wn]); n = i; if (Math.abs(Wn - W) < 1) { W = Wn; break; } W = Wn; }
+    var Wc = W, ymax = Math.max.apply(null, pts.map(function (p) { return p[1]; }).concat([Wc]));
+    chart.setAxes({ y: { min: 0, max: Math.ceil(ymax * 1.15 / 1000) * 1000 } });
+    conv.set(Wc); line.set(pts); dots.set(pts);
+    var e0 = Math.abs(pts[1][1] - Wc), e1 = pts[2] ? Math.abs(pts[2][1] - Wc) : 0;
+    ro.w.set(CYL.fmt(Wc, 4).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' kg'); ro.n.set(String(n)); ro.f.set(e0 > 1 ? CYL.fmt(e1 / e0, 2) : '—');
+    chart.setAriaLabel('Iteration from ' + st.guess + ' kg, converging to ' + Math.round(Wc) + ' kg in ' + n + ' steps.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var fe1 = SIZING.ef(30000, 'tprop'), w1 = 5570 / (1 - 0.20 - fe1);
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1',
+    type: 'numeric',
+    prompt: 'A twin turboprop carries \\(5570\\ \\text{kg}\\) of crew and payload with \\(\\Wf/\\Wo = 0.20\\). With the trend \\(\\We/\\Wo = 0.9228\\,\\Wo^{-0.05}\\) (kg) and a first guess of \\(30\\,000\\ \\text{kg}\\), what is the next estimate of \\(\\Wo\\)?',
+    label: '\\(\\Wo =\\)', answer: w1, unit: 'kg',
+    hints: ['Evaluate the trend at the guess: \\(0.9228(30\\,000)^{-0.05}\\).', 'Then \\(\\Wo = 5570/(1 - 0.20 - \\We/\\Wo)\\).'],
+    explain: 'Repeat with the new value until it stops changing.',
+    solution: '\\[ \\frac{\\We}{\\Wo} = 0.9228(30\\,000)^{-0.05} = ' + CYL.fmtTex(fe1, 4) + ', \\qquad \\Wo = \\frac{5570}{1 - 0.20 - ' + CYL.fmtTex(fe1, 4) + '} = ' + CYL.fmtTex(w1, 4) + '\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2',
+    type: 'fields',
+    prompt: 'A sizing converges at \\(\\Wo = 42\\,000\\ \\text{kg}\\) with \\(\\Wf/\\Wo = 0.31\\) and \\(\\We/\\Wo = 0.52\\). Find the empty weight and the fuel weight.',
+    fields: [{ name: 'we', label: '\\(\\We =\\)', answer: 0.52 * 42000, unit: 'kg' }, { name: 'wf', label: '\\(\\Wf =\\)', answer: 0.31 * 42000, unit: 'kg' }],
+    hints: ['Multiply each fraction by \\(\\Wo\\).', 'Check: the remainder, \\(0.17\\Wo\\), is the crew and payload.'],
+    explain: 'The crew and payload are \\(42\\,000 - 21\\,840 - 13\\,020 = 7140\\ \\text{kg}\\).',
+    solution: '\\[ \\We = 0.52(42\\,000) = 21\\,840\\ \\text{kg}, \\qquad \\Wf = 0.31(42\\,000) = 13\\,020\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3',
+    type: 'mc',
+    prompt: 'Why can a mission that air-drops cargo not be sized with a single fuel fraction \\(\\Wf/\\Wo\\)?',
+    choices: [
+      { html: 'Because the dropped cargo is not payload.', feedback: 'It is payload: it is in the numerator of the sizing equation.' },
+      { html: 'Because the drop subtracts a fixed weight, so the weights after it, and the fuel they burn, are not fixed fractions of \\(\\Wo\\).', correct: true, feedback: 'Yes: after the drop the aircraft weighs \\(W_{i-1} - W_{\\text{drop}}\\), which depends on \\(\\Wo\\) in a non-proportional way.' },
+      { html: 'Because the historical fractions do not apply to transports.', feedback: 'They apply; the drop is the issue.' },
+      { html: 'Because the 6% allowance is not used.', feedback: 'It is still used, on the fuel burned.' }
+    ],
+    explain: 'Follow the weights segment by segment and iterate on \\(\\Wo\\).'
+  });
+});
+</script>
+</body>
+</html>

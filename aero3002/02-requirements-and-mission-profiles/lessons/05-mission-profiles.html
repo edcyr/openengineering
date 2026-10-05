@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Profiles · Design Requirements and Mission Profiles</title>
+<meta name="description" content="Mission profiles: the segments of a mission and their numbering, typical civil and military profiles, range and radius, the time and distance of climb, cruise and descent, block time, and a first look at mission-segment weight fractions.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/mission.js"></script>
+<style>
+  .seg-list { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 10px; padding: 0; list-style: none; }
+  .seg-list button { display: flex; gap: 8px; align-items: baseline; width: 100%; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-elev); color: var(--ink); font: inherit; font-size: 0.88rem; text-align: left; cursor: pointer; }
+  .seg-list button:hover { background: var(--bg-sunken); }
+  .seg-list button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .seg-list .seg-n { min-width: 1.4em; font-weight: 700; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .seg-text { min-height: 4.5em; margin: 0; font-size: 0.92rem; }
+  .tl-table td, .tl-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .tl-table td:first-child, .tl-table th:first-child { text-align: left; }
+</style>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 40 min</p>
+    <h1>Mission Profiles</h1>
+    <p class="lede">A range requirement says how far; a mission profile says how. Climb to what altitude, cruise at what speed, loiter for how long, fight where, with what held in reserve. Sizing starts from the mission profile, segment by segment, so writing it down correctly is the first real calculation of a new design.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Describe a mission as numbered segments and use the weight notation \(W_0, W_1, \dots, W_x\).</li>
+      <li>Sketch the typical profiles of transport, combat, strike, patrol and ferry missions, and distinguish range from radius.</li>
+      <li>Compute the time and distance of climb and descent, the cruise distance that remains, and the block time of a flight.</li>
+      <li>Explain how a profile becomes a fuel fraction, using historical segment fractions and Breguet.</li>
+    </ul>
+  </section>
+
+  <section id="segments">
+    <h2>A mission as a list of segments</h2>
+    <p>A <strong>mission profile</strong> divides the flight into segments, each simple enough to analyze on its own: warmup and takeoff, climb, cruise, loiter, combat, descent, landing. The weights are numbered at the segment boundaries. The aircraft starts at the takeoff weight \(W_0\), weighs \(W_1\) at the end of segment 1, \(W_2\) at the end of segment 2, and \(W_x\) at the end of the last segment \(x\). Each segment is then described by its <strong>weight fraction</strong> \(W_i/W_{i-1}\), which is less than 1 because fuel is burned (or weapons dropped).</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Mission weight fraction</p>
+      \[ \frac{W_x}{W_0} = \frac{W_1}{W_0}\cdot\frac{W_2}{W_1}\cdots\frac{W_x}{W_{x-1}} = \prod_{i=1}^{x}\frac{W_i}{W_{i-1}} \]
+      <p>The fraction of the takeoff weight burned on the whole mission is \(1 - W_x/W_0\) (when nothing is dropped).</p>
+    </div>
+    <p>A profile is drawn as altitude against distance (or time), not to scale. Its job is to list every segment, with the numbers each one needs: distance or time, altitude, speed, and what is carried or dropped.</p>
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> Typical mission profiles, after Raymer's examples (schematic, not to scale). Choose a mission, then a segment to read what happens in it. The numbers at the segment ends are the weight indices: the aircraft weighs \(W_i\) at the end of segment \(i\).</figcaption>
+    </figure>
+  </section>
+
+  <section id="typical">
+    <h2>Civil and military missions</h2>
+    <div class="grid-cards">
+      <div class="card card-z"><h3>Transport</h3><p>Takeoff, climb, cruise the design range, descend, land, with reserves for a diversion and holding. The airline version adds an explicit diversion to an alternate airport (Lesson 6).</p></div>
+      <div class="card card-r"><h3>Combat radius</h3><p>Out to a combat area, minutes of combat at full thrust (perhaps dropping weapons), and back. The requirement is a <strong>radius</strong>, the one-way distance, so the aircraft flies at least twice it.</p></div>
+      <div class="card card-t"><h3>Strike and patrol</h3><p>A strike profile flies high where cruise is efficient and low where it must hide (hi-lo-lo-hi). A patrol profile is sized by the <strong>endurance</strong> on station, not distance.</p></div>
+    </div>
+    <p>The distinction between range and radius trips up students every year. An aircraft with a 1000 km combat radius flies 2000 km of cruise plus its combat and reserves, and it flies the way home lighter (less fuel, and maybe no weapons) than the way out. A radius requirement is therefore much more demanding than the same number as a range.</p>
+  </section>
+
+  <section id="timeline">
+    <h2>Time and distance: building the timeline</h2>
+    <p>Before any fuel is estimated, the profile must be consistent: the segments must add up to the required distance, and their times give the block time that the airline schedules and the crew is paid for. The geometry is simple:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Climb, descent and cruise</p>
+      \[ t_{\text{climb}} = \frac{h}{\overline{RC}}, \quad d_{\text{climb}} = \overline{V}_{\text{climb}}\,t_{\text{climb}} \]
+      \[ d_{\text{descent}} = \frac{h}{\tan\gamma_d} \]
+      \[ d_{\text{cruise}} = R - d_{\text{climb}} - d_{\text{descent}} \]
+      <p>\(h\) is the cruise altitude, \(\overline{RC}\) the average rate of climb, \(\overline{V}_{\text{climb}}\) the average horizontal speed in the climb, \(\gamma_d\) the descent angle (about \(3^\circ\) for airliners). Block time adds taxi out and taxi in to the time in the air.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 5.1 — The timeline of a 2000 km flight</p>
+      <p>A jet transport flies a \(2000\ \text{km}\) trip. It taxis out for \(12\ \text{min}\), climbs to \(11\,000\ \text{m}\) at an average of \(9\ \text{m/s}\) and \(600\ \text{km/h}\), cruises at \(850\ \text{km/h}\), descends at \(3^\circ\) at an average of \(600\ \text{km/h}\), and taxis in for \(6\ \text{min}\). Find the cruise distance and the block time.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ t_{\text{climb}} = \frac{11\,000}{9} = 1222\ \text{s} = 20.4\ \text{min}, \qquad d_{\text{climb}} = 600\,\frac{1222}{3600} = 203.7\ \text{km} \]
+          \[ d_{\text{descent}} = \frac{11.0\ \text{km}}{\tan 3^\circ} = 209.9\ \text{km}, \qquad t_{\text{descent}} = \frac{209.9}{600} = 0.350\ \text{h} = 21.0\ \text{min} \]
+          \[ d_{\text{cruise}} = 2000 - 203.7 - 209.9 = 1586.4\ \text{km} \]
+          \[ t_{\text{cruise}} = \frac{1586.4}{850} = 1.866\ \text{h} = 112.0\ \text{min} \]
+          \[ t_{\text{block}} = 12 + 20.4 + 112.0 + 21.0 + 6 = 171.4\ \text{min} \approx 2\ \text{h}\ 51\ \text{min} \]
+          <div class="table-wrap">
+            <table class="data tl-table">
+              <caption>Timeline of Example 5.1</caption>
+              <thead><tr><th scope="col">Segment</th><th scope="col">Distance (km)</th><th scope="col">Time (min)</th></tr></thead>
+              <tbody>
+                <tr><td>Taxi out and takeoff</td><td>0</td><td>12.0</td></tr>
+                <tr><td>Climb</td><td>203.7</td><td>20.4</td></tr>
+                <tr><td>Cruise</td><td>1586.4</td><td>112.0</td></tr>
+                <tr><td>Descent</td><td>209.9</td><td>21.0</td></tr>
+                <tr><td>Taxi in</td><td>0</td><td>6.0</td></tr>
+                <tr><th scope="row">Total</th><td>2000.0</td><td>171.4</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>A fifth of the trip is climb and descent. On short flights that share is larger still, which is why short-haul aircraft are sized differently from long-haul ones.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig52-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig52-stage"></div>
+        <div class="viz-controls" id="fig52-controls"></div>
+      </div>
+      <figcaption id="fig52-cap"><strong>Figure 5.2</strong> A transport mission with true distances and altitudes, both in kilometres. The vertical scale is stretched more than fifty times: drawn with equal scales, the profile would be almost flat. Change the trip and the climb and descent to see how the cruise distance and the block time change. Set the trip short enough and there is no cruise left at all.</figcaption>
+    </figure>
+  </section>
+
+  <section id="fractions">
+    <h2>From profile to fuel: a first look</h2>
+    <p>Module 3 turns the profile into a takeoff weight. The idea is already within reach. For segments with little fuel and a lot of variety (warmup and takeoff, climb, landing), sizing uses <strong>historical weight fractions</strong>; for cruise and loiter it uses Breguet:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Historical mission-segment weight fractions (source: Raymer, Table 3.2)</caption>
+        <thead><tr><th scope="col">Segment</th><th scope="col">\(W_i/W_{i-1}\)</th></tr></thead>
+        <tbody>
+          <tr><td>Warmup and takeoff</td><td>0.970</td></tr>
+          <tr><td>Climb</td><td>0.985</td></tr>
+          <tr><td>Landing</td><td>0.995</td></tr>
+          <tr><td>Cruise</td><td>\(\exp\!\left[-\dfrac{R\,C}{V\,(L/D)}\right]\) (Breguet)</td></tr>
+          <tr><td>Loiter</td><td>\(\exp\!\left[-\dfrac{E\,C}{L/D}\right]\) (endurance, Lesson 6)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Sizing then allows 6% extra for reserve and trapped fuel: \(\Wf/\Wo = 1.06\,(1 - W_x/W_0)\).</p>
+    <div class="example">
+      <p class="example-title">Example 5.2 — The fuel fraction of Example 5.1</p>
+      <p>For the mission of Example 5.1, take \(L/D = 16\) and \(C = 0.55/\text{h}\) in cruise. Estimate \(W_x/W_0\) and \(\Wf/\Wo\), counting descent with the landing.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \frac{W_3}{W_2} = \exp\left[-\frac{1586.4(0.55)}{850(16)}\right] = e^{-0.06416} = 0.9379 \]
+          \[ \frac{W_x}{W_0} = 0.970(0.985)(0.9379)(0.995) = 0.8916, \qquad \frac{\Wf}{\Wo} = 1.06(1 - 0.8916) = 0.115 \]
+          <p>About 11.5% of the takeoff weight is fuel. Notice that only the cruise fraction depends on the trip distance; the climb credited 204 km of the range, which is why the cruise is 1586 km, not 2000.</p>
+        </div>
+      </details>
+    </div>
+    <aside class="callout tip">
+      <p class="callout-title">Try it in the Mission Profile Builder</p>
+      <p>The <a href="../tools/mission-builder.html">Mission Profile Builder</a> lets you assemble any profile from these segments, draws it, adds up its time and distance, and multiplies the weight fractions. Module 3 uses the same calculation to size the aircraft.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A mission profile is a numbered list of segments; the aircraft weighs \(W_i\) at the end of segment \(i\), and \(W_x/W_0\) is the product of the segment fractions.</li>
+      <li>Transport missions are sized by range, combat missions by radius (out and back), patrol missions by endurance.</li>
+      <li>Climb: \(t = h/\overline{RC}\), \(d = \overline{V}t\); descent: \(d = h/\tan\gamma_d\); cruise is what remains of the range.</li>
+      <li>Historical fractions: takeoff 0.970, climb 0.985, landing 0.995; cruise and loiter from Breguet; \(\Wf/\Wo = 1.06(1 - W_x/W_0)\).</li>
+      <li>Next, <a href="06-reserves.html">Lesson 6</a> fills in the reserves, the winds and what "design range" really means.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: typical mission profiles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var P = MISSION.PROFILES, st = { p: 'transport', i: 2 };
+  var chart = AERO.chart(document.getElementById('fig51-stage'), {
+    x: { label: 'Distance or time (schematic)', min: 0, max: 112, ticks: [] }, y: { label: 'Altitude (schematic)', min: -0.8, max: 10.5, ticks: [] }, height: 380, pad: { l: 24 },
+    ariaLabel: 'A schematic mission profile'
+  });
+  var handles = [];
+  var panel = document.getElementById('fig51-controls');
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Mission' }), chips = {};
+  Object.keys(P).forEach(function (k) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: P[k].label });
+    b.addEventListener('click', function () { st.p = k; st.i = Math.min(2, P[k].segs.length - 1); draw(); });
+    chips[k] = b; row.appendChild(b);
+  });
+  var title = CYL.el('p', { class: 'small', style: 'margin:6px 0 4px' }), list = CYL.el('ol', { class: 'seg-list', 'aria-label': 'Segments' }), text = CYL.el('p', { class: 'seg-text', 'aria-live': 'polite' });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Mission' }));
+  panel.appendChild(row); panel.appendChild(title); panel.appendChild(list); panel.appendChild(text);
+  function draw() {
+    var prof = P[st.p];
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === st.p)); });
+    handles.forEach(function (h) { h.remove(); }); handles = [];
+    var xmax = 0;
+    prof.segs.forEach(function (s, i) {
+      var on = i === st.i;
+      handles.push(chart.polyline(s.pts, { color: MISSION.SEG_COLORS[s.type] || 'ink', width: on ? 5 : 2.4 }));
+      var end = s.pts[s.pts.length - 1]; xmax = Math.max(xmax, end[0]);
+      handles.push(chart.text(end, String(i + 1), { color: on ? 'accent' : 'muted', weight: 700, dx: 3, dy: -6 }));
+    });
+    handles.push(chart.text(prof.segs[0].pts[0], '0', { color: 'muted', weight: 700, dx: 3, dy: -6 }));
+    title.innerHTML = '<strong>' + CYL.escapeHtml(prof.title) + '.</strong> ' + CYL.escapeHtml(prof.text);
+    list.innerHTML = '';
+    prof.segs.forEach(function (s, i) {
+      var b = CYL.el('button', { type: 'button', 'aria-pressed': String(i === st.i) }, [CYL.el('span', { class: 'seg-n', text: String(i + 1) }), CYL.el('span', { text: s.label })]);
+      b.addEventListener('click', function () { st.i = i; draw(); });
+      list.appendChild(CYL.el('li', null, b));
+    });
+    var s = prof.segs[st.i];
+    text.innerHTML = '<strong>Segment ' + (st.i + 1) + ', ' + CYL.escapeHtml(s.label.toLowerCase()) + '</strong> (from \\(W_{' + st.i + '}\\) to \\(W_{' + (st.i + 1) + '}\\)): ' + CYL.escapeHtml(s.text);
+    CYL.renderMath(text);
+    chart.setAriaLabel('Schematic mission profile, ' + prof.title + ': ' + prof.segs.map(function (q, i) { return (i + 1) + ' ' + q.label; }).join(', ') + '.');
+  }
+  draw();
+});
+
+/* ---------- Figure 5.2: a transport timeline, to scale ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { R: 2000, h: 11, rc: 9, vcl: 600, vcr: 850, gam: 3, vd: 600, taxi: 18 };
+  var chart = AERO.chart(document.getElementById('fig52-stage'), {
+    x: { label: 'Distance (km)', min: 0, max: 2200 }, y: { label: 'Altitude (km)', min: 0, max: 14 }, height: 300,
+    ariaLabel: 'Altitude against distance for a transport flight, with true distances.',
+    legend: [{ label: 'Climb', color: 'good', line: true }, { label: 'Cruise', color: 'z', line: true }, { label: 'Descent', color: 'muted', line: true }]
+  });
+  var lc = chart.polyline([], { color: 'good', width: 2.8 }), lr = chart.polyline([], { color: 'z', width: 2.8 }), ld = chart.polyline([], { color: 'muted', width: 2.8 });
+  var panel = document.getElementById('fig52-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var ss = [sl('R', 'Trip distance', 200, 8000, 50, 'km', 'v'), sl('h', 'Cruise altitude', 3, 13, 0.5, 'km'), sl('rc', 'Average rate of climb', 4, 15, 0.5, 'm/s', 'good'), sl('vcl', 'Average climb speed', 400, 750, 10, 'km/h', 'good'),
+    sl('vcr', 'Cruise speed', 500, 950, 10, 'km/h', 'z'), sl('gam', 'Descent angle', 2, 5, 0.1, '°')];
+  var ro = { c: CYL.readout('Climb'), cr: CYL.readout('Cruise', { color: 'z' }), d: CYL.readout('Descent'), b: CYL.readout('Block time (with 18 min taxi)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Flight' }));
+  ss.forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.c.el, ro.cr.el, ro.d.el, ro.b.el]));
+  CYL.renderMath(panel);
+  function km(x) { return CYL.fmt(x, 4) + ' km'; }
+  function mn(x) { return CYL.fmt(x, 3) + ' min'; }
+  function draw() {
+    var h = st.h, tc = h * 1000 / st.rc / 60, dc = st.vcl * tc / 60, dd = h / Math.tan(st.gam * Math.PI / 180), cr = st.R - dc - dd, hc = h;
+    if (cr < 0) {   // no room for cruise: climb and descend to the altitude where they meet
+      var k = st.R / (dc + dd); hc = h * k; dc *= k; dd *= k; tc *= k; cr = 0;
+    }
+    var td = dd / st.vd * 60, tcr = cr / st.vcr * 60;
+    chart.setAxes({ x: { max: Math.max(400, st.R * 1.08) } });
+    lc.set([[0, 0], [dc, hc]]); lr.set([[dc, hc], [dc + cr, hc]]); ld.set([[dc + cr, hc], [st.R, 0]]);
+    ro.c.set(km(dc) + ', ' + mn(tc) + (hc < h - 1e-9 ? ' (to ' + CYL.fmt(hc, 3) + ' km only)' : ''));
+    ro.cr.set(cr > 0 ? km(cr) + ', ' + mn(tcr) : 'none: the trip is too short');
+    ro.d.set(km(dd) + ', ' + mn(td));
+    var tb = st.taxi + tc + tcr + td;
+    ro.b.set(Math.floor(tb / 60) + ' h ' + Math.round(tb % 60) + ' min');
+    chart.setAriaLabel('Transport flight of ' + st.R + ' km with true distances: climb ' + Math.round(dc) + ' km, cruise ' + Math.round(cr) + ' km at ' + CYL.fmt(hc, 3) + ' km altitude, descent ' + Math.round(dd) + ' km.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1',
+    type: 'fields',
+    prompt: 'A jet climbs to \\(10\\,000\\ \\text{m}\\) at an average rate of climb of \\(10\\ \\text{m/s}\\) and an average horizontal speed of \\(550\\ \\text{km/h}\\). Find the time to climb and the horizontal distance covered in the climb.',
+    fields: [{ name: 't', label: '\\(t_{\\text{climb}} =\\)', answer: 10000 / 10 / 60, unit: 'min' }, { name: 'd', label: '\\(d_{\\text{climb}} =\\)', answer: 550 * 1000 / 3600, unit: 'km' }],
+    hints: ['\\(t = h/\\overline{RC}\\) in seconds; divide by 60 for minutes.', '\\(d = \\overline{V}t\\): \\(550\\ \\text{km/h}\\) for \\(1000\\ \\text{s}\\).'],
+    explain: 'The climb covers 153 km of the trip: it counts toward the range.',
+    solution: '\\[ t = \\frac{10\\,000}{10} = 1000\\ \\text{s} = 16.67\\ \\text{min}, \\qquad d = 550\\,\\frac{1000}{3600} = 152.8\\ \\text{km} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2',
+    type: 'numeric',
+    prompt: 'An airliner starts its descent from \\(10\\,000\\ \\text{m}\\) and descends at a constant \\(2.5^\\circ\\) to the runway. How far from the destination must it start down?',
+    label: '\\(d_{\\text{descent}} =\\)', answer: 10 / Math.tan(2.5 * Math.PI / 180), unit: 'km',
+    hints: ['The descent is a straight line at angle \\(\\gamma_d\\): \\(\\tan\\gamma_d = h/d\\).', '\\(d = h/\\tan\\gamma_d\\) with \\(h = 10\\ \\text{km}\\).'],
+    explain: 'Pilots use the same geometry: roughly 3 nautical miles per 1000 ft at 3°.',
+    solution: '\\[ d = \\frac{10\\ \\text{km}}{\\tan 2.5^\\circ} = \\frac{10}{0.04366} = 229.0\\ \\text{km} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3',
+    type: 'mc',
+    prompt: 'A fighter must have a combat radius of \\(900\\ \\text{km}\\). Which statement about its mission is correct?',
+    choices: [
+      { html: 'It cruises at least \\(1800\\ \\text{km}\\) in total, plus combat and reserves, and the return leg is flown lighter.', correct: true, feedback: 'Yes: the radius is one way, so the aircraft goes out and comes back.' },
+      { html: 'It cruises \\(900\\ \\text{km}\\) in total, half out and half back.', feedback: 'That would be a radius of 450 km.' },
+      { html: 'Its ferry range must be exactly \\(900\\ \\text{km}\\).', feedback: 'The ferry range is the farthest it can go with no payload, much more than the radius.' },
+      { html: 'The combat segment uses no fuel, so it can be left out.', feedback: 'Combat at full thrust burns fuel fast; it is often one of the most expensive segments.' }
+    ],
+    explain: 'Radius missions are much more demanding than ranges of the same number.'
+  });
+});
+</script>
+</body>
+</html>
