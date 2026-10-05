@@ -18,7 +18,8 @@
  * AERO.G           9.81 m/s²;  AERO.U  unit factors (LB, FT, FT2, HP, MPH, KT, LBF, MI, NMI)
  * AERO.chart(container, opts) → chart        (SVG scatter / line chart with linear or log axes)
  *    opts: {x:{label (HTML/TeX), min, max, log:false, ticks:null|[…], format(v)}, y:{…}, height:360,
- *           ariaLabel (REQUIRED), legend:null|[{label, color, shape}], pad:{l,r,t,b}}
+ *           ariaLabel (REQUIRED), legend:null|[{label, color, shape}], pad:{l,r,t,b},
+ *           yLabelSide:true (the y label runs up the axis; false puts it above the axis instead)}
  *    chart.points(list, {x(d), y(d), color(d)|'r', shape(d)|'circle'|'tri'|'square'|'diamond', r:5, label(d)→text|null,
  *                 title(d)→tooltip HTML, onClick(d), group}) → handle {set(list), setVisible, remove}
  *    chart.fn(f, {color:'accent', width:2, dashed:false, domain:[a,b], samples:160, label, labelAt}) → handle
@@ -224,9 +225,10 @@
     if (!container) { report('chart: no container'); return null; }
     if (!opts.ariaLabel) report('chart: ariaLabel is required');
     var C = { opts: opts, x: Object.assign({}, opts.x), y: Object.assign({}, opts.y) };
-    var pad = Object.assign({ l: 58, r: 16, t: 14, b: 46 }, opts.pad);
+    var pad = Object.assign({ l: 58, r: 16, t: 14, b: 28 }, opts.pad);
+    var ySide = opts.yLabelSide !== false;
     var wrap = document.createElement('div');
-    wrap.className = 'aero-chart';
+    wrap.className = 'aero-chart' + (ySide ? ' yside' : '');
     var svg = el('svg', { role: 'img', 'aria-label': opts.ariaLabel || 'Chart', focusable: 'false' });
     wrap.appendChild(svg);
     var tip = document.createElement('div');
@@ -272,14 +274,30 @@
     C.toPx = function (p) { return [sx(p[0]), sy(p[1])]; };
     C.inView = function (p) { return ok(p[0], C.x) && ok(p[1], C.y) && p[0] >= C.x.min && p[0] <= C.x.max && p[1] >= C.y.min && p[1] <= C.y.max; };
 
+    function textWidth(s, fs) {                  // rendered width of a tick label (estimated if not yet shown)
+      var t = el('text', { 'font-size': fs }), w = 0;
+      t.textContent = s; gGrid.appendChild(t);
+      try { w = t.getComputedTextLength(); } catch (e) { w = 0; }
+      gGrid.removeChild(t);
+      return w || String(s).length * fs * 0.6;
+    }
     function drawAxes() {
       while (gGrid.firstChild) gGrid.removeChild(gGrid.firstChild);
+      var fs = W < 420 ? 10.5 : 11.5;
+      var yt = C.y.ticks || (C.y.log ? logTicks(C.y.min, C.y.max) : linTicks(C.y.min, C.y.max, H < 260 ? 4 : 6));
+      setLabel(xLab, C.x.label); setLabel(yLab, C.y.label);
+      if (ySide) {                               // the label runs up the axis, just outside the widest tick label
+        var tw = 0, lh = yLab.offsetHeight || 16;
+        yt.forEach(function (v) { if (v >= C.y.min && v <= C.y.max) tw = Math.max(tw, textWidth(C.y.format ? C.y.format(v) : tickText(v), fs)); });
+        pad.l = Math.ceil(3 + lh + 5 + tw + 7);
+        yLab.classList.add('side');
+        yLab.style.left = (3 + lh / 2) + 'px';
+        yLab.style.top = ((parseFloat(getComputedStyle(wrap).paddingTop) || 0) + pad.t + (H - pad.t - pad.b) / 2) + 'px';
+      }
       clipRect.setAttribute('x', pad.l); clipRect.setAttribute('y', pad.t);
       clipRect.setAttribute('width', Math.max(0, W - pad.l - pad.r)); clipRect.setAttribute('height', Math.max(0, H - pad.t - pad.b));
       gGrid.appendChild(el('rect', { x: pad.l, y: pad.t, width: W - pad.l - pad.r, height: H - pad.t - pad.b, fill: 'none', stroke: paint('line') }));
-      var fs = W < 420 ? 10.5 : 11.5;
       var xt = C.x.ticks || (C.x.log ? logTicks(C.x.min, C.x.max) : linTicks(C.x.min, C.x.max, W < 420 ? 4 : 7));
-      var yt = C.y.ticks || (C.y.log ? logTicks(C.y.min, C.y.max) : linTicks(C.y.min, C.y.max, H < 260 ? 4 : 6));
       var lastRight = -1e9;
       xt.forEach(function (v) {
         if (v < C.x.min || v > C.x.max) return;
@@ -299,7 +317,6 @@
         var t = el('text', { x: pad.l - 7, y: Y + fs * 0.35, 'text-anchor': 'end', 'font-size': fs, fill: paint('muted') });
         t.textContent = C.y.format ? C.y.format(v) : tickText(v); gGrid.appendChild(t);
       });
-      setLabel(xLab, C.x.label); setLabel(yLab, C.y.label);
       xLab.style.marginLeft = (pad.l / W * 100) + '%'; xLab.style.marginRight = (pad.r / W * 100) + '%';
     }
     function size() {
@@ -307,7 +324,7 @@
       W = Math.max(260, w);
       H = opts.height || 360;
       if (W < 480) H = Math.round(H * 0.86);
-      pad.l = W < 420 ? 48 : (opts.pad && opts.pad.l) || 58;
+      pad.l = W < 420 ? 48 : (opts.pad && opts.pad.l) || 58;   // replaced in drawAxes when the y label is on the side
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
       svg.setAttribute('width', W); svg.setAttribute('height', H);
     }
@@ -374,9 +391,22 @@
           var lab = o.label ? o.label(d) : null;
           if (lab) labels.push({ px: px, py: py, text: lab, col: col });
         });
+        // Each label goes above-right of its point (above-left near the right edge). If that would cover a label
+        // already placed, try the other side, then below; if nothing fits, leave it off (the tooltip still names it).
+        var placed = [];
         labels.forEach(function (L) {
-          var fs = W < 420 ? 10 : 11, left = L.px > W - pad.r - 110;
-          var t = el('text', { x: L.px + (left ? -8 : 8), y: L.py - 6, 'text-anchor': left ? 'end' : 'start', 'font-size': fs, 'font-weight': 600, fill: paint('ink'), class: 'aero-ptlabel' });
+          var fs = W < 420 ? 10 : 11, w = String(L.text).length * fs * 0.6 + 2, left = L.px > W - pad.r - 110;
+          var spots = [[8, -6, 'start'], [-8, -6, 'end'], [8, 14, 'start'], [-8, 14, 'end']];
+          if (left) spots = [spots[1], spots[3], spots[0], spots[2]];
+          var pick = null;
+          for (var k = 0; k < spots.length && !pick; k++) {
+            var s = spots[k], x0 = s[2] === 'start' ? L.px + s[0] : L.px + s[0] - w, box = [x0, L.py + s[1] - fs, x0 + w, L.py + s[1] + 2];
+            if (box[0] < pad.l || box[2] > W - pad.r) continue;   // stay clear of the tick labels
+            if (!placed.some(function (b) { return box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1]; })) pick = { s: s, box: box };
+          }
+          if (!pick) return;
+          placed.push(pick.box);
+          var t = el('text', { x: L.px + pick.s[0], y: L.py + pick.s[1], 'text-anchor': pick.s[2], 'font-size': fs, 'font-weight': 600, fill: paint('ink'), class: 'aero-ptlabel' });
           t.textContent = L.text;
           g.appendChild(t);
         });
