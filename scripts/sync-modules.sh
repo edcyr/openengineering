@@ -8,7 +8,7 @@
 set -eu
 SITE="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$(dirname "$SITE")"
-COURSES="ecor1034|.|ECOR 1034|curvilinear-motion cylindrical-coordinates work-and-energy
+COURSES="ecor1034|.|ECOR 1034|curvilinear-motion cylindrical-coordinates work-and-energy impulse-and-momentum
 maae2101|.|MAAE 2101|mass-moments-of-inertia angular-momentum
 aero3002|conceptual-aircraft-design|AERO 3002|01-history-of-aircraft-design 02-requirements-and-mission-profiles 03-first-weight-estimate"
 

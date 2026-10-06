@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collision Lab · Impulse and Momentum</title>
+<meta name="description" content="Pick a scene (two carts colliding, a row of three, a cart between walls, carts pushed apart, a crate under a time-varying push, an impact into a spring, a bouncing ball or two pucks), change its numbers, and watch momentum, impulses and energy live.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<style>
+  /* ---- Collision Lab: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-desc { margin: 10px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-events { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; }
+  .ex-events li { margin: 0 0 0.35em; }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Collision Lab</h1>
+    <p class="lede">Pick a scene, change its numbers, and watch the momentum move: from one cart to another in a collision, out of a pair that a spring pushes apart, into a crate through the impulse of a push. The momentum bars and the chart show which totals stay fixed, and the readouts show the energy that impacts take away.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a scene</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label" id="ex-scene-label">Scene</p>
+        <div class="chip-row" id="ex-scene" role="group" aria-labelledby="ex-scene-label"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide" aria-labelledby="ex-cap">
+      <div class="viz mf-viz" id="ex-viz">
+        <div class="viz-stage" id="ex-stage"></div>
+        <div class="viz-controls" id="ex-controls"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure C.1</strong> The chosen scene. Press <em>Play</em> or drag the time slider, and change the numbers in the panel (the motion is recomputed at once). Velocity arrows are green; at each impact, red arrows show the equal and opposite impact forces for a moment. In the momentum bars and chart, positive is to the right, and the black bar and green line are the total. On a crate, forces are drawn as in a free-body diagram: the weight ends at the center of gravity, a push ends on the face it acts on, and friction starts on the face it acts on.</figcaption>
+    </figure>
+    <div class="ex-events" id="ex-events" aria-live="polite"></div>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>Exchange of velocities.</strong> Equal masses, \(e = 1\), \(B\) at rest: \(A\) stops dead and \(B\) leaves at \(A\)'s speed. <button type="button" class="btn small" data-load="carts" data-set='{"mA": 1, "mB": 1, "vA": 1, "vB": 0, "e": 1}'>Load</button></li>
+      <li><strong>Stuck together.</strong> Set \(e = 0\). The carts move on together; the momentum total is unchanged and the energy lost is the largest possible. <button type="button" class="btn small" data-load="carts" data-set='{"e": 0}'>Load</button></li>
+      <li><strong>Newton's cradle on wheels.</strong> Three equal carts, \(e = 1\): the impulse passes down the line and only the last one leaves. <button type="button" class="btn small" data-load="three" data-set='{"mA": 1, "mB": 1, "mC": 1, "e": 1}'>Load</button></li>
+      <li><strong>A wall is not part of the system.</strong> A cart bouncing between walls reverses its momentum at every bounce: the walls' impulses are external. With \(e &lt; 1\) each return trip is slower. <button type="button" class="btn small" data-load="wall">Load</button></li>
+      <li><strong>Equal and opposite.</strong> Push two carts apart with a spring: their momenta are equal and opposite at every instant, and the total stays zero. Make one four times heavier. <button type="button" class="btn small" data-load="apart" data-set='{"mA": 0.5, "mB": 2}'>Load</button></li>
+      <li><strong>Start the clock when it moves.</strong> With a ramp push on a rough floor, the friction curve mirrors the push until the crate slips. <button type="button" class="btn small" data-load="push" data-set='{"shape": "ramp"}'>Load</button></li>
+      <li><strong>Which \(e\) compresses the spring most?</strong> Try \(e = 0\), \(0.5\) and \(1\). <button type="button" class="btn small" data-load="spring" data-set='{"e": 1}'>Load</button></li>
+      <li><strong>A flatter bounce.</strong> Off a smooth floor, \(\tan\theta_2 = e\tan\theta_1\): the horizontal speed never changes. <button type="button" class="btn small" data-load="bounce">Load</button></li>
+      <li><strong>The billiards right angle.</strong> Equal pucks, \(e = 1\), any offset: the paths afterward are at \(90^\circ\). <button type="button" class="btn small" data-load="pucks" data-set='{"e": 1, "mB": 1}'>Load</button></li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the lab works</h2>
+    <p>The scenes on a straight track integrate Newton's second law for each body in small time steps (fourth-order Runge&ndash;Kutta, \(\Delta t = 0.5\ \text{ms}\)), with applied forces, springs and friction (static until the push exceeds \(\mu_s N\), then kinetic). Impacts are treated as instantaneous, as in the lessons: when two bodies meet, their velocities jump according to conservation of momentum and the coefficient of restitution, and the energy lost is recorded. Bodies that are pressed together stay in contact without bouncing.</p>
+    <p>The impulse of every force is added up step by step, so for each body \(m v - m v_0\) equals the sum of the impulses, to rounding: the principle of impulse and momentum, checked numerically. The bouncing ball and the pucks are computed exactly, from the projectile and straight-line motions between impacts.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Pause just after an impact and check the readouts by hand with \(m_A(v_A)_1 + m_B(v_B)_1 = m_A(v_A)_2 + m_B(v_B)_2\) and \((v_B)_2 - (v_A)_2 = e\left[(v_A)_1 - (v_B)_1\right]\). The list under the figure gives the velocities before and after every impact.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ---------- Collision Lab: scenes, sliders, momentum bars and charts ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G = 9.81, D2R = Math.PI / 180;
+  var stage = document.getElementById('ex-stage'), panel = document.getElementById('ex-controls');
+  var eventsEl = document.getElementById('ex-events'), descEl = document.getElementById('ex-desc');
+  var CART = { shape: 'cart', h: 0.3 };
+  function out(lim) { return function (s) { for (var i = 0; i < s.x.length; i++) if (Math.abs(s.x[i]) > lim) return true; return false; }; }
+
+  /* Track scenes: sliders and spec(st) for MOMENTUM.figure. Custom scenes: build(stage, panel, st) -> {destroy, events()}. */
+  var SCENES = [
+    { id: 'carts', label: 'Two carts',
+      desc: 'Two carts on a smooth track roll toward each other and collide. Set the masses, the velocities and the coefficient of restitution.',
+      sliders: [
+        { key: 'mA', label: 'Mass of \\(A\\)', min: 0.5, max: 4, step: 0.5, value: 2, unit: 'kg', color: 'accent' },
+        { key: 'mB', label: 'Mass of \\(B\\)', min: 0.5, max: 4, step: 0.5, value: 1, unit: 'kg', color: 'warn' },
+        { key: 'vA', label: 'Velocity of \\(A\\)', min: 0.2, max: 1.5, step: 0.1, value: 0.8, unit: 'm/s', color: 'good' },
+        { key: 'vB', label: 'Velocity of \\(B\\)', min: -1, max: 0.6, step: 0.1, value: -0.3, unit: 'm/s', color: 'good' },
+        { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0, max: 1, step: 0.05, value: 0.6 }
+      ],
+      note: 'Smooth, level track. If B is ahead of A and faster, they never meet.',
+      frame: { xRange: [-2.6, 2.6], yRange: [-0.25, 0.75], maxHeight: 240 }, draw: [CART, CART],
+      readouts: ['vA', 'vB', 'Ttot', 'lost'], chart: { kind: 'p' },
+      spec: function (st) { return { bodies: [{ m: st.mA, x: -1.0, v: st.vA, w: 0.5 }, { m: st.mB, x: 0.7, v: st.vB, w: 0.5 }], e: st.e, tmax: 8, until: out(2.3) }; } },
+    { id: 'three', label: 'Three carts',
+      desc: 'Cart A runs into carts B and C, which stand at rest a little apart. The impulse passes down the line, one impact at a time.',
+      sliders: [
+        { key: 'mA', label: 'Mass of \\(A\\)', min: 0.5, max: 3, step: 0.5, value: 1, unit: 'kg', color: 'accent' },
+        { key: 'mB', label: 'Mass of \\(B\\)', min: 0.5, max: 3, step: 0.5, value: 1, unit: 'kg', color: 'warn' },
+        { key: 'mC', label: 'Mass of \\(C\\)', min: 0.5, max: 3, step: 0.5, value: 1, unit: 'kg', color: 'z' },
+        { key: 'vA', label: 'Velocity of \\(A\\)', min: 0.3, max: 1.5, step: 0.1, value: 1, unit: 'm/s', color: 'good' },
+        { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0, max: 1, step: 0.05, value: 0.9 }
+      ],
+      note: 'The same e for both pairs. Smooth, level track.',
+      frame: { xRange: [-2.6, 2.6], yRange: [-0.25, 0.85], maxHeight: 240 }, draw: [CART, CART, CART],
+      readouts: ['vA', 'vB', 'vC', 'lost'], chart: { kind: 'p' },
+      spec: function (st) { return { bodies: [{ m: st.mA, x: -1.6, v: st.vA, w: 0.45 }, { m: st.mB, x: 0, w: 0.45 }, { m: st.mC, x: 0.55, w: 0.45 }], e: st.e, tmax: 8, until: out(2.35) }; } },
+    { id: 'wall', label: 'Between walls',
+      desc: 'A cart rolls back and forth between two walls. Each wall gives it an impulse, so its momentum is not conserved: it reverses at every bounce.',
+      sliders: [
+        { key: 'm', label: 'Mass of the cart', min: 0.5, max: 4, step: 0.5, value: 1, unit: 'kg', color: 'accent' },
+        { key: 'v', label: 'Starting velocity', min: 0.3, max: 2, step: 0.1, value: 1.2, unit: 'm/s', color: 'good' },
+        { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0.3, max: 1, step: 0.05, value: 0.8 }
+      ],
+      note: 'Walls 4 m apart. The readout adds up the impulse of the walls.',
+      frame: { xRange: [-2.5, 2.5], yRange: [-0.25, 0.75], maxHeight: 240 }, draw: [CART],
+      readouts: ['vA', 'pA', 'IA', 'lost'], chart: { kind: 'p' },
+      spec: function (st) { return { bodies: [{ m: st.m, x: -1, v: st.v, w: 0.5 }], walls: [{ x: -2, side: -1, e: st.e }, { x: 2, side: 1, e: st.e }], tmax: 12 }; } },
+    { id: 'apart', label: 'Pushed apart',
+      desc: 'Two carts at rest, with a compressed spring between them, are released. The spring pushes them apart: internal forces, equal and opposite.',
+      sliders: [
+        { key: 'mA', label: 'Mass of \\(A\\)', min: 0.5, max: 4, step: 0.5, value: 1, unit: 'kg', color: 'accent' },
+        { key: 'mB', label: 'Mass of \\(B\\)', min: 0.5, max: 4, step: 0.5, value: 2, unit: 'kg', color: 'warn' },
+        { key: 'c', label: 'Spring compression', min: 0.04, max: 0.15, step: 0.01, value: 0.12, unit: 'm', color: 't' }
+      ],
+      note: 'Spring k = 1500 N/m, free length 0.24 m, fixed to A. The stored energy ½kc² all becomes kinetic energy.',
+      frame: { xRange: [-3.7, 3.7], yRange: [-0.3, 0.95], maxHeight: 260 }, draw: [CART, CART],
+      readouts: ['vA', 'vB', 'TA', 'TB'], chart: { kind: 'p' },
+      spec: function (st) { var gap = 0.24 - st.c; return { bodies: [{ m: st.mA, x: -(gap / 2 + 0.25), w: 0.5 }, { m: st.mB, x: gap / 2 + 0.25, w: 0.5 }], links: [{ a: 0, b: 1, k: 1500, len: 0.24 }], tmax: 6, until: out(3.3) }; } },
+    { id: 'push', label: 'Pushed crate',
+      desc: 'A 20 kg crate at rest on a rough floor is pushed by a force that changes with time. Its momentum is the impulse of the push less the impulse of friction.',
+      selects: [{ key: 'shape', label: 'Shape of the push', value: 'hold', options: [
+        { value: 'const', label: 'Constant' }, { value: 'ramp', label: 'Ramp, P = kt' }, { value: 'hold', label: 'Ramp, then hold' }, { value: 'pulse', label: 'Half-sine pulse' }] }],
+      sliders: [
+        { key: 'P', label: 'Largest push \\(P_{\\max}\\)', min: 40, max: 250, step: 10, value: 120, unit: 'N', color: 'warn' },
+        { key: 'T', label: 'Duration of the push', min: 1, max: 6, step: 0.5, value: 4, unit: 's' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.5, step: 0.05, value: 0.3, color: 'r' }
+      ],
+      note: 'μs = μk + 0.1. "Ramp, then hold" grows for the first half of the duration. The view follows the crate.',
+      frame: { xRange: [-0.6, 9.6], yRange: [-2.0, 3.0], maxHeight: 320, follow: true }, draw: [{ shape: 'block', h: 0.6 }],
+      forces: true, ledger: ['P', 'Ff'], readouts: ['t', 'vA', 'PA', 'FfA'], chart: { kind: 'F' },
+      spec: function (st) {
+        var T = st.T, P0 = st.P, f = {
+          'const': function (t) { return t <= T ? P0 : 0; },
+          ramp: function (t) { return t <= T ? P0 * t / T : 0; },
+          hold: function (t) { return t <= T ? P0 * Math.min(1, 2 * t / T) : 0; },
+          pulse: function (t) { return t <= T ? P0 * Math.sin(Math.PI * t / T) : 0; }
+        }[st.shape] || function () { return 0; };
+        return { bodies: [{ m: 20, x: 0.5, w: 0.7, mu: st.mu, muS: st.mu + 0.1, P: f }], tmax: 16 };
+      } },
+    { id: 'spring', label: 'Impact into a spring',
+      desc: 'Block A strikes block B, which rests against a spring. Momentum is conserved across the impact; then the spring decelerates B and throws it back.',
+      sliders: [
+        { key: 'mA', label: 'Mass of \\(A\\)', min: 1, max: 5, step: 0.5, value: 2, unit: 'kg', color: 'accent' },
+        { key: 'mB', label: 'Mass of \\(B\\)', min: 1, max: 5, step: 0.5, value: 3, unit: 'kg', color: 'warn' },
+        { key: 'vA', label: 'Velocity of \\(A\\)', min: 2, max: 8, step: 0.5, value: 6, unit: 'm/s', color: 'good' },
+        { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0, max: 1, step: 0.05, value: 0.5 }
+      ],
+      note: 'k = 600 N/m; smooth floor. Played at a quarter of real speed.',
+      frame: { xRange: [-0.55, 1.85], yRange: [-0.15, 0.55], maxHeight: 240, speed: 0.25 }, draw: [{ shape: 'block', h: 0.22 }, { shape: 'block', h: 0.22 }],
+      readouts: ['vA', 'vB', 'Ttot', 'lost'], chart: { kind: 'v' },
+      spec: function (st) { return { bodies: [{ m: st.mA, x: 0, v: st.vA, w: 0.3 }, { m: st.mB, x: 1.0, w: 0.3 }], e: st.e, springs: [{ x: 1.15, side: 1, k: 600, len: 0.6 }], tmax: 1.6,
+        until: function (s) { return s.x[0] < -0.45 && s.x[1] < 0.95; } }; } },
+    { id: 'bounce', label: 'Bouncing ball',
+      desc: 'A ball is thrown along a smooth floor and bounces. The floor gives only vertical impulses: the horizontal velocity never changes, the vertical one shrinks by e at every bounce.',
+      sliders: [
+        { key: 'h', label: 'Starting height', min: 0.5, max: 2, step: 0.1, value: 1.5, unit: 'm' },
+        { key: 'vx', label: 'Horizontal speed', min: 0, max: 3, step: 0.1, value: 1.2, unit: 'm/s', color: 'good' },
+        { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0.3, max: 0.95, step: 0.05, value: 0.75 }
+      ],
+      note: 'Released from rest vertically at the starting height. Angles are measured from the floor.',
+      build: buildBounce },
+    { id: 'pucks', label: 'Two pucks',
+      desc: 'Seen from above: puck A slides toward puck B, at rest and offset sideways. The impulse acts only along the line of impact, through both centers.',
+      sliders: [
+        { key: 'b', label: 'Offset \\(b\\)', min: 0, max: 0.11, step: 0.01, value: 0.05, unit: 'm' },
+        { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0, max: 1, step: 0.05, value: 0.8 },
+        { key: 'mB', label: 'Mass of \\(B\\) / mass of \\(A\\)', min: 0.5, max: 3, step: 0.25, value: 1, color: 'warn' }
+      ],
+      note: 'A: 0.2 kg at 1 m/s; radius 60 mm. Dashed gray: the line of impact n and the tangent t at contact.',
+      build: buildPucks }
+  ];
+  var SCENE = {};
+  SCENES.forEach(function (s) { SCENE[s.id] = s; });
+  var cur = null, st = {}, fig = null, custom = null, chips = {};
+
+  /* ----- the bouncing ball (exact projectile arcs between bounces) ----- */
+  function buildBounce(stg, pnl, st) {
+    var R = 0.06, p = CYL2D.plane(stg, { xRange: [-0.3, 6], yRange: [-0.2, 2.1], grid: 'none', axes: false, height: 330, maxHeight: 400,
+      ariaLabel: 'A ball thrown along a smooth floor bounces, each bounce lower and shorter than the last, with the same horizontal speed throughout.' });
+    var gF = p.group();
+    var trace = p.polyline([], { color: 'accent', width: 1.6, dashed: true });
+    var ball = p.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.55 });
+    var va = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
+    var imp = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'right' });
+    var roN = CYL.readout('Bounces so far'), roV = CYL.readout('Velocity \\((v_x, v_y)\\)', { color: 'good' });
+    var roH = CYL.readout('Last rebound height'), roA = CYL.readout('Last rebound angle');
+    pnl.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roN.el, roV.el, roH.el, roA.el]));
+    var run = MOMENTUM.bounce({ h0: st.h, vx: st.vx, e: st.e, tmax: 10, vmin: 0.12 });
+    var xEnd = run.at(run.duration).x;
+    p.setRange([-0.4, Math.max(3, xEnd + 0.5)], [-0.2, st.h + 0.4]);
+    var xb = Math.max(3, xEnd + 0.5) + 2;
+    gF.line([-2, 0], [xb, 0], { color: 'ink', width: 2.2 });
+    for (var q = -2; q <= xb; q += 0.2) gF.line([q, 0], [q - 0.1, -0.12], { color: 'muted', width: 1 });
+    var K = 0.18;
+    function draw(t) {
+      var s = run.at(t), C = [s.x, s.y + R];
+      ball.set({ center: C, r: R });
+      var pts = []; for (var k = 0; k <= 200; k++) { var r = run.at(t * k / 200); pts.push([r.x, r.y + R]); }
+      trace.set(pts);
+      va.setVisible(Math.hypot(s.vx, s.vy) > 0.05); va.set(C, [C[0] + s.vx * K, C[1] + s.vy * K]);
+      var done = run.events.filter(function (ev) { return ev.t <= t + 1e-9; }), last = done[done.length - 1];
+      var fl = last && t - last.t < 0.15;
+      imp.setVisible(!!fl);
+      if (fl) imp.set([last.x, -0.4], [last.x, 0]);
+      roN.set(String(done.length));
+      roV.set('(' + CYL.fmt(s.vx, 3) + ', ' + CYL.fmt(Math.abs(s.vy) < 1e-9 ? 0 : s.vy, 3) + ') m/s');
+      roH.set(done.length && run.peaks[done.length - 1] != null ? CYL.fmt(run.peaks[done.length - 1], 3) + ' m' : '—');
+      roA.set(last && st.vx > 0 ? CYL.fmt(Math.atan2(last.v2, st.vx) / D2R, 3) + '°' : '—');
+    }
+    var pl = MOMENTUM.player({ stage: stg, duration: function () { return run.duration; }, onTime: draw, speed: 0.6 });
+    return {
+      destroy: function () { pl.destroy(); },
+      events: function () {
+        var lines = run.events.slice(0, 4).map(function (ev, i) {
+          var a1 = st.vx > 0 ? ' at ' + CYL.fmt(Math.atan2(-ev.v1, st.vx) / D2R, 3) + '°' : '', a2 = st.vx > 0 ? ' at ' + CYL.fmt(Math.atan2(ev.v2, st.vx) / D2R, 3) + '°' : '';
+          return 'Bounce ' + (i + 1) + ' at ' + CYL.fmt(ev.t, 3) + ' s: lands at ' + CYL.fmt(Math.hypot(st.vx, ev.v1), 3) + ' m/s' + a1 + ', leaves at ' + CYL.fmt(Math.hypot(st.vx, ev.v2), 3) + ' m/s' + a2 + '.';
+        });
+        if (run.events.length > 4) lines.push('… then ' + (run.events.length - 4) + ' smaller bounces until it rolls.');
+        return lines;
+      }
+    };
+  }
+
+  /* ----- two pucks on smooth ice (exact straight-line motion between contacts) ----- */
+  function buildPucks(stg, pnl, st) {
+    var R = 0.06;
+    var p = CYL2D.plane(stg, { xRange: [-1.0, 1.2], yRange: [-0.75, 0.75], grid: 'none', axes: false, maxHeight: 400,
+      ariaLabel: 'Seen from above, puck A slides toward puck B, which is at rest and offset to one side. They collide and move off at an angle to each other.' });
+    var gAx = p.group();
+    var trA = p.polyline([], { color: 'accent', width: 1.6, dashed: true }), trB = p.polyline([], { color: 'warn', width: 1.6, dashed: true });
+    var cA = p.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.5 });
+    var cB = p.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'warn', fillOpacity: 0.5 });
+    var lA = p.label([0, 0], 'A'), lB = p.label([0, 0], 'B');
+    var aA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'left' });
+    var aB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_B', labelAt: 1, labelSide: 'left' });
+    var iA = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+    var iB = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+    var roA = CYL.readout('Velocity of \\(A\\)', { color: 'good' }), roB = CYL.readout('Velocity of \\(B\\)', { color: 'good' });
+    var roP = CYL.readout('Total momentum \\((p_x, p_y)\\)'), roL = CYL.readout('Kinetic energy lost', { color: 'bad' });
+    pnl.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roA.el, roB.el, roP.el, roL.el]));
+    var mA = 0.2, mB = 0.2 * st.mB;
+    var run = MOMENTUM.pucks({ A: { m: mA, r: R, p: [-0.8, 0], v: [1, 0] }, B: { m: mB, r: R, p: [0, st.b], v: [0, 0] }, e: st.e, tmax: 1.9 });
+    var h = run.hit;
+    if (h) {
+      var C = [(h.pA[0] + h.pB[0]) / 2, (h.pA[1] + h.pB[1]) / 2], n = h.n, tt = [-n[1], n[0]];
+      gAx.line([C[0] - 0.45 * n[0], C[1] - 0.45 * n[1]], [C[0] + 0.45 * n[0], C[1] + 0.45 * n[1]], { color: 'muted', width: 1.3, dashed: true, label: 'n', labelAt: 0, labelSide: 'left' });
+      gAx.line([C[0] - 0.3 * tt[0], C[1] - 0.3 * tt[1]], [C[0] + 0.3 * tt[0], C[1] + 0.3 * tt[1]], { color: 'muted', width: 1.3, dashed: true, label: 't', labelAt: 1, labelSide: 'right' });
+    }
+    function vtxt(v) { return '(' + CYL.fmt(Math.abs(v[0]) < 1e-9 ? 0 : v[0], 3) + ', ' + CYL.fmt(Math.abs(v[1]) < 1e-9 ? 0 : v[1], 3) + ') m/s'; }
+    function draw(t) {
+      var s = run.at(t), K = 0.22;
+      cA.set({ center: s.pA, r: R }); cB.set({ center: s.pB, r: R });
+      lA.set(s.pA); lB.set(s.pB);
+      function tr(w) { var o2 = []; for (var k = 0; k <= 80; k++) o2.push(run.at(t * k / 80)[w]); return o2; }
+      trA.set(tr('pA')); trB.set(tr('pB'));
+      function vec(hh, P, v) { hh.setVisible(Math.hypot(v[0], v[1]) > 0.01); hh.set(P, [P[0] + v[0] * K, P[1] + v[1] * K]); }
+      vec(aA, s.pA, s.vA); vec(aB, s.pB, s.vB);
+      gAx.setVisible(!!h && t >= h.t);
+      var fl = h && t >= h.t && t < h.t + 0.35;
+      iA.setVisible(!!fl); iB.setVisible(!!fl);
+      if (fl) {
+        var n2 = h.n, L = 0.16, fa = [s.pA[0] + n2[0] * R, s.pA[1] + n2[1] * R], fb = [s.pB[0] - n2[0] * R, s.pB[1] - n2[1] * R];
+        iA.set([fa[0] + n2[0] * L, fa[1] + n2[1] * L], fa); iB.set([fb[0] - n2[0] * L, fb[1] - n2[1] * L], fb);
+      }
+      roA.set(vtxt(s.vA)); roB.set(vtxt(s.vB));
+      roP.set('(' + CYL.fmt(mA * s.vA[0] + mB * s.vB[0], 3) + ', ' + CYL.fmt(Math.abs(mA * s.vA[1] + mB * s.vB[1]) < 1e-9 ? 0 : mA * s.vA[1] + mB * s.vB[1], 3) + ') kg·m/s');
+      roL.set(h && t >= h.t ? CYL.fmt(Math.abs(h.res.lost) < 1e-9 ? 0 : h.res.lost, 3) + ' J' : '0 J');
+    }
+    var pl = MOMENTUM.player({ stage: stg, duration: function () { return run.duration; }, onTime: draw, speed: 0.6 });
+    return {
+      destroy: function () { pl.destroy(); },
+      events: function () {
+        if (!h) return ['The pucks miss each other: the offset is larger than the sum of their radii.'];
+        var r = h.res, sA = Math.hypot(r.vA2[0], r.vA2[1]), sB = Math.hypot(r.vB2[0], r.vB2[1]);
+        var ang = sA > 1e-6 && sB > 1e-6 ? Math.acos(Math.max(-1, Math.min(1, (r.vA2[0] * r.vB2[0] + r.vA2[1] * r.vB2[1]) / (sA * sB)))) / D2R : null;
+        return ['Contact at ' + CYL.fmt(h.t, 3) + ' s, with the line of impact at ' + CYL.fmt(Math.atan2(h.n[1], h.n[0]) / D2R, 3) + '° to A’s path. Along n, A’s component goes from ' + CYL.fmt(r.vA1n, 3) + ' to ' + CYL.fmt(r.vA2n, 3) + ' m/s and B’s from 0 to ' + CYL.fmt(r.vB2n, 3) + ' m/s; along t, A keeps ' + CYL.fmt(Math.abs(r.vA1t), 3) + ' m/s.',
+          'Afterward A moves at ' + CYL.fmt(sA, 3) + ' m/s and B at ' + CYL.fmt(sB, 3) + ' m/s' + (ang != null ? ', ' + CYL.fmt(ang, 3) + '° apart' : '') + '. Kinetic energy lost: ' + CYL.fmt(Math.abs(r.lost) < 1e-9 ? 0 : r.lost, 3) + ' J.'];
+      }
+    };
+  }
+
+  /* ----- what happened, for track scenes ----- */
+  function trackEvents(run) {
+    var B = run.bodies, lines = [];
+    function nm(i) { return B[i].label + ' (' + CYL.fmt(B[i].m, 3) + ' kg)'; }
+    run.events.forEach(function (ev) {
+      if (lines.length > 6) return;
+      if (ev.kind === 'impact') lines.push('At ' + CYL.fmt(ev.t, 3) + ' s, ' + nm(ev.a) + ' and ' + nm(ev.b) + ' collide, e = ' + CYL.fmt(ev.e, 3) + ': velocities ' + CYL.fmt(ev.va1, 3) + ' and ' + CYL.fmt(ev.vb1, 3) + ' m/s before, ' + CYL.fmt(Math.abs(ev.va2) < 1e-9 ? 0 : ev.va2, 3) + ' and ' + CYL.fmt(Math.abs(ev.vb2) < 1e-9 ? 0 : ev.vb2, 3) + ' m/s after; ' + CYL.fmt(Math.abs(ev.lost) < 1e-9 ? 0 : ev.lost, 3) + ' J of kinetic energy lost.');
+      else if (ev.kind === 'wall') lines.push('At ' + CYL.fmt(ev.t, 3) + ' s, ' + nm(ev.a) + ' bounces off the ' + (ev.side === 1 ? 'right' : 'left') + ' wall: ' + CYL.fmt(ev.v1, 3) + ' m/s before, ' + CYL.fmt(ev.v2, 3) + ' m/s after. The wall’s impulse is ' + CYL.fmt(ev.J, 3) + ' N·s.');
+      else if (ev.kind === 'slip') lines.push('At ' + CYL.fmt(ev.t, 3) + ' s the push exceeds the largest static friction and the crate starts to slide.');
+      else if (ev.kind === 'rest') lines.push('At ' + CYL.fmt(ev.t, 3) + ' s the crate comes to rest.');
+    });
+    var extra = run.events.length - lines.length;
+    if (extra > 0) lines.push('… and ' + extra + ' more.');
+    if (!run.events.length) lines.push(B.length > 1 ? 'No impact in the time shown.' : 'Nothing happens: the push never exceeds the largest static friction.');
+    // the principle, checked: m v − m v0 against the sum of the impulses, for every body
+    var a = run.at(run.duration), a0 = run.at(0), worst = 0, scale = 1e-9;
+    B.forEach(function (b, i) {
+      var I = 0; for (var k in a.I) { I += a.I[k][i]; scale = Math.max(scale, Math.abs(a.I[k][i])); }
+      worst = Math.max(worst, Math.abs(b.m * (a.v[i] - a0.v[i]) - I)); scale = Math.max(scale, Math.abs(b.m * a.v[i]), Math.abs(b.m * a0.v[i]));
+    });
+    var pct = 100 * worst / scale;
+    lines.push('Impulse check: for every body, \\(mv - mv_0\\) equals the sum of the impulses to within ' + (pct < 0.001 ? '0.001' : CYL.fmt(pct, 2)) + '% of the momentum involved.');
+    return lines;
+  }
+  function showEvents() {
+    var lines = custom ? custom.events() : trackEvents(fig.run());
+    eventsEl.innerHTML = '';
+    var ul = CYL.el('ul');
+    lines.forEach(function (l) { ul.appendChild(CYL.el('li', { html: l })); });
+    eventsEl.appendChild(ul);
+    CYL.renderMath(eventsEl);
+  }
+
+  function controls(sc) {
+    panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the numbers' }));
+    (sc.selects || []).forEach(function (se) {
+      panel.appendChild(CYL.select({ label: se.label, options: se.options, value: st[se.key], onChange: function (v) { st[se.key] = v; rerun(); } }).el);
+    });
+    sc.sliders.forEach(function (sl) {
+      panel.appendChild(CYL.slider({ label: sl.label, min: sl.min, max: sl.max, step: sl.step, value: st[sl.key], unit: sl.unit, color: sl.color,
+        onInput: function (v) { st[sl.key] = v; rerun(); } }).el);
+    });
+    panel.appendChild(CYL.el('p', { class: 'mf-note', text: sc.note }));
+  }
+  function clear() {
+    if (fig) { fig.destroy(); fig = null; }
+    if (custom) { custom.destroy(); custom = null; }
+    stage.innerHTML = ''; panel.innerHTML = '';
+    var main = stage.parentNode;
+    if (main && main.classList.contains('mf-main')) Array.prototype.forEach.call(main.querySelectorAll(':scope > .mf-chart, :scope > .mf-transport'), function (nd) { nd.remove(); });
+  }
+  var vizEl = document.getElementById('ex-viz');
+  function build() {
+    clear();
+    var sc = cur;
+    vizEl.classList.toggle('mf-viz', !sc.build);           // the track scenes have a chart under the stage
+    if (sc.build) {
+      custom = sc.build(stage, panel, st);
+      controls(sc);
+    } else {
+      var sp = sc.spec(st);
+      fig = MOMENTUM.figure(Object.assign({}, sc.frame, {
+        stage: stage, controls: panel, spec: sp, draw: sc.draw,
+        show: { v: true, forces: !!sc.forces, impulse: true }, toggles: sc.forces ? ['v', 'forces'] : ['v', 'impulse'], forces: ['W', 'N', 'Ff', 'P'],
+        pbars: !sc.ledger, ledger: sc.ledger ? { body: 0, items: sc.ledger, title: 'Impulse and momentum (N·s)' } : false,
+        readouts: sc.readouts, chart: sc.chart, flash: sc.frame.speed ? 0.08 : 0.35,
+        aria: sc.label + ': ' + sc.desc
+      }));
+      controls(sc);
+    }
+    CYL.renderMath(panel);
+    if (fig) fig.update();
+    showEvents();
+  }
+  function rerun() {
+    if (cur.build) { build(); return; }
+    fig.setSpec(cur.spec(st));
+    showEvents();
+  }
+  function choose(id, set) {
+    cur = SCENE[id] || SCENES[0];
+    st = {};
+    (cur.selects || []).forEach(function (se) { st[se.key] = se.value; });
+    cur.sliders.forEach(function (sl) { st[sl.key] = sl.value; });
+    if (set) Object.keys(set).forEach(function (k) { if (k in st) st[k] = set[k]; });
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === cur.id)); });
+    descEl.textContent = cur.desc;
+    try { CYL.store.set('explorer:scene', cur.id); } catch (e) { /* fine without */ }
+    build();
+  }
+
+  var sceneRow = document.getElementById('ex-scene');
+  SCENES.forEach(function (sc) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: sc.label });
+    b.addEventListener('click', function () { if (!cur || cur.id !== sc.id) choose(sc.id); });
+    chips[sc.id] = b; sceneRow.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var set = null;
+      try { set = btn.getAttribute('data-set') ? JSON.parse(btn.getAttribute('data-set')) : null; } catch (e) { set = null; }
+      choose(btn.getAttribute('data-load'), set);
+      document.getElementById('explore').scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+
+  choose(CYL.store.get('explorer:scene', 'carts'));
+  window.__explorer = { choose: choose, state: function () { return { scene: cur.id, values: st }; }, figure: function () { return fig; }, custom: function () { return custom; }, scenes: SCENES.map(function (s) { return s.id; }) };   // for QA scripts
+});
+</script>
+</body>
+</html>

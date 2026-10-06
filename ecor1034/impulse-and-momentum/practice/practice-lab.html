@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Impulse and Momentum</title>
+<meta name="description" content="Unlimited randomized practice on impulse and momentum: momentum and the impulse of a force, force–time graphs, constant and time-varying forces, conservation of momentum, direct and oblique impact, restitution and problems in stages, each with hints, a worked solution and an impulse picture.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+  .pl-viewhost { min-height: 250px; padding: 16px 18px 12px; }
+  .pl-viewhost .lg { margin: 0; }
+  .pl-ghost { display: grid; gap: 14px; padding: 34px 0 10px; opacity: 0.35; }
+  .pl-ghost-row { height: 22px; border-radius: 4px; background: var(--bg-sunken); }
+  .pl-ghost-row span { display: block; height: 100%; border-radius: 4px; background: var(--line); }
+  @media (max-width: 520px) { .pl-viewhost { padding: 12px 10px 8px; } }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like: momentum and the impulse of a force, force–time graphs, constant and time-varying forces, conservation of momentum, direct and oblique impact, restitution, and problems in stages. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it you can see its impulse and momentum bookkeeping.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The picture behind the current problem: usually an impulse ledger, in which the starting momentum plus each impulse, bar by bar, lands on the final momentum (or, for problems in stages, an energy ledger), or a force&ndash;time graph whose shaded area is the impulse. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>impact-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. impact-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand arithmetic, so you can type the expression you wrote on paper instead of working it out on a calculator first. Each box shows how it read your input (for example <q>= 13.05</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>0.145*(50+40)</code></td><td>\(0.145(50 + 40) = 13.05\)</td></tr>
+          <tr><td><code>13.05/1.2e-3</code></td><td>\(13.05/0.0012 = 10\,875\)</td></tr>
+          <tr><td><code>(2*6+3*0)/5</code></td><td>\(\left[2(6) + 3(0)\right]/5 = 2.4\)</td></tr>
+          <tr><td><code>-1.2</code></td><td>\(-1.2\): a velocity to the left, when right is positive</td></tr>
+          <tr><td><code>sqrt(0.96/1.5)</code> or <code>&radic;(0.96/1.5)</code></td><td>\(\sqrt{0.64} = 0.8\)</td></tr>
+          <tr><td><code>atan(0.6*tan(50&deg;))</code></td><td>\(\tan^{-1}(0.6\tan 50^\circ)\), in radians unless you add &deg;: type the angle in degrees, e.g. <code>35.57</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Give each answer in the unit shown next to its box: newton-seconds, kilogram-meters per second, newtons, meters per second, seconds, meters, joules or degrees. Signs matter for velocities after an impact: use the positive direction the problem gives, and type the minus sign for a velocity the other way. Inside <code>cos</code>, <code>sin</code> and <code>tan</code>, mark degrees with <code>&deg;</code>; a bare number there is read as radians.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the whole expression is faster and safer than rounding at each step: <code>0.145*(50+40)/1.2e-3</code> is exact, while rounding the impulse first can drift past the 1% tolerance.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  5. Registry  6. Self-test (window.__practiceSelfTest)
+   7. The shared view (an impulse ledger or a force-time graph)  8. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints, the worked
+   solution and the impulse picture from the same numbers, so nothing is typed per instance.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  /* ================================================================ 1. Helpers */
+  var PI = Math.PI, G = 9.81, D2R = PI / 180;
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }       // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)) + 1e-9; }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var J = '\\ \\text{J}', NU = '\\ \\text{N}', MS = '\\ \\text{m/s}', MU = '\\ \\text{m}', KG = '\\ \\text{kg}', NM = '\\ \\text{N/m}', SU = '\\ \\text{s}', DEG = '^\\circ';
+  var NS = '\\ \\text{N}{\\cdot}\\text{s}', KMS = '\\ \\text{kg}{\\cdot}\\text{m/s}', MSU = '\\ \\text{ms}';
+  function signed(x) { return (x < 0 ? '-' : '+') + n4(Math.abs(x)); }          // "+ 12.3" / "- 12.3" inside sums
+  function par(x) { return x < 0 ? '(' + nn(x) + ')' : nn(x); }               // a given signed number in a product
+  // ---- views: 'ledger' (m v1 + the impulses = m v2 as a waterfall, or any sum of terms) and 'area' (a force-time graph)
+  function ledger(o) {
+    return { kind: 'ledger', title: o.title, aria: o.aria, unit: o.unit || 'N\u00b7s', start: { label: o.start[0], value: o.start[1] },
+      items: o.items.map(function (it) { return { label: it[0], value: it[1], color: it[2] || 'accent' }; }),
+      end: { label: o.end[0], value: o.end[1] }, readouts: o.readouts, note: o.note };
+  }
+  function area(o) {
+    return { kind: 'area', title: o.title, aria: o.aria, x: o.x, y: o.y, pts: o.pts, from: o.from, to: o.to, color: o.color || 'warn', readouts: o.readouts, note: o.note };
+  }
+  function ro(label, tex) { return { label: label, tex: tex }; }
+  function done(spec, view, right, wrong) { return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } }; }
+  function impact(mA, vA, mB, vB, e) {                     // direct central impact along x
+    var vc = (mA * vA + mB * vB) / (mA + mB), u = vA - vB;
+    var vA2 = vc - e * mB * u / (mA + mB), vB2 = vc + e * mA * u / (mA + mB);
+    return { vA2: vA2, vB2: vB2, vc: vc, lost: 0.5 * mA * vA * vA + 0.5 * mB * vB * vB - 0.5 * mA * vA2 * vA2 - 0.5 * mB * vB2 * vB2 };
+  }
+  function pairLedger(mA, vA1, vA2, mB, vB1, vB2, title, note) {
+    var P1 = mA * vA1 + mB * vB1;
+    return ledger({ title: title || 'Momentum of the pair', aria: 'The total momentum before, plus the impulse each body receives from the other, gives the total momentum after. The two impulses are equal and opposite.',
+      start: ['\\textstyle\\sum mv_1', P1], items: [['I_{\\text{on }A}', mA * (vA2 - vA1), 'bad'], ['I_{\\text{on }B}', mB * (vB2 - vB1), 'bad']], end: ['\\textstyle\\sum mv_2', mA * vA2 + mB * vB2],
+      readouts: [ro('Total before', n4(P1) + KMS), ro('Impulse on \\(A\\)', n4(mA * (vA2 - vA1)) + NS), ro('Impulse on \\(B\\)', n4(mB * (vB2 - vB1)) + NS)],
+      note: note || 'Internal impulses come in equal and opposite pairs, so the total momentum does not change.' });
+  }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 Momentum and impulse (Lesson 2) ---------- */
+  function genImpulse(rng) {
+    var kind = pickW(rng, [['angled', 2], ['rebound', 3], ['stop', 2], ['momentum', 1]]), spec, view, right, wrong;
+    if (kind === 'angled') {
+      var P = rng.pick(range(20, 200, 5)), al = rng.pick([15, 20, 25, 30, 35, 40, 45, 50, 60]), dt = rng.pick(range(1, 10, 0.5));
+      var obj = rng.pick(['sled', 'crate', 'cart', 'toboggan']), Ix = P * Math.cos(al * D2R) * dt;
+      spec = { type: 'numeric', prompt: 'A rope pulls a ' + obj + ' with a constant tension of ' + m(nn(P) + NU) + ', at ' + m(nn(al) + DEG) + ' above the horizontal, for ' + m(nn(dt) + SU) + '. Find the horizontal component of the impulse of the tension.', label: '\\(I_x =\\)', answer: Ix, unit: 'N·s' };
+      spec.hints = ['A constant force\'s impulse is the force times the time, in the force\'s direction.', 'Take the horizontal component: \\(I_x = P\\cos\\theta\\,\\Delta t\\).'];
+      spec.solution = M('I_x = (' + nn(P) + ')\\cos ' + nn(al) + DEG + '\\,(' + nn(dt) + ') = ' + n4(Ix) + NS) + '<p>The vertical component, \\(' + n4(P * Math.sin(al * D2R) * dt) + '\\ \\text{N}{\\cdot}\\text{s}\\), is the other part of the same impulse.</p>';
+      right = Ix; wrong = wrongOf(Ix, [P * dt, P * Math.sin(al * D2R) * dt, P * Math.cos(al * D2R)]);
+      view = area({ title: 'Horizontal component against time', aria: 'The horizontal component of the tension, constant, against time, with the rectangle under it shaded: the impulse.',
+        x: { label: '\\(t\\) (s)', min: 0, max: dt * 1.2 }, y: { label: '\\(P\\cos\\theta\\) (N)', min: 0, max: P * 1.15 }, pts: [[0, P * Math.cos(al * D2R)], [dt, P * Math.cos(al * D2R)], [dt, 0], [dt * 1.2, 0]], from: 0, to: dt,
+        readouts: [ro('\\(P\\cos\\theta\\)', n4(P * Math.cos(al * D2R)) + NU), ro('\\(\\Delta t\\)', nn(dt) + SU), ro('\\(I_x\\) (the area)', n4(Ix) + NS)], note: 'A constant force: the area is a rectangle.' });
+      spec.explain = 'Impulse of a constant force: \\(\\Fvec\\,\\Delta t\\), component by component.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'rebound') {
+      var c = rng.pick([['tennis ball', 0.058, 'racket'], ['baseball', 0.145, 'bat'], ['soccer ball', 0.45, 'goalpost'], ['hockey puck', 0.17, 'boards'], ['golf ball', 0.046, 'wall'], ['volleyball', 0.27, 'player\'s forearms']]);
+      var v1 = rng.pick(range(8, 40, 1)), v2 = rng.pick(range(4, 45, 1)), tms = rng.pick([1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12]);
+      var I = c[1] * (v1 + v2), F = I / (tms / 1000);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(c[1]) + KG) + ' ' + c[0] + ' strikes the ' + c[2] + ' head-on at ' + m(nn(v1) + MS) + ' and leaves in the opposite direction at ' + m(nn(v2) + MS) + '. The contact lasts ' + m(nn(tms) + MSU) + '. Find the magnitude of the average force on the ball during the contact.', label: '\\(F_{\\text{avg}} =\\)', answer: F, unit: 'N' };
+      spec.hints = ['Take the departure direction as positive: the arrival velocity is then \\(-' + nn(v1) + '\\ \\text{m/s}\\).', 'Impulse \\(= m v_2 - m v_1\\); divide it by the contact time in seconds.'];
+      spec.solution = M('F_{\\text{avg}}\\,(' + nn(tms / 1000) + ') = ' + nn(c[1]) + '\\left[' + nn(v2) + ' - (-' + nn(v1) + ')\\right] = ' + n4(I) + NS + '\\quad\\Rightarrow\\quad F_{\\text{avg}} = ' + n4(F) + NU);
+      right = F; wrong = wrongOf(F, [c[1] * Math.abs(v2 - v1) / (tms / 1000), c[1] * (v1 + v2) / tms, I]);
+      view = ledger({ title: 'Impulse and momentum of the ball', aria: 'The ball\'s momentum on arrival, negative, plus the impulse of the contact, gives its momentum on departure.', start: ['mv_1', -c[1] * v1], items: [['I', I, 'bad']], end: ['mv_2', c[1] * v2],
+        readouts: [ro('\\(mv_1\\)', n4(-c[1] * v1) + KMS), ro('Impulse', n4(I) + NS), ro('\\(F_{\\text{avg}}\\)', n4(F) + NU)], note: 'The impulse has to stop the ball and then send it back: \\(v_1\\) and \\(v_2\\) add.' });
+      spec.explain = 'Velocities are vectors: a rebound reverses the sign, so the speeds add.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'stop') {
+      var s = rng.pick([['car', range(800, 2000, 50), range(5, 25, 1), [0.06, 0.08, 0.1, 0.12, 0.15]], ['crash-test sled', range(300, 900, 50), range(8, 16, 1), [0.05, 0.08, 0.1, 0.15, 0.2]],
+        ['runner landing from a jump', range(50, 90, 5), range(3, 7, 0.5), [0.02, 0.05, 0.1, 0.2, 0.3]], ['falling package on foam', range(2, 20, 1), range(3, 8, 0.5), [0.04, 0.06, 0.08, 0.1, 0.15]]]);
+      var mass = rng.pick(s[1]), v = rng.pick(s[2]), t = rng.pick(s[3]), F2 = mass * v / t;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' ' + s[0] + ' moving at ' + m(nn(v) + MS) + ' is brought to rest in ' + m(nn(t) + SU) + '. Find the magnitude of the average force that stops it.', label: '\\(F_{\\text{avg}} =\\)', answer: F2, unit: 'N' };
+      spec.hints = ['The stopping force\'s impulse equals the change in momentum, \\(0 - mv\\).', '\\(F_{\\text{avg}} = mv/\\Delta t\\).'];
+      spec.solution = M('F_{\\text{avg}}(' + nn(t) + ') = ' + nn(mass) + '(' + nn(v) + ') - 0 \\quad\\Rightarrow\\quad F_{\\text{avg}} = ' + n4(F2) + NU) + '<p>Doubling the stopping time would halve the force: that is what crumple zones and airbags are for.</p>';
+      right = F2; wrong = wrongOf(F2, [mass * v * t, mass * G, 0.5 * mass * v * v / t]);
+      view = ledger({ title: 'Impulse and momentum', aria: 'The momentum at the start, plus the negative impulse of the stopping force, gives zero.', start: ['mv_1', mass * v], items: [['F_{\\text{avg}}\\Delta t', -mass * v, 'bad']], end: ['mv_2', 0],
+        readouts: [ro('\\(mv_1\\)', n4(mass * v) + KMS), ro('\\(\\Delta t\\)', nn(t) + SU), ro('\\(F_{\\text{avg}}\\)', n4(F2) + NU)], note: 'The same impulse over a longer time means a smaller force.' });
+      spec.explain = '\\(F_{\\text{avg}}\\,\\Delta t = m v_2 - m v_1\\).';
+      return done(spec, view, right, wrong);
+    }
+    var b = rng.pick([['car', range(900, 2200, 100), range(18, 108, 6)], ['truck', range(4000, 15000, 500), range(18, 90, 6)], ['cyclist and bicycle', range(60, 100, 5), range(12, 36, 3)], ['train car', range(20000, 60000, 5000), range(9, 36, 3)]]);
+    var mm = rng.pick(b[1]), kmh = rng.pick(b[2]), L = mm * kmh / 3.6;
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' ' + b[0] + ' travels at ' + m(nn(kmh) + '\\ \\text{km/h}') + '. Find the magnitude of its linear momentum.', label: '\\(mv =\\)', answer: L, unit: 'kg·m/s' };
+    spec.hints = ['Convert the speed to m/s: divide km/h by 3.6.', '\\(L = mv\\).'];
+    spec.solution = M('v = \\frac{' + nn(kmh) + '}{3.6} = ' + n4(kmh / 3.6) + MS + '\\qquad L = ' + nn(mm) + '(' + n4(kmh / 3.6) + ') = ' + n4(L) + KMS);
+    right = L; wrong = wrongOf(L, [mm * kmh, 0.5 * mm * Math.pow(kmh / 3.6, 2), mm * kmh / 3.6 / 3.6]);
+    view = ledger({ title: 'Momentum to stop', aria: 'The momentum, and the impulse needed to bring it to zero.', start: ['mv', L], items: [['\\text{impulse to stop}', -L, 'bad']], end: ['0', 0],
+      readouts: [ro('Speed', n4(kmh / 3.6) + MS), ro('\\(mv\\)', n4(L) + KMS)], note: 'Stopping it takes an impulse equal and opposite to its momentum.' });
+    spec.explain = 'Momentum \\(L = mv\\), in kg·m/s (the same unit as N·s).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.2 Force–time graphs (Lessons 2 and 4) ---------- */
+  function genGraph(rng) {
+    var kind = pickW(rng, [['trap', 3], ['tri', 2], ['pushpull', 2]]), spec, view, right, wrong, mass = rng.pick(range(2, 40, 1));
+    if (kind === 'trap') {
+      var F1 = rng.pick(range(10, 200, 5)), t1 = rng.pick([0.5, 1, 1.5, 2]), t2 = t1 + rng.pick([1, 1.5, 2, 3]), t3 = t2 + rng.pick([0.5, 1, 1.5, 2]);
+      var I = 0.5 * t1 * F1 + (t2 - t1) * F1 + 0.5 * (t3 - t2) * F1, v = I / mass;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' block is at rest on a smooth horizontal surface. A horizontal force grows steadily from zero to ' + m(nn(F1) + NU) + ' in ' + m(nn(t1) + SU) + ', stays at ' + m(nn(F1) + NU) + ' until ' + m('t = ' + nn(t2) + SU) + ', then falls steadily to zero at ' + m('t = ' + nn(t3) + SU) + '. Find the speed of the block at ' + m('t = ' + nn(t3) + SU) + '.', label: '\\(v_2 =\\)', answer: v, unit: 'm/s' };
+      spec.hints = ['The impulse is the area under the force–time graph: a triangle, a rectangle and a triangle.', 'Only this force acts horizontally: \\(0 + I = m v_2\\).'];
+      spec.solution = M('I = \\tfrac12(' + nn(t1) + ')(' + nn(F1) + ') + (' + nn(t2 - t1) + ')(' + nn(F1) + ') + \\tfrac12(' + nn(t3 - t2) + ')(' + nn(F1) + ') = ' + n4(I) + NS) + M('0 + ' + n4(I) + ' = ' + nn(mass) + '\\,v_2 \\quad\\Rightarrow\\quad v_2 = ' + n4(v) + MS);
+      right = v; wrong = wrongOf(v, [F1 * t3 / mass, F1 * (t2 - t1) / mass, I]);
+      view = area({ title: 'The force against time', aria: 'A trapezoidal force-time graph with the area under it shaded: the impulse.', x: { label: '\\(t\\) (s)', min: 0, max: t3 + 0.5 }, y: { label: '\\(F\\) (N)', min: 0, max: F1 * 1.2 },
+        pts: [[0, 0], [t1, F1], [t2, F1], [t3, 0], [t3 + 0.5, 0]], from: 0, to: t3, readouts: [ro('Impulse (the area)', n4(I) + NS), ro('Mass', nn(mass) + KG), ro('\\(v_2 = I/m\\)', n4(v) + MS)], note: 'Areas of simple shapes add up to the impulse.' });
+      spec.explain = 'Impulse = area under the \\(F\\)–\\(t\\) graph = change in momentum.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'tri') {
+      var Fp = rng.pick(range(50, 2000, 50)), T = rng.pick([0.01, 0.02, 0.05, 0.1, 0.2, 0.5]), v1 = rng.pick(range(-6, 6, 0.5)), mm = rng.pick(range(0.5, 10, 0.5));
+      var I2 = 0.5 * Fp * T, v2 = v1 + I2 / mm;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' puck slides on smooth ice with velocity ' + m(nn(v1) + MS) + ' (positive to the right). It is struck by a force to the right that rises linearly from zero to ' + m(nn(Fp) + NU) + ' and falls linearly back to zero, a triangle lasting ' + m(nn(T) + SU) + ' in all. Find its velocity afterward.', label: '\\(v_2 =\\)', answer: v2, unit: 'm/s' };
+      spec.hints = ['The impulse is the area of the triangle: \\(\\tfrac12\\times\\) base \\(\\times\\) height.', '\\(m v_1 + I = m v_2\\), with the sign of \\(v_1\\).'];
+      spec.solution = M('I = \\tfrac12(' + nn(T) + ')(' + nn(Fp) + ') = ' + n4(I2) + NS) + M(nn(mm) + '(' + nn(v1) + ') + ' + n4(I2) + ' = ' + nn(mm) + '\\,v_2 \\quad\\Rightarrow\\quad v_2 = ' + n4(v2) + MS);
+      right = v2; wrong = wrongOf(v2, [I2 / mm, v1 + Fp * T / mm, v1 - I2 / mm]);
+      view = ledger({ title: 'Impulse and momentum of the puck', aria: 'The puck\'s momentum before, plus the impulse of the blow, gives its momentum after.', start: ['mv_1', mm * v1], items: [['I', I2, 'warn']], end: ['mv_2', mm * v2],
+        readouts: [ro('\\(mv_1\\)', n4(mm * v1) + KMS), ro('Impulse', n4(I2) + NS), ro('\\(v_2\\)', n4(v2) + MS)], note: 'The blow adds the same momentum whatever the puck was doing before.' });
+      spec.explain = '\\(m v_1 + \\int F\\,dt = m v_2\\).';
+      return done(spec, view, right, wrong);
+    }
+    var Fa = rng.pick(range(20, 120, 10)), ta = rng.pick([1, 1.5, 2, 2.5, 3]), Fb = rng.pick(range(20, 120, 10)), tb = rng.pick([0.5, 1, 1.5, 2, 3]);
+    var Inet = Fa * ta - Fb * tb, v3 = Inet / mass;
+    if (Math.abs(v3) < 0.05) { Fb += 10; Inet = Fa * ta - Fb * tb; v3 = Inet / mass; }
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' cart at rest on a smooth track is pushed to the right with a constant ' + m(nn(Fa) + NU) + ' for ' + m(nn(ta) + SU) + ', then pulled to the left with a constant ' + m(nn(Fb) + NU) + ' for ' + m(nn(tb) + SU) + '. Find its velocity at the end, positive to the right.', label: '\\(v_2 =\\)', answer: v3, unit: 'm/s' };
+    spec.hints = ['Two rectangles: one above the time axis, one below.', 'Net impulse \\(= ' + nn(Fa) + '(' + nn(ta) + ') - ' + nn(Fb) + '(' + nn(tb) + ')\\).'];
+    spec.solution = M('I = ' + nn(Fa) + '(' + nn(ta) + ') - ' + nn(Fb) + '(' + nn(tb) + ') = ' + n4(Inet) + NS + '\\qquad v_2 = \\frac{' + n4(Inet) + '}{' + nn(mass) + '} = ' + n4(v3) + MS) + (v3 < 0 ? '<p>Negative: the cart ends up moving to the left.</p>' : '');
+    right = v3; wrong = wrongOf(v3, [(Fa * ta + Fb * tb) / mass, -v3, Fa * ta / mass]);
+    view = area({ title: 'The force against time', aria: 'A rectangle of positive force followed by a rectangle of negative force; the net area is the impulse.', x: { label: '\\(t\\) (s)', min: 0, max: ta + tb + 0.5 }, y: { label: '\\(F\\) (N), \\(+\\) to the right', min: -Fb * 1.25, max: Fa * 1.25 },
+      pts: [[0, Fa], [ta, Fa], [ta, -Fb], [ta + tb, -Fb], [ta + tb, 0], [ta + tb + 0.5, 0]], from: 0, to: ta + tb, readouts: [ro('Area above', n4(Fa * ta) + NS), ro('Area below', n4(-Fb * tb) + NS), ro('Net impulse', n4(Inet) + NS)], note: 'Area below the axis counts as negative impulse.' });
+    spec.explain = 'Add the areas with their signs.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.3 Constant forces (Lesson 3) ---------- */
+  function genConstant(rng) {
+    var kind = pickW(rng, [['push', 3], ['brake', 2], ['incline', 2], ['angled', 2]]), spec, view, right, wrong;
+    if (kind === 'push') {
+      var mass = rng.pick(range(10, 80, 5)), mu = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]), t = rng.pick(range(1, 8, 0.5));
+      var Pmin = (mu + 0.1) * mass * G, P = Math.ceil(Pmin * rng.pick([1.2, 1.4, 1.6, 1.8, 2.2]) / 10) * 10, Ff = mu * mass * G, v = (P - Ff) * t / mass;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' crate at rest on a level floor is pushed by a horizontal force of ' + m(nn(P) + NU) + ', enough to start it sliding at once. The coefficient of kinetic friction is ' + m(nn(mu)) + '. How fast is it moving after ' + m(nn(t) + SU) + '?', label: '\\(v_2 =\\)', answer: v, unit: 'm/s' };
+      spec.hints = ['\\(N = mg\\), and friction \\(\\mu_k N\\) opposes the motion the whole time.', 'Horizontal: \\(0 + P\\,t - \\mu_k mg\\,t = m v_2\\).'];
+      spec.solution = M('0 + ' + nn(P) + '(' + nn(t) + ') - ' + nn(mu) + '(' + nn(mass) + ')(9.81)(' + nn(t) + ') = ' + nn(mass) + '\\,v_2 \\quad\\Rightarrow\\quad v_2 = ' + n4(v) + MS);
+      right = v; wrong = wrongOf(v, [P * t / mass, (P + Ff) * t / mass, (P - Ff) / mass]);
+      view = ledger({ title: 'Impulse and momentum', aria: 'Zero momentum at the start, plus the impulse of the push, plus the negative impulse of friction, gives the momentum at the end.', start: ['mv_1', 0], items: [['I_P', P * t, 'warn'], ['I_f', -Ff * t, 'r']], end: ['mv_2', mass * v],
+        readouts: [ro('\\(F_f = \\mu_k mg\\)', n4(Ff) + NU), ro('\\(I_P\\)', n4(P * t) + NS), ro('\\(I_f\\)', n4(-Ff * t) + NS)], note: 'The weight and the normal force have impulses too, but they cancel vertically.' });
+      spec.explain = '\\(m v_1 + \\sum F\\,\\Delta t = m v_2\\) along the floor.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'brake') {
+      var mc = rng.pick(range(900, 2500, 100)), v1 = rng.pick(range(10, 30, 1)), th = rng.pick([2, 3, 4, 5, 6, 8, 10]), down = rng.next() < 0.6;
+      var Wt = mc * G * Math.sin(th * D2R), Fb = Math.ceil((Wt + mc * rng.pick([3, 4, 5, 6, 7])) / 500) * 500, net = down ? Fb - Wt : Fb + Wt, t2 = mc * v1 / net;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mc) + KG) + ' car traveling at ' + m(nn(v1) + MS) + ' ' + (down ? 'down' : 'up') + ' a ' + m(nn(th) + DEG) + ' slope brakes with a constant total braking force of ' + m(nn(Fb) + NU) + '. How long does it take to stop?', label: '\\(t =\\)', answer: t2, unit: 's' };
+      spec.hints = ['Work along the slope. The normal force is perpendicular to it and drops out.', 'The weight\'s component along the slope, \\(mg\\sin\\theta\\), acts ' + (down ? 'downhill, with the motion' : 'downhill, against the motion') + '.'];
+      spec.solution = M(nn(mc) + '(' + nn(v1) + ') + \\left(' + (down ? n4(Wt) + ' - ' + nn(Fb) : '-' + n4(Wt) + ' - ' + nn(Fb)) + '\\right)t = 0 \\quad\\Rightarrow\\quad t = \\frac{' + n4(mc * v1) + '}{' + n4(net) + '} = ' + n4(t2) + SU);
+      right = t2; wrong = wrongOf(t2, [mc * v1 / Fb, mc * v1 / (down ? Fb + Wt : Fb - Wt), v1 / Fb]);
+      view = ledger({ title: 'Impulse and momentum along the slope', aria: 'The car\'s momentum, plus the impulse of the weight component and of the brakes, gives zero.', start: ['mv_1', mc * v1], items: [['I_W', (down ? 1 : -1) * Wt * t2, 'z'], ['I_{\\text{brakes}}', -Fb * t2, 'r']], end: ['mv_2', 0],
+        readouts: [ro('\\(mg\\sin\\theta\\)', n4(Wt) + NU), ro('Net force', n4(net) + NU), ro('\\(t\\)', n4(t2) + SU)], note: down ? 'Downhill, the weight works against the brakes.' : 'Uphill, the weight helps the brakes.' });
+      spec.explain = 'Along the slope: \\(m v_1 + (\\pm mg\\sin\\theta - F_b)\\,t = 0\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'incline') {
+      var mb = rng.pick(range(1, 10, 0.5)), vb = rng.pick(range(3, 12, 0.5)), a = rng.pick([10, 15, 20, 25, 30, 35]), mk = rng.pick([0, 0.1, 0.15, 0.2, 0.25, 0.3]);
+      var dec = G * (Math.sin(a * D2R) + mk * Math.cos(a * D2R)), ts = vb / dec, N = mb * G * Math.cos(a * D2R);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mb) + KG) + ' block is launched at ' + m(nn(vb) + MS) + ' up a ' + m(nn(a) + DEG) + ' incline' + (mk ? ', with ' + m('\\mu_k = ' + nn(mk)) : ' with negligible friction') + '. How long does it take to stop?', label: '\\(t =\\)', answer: ts, unit: 's' };
+      spec.hints = ['Perpendicular to the incline nothing moves: \\(N = mg\\cos\\theta\\).', 'Going up, the weight component \\(mg\\sin\\theta\\)' + (mk ? ' and friction \\(\\mu_k N\\) both act' : ' acts') + ' down the slope.'];
+      spec.solution = M(nn(mb) + '(' + nn(vb) + ') - \\left[' + n4(mb * G * Math.sin(a * D2R)) + (mk ? ' + ' + n4(mk * N) : '') + '\\right]t = 0 \\quad\\Rightarrow\\quad t = ' + n4(ts) + SU) + '<p>The mass cancels: \\(t = v_1/\\left[g(\\sin\\theta + \\mu_k\\cos\\theta)\\right]\\).</p>';
+      right = ts; wrong = wrongOf(ts, [vb / (G * Math.sin(a * D2R)), vb / (G * (Math.sin(a * D2R) - mk * Math.cos(a * D2R))), vb / G]);
+      var items = [['I_W', -mb * G * Math.sin(a * D2R) * ts, 'z']];
+      if (mk) items.push(['I_f', -mk * N * ts, 'r']);
+      view = ledger({ title: 'Impulse and momentum along the incline', aria: 'The block\'s momentum up the incline, plus the impulses of the weight component and friction, gives zero.', start: ['mv_1', mb * vb], items: items, end: ['mv_2', 0],
+        readouts: [ro('\\(mg\\sin\\theta\\)', n4(mb * G * Math.sin(a * D2R)) + NU), ro('\\(\\mu_k N\\)', n4(mk * N) + NU), ro('\\(t\\)', n4(ts) + SU)], note: 'Both forces oppose the motion on the way up.' });
+      spec.explain = 'Along the incline: \\(mv_1 - (mg\\sin\\theta + \\mu_k N)\\,t = 0\\).';
+      return done(spec, view, right, wrong);
+    }
+    var mm = rng.pick(range(20, 80, 5)), al = rng.pick([15, 20, 25, 30, 35]), mu2 = rng.pick([0.15, 0.2, 0.25, 0.3]), tt = rng.pick(range(2, 6, 0.5));
+    var below = rng.next() < 0.5, sgnN = below ? 1 : -1;
+    var P2 = Math.ceil(mu2 * mm * G * rng.pick([1.6, 2, 2.4]) / 10) * 10;
+    var Nn = mm * G + sgnN * P2 * Math.sin(al * D2R), Px = P2 * Math.cos(al * D2R);
+    if (Px <= (mu2 + 0.1) * Nn + 1) { P2 = Math.ceil(((mu2 + 0.1) * mm * G / (Math.cos(al * D2R) - sgnN * (mu2 + 0.1) * Math.sin(al * D2R)) * 1.3) / 10) * 10; Nn = mm * G + sgnN * P2 * Math.sin(al * D2R); Px = P2 * Math.cos(al * D2R); }
+    var v4 = (Px - mu2 * Nn) * tt / mm;
+    spec = { type: 'fields', prompt: 'A ' + m(nn(mm) + KG) + ' crate at rest on a level floor is ' + (below ? 'pushed' : 'pulled') + ' by a constant force of ' + m(nn(P2) + NU) + ' directed ' + m(nn(al) + DEG) + ' ' + (below ? 'below' : 'above') + ' the horizontal, enough to start it sliding at once. The coefficient of kinetic friction is ' + m(nn(mu2)) + '. Find the normal force and the speed after ' + m(nn(tt) + SU) + '.',
+      fields: [{ name: 'N', label: '\\(N =\\)', answer: Nn, unit: 'N' }, { name: 'v', label: '\\(v_2 =\\)', answer: v4, unit: 'm/s' }] };
+    spec.hints = ['Vertical: the crate stays on the floor, so the vertical impulses cancel: \\(N = mg ' + (below ? '+' : '-') + ' P\\sin\\theta\\).', 'Horizontal: \\(0 + (P\\cos\\theta - \\mu_k N)\\,t = m v_2\\).'];
+    spec.solution = M('N = ' + n4(mm * G) + (below ? ' + ' : ' - ') + nn(P2) + '\\sin ' + nn(al) + DEG + ' = ' + n4(Nn) + NU) + M('0 + \\left[' + nn(P2) + '\\cos ' + nn(al) + DEG + ' - ' + nn(mu2) + '(' + n4(Nn) + ')\\right](' + nn(tt) + ') = ' + nn(mm) + '\\,v_2 \\quad\\Rightarrow\\quad v_2 = ' + n4(v4) + MS);
+    spec.explain = 'Find \\(N\\) from the direction in which nothing moves, then friction from \\(N\\).';
+    var Nw = mm * G;
+    view = ledger({ title: 'Horizontal impulse and momentum', aria: 'Zero momentum, plus the horizontal impulse of the force, plus the impulse of friction, gives the momentum at the end.', start: ['mv_1', 0], items: [['I_P', Px * tt, 'warn'], ['I_f', -mu2 * Nn * tt, 'r']], end: ['mv_2', mm * v4],
+      readouts: [ro('\\(N\\)', n4(Nn) + NU), ro('\\(F_f = \\mu_k N\\)', n4(mu2 * Nn) + NU), ro('\\(v_2\\)', n4(v4) + MS)], note: below ? 'Pushing down presses the crate into the floor: more friction.' : 'Pulling up lifts some of the weight off the floor: less friction.' });
+    return { spec: spec, view: view, test: { right: [{ N: typed(Nn), v: typed(v4) }], wrong: [{ N: typed(Nw), v: typed((Px - mu2 * Nw) * tt / mm) }] } };
+  }
+
+  /* ---------- 2.4 Forces that vary with time (Lesson 4) ---------- */
+  function genVarying(rng) {
+    var kind = pickW(rng, [['kt', 3], ['poly', 2], ['sine', 2], ['fade', 2]]), spec, view, right, wrong;
+    if (kind === 'kt') {
+      var mass = rng.pick(range(10, 50, 5)), muS = rng.pick([0.3, 0.35, 0.4, 0.45, 0.5]), muK = +(muS - rng.pick([0.05, 0.1])).toFixed(2), k = rng.pick(range(10, 60, 5));
+      var t1 = muS * mass * G / k, t2 = Math.ceil(t1 + rng.pick([1, 1.5, 2, 3])), IP = 0.5 * k * (t2 * t2 - t1 * t1), IF = muK * mass * G * (t2 - t1), v = (IP - IF) / mass;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' crate rests on a floor with ' + m('\\mu_s = ' + nn(muS)) + ' and ' + m('\\mu_k = ' + nn(muK)) + '. A horizontal force ' + m('P = ' + nn(k) + 't\\ \\text{N}') + ', with ' + m('t') + ' in seconds, is applied. Find the speed of the crate at ' + m('t = ' + nn(t2) + SU) + '.', label: '\\(v_2 =\\)', answer: v, unit: 'm/s' };
+      spec.hints = ['It starts to slide when \\(P = \\mu_s mg\\): find that instant \\(t_1\\) first.', 'From \\(t_1\\): \\(\\int_{t_1}^{t_2} kt\\,dt - \\mu_k mg(t_2 - t_1) = m v_2\\).'];
+      spec.solution = M(nn(k) + 't_1 = ' + nn(muS) + '(' + nn(mass) + ')(9.81) \\quad\\Rightarrow\\quad t_1 = ' + n4(t1) + SU) +
+        M('\\tfrac12(' + nn(k) + ')\\left(' + nn(t2) + '^2 - ' + n4(t1) + '^2\\right) - ' + nn(muK) + '(' + nn(mass) + ')(9.81)(' + nn(t2) + ' - ' + n4(t1) + ') = ' + nn(mass) + '\\,v_2') +
+        M(n4(IP) + ' - ' + n4(IF) + ' = ' + nn(mass) + '\\,v_2 \\quad\\Rightarrow\\quad v_2 = ' + n4(v) + MS) + '<p>Before \\(t_1\\), static friction cancels the push exactly.</p>';
+      right = v; wrong = wrongOf(v, [(0.5 * k * t2 * t2 - muK * mass * G * t2) / mass, (IP - muS * mass * G * (t2 - t1)) / mass, 0.5 * k * t2 * t2 / mass]);
+      view = ledger({ title: 'From the moment it slips', aria: 'Zero momentum when the crate starts to slide, plus the impulse of the push and of kinetic friction after that, gives the momentum at the end.', start: ['mv_1', 0], items: [['I_P', IP, 'warn'], ['I_f', -IF, 'r']], end: ['mv_2', mass * v],
+        readouts: [ro('\\(t_1\\)', n4(t1) + SU), ro('\\(I_P\\) from \\(t_1\\)', n4(IP) + NS), ro('\\(I_f\\) from \\(t_1\\)', n4(-IF) + NS)], note: 'Start the clock when the crate starts to move.' });
+      spec.explain = 'Start the impulse at the instant the push exceeds \\(\\mu_s N\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'poly') {
+      var mm = rng.pick(range(1, 10, 0.5)), c = rng.pick(range(1, 12, 1)), v1 = rng.pick(range(0, 6, 0.5)), T = rng.pick([1, 1.5, 2, 2.5, 3, 4]);
+      var I = c * T * T * T / 3, v2 = v1 + I / mm;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block slides at ' + m(nn(v1) + MS) + ' along a smooth horizontal surface when a force ' + m('F = ' + nn(c) + 't^2\\ \\text{N}') + ', with ' + m('t') + ' in seconds, starts to push it forward. Find its speed at ' + m('t = ' + nn(T) + SU) + '.', label: '\\(v_2 =\\)', answer: v2, unit: 'm/s' };
+      spec.hints = ['\\(\\int_0^T ct^2\\,dt = \\tfrac13 cT^3\\).', '\\(m v_1 + I = m v_2\\).'];
+      spec.solution = M('I = \\int_0^{' + nn(T) + '}' + nn(c) + 't^2\\,dt = \\tfrac13(' + nn(c) + ')(' + nn(T) + ')^3 = ' + n4(I) + NS) + M(nn(mm) + '(' + nn(v1) + ') + ' + n4(I) + ' = ' + nn(mm) + '\\,v_2 \\quad\\Rightarrow\\quad v_2 = ' + n4(v2) + MS);
+      right = v2; wrong = wrongOf(v2, [v1 + c * T * T / mm, I / mm, v1 + c * T * T * T / mm]);
+      var pts = []; for (var i = 0; i <= 30; i++) { var tq = (T * 1.15) * i / 30; pts.push([tq, tq <= T ? c * tq * tq : 0]); }
+      view = area({ title: 'The force against time', aria: 'The force growing as t squared, with the area under it shaded up to the final time.', x: { label: '\\(t\\) (s)', min: 0, max: T * 1.15 }, y: { label: '\\(F\\) (N)', min: 0, max: c * T * T * 1.15 },
+        pts: pts, from: 0, to: T, readouts: [ro('Impulse (the area)', n4(I) + NS), ro('\\(v_2\\)', n4(v2) + MS)], note: 'The area under a parabola from zero: a third of the enclosing rectangle.' });
+      spec.explain = 'Integrate the force over time for its impulse.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'sine') {
+      var mp = rng.pick(range(0.5, 5, 0.5)), F0 = rng.pick(range(10, 200, 10)), Tp = rng.pick([0.5, 1, 1.5, 2, 3, 4]);
+      var Is = 2 * F0 * Tp / PI, vs = Is / mp;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mp) + KG) + ' puck at rest on smooth ice is pushed by a force ' + m('F = ' + nn(F0) + '\\sin(\\pi t/' + nn(Tp) + ')\\ \\text{N}') + ' for ' + m('0 \\le t \\le ' + nn(Tp) + SU) + '. Find its speed afterward.', label: '\\(v_2 =\\)', answer: vs, unit: 'm/s' };
+      spec.hints = ['\\(\\int_0^T F_0\\sin(\\pi t/T)\\,dt = 2F_0T/\\pi\\).', '\\(0 + I = m v_2\\).'];
+      spec.solution = M('I = \\frac{2(' + nn(F0) + ')(' + nn(Tp) + ')}{\\pi} = ' + n4(Is) + NS + '\\qquad v_2 = \\frac{' + n4(Is) + '}{' + nn(mp) + '} = ' + n4(vs) + MS);
+      right = vs; wrong = wrongOf(vs, [F0 * Tp / mp, F0 * Tp / PI / mp, 0.5 * F0 * Tp / mp]);
+      var ps = []; for (var j = 0; j <= 40; j++) { var tj = Tp * 1.15 * j / 40; ps.push([tj, tj <= Tp ? F0 * Math.sin(PI * tj / Tp) : 0]); }
+      view = area({ title: 'A half-sine pulse', aria: 'A half-sine force pulse with the area under it shaded: the impulse.', x: { label: '\\(t\\) (s)', min: 0, max: Tp * 1.15 }, y: { label: '\\(F\\) (N)', min: 0, max: F0 * 1.15 },
+        pts: ps, from: 0, to: Tp, readouts: [ro('Peak force', nn(F0) + NU), ro('Impulse (the area)', n4(Is) + NS), ro('Average force', n4(Is / Tp) + NU)], note: 'A half-sine pulse averages \\(2/\\pi\\), about 64%, of its peak.' });
+      spec.explain = 'Impulse = \\(\\int F\\,dt\\); for a half-sine pulse it is \\(2F_0T/\\pi\\).';
+      return done(spec, view, right, wrong);
+    }
+    var mf = rng.pick(range(5, 30, 5)), mu = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3]), P0 = rng.pick(range(60, 300, 20)), b = rng.pick(range(10, 50, 5));
+    var Ff = mu * mf * G;
+    if (P0 < (mu + 0.1) * mf * G * 1.5) P0 = Math.ceil((mu + 0.1) * mf * G * 2 / 20) * 20;
+    var tm = (P0 - Ff) / b, Im = (P0 - Ff) * tm - 0.5 * b * tm * tm, vm = Im / mf;
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mf) + KG) + ' crate at rest on a floor with ' + m('\\mu_k = ' + nn(mu)) + ' is pushed by a horizontal force ' + m('P = ' + nn(P0) + ' - ' + nn(b) + 't\\ \\text{N}') + ', which starts it sliding at once. Find the largest speed the crate reaches.', label: '\\(v_{\\max} =\\)', answer: vm, unit: 'm/s' };
+    spec.hints = ['The speed is largest when the net force is zero: \\(P = \\mu_k mg\\).', 'Integrate from zero to that instant: \\(\\int (P - \\mu_k mg)\\,dt = m v_{\\max}\\).'];
+    spec.solution = M(nn(P0) + ' - ' + nn(b) + 't_m = ' + n4(Ff) + '\\quad\\Rightarrow\\quad t_m = ' + n4(tm) + SU) + M(n4(P0 - Ff) + '(' + n4(tm) + ') - \\tfrac12(' + nn(b) + ')(' + n4(tm) + ')^2 = ' + n4(Im) + ' = ' + nn(mf) + '\\,v_{\\max} \\quad\\Rightarrow\\quad v_{\\max} = ' + n4(vm) + MS);
+    right = vm; wrong = wrongOf(vm, [(P0 * (P0 / b) - 0.5 * b * (P0 / b) * (P0 / b) - Ff * P0 / b) / mf, (P0 * tm - 0.5 * b * tm * tm) / mf, (P0 - Ff) * tm / mf]);
+    view = ledger({ title: 'Up to the largest speed', aria: 'Zero momentum, plus the impulse of the push and of friction up to the instant of largest speed, gives the momentum then.', start: ['mv_1', 0], items: [['I_P', P0 * tm - 0.5 * b * tm * tm, 'warn'], ['I_f', -Ff * tm, 'r']], end: ['mv_{\\max}', mf * vm],
+      readouts: [ro('\\(F_f\\)', n4(Ff) + NU), ro('\\(t_m\\)', n4(tm) + SU), ro('\\(v_{\\max}\\)', n4(vm) + MS)], note: 'After \\(t_m\\), friction is larger than the push and the crate slows down.' });
+    spec.explain = 'Largest speed where the net force is zero, \\(dv/dt = 0\\).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.5 Conservation of momentum (Lesson 5) ---------- */
+  function genConserve(rng) {
+    var kind = pickW(rng, [['apart', 2], ['couple', 3], ['lost', 2], ['relative', 2], ['recoil', 1]]), spec, view, right, wrong;
+    if (kind === 'apart') {
+      var who = rng.pick([['skaters', 'skater', range(40, 90, 5)], ['astronauts', 'astronaut', range(60, 120, 5)], ['carts', 'cart', range(1, 8, 0.5)]]);
+      var m1 = rng.pick(who[2]), m2 = rng.pick(who[2]), v2 = rng.pick(range(0.5, 4, 0.1)), v1 = m2 * v2 / m1;
+      if (Math.abs(m1 - m2) < 1e-9) m2 = m1 + who[2][1] - who[2][0] + (who[2][0] < 10 ? 0.5 : 5), v1 = m2 * v2 / m1;
+      spec = { type: 'numeric', prompt: 'Two ' + who[0] + ', of ' + m(nn(m1) + KG) + ' and ' + m(nn(m2) + KG) + ', are at rest on a smooth surface and push each other apart. The ' + m(nn(m2) + KG) + ' ' + who[1] + ' moves off at ' + m(nn(v2) + MS) + '. How fast does the other one move?', label: '\\(v =\\)', answer: v1, unit: 'm/s' };
+      spec.hints = ['The pushes are internal to the pair and the surface is smooth: the total momentum stays zero.', '\\(0 = m_1 v_1 + m_2 v_2\\).'];
+      spec.solution = M('0 = ' + nn(m1) + '\\,v_1 + ' + nn(m2) + '(' + nn(v2) + ') \\quad\\Rightarrow\\quad v_1 = -' + n4(v1) + MS) + '<p>' + n4(v1) + ' m/s, in the opposite direction.</p>';
+      right = v1; wrong = wrongOf(v1, [m1 * v2 / m2, v2, Math.sqrt(m2 / m1) * v2]);
+      view = pairLedger(m1, 0, -v1, m2, 0, v2, 'Momentum of the pair', 'The two impulses are equal and opposite, so the total stays zero.');
+      spec.explain = 'Momentum conserved: \\(0 = m_1 v_1 + m_2 v_2\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'couple' || kind === 'lost') {
+      var mA = rng.pick(range(5, 40, 5)), mB = rng.pick(range(5, 40, 5)), vA = rng.pick(range(0.5, 3, 0.1)), vB = rng.pick([0, 0, 0, -0.5, -0.3, 0.2, 0.4, -1]);
+      if (vB >= vA) vB = 0;
+      var v = (mA * vA + mB * vB) / (mA + mB), T1 = 0.5 * 1000 * (mA * vA * vA + mB * vB * vB), T2 = 0.5 * 1000 * (mA + mB) * v * v, lost = T1 - T2;
+      var desc = 'A ' + m(nn(mA) + '\\ \\text{Mg}') + ' railcar ' + m('A') + ' rolling at ' + m(nn(vA) + MS) + ' runs into a ' + m(nn(mB) + '\\ \\text{Mg}') + ' railcar ' + m('B') + (vB === 0 ? ' at rest' : ' rolling at ' + m(nn(vB) + MS) + ' (positive in ' + m('A') + '\'s direction)') + ', and the two couple together.';
+      if (kind === 'couple') {
+        spec = { type: 'numeric', prompt: desc + ' Find their velocity after coupling, positive in ' + m('A') + '\'s direction.', label: '\\(v =\\)', answer: v, unit: 'm/s' };
+        spec.hints = ['The coupling forces are internal; rolling resistance is nonimpulsive. Momentum is conserved.', '\\(m_A v_A + m_B v_B = (m_A + m_B)\\,v\\), with \\(1\\ \\text{Mg} = 1000\\ \\text{kg}\\).'];
+        spec.solution = M(nn(mA * 1000) + '(' + nn(vA) + ') + ' + nn(mB * 1000) + par(vB) + ' = ' + nn((mA + mB) * 1000) + '\\,v \\quad\\Rightarrow\\quad v = ' + n4(v) + MS);
+        right = v; wrong = wrongOf(v, [(mA * vA - mB * vB) / (mA + mB), mA * vA / mB, (vA + vB) / 2]);
+        spec.explain = 'A plastic impact: one common velocity, from conservation of momentum.';
+      } else {
+        spec = { type: 'numeric', prompt: desc + ' How much kinetic energy is lost in the coupling?', label: '\\(\\Delta T =\\)', answer: lost / 1000, unit: 'kJ' };
+        spec.hints = ['First the common velocity, from conservation of momentum.', 'Then \\(\\Delta T = T_1 - T_2\\), with \\(T = \\tfrac12 mv^2\\) for each car.'];
+        spec.solution = M('v = \\frac{' + nn(mA * 1000) + '(' + nn(vA) + ') + ' + nn(mB * 1000) + par(vB) + '}{' + nn((mA + mB) * 1000) + '} = ' + n4(v) + MS) + M('T_1 = ' + n4(T1 / 1000) + '\\ \\text{kJ},\\quad T_2 = \\tfrac12(' + nn((mA + mB) * 1000) + ')(' + n4(v) + ')^2 = ' + n4(T2 / 1000) + '\\ \\text{kJ},\\quad \\Delta T = ' + n4(lost / 1000) + '\\ \\text{kJ}');
+        right = lost / 1000; wrong = wrongOf(lost / 1000, [T1 / 1000, T2 / 1000, 0]);
+        spec.explain = 'Momentum is conserved; kinetic energy is not.';
+      }
+      view = pairLedger(mA * 1000, vA, v, mB * 1000, vB, v, 'Momentum of the two cars', 'The coupling force is internal: equal and opposite impulses.');
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'relative') {
+      var mp = rng.pick(range(40, 90, 5)), mc = rng.pick(range(20, 150, 10)), u = rng.pick(range(1, 5, 0.5));
+      var vc = -mp * u / (mp + mc), vp = vc + u;
+      spec = { type: 'fields', prompt: 'A ' + m(nn(mp) + KG) + ' person stands on a ' + m(nn(mc) + KG) + ' cart at rest on a smooth floor, then jumps off horizontally at ' + m(nn(u) + MS) + ' <em>relative to the cart</em>. Find the velocities of the cart and of the person relative to the ground, positive in the direction of the jump.',
+        fields: [{ name: 'vc', label: '\\(v_c =\\)', answer: vc, unit: 'm/s' }, { name: 'vp', label: '\\(v_p =\\)', answer: vp, unit: 'm/s' }] };
+      spec.hints = ['Relative to the ground, the person moves at \\(v_p = v_c + ' + nn(u) + '\\).', 'Momentum stays zero: \\(0 = m_p(v_c + u) + m_c v_c\\).'];
+      spec.solution = M('0 = ' + nn(mp) + '(v_c + ' + nn(u) + ') + ' + nn(mc) + 'v_c \\quad\\Rightarrow\\quad v_c = ' + n4(vc) + MS + ',\\qquad v_p = ' + n4(vp) + MS);
+      spec.explain = 'Convert relative velocities to ground velocities before adding momenta.';
+      view = pairLedger(mp, 0, vp, mc, 0, vc, 'Momentum of person and cart', 'The jump is internal to the pair: the total stays zero.');
+      var vcw = -mp * u / mc;
+      return { spec: spec, view: view, test: { right: [{ vc: typed(vc), vp: typed(vp) }], wrong: [{ vc: typed(vcw), vp: typed(u) }] } };
+    }
+    var ms = rng.pick(range(2, 20, 1)), vs = rng.pick(range(200, 800, 50)), th = rng.pick([0, 10, 15, 20, 25, 30, 40, 45]), Mc = rng.pick(range(500, 3000, 100));
+    var vr = ms * vs * Math.cos(th * D2R) / Mc;
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(Mc) + KG) + ' cannon, free to roll on smooth level rails, fires a ' + m(nn(ms) + KG) + ' shell at ' + m(nn(vs) + MS) + ' relative to the ground, ' + (th ? 'at ' + m(nn(th) + DEG) + ' above the horizontal' : 'horizontally') + '. Find the cannon\'s recoil speed.', label: '\\(v_r =\\)', answer: vr, unit: 'm/s' };
+    spec.hints = ['Only the horizontal momentum is conserved: the rails push vertically, and impulsively, during the firing.', '\\(0 = m_s v_s\\cos\\theta - M v_r\\).'];
+    spec.solution = M('0 = ' + nn(ms) + '(' + nn(vs) + ')\\cos ' + nn(th) + DEG + ' - ' + nn(Mc) + '\\,v_r \\quad\\Rightarrow\\quad v_r = ' + n4(vr) + MS);
+    right = vr; wrong = wrongOf(vr, [ms * vs / Mc, ms * vs * Math.sin(th * D2R) / Mc, ms * vs * Math.cos(th * D2R) / (Mc + ms)]);
+    view = ledger({ title: 'Horizontal momentum', aria: 'The horizontal momentum, zero before firing, is shared between the shell and the recoiling cannon.', start: ['0', 0], items: [['m_s v_s\\cos\\theta', ms * vs * Math.cos(th * D2R), 'warn'], ['-Mv_r', -Mc * vr, 'accent']], end: ['\\textstyle\\sum mv_x', 0],
+      readouts: [ro('Shell, horizontal', n4(ms * vs * Math.cos(th * D2R)) + KMS), ro('\\(v_r\\)', n4(vr) + MS)], note: 'Vertically, the rails supply the shell\'s upward momentum.' });
+    spec.explain = 'Conserve momentum only in the direction with no impulsive external force.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.6 Direct central impact (Lesson 6) ---------- */
+  function genImpact(rng) {
+    var mA = rng.pick(range(0.5, 6, 0.5)), mB = rng.pick(range(0.5, 6, 0.5)), vA = rng.pick(range(1, 10, 0.5)), vB = rng.pick([0, 0, 0, -1, -2, -3, -4, 1, 2, -0.5]);
+    if (vB >= vA) vB = 0;
+    var e = rng.pick([0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]);
+    var r = impact(mA, vA, mB, vB, e);
+    var spec = { type: 'fields', prompt: 'Ball ' + m('A') + ' (' + m(nn(mA) + KG) + ') moving at ' + m(nn(vA) + MS) + ' collides head-on with ball ' + m('B') + ' (' + m(nn(mB) + KG) + ')' + (vB === 0 ? ', which is at rest' : ' moving at ' + m(nn(vB) + MS)) + ', velocities positive to the right. The coefficient of restitution is ' + m(nn(e)) + '. Find both velocities just after the impact.',
+      fields: [{ name: 'vA', label: '\\((v_A)_2 =\\)', answer: r.vA2, unit: 'm/s' }, { name: 'vB', label: '\\((v_B)_2 =\\)', answer: r.vB2, unit: 'm/s' }] };
+    spec.hints = ['Momentum: \\(m_A(v_A)_1 + m_B(v_B)_1 = m_A(v_A)_2 + m_B(v_B)_2\\).', 'Restitution: \\((v_B)_2 - (v_A)_2 = e\\left[(v_A)_1 - (v_B)_1\\right]\\). Solve the two together.'];
+    spec.solution = M(nn(mA) + '(' + nn(vA) + ') + ' + nn(mB) + par(vB) + ' = ' + nn(mA) + '(v_A)_2 + ' + nn(mB) + '(v_B)_2') + M('(v_B)_2 - (v_A)_2 = ' + nn(e) + '\\left[' + nn(vA) + ' - ' + par(vB) + '\\right] = ' + n4(e * (vA - vB))) +
+      M('(v_A)_2 = ' + n4(r.vA2) + MS + ',\\qquad (v_B)_2 = ' + n4(r.vB2) + MS) + '<p>Kinetic energy lost: \\(' + n4(r.lost) + '\\ \\text{J}\\).</p>';
+    spec.explain = 'Two equations: conservation of momentum and the coefficient of restitution.';
+    var w = impact(mA, vA, mB, vB, e === 1 ? 0.5 : 1);
+    var view = pairLedger(mA, vA, r.vA2, mB, vB, r.vB2, 'Momentum through the impact');
+    return { spec: spec, view: view, test: { right: [{ vA: typed(r.vA2), vB: typed(r.vB2) }], wrong: [{ vA: typed(w.vA2), vB: typed(w.vB2) }] } };
+  }
+
+  /* ---------- 2.7 Restitution and energy (Lesson 6) ---------- */
+  function genRestitution(rng) {
+    var kind = pickW(rng, [['fromv', 2], ['drop', 2], ['bounce', 2], ['lost', 2]]), spec, view, right, wrong;
+    if (kind === 'fromv') {
+      var mA = rng.pick(range(1, 5, 0.5)), mB = rng.pick(range(1, 5, 0.5)), vA = rng.pick(range(2, 8, 0.5)), e = rng.pick([0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]);
+      var r = impact(mA, vA, mB, 0, e);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mA) + KG) + ' cart moving at ' + m(nn(vA) + MS) + ' strikes a ' + m(nn(mB) + KG) + ' cart at rest. Just afterward the first cart moves at ' + m(n4(r.vA2) + MS) + ' and the second at ' + m(n4(r.vB2) + MS) + ', both positive in the first cart\'s direction. Find the coefficient of restitution.', label: '\\(e =\\)', answer: e, unit: '' };
+      spec.hints = ['\\(e\\) is the speed of separation over the speed of approach.', '\\(e = \\left[(v_B)_2 - (v_A)_2\\right]/\\left[(v_A)_1 - (v_B)_1\\right]\\).'];
+      spec.solution = M('e = \\frac{' + n4(r.vB2) + ' - \\left(' + n4(r.vA2) + '\\right)}{' + nn(vA) + ' - 0} = ' + n4(e));
+      right = e; wrong = wrongOf(e, [r.vB2 / vA, Math.abs(r.vA2) / vA, (r.vB2 + r.vA2) / vA]);
+      view = pairLedger(mA, vA, r.vA2, mB, 0, r.vB2, 'Momentum through the impact', 'Momentum is conserved whatever \\(e\\) is; \\(e\\) fixes how the momentum is shared.');
+      spec.explain = 'Use relative velocities, not one body\'s speeds.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'drop' || kind === 'bounce') {
+      var h1 = rng.pick(range(0.5, 3, 0.1)), ee = rng.pick([0.4, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]), h2 = ee * ee * h1;
+      if (kind === 'drop') {
+        spec = { type: 'numeric', prompt: 'A ball dropped from rest from ' + m(nn(h1) + MU) + ' onto a hard floor rebounds to ' + m(n4(h2) + MU) + '. Find the coefficient of restitution.', label: '\\(e =\\)', answer: ee, unit: '' };
+        spec.hints = ['The floor does not move, so \\(e\\) is the rebound speed over the landing speed.', 'Each speed is \\(\\sqrt{2gh}\\): \\(e = \\sqrt{h_2/h_1}\\).'];
+        spec.solution = M('e = \\sqrt{\\frac{' + n4(h2) + '}{' + nn(h1) + '}} = ' + n4(ee));
+        right = ee; wrong = wrongOf(ee, [h2 / h1, 1 - h2 / h1, Math.sqrt(1 - h2 / h1)]);
+      } else {
+        var n = rng.pick([2, 3]), hn = Math.pow(ee * ee, n) * h1;
+        spec = { type: 'numeric', prompt: 'A ball is dropped from rest from ' + m(nn(h1) + MU) + ' onto a floor, with ' + m('e = ' + nn(ee)) + '. How high does it rise after the ' + (n === 2 ? 'second' : 'third') + ' bounce?', label: '\\(h =\\)', answer: hn, unit: 'm' };
+        spec.hints = ['Each bounce multiplies the rebound speed by \\(e\\), and the height by \\(e^2\\).', 'After ' + n + ' bounces: \\(h = e^{' + 2 * n + '}h_1\\).'];
+        spec.solution = M('h = (' + nn(ee) + ')^{' + 2 * n + '}(' + nn(h1) + ') = ' + n4(hn) + MU);
+        right = hn; wrong = wrongOf(hn, [Math.pow(ee, n) * h1, ee * ee * h1, Math.pow(ee * ee, n + 1) * h1]);
+        h2 = hn;
+      }
+      view = ledger({ title: 'Heights', aria: 'The drop height, less the height lost in the bounces, gives the rebound height.', unit: 'm', start: ['h_1', h1], items: [['\\text{lost}', h2 - h1, 'bad']], end: ['h', h2],
+        readouts: [ro('\\(e\\)', nn(ee)), ro('\\(e^2\\)', n4(ee * ee)), ro('Height', n4(h2) + MU)], note: 'Each bounce keeps a fraction \\(e^2\\) of the height, and of the energy.' });
+      spec.explain = '\\(e = \\sqrt{h_2/h_1}\\) for a ball bouncing on a fixed floor.';
+      return done(spec, view, right, wrong);
+    }
+    var a = rng.pick(range(1, 8, 0.5)), b = rng.pick(range(1, 8, 0.5)), va = rng.pick(range(2, 10, 0.5)), vb = rng.pick([0, 0, -1, -2, 1]), e2 = rng.pick([0, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8]);
+    if (vb >= va) vb = 0;
+    var r2 = impact(a, va, b, vb, e2), dT = r2.lost, T1 = 0.5 * a * va * va + 0.5 * b * vb * vb;
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(a) + KG) + ' block moving at ' + m(nn(va) + MS) + ' collides head-on with a ' + m(nn(b) + KG) + ' block ' + (vb === 0 ? 'at rest' : 'moving at ' + m(nn(vb) + MS) + ' (positive in the first block\'s direction)') + ', with ' + m('e = ' + nn(e2)) + '. How much kinetic energy is lost in the impact?', label: '\\(\\Delta T =\\)', answer: dT, unit: 'J' };
+    spec.hints = ['Either find both velocities after the impact and compare \\(T\\) before and after,', 'or use \\(\\Delta T = \\dfrac{m_A m_B}{2(m_A + m_B)}(1 - e^2)\\left[(v_A)_1 - (v_B)_1\\right]^2\\).'];
+    spec.solution = M('\\Delta T = \\frac{' + nn(a) + '(' + nn(b) + ')}{2(' + nn(a + b) + ')}\\left(1 - ' + nn(e2) + '^2\\right)\\left[' + nn(va) + ' - ' + par(vb) + '\\right]^2 = ' + n4(dT) + J) + '<p>Check: \\((v_A)_2 = ' + n4(r2.vA2) + '\\ \\text{m/s}\\), \\((v_B)_2 = ' + n4(r2.vB2) + '\\ \\text{m/s}\\), and \\(T\\) drops from \\(' + n4(T1) + '\\) to \\(' + n4(T1 - dT) + '\\ \\text{J}\\).</p>';
+    right = dT; wrong = wrongOf(dT, [T1, a * b / (2 * (a + b)) * (va - vb) * (va - vb), T1 - dT]);
+    view = ledger({ title: 'Kinetic energy through the impact', aria: 'The kinetic energy before the impact, less the energy lost, gives the kinetic energy after.', unit: 'J', start: ['T_1', T1], items: [['\\Delta T', -dT, 'bad']], end: ['T_2', T1 - dT],
+      readouts: [ro('\\(T_1\\)', n4(T1) + J), ro('\\(T_2\\)', n4(T1 - dT) + J), ro('Fraction lost', n4(T1 > 0 ? 100 * dT / T1 : 0) + '\\%')], note: e2 === 0 ? 'A plastic impact: the largest possible loss.' : 'Only a perfectly elastic impact loses nothing.' });
+    spec.explain = 'Energy lost depends on the masses, \\(e\\) and the approach speed.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.8 Oblique impact (Lesson 7) ---------- */
+  function genOblique(rng) {
+    var kind = pickW(rng, [['floorAngle', 2], ['floorSpeed', 2], ['puckB', 2], ['puckA', 1]]), spec, view, right, wrong;
+    if (kind === 'floorAngle' || kind === 'floorSpeed') {
+      var v1 = rng.pick(range(4, 20, 1)), th = rng.pick(range(20, 75, 5)), e = rng.pick([0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9]);
+      var vt = v1 * Math.cos(th * D2R), vn = v1 * Math.sin(th * D2R), vn2 = e * vn, v2 = Math.hypot(vt, vn2), th2 = Math.atan2(vn2, vt) / D2R;
+      var pre = 'A ball strikes a smooth floor at ' + m(nn(v1) + MS) + ', at ' + m(nn(th) + DEG) + ' to the floor. The coefficient of restitution is ' + m(nn(e)) + '. ';
+      if (kind === 'floorAngle') {
+        spec = { type: 'numeric', prompt: pre + 'At what angle to the floor does it rebound?', label: '\\(\\theta_2 =\\)', answer: th2, unit: '°' };
+        right = th2; wrong = wrongOf(th2, [th, Math.atan(Math.tan(th * D2R) / e) / D2R, e * th]);
+      } else {
+        spec = { type: 'numeric', prompt: pre + 'Find its speed just after the bounce.', label: '\\(v_2 =\\)', answer: v2, unit: 'm/s' };
+        right = v2; wrong = wrongOf(v2, [e * v1, v1, Math.hypot(e * vt, vn)]);
+      }
+      spec.hints = ['Along the floor (\\(t\\)) nothing changes: \\((v_t)_2 = v_1\\cos\\theta_1\\).', 'Normal to the floor (\\(n\\)): \\((v_n)_2 = e\\,v_1\\sin\\theta_1\\), pointing up.'];
+      spec.solution = M('(v_t)_2 = ' + nn(v1) + '\\cos ' + nn(th) + DEG + ' = ' + n4(vt) + MS + ',\\qquad (v_n)_2 = ' + nn(e) + '(' + nn(v1) + '\\sin ' + nn(th) + DEG + ') = ' + n4(vn2) + MS) +
+        M('v_2 = \\sqrt{' + n4(vt) + '^2 + ' + n4(vn2) + '^2} = ' + n4(v2) + MS + ',\\qquad \\theta_2 = \\tan^{-1}\\frac{' + n4(vn2) + '}{' + n4(vt) + '} = ' + n4(th2) + DEG);
+      view = ledger({ title: 'The normal component through the bounce', aria: 'The normal component of velocity, pointing into the floor, plus the change the floor gives it, gives the normal component after, pointing up.', unit: 'm/s', start: ['(v_n)_1', -vn], items: [['\\Delta v_n', vn + vn2, 'bad']], end: ['(v_n)_2', vn2],
+        readouts: [ro('\\(v_t\\), unchanged', n4(vt) + MS), ro('\\((v_n)_2\\)', n4(vn2) + MS), ro('\\(\\tan\\theta_2/\\tan\\theta_1\\)', nn(e))], note: 'The floor\'s impulse is normal to it: only \\(v_n\\) changes.' });
+      spec.explain = 'Tangential: unchanged. Normal: reversed and multiplied by \\(e\\). So \\(\\tan\\theta_2 = e\\tan\\theta_1\\).';
+      return done(spec, view, right, wrong);
+    }
+    var mp = rng.pick(range(0.1, 0.5, 0.05)), v = rng.pick(range(1, 8, 0.5)), ph = rng.pick([10, 15, 20, 25, 30, 35, 40, 45, 50, 60]), e2 = rng.pick([0.5, 0.6, 0.7, 0.8, 0.9, 1]);
+    var vn1 = v * Math.cos(ph * D2R), vt1 = v * Math.sin(ph * D2R), vB2 = (1 + e2) / 2 * vn1, vAn2 = (1 - e2) / 2 * vn1, vA2 = Math.hypot(vAn2, vt1);
+    var pre2 = 'Puck ' + m('A') + ' slides at ' + m(nn(v) + MS) + ' on smooth ice and strikes an identical puck ' + m('B') + ' (' + m(nn(mp) + KG) + ' each) at rest. At contact, the line joining their centers is at ' + m(nn(ph) + DEG) + ' to ' + m('A') + '\'s velocity, and ' + m('e = ' + nn(e2)) + '. ';
+    if (kind === 'puckB') {
+      spec = { type: 'numeric', prompt: pre2 + 'Find the speed of ' + m('B') + ' after the impact.', label: '\\(v_B =\\)', answer: vB2, unit: 'm/s' };
+      right = vB2; wrong = wrongOf(vB2, [(1 + e2) / 2 * v, e2 * vn1, (1 + e2) / 2 * vt1]);
+    } else {
+      spec = { type: 'numeric', prompt: pre2 + 'Find the speed of ' + m('A') + ' after the impact.', label: '\\(v_A =\\)', answer: vA2, unit: 'm/s' };
+      right = vA2; wrong = wrongOf(vA2, [vt1, (1 - e2) / 2 * v, Math.hypot((1 - e2) / 2 * vn1, vn1)]);
+    }
+    spec.hints = ['Along the line of impact \\(n\\): \\((v_A)_{n1} = v\\cos\\phi\\). Across it (\\(t\\)): \\((v_A)_{t1} = v\\sin\\phi\\), which \\(A\\) keeps; \\(B\\) gets no \\(t\\) component.', 'Along \\(n\\): momentum and \\(e\\), as in a direct impact. With equal masses, \\((v_B)_{n2} = \\tfrac12(1 + e)(v_A)_{n1}\\).'];
+    spec.solution = M('(v_A)_{n1} = ' + nn(v) + '\\cos ' + nn(ph) + DEG + ' = ' + n4(vn1) + MS + ',\\qquad (v_A)_{t1} = ' + n4(vt1) + MS) +
+      M('(v_A)_{n2} + (v_B)_{n2} = ' + n4(vn1) + ',\\qquad (v_B)_{n2} - (v_A)_{n2} = ' + nn(e2) + '(' + n4(vn1) + ')') +
+      M('(v_B)_{n2} = ' + n4(vB2) + MS + ',\\qquad (v_A)_{n2} = ' + n4(vAn2) + MS) + M('v_A = \\sqrt{' + n4(vAn2) + '^2 + ' + n4(vt1) + '^2} = ' + n4(vA2) + MS + ',\\qquad v_B = ' + n4(vB2) + MS);
+    view = pairLedger(mp, vn1, vAn2, mp, 0, vB2, 'Momentum along the line of impact', 'Along \\(n\\) the pair conserves momentum; along \\(t\\) each puck keeps its own.');
+    spec.explain = 'Components along \\(n\\): momentum and \\(e\\). Along \\(t\\): unchanged for each body.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.9 Impact, momentum and energy in stages (Lesson 8) ---------- */
+  function genStages(rng) {
+    var kind = pickW(rng, [['pendulum', 3], ['bullet', 1], ['spring', 2], ['skid', 2]]), spec, view, right, wrong;
+    if (kind === 'pendulum' || kind === 'bullet') {
+      var mb = rng.pick([0.005, 0.008, 0.01, 0.015, 0.02, 0.025, 0.03]), vb = rng.pick(range(200, 900, 50)), Mk = rng.pick(range(1, 8, 0.5));
+      var V = mb * vb / (mb + Mk), h = V * V / (2 * G), T1 = 0.5 * mb * vb * vb, T2 = 0.5 * (mb + Mk) * V * V;
+      if (kind === 'pendulum') {
+        spec = { type: 'numeric', prompt: 'A ' + m(nn(mb * 1000) + '\\ \\text{g}') + ' bullet traveling horizontally at ' + m(nn(vb) + MS) + ' embeds itself in a ' + m(nn(Mk) + KG) + ' block hanging from a light cord. How high does the block swing?', label: '\\(h =\\)', answer: h, unit: 'm' };
+        spec.hints = ['Stage 1, the impact: momentum is conserved (plastic): \\(m v = (m + M)V\\).', 'Stage 2, the swing: energy, \\(h = V^2/2g\\).'];
+        right = h; wrong = wrongOf(h, [T1 / ((mb + Mk) * G), vb * vb / (2 * G), mb * vb / Mk]);
+      } else {
+        spec = { type: 'numeric', prompt: 'A ' + m(nn(mb * 1000) + '\\ \\text{g}') + ' bullet fired horizontally embeds itself in a ' + m(nn(Mk) + KG) + ' block hanging from a light cord, which then swings up ' + m(n4(h) + MU) + '. How fast was the bullet moving?', label: '\\(v =\\)', answer: vb, unit: 'm/s' };
+        spec.hints = ['Work backward. The swing: \\(V = \\sqrt{2gh}\\).', 'The impact: \\(m v = (m + M)V\\).'];
+        right = vb; wrong = wrongOf(vb, [Math.sqrt(2 * G * h), Math.sqrt(2 * (mb + Mk) * G * h / mb), Mk * Math.sqrt(2 * G * h) / mb]);
+      }
+      spec.solution = M('V = \\frac{' + nn(mb) + '(' + nn(vb) + ')}{' + nn(mb + Mk) + '} = ' + n4(V) + MS + '\\qquad h = \\frac{V^2}{2g} = ' + n4(h) + MU) + '<p>The impact loses \\(' + n4(100 * (1 - T2 / T1)) + '\\%\\) of the bullet\'s kinetic energy; energy conservation across it would be badly wrong.</p>';
+      view = ledger({ title: 'Kinetic energy, stage by stage', aria: 'The bullet\'s kinetic energy, less the energy lost in the impact, less the work against gravity in the swing, leaves nothing at the top.', unit: 'J', start: ['T_{\\text{bullet}}', T1], items: [['\\text{impact}', -(T1 - T2), 'bad'], ['U_W', -T2, 'z']], end: ['T_{\\text{top}}', 0],
+        readouts: [ro('\\(V\\) after the impact', n4(V) + MS), ro('Lost in the impact', n4(100 * (1 - T2 / T1)) + '\\%'), ro('\\(h\\)', n4(h) + MU)], note: 'Momentum across the impact, energy for the swing.' });
+      spec.explain = 'Momentum across the impact, then energy for the swing.';
+      return done(spec, view, right, wrong);
+    }
+    var mA = rng.pick(range(1, 5, 0.5)), mB = rng.pick(range(1, 6, 0.5)), vA = rng.pick(range(2, 8, 0.5)), e = rng.pick([0, 0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 1]);
+    var r = impact(mA, vA, mB, 0, e), T0 = 0.5 * mA * vA * vA;
+    if (kind === 'spring') {
+      var k = rng.pick(range(200, 2000, 100)), plastic = e === 0, mm = plastic ? mA + mB : mB, vv = plastic ? r.vc : r.vB2, s = vv * Math.sqrt(mm / k);
+      spec = { type: 'numeric', prompt: 'Block ' + m('A') + ' (' + m(nn(mA) + KG) + ') slides at ' + m(nn(vA) + MS) + ' on a smooth surface and strikes block ' + m('B') + ' (' + m(nn(mB) + KG) + '), which rests against an unstretched spring with ' + m('k = ' + nn(k) + NM) + '. The coefficient of restitution is ' + m(nn(e)) + '. Find the maximum compression of the spring.', label: '\\(s_{\\max} =\\)', answer: s, unit: 'm' };
+      spec.hints = ['Stage 1, the impact: momentum and \\(e\\) give ' + (plastic ? 'the common velocity (with \\(e = 0\\), \\(A\\) stays pressed against \\(B\\))' : '\\((v_B)_2\\)') + '.', 'Stage 2, the compression: energy, \\(\\tfrac12 m v^2 = \\tfrac12 k s_{\\max}^2\\)' + (plastic ? ', with both blocks' : ', for \\(B\\) alone') + '.'];
+      spec.solution = M((plastic ? 'v = \\frac{' + nn(mA) + '(' + nn(vA) + ')}{' + nn(mA + mB) + '} = ' : '(v_B)_2 = \\frac{(1 + ' + nn(e) + ')(' + nn(mA) + ')(' + nn(vA) + ')}{' + nn(mA + mB) + '} = ') + n4(vv) + MS) +
+        M('\\tfrac12(' + nn(mm) + ')(' + n4(vv) + ')^2 = \\tfrac12(' + nn(k) + ')s_{\\max}^2 \\quad\\Rightarrow\\quad s_{\\max} = ' + n4(s) + MU);
+      right = s; wrong = wrongOf(s, [vA * Math.sqrt(mA / k), vv * Math.sqrt((mA + mB) / k), vA * Math.sqrt(mB / k)]);
+      var Tafter = 0.5 * mm * vv * vv;
+      view = ledger({ title: 'Kinetic energy, stage by stage', aria: 'The kinetic energy of A, less the energy lost in the impact and the energy left with A, is stored in the spring at maximum compression.', unit: 'J', start: ['T_A', T0], items: [['\\text{impact}', -r.lost, 'bad'], ['T_{\\text{not in spring}}', -(T0 - r.lost - Tafter), 'accent'], ['U_s', -Tafter, 't']], end: ['0', 0],
+        readouts: [ro('Speed into the spring', n4(vv) + MS), ro('Lost in the impact', n4(r.lost) + J), ro('\\(s_{\\max}\\)', n4(s) + MU)], note: plastic ? 'With \\(e = 0\\) both blocks compress the spring together.' : '\\(A\\) keeps some kinetic energy and falls behind; only \\(B\\) compresses the spring.' });
+      spec.explain = 'Momentum and \\(e\\) across the impact, energy for the spring.';
+      return done(spec, view, right, wrong);
+    }
+    var mu = rng.pick([0.2, 0.25, 0.3, 0.35, 0.4, 0.5]), d = r.vB2 * r.vB2 / (2 * mu * G);
+    if (e === 0) d = r.vc * r.vc / (2 * mu * G);
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mA) + KG) + ' block sliding at ' + m(nn(vA) + MS) + ' strikes a ' + m(nn(mB) + KG) + ' block at rest, with ' + m('e = ' + nn(e)) + '. ' + (e === 0 ? 'The blocks stick together and slide' : 'The struck block slides') + ' on a floor with ' + m('\\mu_k = ' + nn(mu)) + '. How far does ' + (e === 0 ? 'the pair' : 'it') + ' slide?', label: '\\(d =\\)', answer: d, unit: 'm' };
+    spec.hints = ['Stage 1, the impact: friction is nonimpulsive, so momentum is conserved; use \\(e\\) for the second equation.', 'Stage 2, the skid: \\(\\tfrac12 mv^2 = \\mu_k mg\\,d\\), so \\(d = v^2/(2\\mu_k g)\\).'];
+    var vs = e === 0 ? r.vc : r.vB2;
+    spec.solution = M((e === 0 ? 'v = \\frac{' + nn(mA) + '(' + nn(vA) + ')}{' + nn(mA + mB) + '}' : '(v_B)_2 = \\frac{(1 + ' + nn(e) + ')(' + nn(mA) + ')(' + nn(vA) + ')}{' + nn(mA + mB) + '}') + ' = ' + n4(vs) + MS + '\\qquad d = \\frac{' + n4(vs) + '^2}{2(' + nn(mu) + ')(9.81)} = ' + n4(d) + MU);
+    right = d; wrong = wrongOf(d, [vA * vA / (2 * mu * G), vs / (2 * mu * G), vs * vs / (mu * G)]);
+    var mS = e === 0 ? mA + mB : mB, Ts = 0.5 * mS * vs * vs;
+    view = ledger({ title: 'Kinetic energy, stage by stage', aria: 'The kinetic energy before the impact, less the energy lost in the impact and the energy left with the striking block, is taken by friction in the skid.', unit: 'J', start: ['T_1', T0], items: [['\\text{impact}', -r.lost, 'bad'], ['T_{\\text{other}}', -(T0 - r.lost - Ts), 'accent'], ['U_f', -Ts, 'r']], end: ['0', 0],
+      readouts: [ro('Speed after the impact', n4(vs) + MS), ro('\\(d\\)', n4(d) + MU)], note: 'Momentum across the impact, work and energy for the skid.' });
+    spec.explain = 'Cut at the impact: momentum and \\(e\\) across it, energy after.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ================================================================ 5. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l02: L(2, '02-momentum-impulse.html', 'Linear Momentum and Impulse'), l03: L(3, '03-principle.html', 'The Principle of Impulse and Momentum'),
+    l04: L(4, '04-varying-forces.html', 'Forces That Vary with Time'), l05: L(5, '05-conservation.html', 'Conservation of Linear Momentum'),
+    l06: L(6, '06-direct-impact.html', 'Direct Central Impact'), l07: L(7, '07-oblique-impact.html', 'Oblique Impact'),
+    l08: L(8, '08-combining.html', 'Impact, Momentum and Energy Together')
+  };
+  var CATS = [
+    { id: 'impulse', label: 'Momentum & impulse', gen: genImpulse, lessons: [LES.l02] },
+    { id: 'graph', label: 'Force–time graphs', gen: genGraph, lessons: [LES.l02, LES.l04] },
+    { id: 'constant', label: 'Constant forces', gen: genConstant, lessons: [LES.l03] },
+    { id: 'varying', label: 'Forces that vary', gen: genVarying, lessons: [LES.l04] },
+    { id: 'conserve', label: 'Conservation', gen: genConserve, lessons: [LES.l05] },
+    { id: 'impact', label: 'Direct impact', gen: genImpact, lessons: [LES.l06] },
+    { id: 'restitution', label: 'Restitution & energy', gen: genRestitution, lessons: [LES.l06] },
+    { id: 'oblique', label: 'Oblique impact', gen: genOblique, lessons: [LES.l07] },
+    { id: 'stages', label: 'Problems in stages', gen: genStages, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 6. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      if (v.note) out.push(['view note', v.note]);
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.kind === 'ledger') [v.start].concat(v.items, [v.end]).forEach(function (it) { out.push(['ledger label', '\\(' + it.label + '\\)']); });
+      if (v.kind === 'area') { out.push(['x label', v.x.label]); out.push(['y label', v.y.label]); }
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|sec|csc|arctan|left|right|Longrightarrow|quad|dot|ddot|ihat|jhat|khat|er|et|ez|Fvec|vvec|avec|int|iiint|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'point') return spec.answerPoint.every(isFinite);
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {}, kinds = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        kinds[p.view && p.view.kind] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['mc', 'numeric', 'fields', 'point'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          if (s.type === 'mc') {
+            if (s.choices.length < 4) f('fewer than 4 choices');
+            if (s.choices.filter(function (c) { return c.correct; }).length !== 1) f('not exactly one correct choice');
+            var hs = s.choices.map(function (c) { return c.html; });
+            if (hs.some(function (h, j) { return hs.indexOf(h) !== j; })) f('duplicate choices');
+            if (s.choices.some(function (c) { return !c.correct && !c.feedback; })) f('distractor without feedback');
+          }
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || ['ledger', 'area'].indexOf(vw.kind) < 0) f('bad view');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else if (vw.kind === 'ledger') {
+            var tot = ledgerTotals(vw), last = tot[tot.length - 2], end = tot[tot.length - 1];
+            if (!tot.every(isFinite)) f('ledger value not finite');
+            else if (Math.abs(last - end) > 1e-6 * Math.max(1, Math.abs(vw.start.value), Math.abs(end))) f('ledger does not add up: ' + last + ' vs ' + end);
+          } else if (!vw.pts.every(function (q) { return isFinite(q[0]) && isFinite(q[1]); }) || !isFinite(vw.from) || !isFinite(vw.to)) f('area view not finite');
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      st.viewKinds = Object.keys(kinds);
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec, view: sp.view }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 7. The shared view (an impulse ledger or a force–time graph) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  function ledgerTotals(vw) {                                // running totals: start, after each item, and the end
+    var c = vw.start.value, out = [c];
+    vw.items.forEach(function (it) { c += it.value; out.push(c); });
+    out.push(vw.end.value);
+    return out;
+  }
+  function interp(pts) {
+    return function (x) {
+      if (x <= pts[0][0]) return pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        if (x <= pts[i][0]) { var a = pts[i - 1], b = pts[i], u = (x - a[0]) / ((b[0] - a[0]) || 1); return a[1] + u * (b[1] - a[1]); }
+      }
+      return pts[pts.length - 1][1];
+    };
+  }
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var host = CYL.el('div', { class: 'pl-viewhost' });
+    stage.appendChild(host);
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see its impulse picture here.' })]);
+    stage.appendChild(veil);
+    var cur = null, revealed = false;
+    function hint(text) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Impulse picture' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: text }));
+    }
+    function idle() {                                      // a neutral placeholder the same size as a real view
+      host.innerHTML = '';
+      var g = CYL.el('div', { class: 'pl-ghost', 'aria-hidden': 'true' });
+      [62, 38, 80, 24, 54].forEach(function (w, i) {
+        var r = CYL.el('div', { class: 'pl-ghost-row' }), b = CYL.el('span');
+        b.style.marginLeft = (i % 2 ? 18 : 6) + '%'; b.style.width = w * 0.7 + '%';
+        r.appendChild(b); g.appendChild(r);
+      });
+      host.appendChild(g);
+      host.setAttribute('role', 'img');
+      host.setAttribute('aria-label', 'Placeholder: the impulse picture for the current problem appears here after you solve it or open its solution.');
+    }
+    function build(vw) {
+      host.innerHTML = '';
+      host.removeAttribute('role'); host.removeAttribute('aria-label');
+      if (vw.kind === 'ledger') {
+        var works = vw.items.map(function (it, i) { return { key: 'w' + i, label: it.label, color: it.color }; });
+        var lg = ENERGY.ledger(host, { works: works, start: vw.start.label, end: vw.end.label, unit: vw.unit, title: vw.title + ' (' + vw.unit + ')', ariaLabel: vw.aria });
+        var tot = ledgerTotals(vw), lo = Math.min.apply(null, tot.concat([0])), hi = Math.max.apply(null, tot.concat([0]));
+        if (hi - lo < 1e-9) hi = lo + 1;
+        lg.setScale(lo - 0.04 * (hi - lo), hi + 0.04 * (hi - lo));
+        var v = { start: vw.start.value, end: vw.end.value };
+        vw.items.forEach(function (it, i) { v['w' + i] = it.value; });
+        lg.set(v);
+      } else {
+        host.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title }));
+        var ch = ENERGY.chart(host, { x: vw.x, y: vw.y, height: 280, ariaLabel: vw.aria });
+        var f = interp(vw.pts), a = Math.min(vw.from, vw.to), b = Math.max(vw.from, vw.to);
+        ch.area(f, { domain: [a, b], color: vw.color, fillOpacity: 0.3 });
+        ch.polyline(vw.pts, { color: vw.color, width: 2.6 });
+        ch.hline(0, { color: 'ink' });
+        if (Math.abs(vw.from) > 1e-9) ch.vline(vw.from, { color: 'ink', dashed: true, label: 'start' });
+        if (Math.abs(vw.to) > 1e-9) ch.vline(vw.to, { color: 'ink', dashed: true, label: 'end', labelDy: 16 });
+      }
+    }
+    function fillPanel(vw) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.kind === 'ledger' ? 'Numbers' : vw.title }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      if (vw.note) { var n = CYL.el('p', { class: 'pl-panel-note', html: vw.note }); panel.appendChild(n); CYL.renderMath(n); }
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+      hint('Hidden until you solve the problem (or open its solution), so it does not give the answer away.');
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      build(cur);
+      veil.hidden = true;
+      fillPanel(cur);
+    };
+    VIEW.isRevealed = function () { return revealed; };
+  });
+
+  /* ================================================================ 8. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like impact-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

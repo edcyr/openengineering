@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module Home · Impulse and Momentum</title>
+<meta name="description" content="An interactive, offline module on impulse and momentum methods for particles, for first-year engineering dynamics: linear momentum and impulse, the principle of impulse and momentum, conservation of momentum, and direct and oblique impact, with animated figures, worked examples, instant-feedback questions, practice and a self-check quiz.">
+<link rel="stylesheet" href="assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="assets/css/module.css">
+<script src="assets/vendor/katex/katex.min.js"></script>
+<script src="assets/vendor/katex/auto-render.min.js"></script>
+<script src="assets/js/cyl-core.js"></script>
+<script src="assets/js/cyl-2d.js"></script>
+<script src="assets/js/energy.js"></script>
+<script src="assets/js/momentum.js"></script>
+<style>
+  /* ---------- Home page only (module.css holds the shared design system) ---------- */
+
+  /* Section headings: the h2 sits inside a <header>, so the shell builds no "On this page" list here */
+  .home-sec-head { margin: 0 0 1.1rem; }
+  .home-sec-head h2 { margin: 0 0 4px; }
+  .home-sec-head p { margin: 0; color: var(--ink-muted); }
+  .home-sec-head .home-prereq { margin: 0 0 10px; }
+  .home-prereq strong { color: var(--ink); }
+
+  /* ---------- Hero ---------- */
+  .home-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px 40px;
+    align-items: center;
+    margin-bottom: 0;
+    padding: 4px 0 34px;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-hero::before {
+    /* faint engineering-paper grid, as on the lesson headers */
+    content: "";
+    position: absolute;
+    z-index: -1;
+    /* never wider than the page gutter (16 px on phones), or the page would scroll sideways */
+    inset: -26px calc(-1 * min(20px, var(--gutter))) 0;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(120% 95% at 0% 0%, #000 25%, transparent 72%);
+    mask-image: radial-gradient(120% 95% at 0% 0%, #000 25%, transparent 72%);
+    pointer-events: none;
+  }
+  @container cylmain (min-width: 800px) {
+    .home-hero { grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr); }
+  }
+  .home-hero .eyebrow { margin-bottom: 10px; }
+  /* Eyebrow separator: each phrase after the first carries its "·" in its left margin. The row is
+     shifted left by that margin and clipped back, so a phrase that wraps to a new line (narrow
+     columns) loses its dot instead of leaving one dangling at the end of the line above. */
+  .home-hero .eyebrow {
+    --sep: 22px;
+    gap: 4px 0;
+    margin-left: calc(-1 * var(--sep));
+    -webkit-clip-path: inset(0 0 0 var(--sep));
+    clip-path: inset(0 0 0 var(--sep));
+  }
+  .home-hero .eyebrow > span { position: relative; margin-left: var(--sep); }
+  .home-hero .eyebrow > span + span::before {
+    content: "·";
+    content: "·" / "";
+    position: absolute;
+    left: calc(-1 * var(--sep));
+    width: var(--sep);
+    text-align: center;
+  }
+  .home-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(2.05rem, 1.35rem + 2.6vw, 2.95rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  .home-hero .lede { margin: 0 0 22px; }
+  .home-cta { gap: 10px; }
+  .home-cta .btn { min-height: 44px; padding: 10px 18px; font-size: 0.95rem; }
+  .home-cta .btn svg { width: 1.05em; height: 1.05em; }
+  .home-cta .btn:not(.primary) svg { display: none; }  /* the arrow marks the main next step only */
+  .home-next { margin: 12px 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.5; }
+  .home-next strong { color: var(--ink); }
+  .home-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-muted);
+    font-size: 0.86rem;
+  }
+  .home-facts li { display: inline-flex; align-items: center; gap: 7px; margin: 0; }
+  .home-facts li::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .home-facts li.is-offline::before { background: var(--c-good); }
+  .home-facts strong { color: var(--ink); font-weight: 650; }
+
+  /* Hero figure */
+  .home-fig {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elev);
+    box-shadow: var(--shadow);
+  }
+  .home-stage { position: relative; }
+  .home-stage { min-height: 300px; }
+  .home-fig-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    padding: 12px 14px 4px;
+    border-top: 1px solid var(--line);
+  }
+  .home-fig-bar .chip-row { flex: 1 1 100%; }
+  .home-fig-bar .mf-note { flex: 1 1 100%; margin: 0 0 6px; }
+  .home-fig-bar .eb, .home-fig-bar .readout-grid { flex: 1 1 100%; }
+  .home-fig-bar .eb-plot { height: 110px; }
+  .home-fig-bar .mf-show-label { display: none; }
+  .home-stage + .mf-transport, .home-fig .mf-transport { padding: 10px 14px; }
+  .home-fig-bar .viz-title {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .home-fig figcaption {
+    margin: 0;
+    padding: 6px 14px 13px;
+    color: var(--ink-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  /* ---------- Learning outcomes ---------- */
+  .home-outcomes-box { margin: 0; }
+  .home-outcomes-box ul { margin-bottom: 6px; }
+  .home-outcomes-box li { margin-bottom: 10px; }
+  .home-where { color: var(--ink-faint); font-size: 0.86em; white-space: nowrap; }
+  .home-where a { color: inherit; }
+  .home-where a:hover { color: var(--accent); }
+
+  /* ---------- How to use ---------- */
+  .home-path { list-style: none; margin: 0 0 1rem; padding: 0; counter-reset: homestep; }
+  .home-path > li { position: relative; margin: 0; padding: 3px 0 20px 46px; counter-increment: homestep; }
+  .home-path > li::before {
+    content: counter(homestep);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .home-path > li::after {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 36px;
+    bottom: 5px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--line);
+  }
+  .home-path > li:last-child { padding-bottom: 4px; }
+  .home-path > li:last-child::after { display: none; }
+  .home-path-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0; }
+  .home-path-head strong { font-weight: 700; }
+  .home-path-time { color: var(--ink-faint); font-size: 0.84rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .home-path p { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.95em; }
+  .home-total {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin: 0 0 1.8rem;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+    font-size: 0.95em;
+  }
+  .home-total strong { font-size: 1.05em; }
+  .home-total span { color: var(--ink-muted); }
+
+  .home-tips-title { margin: 0 0 12px; font-size: 1.05em; }
+  .home-tips { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .home-tips > li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;                              /* a short card in a tall row keeps its text under its title */
+    gap: 2px 12px;
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .home-tips p { margin: 0; color: var(--ink-muted); font-size: 0.92em; }
+  .home-tips strong { display: block; color: var(--ink); font-size: 1rem; }
+
+  /* mask icons (color from background-color) */
+  .home-icon {
+    grid-row: 1 / span 2;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--accent-soft);
+    position: relative;
+  }
+  .home-icon::before {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    background: var(--accent);
+    -webkit-mask: var(--icon) center / contain no-repeat;
+    mask: var(--icon) center / contain no-repeat;
+  }
+  .ic-pencil { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l1.1-4.2L15.8 5.1a2.1 2.1 0 0 1 3 3L8.1 18.9 4 20z'/%3E%3Cpath d='M14.2 6.7l3 3'/%3E%3C/svg%3E"); }
+  .ic-check { --icon: var(--i-check-circle); }
+  .ic-repeat { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12a8 8 0 0 1-14.2 5'/%3E%3Cpath d='M4 12a8 8 0 0 1 14.2-5'/%3E%3Cpath d='M18.6 3v4.2h-4.2'/%3E%3Cpath d='M5.4 21v-4.2h4.2'/%3E%3C/svg%3E"); }
+  .ic-quiz { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='4' width='14' height='17' rx='2'/%3E%3Cpath d='M9 4V2.8h6V4'/%3E%3Cpath d='M8.6 11.4l2.1 2.1 4.4-4.4'/%3E%3Cpath d='M8.6 17h6.8'/%3E%3C/svg%3E"); }
+  .ic-flag { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V3.5'/%3E%3Cpath d='M5 4h12l-2.6 4.5L17 13H5'/%3E%3C/svg%3E"); }
+  .ic-print { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 9V3h10v6'/%3E%3Crect x='3' y='9' width='18' height='8' rx='2'/%3E%3Cpath d='M7 14h10v7H7z'/%3E%3C/svg%3E"); }
+  .ic-sheet { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 2.8h8.6L19 7.2v14H6z'/%3E%3Cpath d='M14.2 3v4.6H19'/%3E%3Cpath d='M9 12h7M9 16h7'/%3E%3C/svg%3E"); }
+  .ic-cube { --icon: var(--i-cube); }
+  .ic-book { --icon: var(--i-book); }
+
+  /* ---------- Lesson and resource cards ---------- */
+  .home-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin: 10px 0 0;
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+  }
+  .home-progress strong { color: var(--ink); }
+  .home-progress-bar {
+    flex: 0 1 180px;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--track);
+  }
+  .home-progress-fill { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--c-good); }
+
+  .home-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .home-cards > li { display: flex; margin: 0; min-width: 0; }
+  a.card.home-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 3px 14px;
+    width: 100%;
+    padding: 14px 16px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .home-card > :not(.home-num):not(.home-icon) { grid-column: 2; }
+  .home-num {
+    grid-row: 1 / span 3;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--bg-sunken);
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  a.home-card:hover .home-num { border-color: var(--accent); color: var(--accent); }
+  .home-card.is-complete .home-num {
+    border-color: color-mix(in srgb, var(--c-good) 40%, transparent);
+    background: var(--c-good-soft);
+    color: var(--c-good);
+  }
+  .home-card .home-icon { grid-row: 1 / span 3; }
+  .home-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 0;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .home-card .card-title { margin: 0; font-size: 1.02rem; line-height: 1.35; }
+  .home-card-sum { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.9rem; line-height: 1.5; }
+  .home-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--c-good);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .home-done::before {
+    content: "";
+    width: 13px;
+    height: 13px;
+    background: currentColor;
+    -webkit-mask: var(--i-check) center / contain no-repeat;
+    mask: var(--i-check) center / contain no-repeat;
+  }
+  .home-card:not(.is-complete) .home-done { display: none; }
+  .home-instructor { margin: 1.2rem 0 0; color: var(--ink-muted); font-size: 0.95em; }
+
+  /* ---------- Requirements ---------- */
+  .home-req {
+    padding: 18px 20px 12px;
+    border: 1px solid color-mix(in srgb, var(--c-good) 35%, transparent);
+    border-radius: var(--radius);
+    background: var(--c-good-soft);
+  }
+  .home-req-lead { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 1.08em; font-weight: 700; }
+  .home-req-lead::before {
+    content: "";
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    background: var(--c-good);
+    -webkit-mask: var(--i-check-circle) center / contain no-repeat;
+    mask: var(--i-check-circle) center / contain no-repeat;
+  }
+  .home-req ul { margin: 0 0 8px; padding-left: 1.3em; }
+  .home-req li { margin: 0 0 6px; }
+  .home-req p { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.95em; }
+  .home-req .home-req-lead { color: var(--ink); font-size: 1.08em; }
+
+  .home-noscript {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--c-warn);
+    border-radius: var(--radius);
+    background: var(--c-warn-soft);
+  }
+
+  @media print {
+    .home-fig, .home-cta, .home-next { display: none !important; }
+    .home-hero { grid-template-columns: minmax(0, 1fr) !important; }
+  }
+</style>
+</head>
+<body data-page="home" data-root=".">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page home">
+
+  <noscript>
+    <div class="home-noscript">
+      <p><strong>This module needs JavaScript.</strong> Turn JavaScript on in your browser settings, then reload this page. See README.txt in the module folder for help.</p>
+    </div>
+  </noscript>
+
+  <!-- ================= Hero ================= -->
+  <header class="home-hero wide" aria-labelledby="home-title">
+    <div class="home-hero-text">
+      <p class="eyebrow"><span>Interactive module</span> <span>First-year engineering dynamics</span></p>
+      <h1 id="home-title">Impulse and Momentum</h1>
+      <p class="lede">How hard does a bat hit a ball in a millisecond of contact? How long does a car take to stop on a grade, how fast do two railcars roll after they couple, how high does a ballistic pendulum swing? Impulse and momentum answer these by integrating \(\sum\Fvec = m\avec\) over time, once and for all. Eight short lessons, with animated figures and questions that check your work, take you from the impulse of a force to collisions at an angle.</p>
+      <div class="btn-row home-cta">
+        <!-- A returning student (any lesson complete) gets "Continue" as the primary button; see refresh() -->
+        <a class="btn primary" id="home-continue" href="lessons/01-why-impulse.html" aria-describedby="home-next" hidden>Continue where you left off<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+        <a class="btn primary" id="home-start" href="lessons/01-why-impulse.html"><span id="home-start-label">Start Lesson 1</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></svg></a>
+      </div>
+      <p class="home-next" id="home-next" aria-live="polite" hidden></p>
+      <ul class="home-facts" aria-label="Module at a glance">
+        <li><span><strong>8</strong> lessons</span></li>
+        <li><span><strong>270 min</strong> of lessons</span></li>
+        <li class="is-offline"><span>Works offline</span></li>
+      </ul>
+    </div>
+
+    <figure class="home-fig" aria-labelledby="home-fig-cap">
+      <div class="home-stage" id="home-stage"></div>
+      <div class="home-fig-bar" id="home-fig-bar"></div>
+      <figcaption id="home-fig-cap">Two carts collide on a smooth track and bounce apart. Watch the bars: each cart's momentum \(\colL{mv}\) changes in the impact, by equal and opposite amounts, and their total never moves. <a href="lessons/06-direct-impact.html">Lesson 6</a> finds the velocities afterward.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ================= Learning outcomes ================= -->
+  <section id="outcomes" aria-labelledby="outcomes-h">
+    <header class="home-sec-head">
+      <h2 id="outcomes-h">Learning outcomes</h2>
+      <p>By the end of the module you can:</p>
+    </header>
+    <div class="objectives home-outcomes-box">
+      <ul>
+        <li>Explain how integrating \(\sum\Fvec = m\avec\) over time relates velocity to time, and choose impulse and momentum for problems that link the two. <span class="home-where">(<a href="lessons/01-why-impulse.html">Lesson 1</a>)</span></li>
+        <li>Calculate linear momentum \(m\vvec\) and the impulse of a force, as \(\int\Fvec\,dt\) and as the area under its force–time graph, and find average forces. <span class="home-where">(<a href="lessons/02-momentum-impulse.html">Lesson 2</a>)</span></li>
+        <li>Apply the principle of linear impulse and momentum, \(m\vvec_1 + \sum\int\Fvec\,dt = m\vvec_2\), in components, to find velocities, times and forces, including forces that vary with time. <span class="home-where">(<a href="lessons/03-principle.html">Lessons 3–4</a>)</span></li>
+        <li>Decide when the momentum of a system is conserved, using the difference between impulsive and nonimpulsive forces, and apply it to bodies that push apart or join. <span class="home-where">(<a href="lessons/05-conservation.html">Lesson 5</a>)</span></li>
+        <li>Find the velocities after a direct central impact from conservation of momentum and the coefficient of restitution, and the kinetic energy lost. <span class="home-where">(<a href="lessons/06-direct-impact.html">Lesson 6</a>)</span></li>
+        <li>Analyze oblique impact with normal and tangential axes, for a ball on a fixed surface and for two bodies. <span class="home-where">(<a href="lessons/07-oblique-impact.html">Lesson 7</a>)</span></li>
+        <li>Chain impact, momentum and energy in problems with several stages, such as an impact into a spring or a ballistic pendulum. <span class="home-where">(<a href="lessons/08-combining.html">Lesson 8</a>)</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= How to use ================= -->
+  <section id="how-to-use" aria-labelledby="how-h">
+    <header class="home-sec-head">
+      <h2 id="how-h">How to use this module</h2>
+      <p class="home-prereq"><strong>Before you start:</strong> you should be comfortable with free-body diagrams and \(\sum\Fvec = m\avec\), vector components, integrals of simple polynomials and sines, and the principle of work and energy (the <em>Work and Energy</em> module), which Lesson 8 combines with impact. The module uses the notation of Hibbeler's <em>Engineering Mechanics: Dynamics</em> (\(\Lvec = m\vvec\), \(\int\Fvec\,dt\), \((v_A)_1\), \((v_A)_2\), \(e\)); Beer &amp; Johnston and Meriam &amp; Kraige use the same ideas with small differences in notation, pointed out where they occur.</p>
+      <p>Work through the lessons in order. The times allow for working the examples on paper and doing the checks. A suggested plan in four sittings:</p>
+    </header>
+
+    <ol class="home-path" role="list">
+      <li>
+        <p class="home-path-head"><strong>Lessons 1–3</strong><span class="home-path-time">90 min</span></p>
+        <p>Why impulse and momentum, linear momentum and the impulse of a force, and the principle of impulse and momentum.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 4–5</strong><span class="home-path-time">70 min</span></p>
+        <p>Forces that vary with time, then systems of particles and the conservation of momentum.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Lessons 6–8</strong><span class="home-path-time">110 min</span></p>
+        <p>Direct central impact and the coefficient of restitution, oblique impact, and problems that combine impact, momentum and energy.</p>
+      </li>
+      <li>
+        <p class="home-path-head"><strong>Practice Lab and Self-Check Quiz</strong><span class="home-path-time">65 min</span></p>
+        <p>About 30 min of practice on the topics you found hardest, then the 35-minute quiz.</p>
+      </li>
+    </ol>
+    <p class="home-total"><strong>About 5½ h in total:</strong><span><span class="nowrap">270 min of lessons,</span> <span class="nowrap">30 min of practice,</span> <span class="nowrap">35 min for the quiz</span></span></p>
+
+    <h3 class="home-tips-title">Get the most out of it</h3>
+    <ul class="home-tips" role="list">
+      <li><span class="home-icon ic-pencil" aria-hidden="true"></span><strong>Keep pencil and paper handy</strong><p>Try each worked example yourself before you open its solution, and sketch the free-body diagrams.</p></li>
+      <li><span class="home-icon ic-check" aria-hidden="true"></span><strong>Do the checks</strong><p>Every lesson has “Check your understanding” questions with hints and full solutions. You can type answers like <code>0.145*(50+40)</code> or <code>2*6/5</code>.</p></li>
+      <li><span class="home-icon ic-repeat" aria-hidden="true"></span><strong>Practice until it is routine</strong><p>The <a href="practice/practice-lab.html">Practice Lab</a> generates unlimited problems, each with a worked solution.</p></li>
+      <li><span class="home-icon ic-quiz" aria-hidden="true"></span><strong>Test yourself at the end</strong><p>The <a href="practice/quiz.html">Self-Check Quiz</a> gives a score, solutions and a results page you can print or save as a PDF.</p></li>
+      <li><span class="home-icon ic-flag" aria-hidden="true"></span><strong>Track your progress</strong><p>Tick “Mark this lesson complete” at the end of each lesson. A ✓ appears here and in Contents; it is saved in this browser only.</p></li>
+      <li><span class="home-icon ic-sheet" aria-hidden="true"></span><strong>Keep the formulas close</strong><p>Print the <a href="reference/cheat-sheet.html">Formula Sheet</a>, and look up terms in the <a href="reference/glossary.html">Glossary</a>.</p></li>
+    </ul>
+  </section>
+
+  <!-- ================= Lessons ================= -->
+  <section id="lessons" aria-labelledby="lessons-h">
+    <header class="home-sec-head">
+      <h2 id="lessons-h">Lessons</h2>
+      <p>Each lesson has interactive figures, worked examples and questions with instant feedback.</p>
+      <p class="home-progress" id="home-progress" hidden>
+        <span id="home-progress-text"></span>
+        <span class="home-progress-bar" aria-hidden="true"><span class="home-progress-fill" id="home-progress-fill"></span></span>
+      </p>
+    </header>
+    <ul class="home-cards" id="home-lesson-list" role="list"></ul>
+  </section>
+
+  <!-- ================= Practice, tools, reference ================= -->
+  <section id="practice-tools" aria-labelledby="pt-h">
+    <header class="home-sec-head">
+      <h2 id="pt-h">Practice, tools and reference</h2>
+      <p>Use these alongside the lessons, or on their own when you revise.</p>
+    </header>
+    <ul class="home-cards" id="home-resource-list" role="list"></ul>
+  </section>
+
+  <!-- ================= Requirements ================= -->
+  <section id="requirements" aria-labelledby="req-h">
+    <header class="home-sec-head">
+      <h2 id="req-h">Requirements</h2>
+    </header>
+    <div class="home-req">
+      <p class="home-req-lead">Any modern browser. Works offline.</p>
+      <ul>
+        <li>A current version of Chrome, Edge, Firefox or Safari, with JavaScript on. A laptop or desktop screen works best; the pages also fit tablets and phones.</li>
+        <li>No internet connection, installation or account. Everything is inside this folder.</li>
+        <li>Your progress is saved in this browser on this device. Private or incognito windows do not keep it.</li>
+      </ul>
+      <p>Something not working? Read <a href="README.txt">README.txt</a> in the module folder for how to open the module and fix common problems.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- Hero figure: two carts collide, with the momentum bars (plays once; still with reduced motion) ---------- */
+CYL.ready(function () {
+  'use strict';
+  MOMENTUM.figure({
+    stage: document.getElementById('home-stage'), controls: document.getElementById('home-fig-bar'),
+    xRange: [-2.6, 2.6], yRange: [-0.25, 0.75], maxHeight: 300, height: 300, fill: false,
+    spec: { bodies: [{ m: 2, x: -1.4, v: 1, w: 0.5 }, { m: 1, x: 0.5, v: -0.6, w: 0.5 }], e: 0.7, tmax: 4,
+      until: function (s) { return Math.abs(s.x[0]) > 2.3 || Math.abs(s.x[1]) > 2.3; } },
+    draw: [{ shape: 'cart', h: 0.3, color: 'accent' }, { shape: 'cart', h: 0.3, color: 'warn' }],
+    speed: 0.8, autoplay: true, playback: false, toggles: ['v', 'impulse'], readouts: [],
+    aria: 'Animated figure: two carts roll toward each other on a smooth track, collide and bounce apart. Momentum bars beside them show each cart\u2019s momentum changing at the impact while their total stays the same.'
+  });
+});
+
+/* ---------- Lesson and resource cards (from CYL.PAGES), progress, "Continue" ---------- */
+CYL.ready(function () {
+  'use strict';
+  var SUMMARY = {
+    l01: 'A phone on tile or carpet: Newton\'s second law integrated in time relates velocity to time, with no position in it.',
+    l02: '\\(\\Lvec = m\\vvec\\) and \\(\\int\\Fvec\\,dt\\): impulse as the area under a force–time graph, average force, and why every force has an impulse.',
+    l03: '\\(m\\vvec_1 + \\sum\\int\\Fvec\\,dt = m\\vvec_2\\): impulse and momentum diagrams, a procedure, an angled push, braking on a grade, a pulley.',
+    l04: 'Forces given as functions of time: when a crate starts to slide, the largest speed under a fading push, sines and polynomials.',
+    l05: 'Internal impulses cancel: jumping off a cart, recoil, coupling railcars, and impulsive versus nonimpulsive forces.',
+    l06: 'Deformation and restitution, \\(e\\) as separation over approach, elastic and plastic impact, the energy lost, and the drop test.',
+    l07: 'Normal and tangential axes: a ball off a smooth floor, \\(\\tan\\theta_2 = e\\tan\\theta_1\\), two pucks, the billiards right angle.',
+    l08: 'Problems in stages: an impact into a spring, the ballistic pendulum, and a slide, a collision and a skid.'
+  };
+  var RESOURCES = {
+    practice: { icon: 'ic-repeat', meta: 'Practice', text: 'Unlimited randomized problems in nine topics, from the impulse of a force to oblique impact, each with hints and a worked solution.' },
+    quiz: { icon: 'ic-quiz', meta: 'Practice', text: '15 questions on Lessons 2–8, with a score, full solutions and printable results.' },
+    worksheet: { icon: 'ic-print', meta: 'Practice', text: 'Twelve paper problems from the impulse of a force to impacts in stages, with space for your working and answers to check.' },
+    explorer: { icon: 'ic-cube', meta: 'Tool', text: 'Collide carts, push them apart, bounce a ball, glance one puck off another, and watch the momentum bars, impulses and lost energy.' },
+    cheatsheet: { icon: 'ic-sheet', meta: 'Reference', text: 'Every formula on two printable pages, with check values for your calculator and the common mistakes.' },
+    glossary: { icon: 'ic-book', meta: 'Reference', text: 'Short definitions of the terms and symbols used in the module, with links to the lessons.' }
+  };
+
+  var lessons = CYL.PAGES.filter(function (p) { return p.group === 'lessons'; });
+  var lessonList = document.getElementById('home-lesson-list');
+  var resList = document.getElementById('home-resource-list');
+  var cards = {};                                     // id → card <a>
+
+  function doneTag() {
+    return CYL.el('span', { class: 'home-done' }, ['Completed']);
+  }
+  function mins(m) { return m ? m + ' min' : null; }
+
+  lessons.forEach(function (p) {
+    var meta = CYL.el('span', { class: 'home-card-meta' }, [
+      CYL.el('span', { text: 'Lesson ' + p.num + (p.minutes ? ' · ' + mins(p.minutes) : '') }),
+      p.tag ? CYL.el('span', { class: 'tag extension', text: p.tag }) : null,
+      doneTag()
+    ]);
+    var a = CYL.el('a', { class: 'card home-card', href: CYL.url(p.href) }, [
+      CYL.el('span', { class: 'home-num', 'aria-hidden': 'true', text: String(p.num) }),
+      meta,
+      CYL.el('h3', { class: 'card-title', text: p.title }),
+      CYL.el('p', { class: 'home-card-sum', html: SUMMARY[p.id] || '' })
+    ]);
+    cards[p.id] = a;
+    lessonList.appendChild(CYL.el('li', null, a));
+  });
+
+  CYL.PAGES.forEach(function (p) {
+    var r = RESOURCES[p.id];
+    if (!r) return;
+    var a = CYL.el('a', { class: 'card home-card', href: CYL.url(p.href) }, [
+      CYL.el('span', { class: 'home-icon ' + r.icon, 'aria-hidden': 'true' }),
+      CYL.el('span', { class: 'home-card-meta' }, [
+        CYL.el('span', { text: r.meta + (p.minutes ? ' · ' + mins(p.minutes) : '') }),
+        p.group === 'practice' ? doneTag() : null      // only lessons and practice pages can be marked complete
+      ]),
+      CYL.el('h3', { class: 'card-title', text: p.title }),
+      CYL.el('p', { class: 'home-card-sum', html: r.text })
+    ]);
+    cards[p.id] = a;
+    resList.appendChild(CYL.el('li', null, a));
+  });
+  CYL.renderMath(lessonList);
+  CYL.renderMath(resList);
+
+  // Progress: ✓ on cards, "n of 10 lessons complete", and the Continue button.
+  var contBtn = document.getElementById('home-continue');
+  var startBtn = document.getElementById('home-start');
+  var startLabel = document.getElementById('home-start-label');
+  var nextNote = document.getElementById('home-next');
+  var progBox = document.getElementById('home-progress');
+  var progText = document.getElementById('home-progress-text');
+  var progFill = document.getElementById('home-progress-fill');
+  var byId = {};
+  CYL.PAGES.forEach(function (p) { byId[p.id] = p; });
+
+  function refresh() {
+    var all = CYL.progress.all();
+    Object.keys(cards).forEach(function (id) { cards[id].classList.toggle('is-complete', !!all[id]); });
+
+    var done = lessons.filter(function (p) { return all[p.id]; }).length;
+    var summary = done + ' of ' + lessons.length + ' lessons complete';
+    progBox.hidden = done === 0;
+    progText.innerHTML = '<strong>' + done + ' of ' + lessons.length + '</strong> lessons complete';
+    progFill.style.width = (done / lessons.length * 100) + '%';
+
+    if (done === 0) {                                // nothing finished yet: only the primary "Start Lesson 1"
+      contBtn.hidden = true;
+      nextNote.hidden = true;
+      startBtn.hidden = false;
+      startBtn.classList.add('primary');
+      startLabel.textContent = 'Start Lesson 1';
+      return;
+    }
+    var next = null;
+    for (var i = 0; i < lessons.length; i++) if (!all[lessons[i].id]) { next = lessons[i]; break; }
+    var label;
+    if (next) {
+      label = 'Lesson ' + next.num + ' · ' + next.title;
+    } else {                                         // every lesson done: move on to the quiz, then the Practice Lab
+      next = all.quiz ? byId.practice : byId.quiz;
+      label = next.title;
+    }
+    // Returning student: "Continue" is the primary step; Lesson 1 stays reachable as a secondary
+    // button unless Continue already leads there.
+    contBtn.href = CYL.url(next.href);
+    contBtn.hidden = false;
+    startBtn.classList.remove('primary');
+    startLabel.textContent = 'Review Lesson 1';
+    startBtn.hidden = next.id === 'l01';
+    nextNote.textContent = '';
+    nextNote.appendChild(document.createTextNode('Next up: '));
+    nextNote.appendChild(CYL.el('strong', { text: label }));
+    // a title can end in its own punctuation ("Why Impulse and Momentum?")
+    nextNote.appendChild(document.createTextNode((/[?.!]$/.test(label) ? ' ' : '. ') + summary + '.'));
+    nextNote.hidden = false;
+  }
+  refresh();
+  CYL.progress.onChange(refresh);
+});
+</script>
+</body>
+</html>
