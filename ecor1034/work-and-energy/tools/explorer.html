@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Energy Explorer · Work and Energy</title>
+<meta name="description" content="Pick a scene (an incline into a spring, a pushed crate, a loop-the-loop, a pendulum, a spring launcher, a coaster or a dome), change its numbers, and watch kinetic, potential and lost energy, or the work ledger, live.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/energy.js"></script>
+<style>
+  /* ---- Energy Explorer: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-desc { margin: 10px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-events { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Energy Explorer</h1>
+    <p class="lede">Pick a scene, change its numbers, and watch the energy move: kinetic energy, gravitational and elastic potential energy, and the energy friction takes away. Switch to the work ledger to see \(\colKE{T_1} + \sum U_{1\to2} = \colKE{T_2}\) hold at every instant.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a scene</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label" id="ex-scene-label">Scene</p>
+        <div class="chip-row" id="ex-scene" role="group" aria-labelledby="ex-scene-label"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+      <div>
+        <p class="ex-label" id="ex-view-label">Energy picture</p>
+        <div class="chip-row" id="ex-view" role="group" aria-labelledby="ex-view-label"></div>
+        <p class="ex-desc">\(\colKE{\text{Energy bars}}\) show where the energy is at each instant, with a stacked total that stays level. The \(\colKE{\text{work ledger}}\) starts from the kinetic energy at release and adds the work of each force, bar by bar, to land on the kinetic energy now.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide" aria-labelledby="ex-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="ex-stage"></div>
+        <div class="viz-controls" id="ex-controls"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure E.1</strong> The chosen scene. Press <em>Play</em> or drag the time slider, and change the numbers in the panel (the motion is recomputed at once). Arrows: \(\colKE{\text{velocity}}\) in green, the \(\colVg{\text{weight}}\) in blue, the normal force in black, \(\colF{\text{friction}}\) in orange, the \(\colVe{\text{spring force}}\) in violet and an \(\colP{\text{applied force}}\) in amber. On a block they are drawn as in a free-body diagram: the weight's arrowhead ends at the center of gravity, a push (the normal force, a spring, an applied force) ends on the face it acts on, and friction starts on the face it acts on.</figcaption>
+    </figure>
+    <p class="ex-events" id="ex-events" aria-live="polite"></p>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>The spring always gives back.</strong> On the smooth incline, the crate bounces back to exactly where it started: \(\colVe{V_e}\) fills and empties, and the total bar never moves. Add friction and each bounce is lower. <button type="button" class="btn small" data-load="incline" data-set='{"mu": 0}'>Load</button></li>
+      <li><strong>Pushing against friction.</strong> In the work ledger, \(\colP{U_P}\) stops growing once the push ends, while \(\colF{U_f}\) keeps growing until the crate stops and \(\colKE{T}\) is back to zero, so \(\colF{U_f} = -\colP{U_P}\). <button type="button" class="btn small" data-load="push" data-view="ledger">Load</button></li>
+      <li><strong>Just making the loop.</strong> Set the start height to \(2.5R\): the normal force at the top drops to almost zero. Go a little lower and the cart leaves the track and falls inside the loop. <button type="button" class="btn small" data-load="loop" data-set='{"h": 2.5}'>Load</button></li>
+      <li><strong>When does the string go slack?</strong> Give the bob a push at the start. Too little and it swings; too much and it goes over the top; in between, the string goes slack part way up and the bob falls inside the circle. <button type="button" class="btn small" data-load="pendulum" data-set='{"th": 20, "v0": 6}'>Load</button></li>
+      <li><strong>Spring to height.</strong> With no friction, the launcher's block rises to \(h = \tfrac12 ks^2/mg\). Double the compression: the height goes up four times. <button type="button" class="btn small" data-load="launcher" data-set='{"mu": 0}'>Load</button></li>
+      <li><strong>Where the energy goes.</strong> On the coaster, watch the \(\colF{\text{lost}}\) bar grow fastest in the valleys, where the normal force, and so the friction, is largest. <button type="button" class="btn small" data-load="coaster" data-set='{"mu": 0.06}'>Load</button></li>
+      <li><strong>Leaving the dome.</strong> From a near standstill at the top, the block always leaves at \(\cos\theta = \tfrac23\) (about \(48.2^\circ\)), whatever the radius. Push it harder and it leaves sooner. <button type="button" class="btn small" data-load="dome">Load</button></li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the explorer works</h2>
+    <p>Every scene is a particle on a track. The explorer integrates Newton's second law along the track in small time steps (fourth-order Runge&ndash;Kutta, \(\Delta t = 1\ \text{ms}\)), with the weight, the normal force \(N = m\left(\kappa v^2 + g\cos\phi\right)\) from the curvature \(\kappa\) of the track, kinetic friction \(\mu_k N\) against the sliding, linear springs and a constant applied force. Where a track can only push and \(N\) would have to pull, the particle leaves it and flies as a projectile until it meets the track again.</p>
+    <p>The energies are then computed from the motion, not assumed: \(\colKE{T = \tfrac12 mv^2}\), \(\colVg{V_g = Wy}\) from the datum, \(\colVe{V_e = \tfrac12 ks^2}\), and the works of friction and of \(P\) added up step by step. The total \(\colKE{T} + \colVg{V_g} + \colVe{V_e} - \colF{U_f} - \colP{U_P}\) stays equal to its starting value to within a small fraction of a percent, which is the principle of work and energy checked numerically.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Pause the motion at any instant and check a readout by hand: for example \(v = \sqrt{2(T)/m}\), or \(\colVg{V_g} = mgy\) with the height shown. The datum for each scene is given under its controls.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ---------- Energy Explorer: scenes, sliders, bars or ledger ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D2R = Math.PI / 180, G = 9.81;
+  var stage = document.getElementById('ex-stage'), panel = document.getElementById('ex-controls');
+  var eventsEl = document.getElementById('ex-events'), descEl = document.getElementById('ex-desc');
+
+  /* Each scene: sliders (key, label, min, max, step, value, unit, color) and build(st) -> the figure's run and its frame. */
+  var SCENES = [
+    { id: 'incline', label: 'Incline into a spring',
+      desc: 'A crate released from rest on an incline slides into a spring at its foot, compresses it and bounces back. Change the angle, the friction, the stiffness and the distance.',
+      sliders: [
+        { key: 'th', label: 'Incline angle \\(\\theta\\)', min: 15, max: 45, step: 1, value: 30, unit: '°' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.5, step: 0.05, value: 0.2, color: 'r' },
+        { key: 'k', label: 'Stiffness \\(k\\)', min: 500, max: 4000, step: 100, value: 2000, unit: 'N/m', color: 't' },
+        { key: 'd', label: 'Distance to the spring \\(d\\)', min: 0.5, max: 4, step: 0.1, value: 3, unit: 'm' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 5, max: 40, step: 1, value: 20, unit: 'kg' }
+      ],
+      bars: ['T', 'Vg', 'Ve', 'lost'], ledger: ['UW', 'Us', 'Uf'], readouts: ['t', 'v', 'h', 'Fs'], forces: ['W', 'N', 'Ff', 'Fs'],
+      note: 'Spring free length 0.9 m at the foot of a 5.5 m incline. Datum at the foot of the incline.',
+      frame: { xRange: [-0.3, 5.3], yRange: [-0.35, 4.2], maxHeight: 440 },
+      build: function (st) {
+        var th = st.th * D2R, LEN = 0.9, L = 5.5, SF = L - LEN - 0.06;
+        var tr = ENERGY.track([{ line: [[0, L * Math.sin(th)], [L * Math.cos(th), 0]] }]);
+        return {
+          track: tr, body: { shape: 'block', w: 0.42, h: 0.3, anchor: 'front' },
+          params: { m: st.m, s0: Math.max(0.05, SF - st.d), mu: st.mu, springs: [{ s: SF, k: st.k, dir: 1, len: LEN }], tmax: 8 },
+          decorate: function (p) {
+            p.polyline([[0, L * Math.sin(th)], [L * Math.cos(th), 0], [0, 0]], { closed: true, color: 'surface', width: 0, fill: 'surface', fillOpacity: 0.2 });
+            p.line([-0.25, 0], [5.25, 0], { color: 'muted', width: 1.2 });
+          }
+        };
+      } },
+    { id: 'push', label: 'Pushed crate',
+      desc: 'A worker pushes a crate from rest across a level floor with a constant horizontal force for a set distance, then lets go. Friction brings it to rest.',
+      sliders: [
+        { key: 'P', label: 'Push \\(P\\)', min: 0, max: 300, step: 10, value: 200, unit: 'N', color: 'warn' },
+        { key: 'd', label: 'Pushed for', min: 0.5, max: 4, step: 0.25, value: 3, unit: 'm' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0.2, max: 0.6, step: 0.05, value: 0.3, color: 'r' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 20, max: 80, step: 5, value: 40, unit: 'kg' }
+      ],
+      bars: ['T', 'lost', 'Up'], ledger: ['UP', 'Uf'], readouts: ['t', 'v', 's', 'Ff'], forces: ['W', 'N', 'Ff', 'P'],
+      note: 'The push acts from the start until the crate has moved the distance set. Level floor, so the weight and the normal force do no work.',
+      frame: { xRange: [-0.5, 12.5], yRange: [-1.4, 2.6], maxHeight: 340, fScale: 0.0028, arrowMax: 0.6 },   // forces large enough to read on a long floor
+      build: function (st) {
+        var tr = ENERGY.track([{ line: [[0, 0], [12, 0]] }]);
+        return {
+          track: tr, body: { shape: 'block', w: 0.9, h: 0.65 },
+          params: { m: st.m, s0: 0.5, mu: st.mu, force: { P: st.P, s0: 0, s1: 0.5 + st.d }, tmax: 12 },
+          decorate: function (p) { ENERGY.hatch(p, [-0.4, 0], [12.4, 0], { side: -1, gap: 0.35, len: 0.2 }); p.line([0.5 + st.d, -0.1], [0.5 + st.d, 0.9], { color: 'warn', width: 1.2, dashed: true }); }
+        };
+      } },
+    { id: 'loop', label: 'Loop-the-loop',
+      desc: 'A cart runs down a ramp into a vertical loop of radius 1 m. The track can only push: start too low and the cart leaves it near the top.',
+      sliders: [
+        { key: 'h', label: 'Start height \\(h\\) (in loop radii)', min: 1.5, max: 4, step: 0.1, value: 3 },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.1, step: 0.01, value: 0, color: 'r' }
+      ],
+      bars: ['T', 'Vg', 'lost'], ledger: ['UW', 'Uf'], readouts: ['t', 'v', 'h', 'N'], forces: ['W', 'N', 'Ff'],
+      note: 'Mass 1 kg, loop radius R = 1 m, a tiny starting push of 0.2 m/s. Datum at the bottom of the loop.',
+      frame: { xRange: [-4.0, 2.75], yRange: [-0.35, 4.3], maxHeight: 440 },
+      build: function (st) {
+        var R = 1, h = st.h * R;
+        var tr = ENERGY.track([
+          { line: [[-3.35, h], [-2.9, h]] },
+          { bezier: [[-2.9, h], [-1.9, h], [-1.3, 0], [0, 0]] },
+          { arc: { c: [0, R], r: R, a0: -Math.PI / 2, a1: 1.5 * Math.PI } },
+          { line: [[0, 0], [2.6, 0]] }
+        ], { side: 1 });
+        return {
+          track: tr, body: { shape: 'ball', r: 0.08 },
+          params: { m: 1, v0: 0.2, mu: st.mu, tmax: 10 },
+          decorate: function (p) { p.line([-3.95, -0.02], [2.7, -0.02], { color: 'muted', width: 1.2 }); }
+        };
+      } },
+    { id: 'pendulum', label: 'Pendulum',
+      desc: 'A bob on a 1.2 m string, released at an angle and given a push. The string can only pull: if it would have to push, it goes slack and the bob flies free.',
+      sliders: [
+        { key: 'th', label: 'Release angle from vertical', min: 0, max: 90, step: 5, value: 60, unit: '°' },
+        { key: 'v0', label: 'Push at release \\(v_0\\)', min: 0, max: 9, step: 0.25, value: 0, unit: 'm/s', color: 'good' }
+      ],
+      bars: ['T', 'Vg'], ledger: ['UW'], readouts: ['t', 'v', 'h', 'N'], forces: ['W', 'N'],
+      note: 'Mass 2 kg. Datum at the lowest point. The normal force readout is the string tension.',
+      frame: { xRange: [-1.6, 1.6], yRange: [-1.5, 1.5], maxHeight: 440 },
+      build: function (st) {
+        var L = 1.2, th = st.th * D2R, a0 = -Math.PI / 2 - th - 2 * Math.PI;
+        var tr = ENERGY.track([{ arc: { c: [0, 0], r: L, a0: a0, a1: a0 + 6 * Math.PI } }], { side: 1 });
+        return {
+          track: tr, body: { shape: 'ball', r: 0.09, centered: true }, string: L,
+          params: { m: 2, s0: 2 * Math.PI * L, v0: st.v0 || 0, datum: -L, tmax: 8 },
+          decorate: function (p) {
+            p.circle({ center: [0, 0], r: 0.03, color: 'ink', fill: 'ink', fillOpacity: 1 });
+            p.circle({ center: [0, 0], r: L, color: 'faint', width: 1, dashed: true });
+          }
+        };
+      } },
+    { id: 'launcher', label: 'Spring launcher',
+      desc: 'A compressed spring launches a 2 kg block along the floor and up a curved ramp. It slides back, hits the spring again, and goes round until friction has taken everything.',
+      sliders: [
+        { key: 'k', label: 'Stiffness \\(k\\)', min: 100, max: 800, step: 50, value: 400, unit: 'N/m', color: 't' },
+        { key: 'c', label: 'Compression \\(s\\)', min: 0.05, max: 0.3, step: 0.01, value: 0.25, unit: 'm', color: 't' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.3, step: 0.02, value: 0.06, color: 'r' }
+      ],
+      bars: ['T', 'Vg', 'Ve', 'lost'], ledger: ['UW', 'Us', 'Uf'], readouts: ['t', 'v', 'h', 'Fs'], forces: ['W', 'N', 'Ff', 'Fs'],
+      note: 'Mass 2 kg, spring free length 0.8 m, ramp radius 1.2 m. Datum at the floor.',
+      frame: { xRange: [-0.2, 4.0], yRange: [-0.3, 3.0], maxHeight: 440 },
+      build: function (st) {
+        var SF = 0.85;
+        var tr = ENERGY.track([
+          { line: [[0, 0], [2.4, 0]] },
+          { arc: { c: [2.4, 1.2], r: 1.2, a0: -Math.PI / 2, a1: 0 } },
+          { line: [[3.6, 1.2], [3.6, 2.9]] }
+        ], { side: 1 });
+        return {
+          track: tr, body: { shape: 'block', w: 0.3, h: 0.22, anchor: 'back' },
+          params: { m: 2, s0: SF - st.c, mu: st.mu, springs: [{ s: SF, k: st.k, dir: -1, len: 0.8 }], tmax: 20 },
+          decorate: function (p) {
+            p.line([0.05, -0.02], [0.05, 0.5], { color: 'ink', width: 3 });
+            ENERGY.hatch(p, [0.05, 0], [3.95, 0], { side: -1, gap: 0.12, len: 0.1 });
+            p.line([3.6, 0], [3.6, 2.9], { color: 'surface', width: 1 });
+          }
+        };
+      } },
+    { id: 'coaster', label: 'Coaster',
+      desc: 'A 400 kg coaster car starts near the top of a track with two valleys and a hill between them. Resistance is modeled as friction.',
+      sliders: [
+        { key: 'mu', label: 'Resistance \\(\\mu\\)', min: 0, max: 0.12, step: 0.01, value: 0.04, color: 'r' },
+        { key: 'v0', label: 'Starting speed \\(v_0\\)', min: 0, max: 6, step: 0.25, value: 0, unit: 'm/s', color: 'good' }
+      ],
+      bars: ['T', 'Vg', 'lost'], ledger: ['UW', 'Uf'], readouts: ['t', 'v', 'h', 'N'], forces: ['W', 'N', 'Ff'],
+      note: 'The car is held to the track (it cannot leave it). Datum at the ground.',
+      frame: { xRange: [-0.3, 16.3], yRange: [-0.4, 7.9], maxHeight: 420 },
+      build: function (st) {
+        function y(x) { return 3 + 2 * Math.cos(2 * Math.PI * x / 8) + 0.035 * (x - 8) * (x - 8); }
+        var tr = ENERGY.track([{ fn: y, x0: 0, x1: 16 }], { side: 0, ds: 0.01 });
+        return {
+          track: tr, body: { shape: 'block', w: 0.7, h: 0.4, side: 1 },               // drawn on top of its rails
+          params: { m: 400, s0: tr.nearest([0.6, y(0.6)]), v0: st.v0, mu: st.mu, side: 0, tmax: 40 },
+          decorate: function (p) { ENERGY.fillUnder(p, tr, 0, tr.length, -0.4, { opacity: 0.18 }); }
+        };
+      } },
+    { id: 'dome', label: 'Dome',
+      desc: 'A small block slides from the top of a smooth dome. It leaves the surface where the weight alone can no longer bend its path, then lands as a projectile.',
+      sliders: [
+        { key: 'v0', label: 'Speed at the top \\(v_0\\)', min: 0.05, max: 3.4, step: 0.05, value: 0.05, unit: 'm/s', color: 'good' },
+        { key: 'R', label: 'Dome radius \\(R\\)', min: 0.6, max: 1.5, step: 0.1, value: 1.2, unit: 'm' }
+      ],
+      bars: ['T', 'Vg'], ledger: ['UW'], readouts: ['t', 'v', 'h', 'N'], forces: ['W', 'N'],
+      note: 'Mass 1 kg, smooth surface. Datum at the ground.',
+      frame: { xRange: [-1.7, 3.3], yRange: [-0.25, 1.8], maxHeight: 360 },
+      build: function (st) {
+        var R = st.R;
+        var tr = ENERGY.track([{ arc: { c: [0, 0], r: R, a0: Math.PI / 2, a1: 0 } }, { line: [[R, 0], [3.2, 0]] }], { side: 1 });
+        return {
+          track: tr, body: { shape: 'block', w: 0.14, h: 0.1 }, dome: R,
+          params: { m: 1, v0: st.v0, tmax: 6 },
+          decorate: function (p) {
+            var pts = []; for (var i = 0; i <= 90; i++) { var a = Math.PI * i / 90; pts.push([R * Math.cos(a), R * Math.sin(a)]); }
+            p.polyline(pts.concat([[-R, 0]]), { closed: true, color: 'surface', width: 0, fill: 'surface', fillOpacity: 0.22 });
+            p.polyline(pts.slice(45), { color: 'ink', width: 2.6 });
+            p.line([-1.65, 0], [3.25, 0], { color: 'ink', width: 2 });
+          }
+        };
+      } }
+  ];
+  var SCENE = {};
+  SCENES.forEach(function (sc) { SCENE[sc.id] = sc; });
+
+  var cur = null, st = {}, fig = null, view = 'bars', stringLine = null;
+  var chips = {}, viewChips = {};
+
+  function eventsText(run, b) {
+    var out = [], lv = run.event('leave'), rest = run.event('rest'), land = run.event('land');
+    if (!((run.extent.T || 0) > 1e-6)) {                // it never moves: say why, instead of an energy check on zero
+      var p = run.p, why = p.force && p.force.P > 0 && p.mu > 0 ? 'the push is not enough to overcome static friction'
+        : p.mu > 0 && !p.force ? 'static friction holds it in place' : 'the forces on it balance';   // a zero push needs no friction
+      return 'It does not start moving: ' + why + '. With no motion, no force does work, and every energy stays at its starting value.';
+    }
+    if (lv) out.push(b.string ? 'The string goes slack at ' + CYL.fmt(lv.t, 3) + ' s, ' + CYL.fmt(lv.y + b.string, 3) + ' m above the lowest point.'
+      : b.dome ? 'The block leaves the dome ' + CYL.fmt(Math.acos(Math.max(-1, Math.min(1, lv.y / b.dome))) / D2R, 3) + '° from the vertical (at ' + CYL.fmt(lv.t, 3) + ' s).'
+      : 'It leaves the track at ' + CYL.fmt(lv.t, 3) + ' s, ' + CYL.fmt(lv.y, 3) + ' m up.');
+    if (land) out.push('It lands back on the ' + (b.string ? 'circle (the string jerks taut)' : 'track') + ' at ' + CYL.fmt(land.t, 3) + ' s.');
+    if (rest) out.push('It comes to rest at ' + CYL.fmt(rest.t, 3) + ' s, after sliding ' + CYL.fmt(Math.abs(rest.s - run.p.s0), 3) + ' m from its start (net).');
+    var end = run.event('end');
+    if (end && !b.string && end.s >= run.track.length - 1e-3) out.push('It reaches the end of the track at ' + CYL.fmt(end.t, 3) + ' s, still moving.');
+    var e0 = run.E0, a = run.at(run.duration), chk = a.T + a.Vg + a.Ve - a.Uf - a.Up;
+    var scale = Math.max(Math.abs(e0), Math.abs(a.Uf), Math.abs(a.Up), run.extent.T || 0, 1e-9);
+    out.push('Energy check: \\(T + V_g + V_e - U_f - U_P\\) differs from its starting value by ' + CYL.fmt(100 * Math.abs(chk - e0) / scale, 2) + '% of the energy involved (' + CYL.fmt(chk, 4) + ' J, against ' + CYL.fmt(e0, 4) + ' J at the start).');
+    return out.join(' ');
+  }
+
+  function build() {
+    if (fig) { fig.destroy(); fig = null; }
+    stage.innerHTML = ''; panel.innerHTML = ''; stringLine = null;
+    var sc = cur, b = sc.build(st);
+    var deco = b.decorate;
+    fig = ENERGY.figure(Object.assign({}, sc.frame, {
+      stage: stage, controls: panel,
+      track: b.track, params: b.params, body: b.body,
+      bars: view === 'bars' ? { items: sc.bars } : false,
+      ledger: view === 'ledger' ? { items: sc.ledger } : false,
+      readouts: sc.readouts, toggles: ['v', 'forces', 'trace'], forces: sc.forces,
+      fbd: b.body.shape === 'block' ? 'contact' : 'center',      // blocks: free-body style, as in Figure 3.3
+      decorate: function (p, f) {
+        if (deco) deco(p, f);
+        if (b.string) stringLine = p.line([0, 0], [0, -b.string], { color: 'ink', width: 1.6 });
+      },
+      onUpdate: function (s, f) {
+        var r = f.runs[0];
+        if (stringLine && r.center) {
+          if (s[0].flight) stringLine.set([0, 0], [0, 0]);
+          else stringLine.set([0, 0], r.center);
+        }
+      },
+      aria: sc.label + ': ' + sc.desc
+    }));
+    panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the numbers' }));
+    sc.sliders.forEach(function (sl) {
+      panel.appendChild(CYL.slider({ label: sl.label, min: sl.min, max: sl.max, step: sl.step, value: st[sl.key], unit: sl.unit, color: sl.color,
+        onInput: function (v) { st[sl.key] = v; rerun(); } }).el);
+    });
+    panel.appendChild(CYL.el('p', { class: 'mf-note', text: sc.note }));
+    CYL.renderMath(panel);
+    fig.update();
+    showEvents();
+  }
+  function rerun() {
+    var b = cur.build(st);
+    fig.setRun(0, { track: b.track, params: b.params, body: b.body });
+    showEvents();
+  }
+  function showEvents() {
+    var b = cur.build(st);
+    eventsEl.innerHTML = eventsText(fig.run(0), b);
+    CYL.renderMath(eventsEl);
+  }
+  function choose(id, set, v) {
+    cur = SCENE[id] || SCENES[0];
+    st = {};
+    cur.sliders.forEach(function (sl) { st[sl.key] = sl.value; });
+    if (set) Object.keys(set).forEach(function (k) { if (k in st) st[k] = set[k]; });
+    if (v) view = v;
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === cur.id)); });
+    Object.keys(viewChips).forEach(function (k) { viewChips[k].setAttribute('aria-pressed', String(k === view)); });
+    descEl.textContent = cur.desc;
+    try { CYL.store.set('explorer:scene', cur.id); CYL.store.set('explorer:view', view); } catch (e) { /* fine without */ }
+    build();
+  }
+
+  var sceneRow = document.getElementById('ex-scene');
+  SCENES.forEach(function (sc) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: sc.label });
+    b.addEventListener('click', function () { if (!cur || cur.id !== sc.id) choose(sc.id); });
+    chips[sc.id] = b; sceneRow.appendChild(b);
+  });
+  var viewRow = document.getElementById('ex-view');
+  [['bars', 'Energy bars'], ['ledger', 'Work ledger']].forEach(function (d) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: d[1] });
+    b.addEventListener('click', function () {
+      if (view === d[0]) return;
+      view = d[0];
+      Object.keys(viewChips).forEach(function (k) { viewChips[k].setAttribute('aria-pressed', String(k === view)); });
+      try { CYL.store.set('explorer:view', view); } catch (e) { /* fine */ }
+      build();
+    });
+    viewChips[d[0]] = b; viewRow.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var set = null;
+      try { set = btn.getAttribute('data-set') ? JSON.parse(btn.getAttribute('data-set')) : null; } catch (e) { set = null; }
+      choose(btn.getAttribute('data-load'), set, btn.getAttribute('data-view') || null);
+      document.getElementById('explore').scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+
+  var startView = CYL.store.get('explorer:view', 'bars');
+  view = startView === 'ledger' ? 'ledger' : 'bars';
+  choose(CYL.store.get('explorer:scene', 'incline'));
+  window.__explorer = { choose: choose, state: function () { return { scene: cur.id, view: view, values: st }; }, figure: function () { return fig; }, scenes: SCENES.map(function (s) { return s.id; }) };   // for QA scripts
+});
+</script>
+</body>
+</html>

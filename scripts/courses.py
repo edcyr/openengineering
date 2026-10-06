@@ -13,11 +13,12 @@ HOST = 'https://openengineering.ca/'
 
 COURSES = [
   dict(slug='ecor1034', code='ECOR 1034', title='Particle Dynamics', level='First-year engineering', notation='Hibbeler, <em>Engineering Mechanics: Dynamics</em>',
-       lede='Interactive modules for the particle dynamics of ECOR 1034: motion along curved paths in rectangular, path and cylindrical coordinates, and the equations of motion. Animated figures draw velocity and acceleration as the motion happens, and every lesson has worked examples and questions with instant feedback.',
-       hero='ecor1034', kicker='Module', blurb='Motion of a particle along curved paths, in rectangular, path and cylindrical coordinates, and the equations of motion.', mark_italic=True,
+       lede='Interactive modules for the particle dynamics of ECOR 1034: motion along curved paths in rectangular, path and cylindrical coordinates, the equations of motion, and work and energy methods. Animated figures draw velocity, acceleration, forces and energy as the motion happens, and every lesson has worked examples and questions with instant feedback.',
+       hero='ecor1034', kicker='Module', blurb='Motion of a particle along curved paths, in rectangular, path and cylindrical coordinates, the equations of motion, and work and energy.', mark_italic=True,
        modules=[
          dict(slug='curvilinear-motion', mark='nt', desc='Plane curvilinear motion of a particle in rectangular (x–y) and path (n–t) coordinates: motion vectors, projectile motion, tangential and normal acceleration, and the radius of curvature.'),
-         dict(slug='cylindrical-coordinates', mark='rθz', desc='Kinematics and kinetics of a particle in polar and cylindrical coordinates (r, θ, z): unit vectors that turn, velocity and acceleration components, paths given as r = f(θ), and the equations of motion.')]),
+         dict(slug='cylindrical-coordinates', mark='rθz', desc='Kinematics and kinetics of a particle in polar and cylindrical coordinates (r, θ, z): unit vectors that turn, velocity and acceleration components, paths given as r = f(θ), and the equations of motion.'),
+         dict(slug='work-and-energy', mark='T+V', desc='Work and energy methods for a particle: the work of a force, of the weight, springs and friction; the principle of work and energy; power and efficiency; potential energy and conservation of energy; and normal forces on curved paths, with live energy bars and work ledgers.')]),
   dict(slug='maae2101', code='MAAE 2101', title='Rigid-Body Dynamics', level='Second-year mechanical and aerospace', notation='Hibbeler, <em>Engineering Mechanics: Dynamics</em>',
        lede='Interactive modules for the rigid-body dynamics of MAAE 2101: mass moments of inertia and the inertia tensor, then angular momentum, impact, Euler\'s equations and gyroscopic motion, with 3D figures you can turn and live simulations.',
        hero='maae2101', kicker='Module', blurb='Mass moments of inertia and the inertia tensor, then angular momentum, impact, Euler\'s equations and gyroscopic motion.', mark_italic=True,
@@ -366,7 +367,7 @@ def course_page(c):
 </html>
 ''' % dict(code=c['code'], title=c['title'], desc=esc(c['lede']), host=HOST, slug=c['slug'], css=CSS, extra=EXTRA_CSS, abbr=c['code'].split()[1],
            level=c['level'], lede=c['lede'], first=first['slug'], firsttitle=esc(first['title']), arrow=ARROW, facts=facts, svg=svg, keys=keys,
-           order='' if planned else ' Take them in the order shown; the second builds on the first.', avail='Available now' if planned else 'Modules',
+           order='' if planned else ' Take them in the order shown; each builds on the ones before it.', avail='Available now' if planned else 'Modules',
            cards=cards, coming=coming, dls=dls, notation=c['notation'], cc=CC, js=PROGRESS_JS)
 
 # ------------------------------------------------------------------ home page: Courses section and downloads

@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Work and Energy</title>
+<meta name="description" content="Unlimited randomized practice on work and energy: the work of a force, weight, springs and friction, the principle of work and energy, power and efficiency, potential energy, conservation of energy and curved paths, each with hints, a worked solution and an energy picture.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+  .pl-viewhost { min-height: 250px; padding: 16px 18px 12px; }
+  .pl-viewhost .lg { margin: 0; }
+  .pl-ghost { display: grid; gap: 14px; padding: 34px 0 10px; opacity: 0.35; }
+  .pl-ghost-row { height: 22px; border-radius: 4px; background: var(--bg-sunken); }
+  .pl-ghost-row span { display: block; height: 100%; border-radius: 4px; background: var(--line); }
+  @media (max-width: 520px) { .pl-viewhost { padding: 12px 10px 8px; } }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like: the work of a force, weight, springs and friction, speeds and distances, power and efficiency, potential energy, conservation of energy and curved paths. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it you can see its energy bookkeeping.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The energy picture of the current problem: usually a work ledger, in which the starting energy plus each work, bar by bar, lands on the final energy, or a force&ndash;displacement graph whose shaded area is the work. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>speed-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. speed-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand arithmetic, so you can type the expression you wrote on paper instead of working it out on a calculator first. Each box shows how it read your input (for example <q>= 7.672</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>sqrt(2*9.81*3)</code> or <code>&radic;(2*9.81*3)</code></td><td>\(\sqrt{2(9.81)(3)} \approx 7.672\)</td></tr>
+          <tr><td><code>0.5*20*4.08^2</code></td><td>\(\tfrac12(20)(4.08)^2 \approx 166.5\)</td></tr>
+          <tr><td><code>-0.3*50*9.81*4</code></td><td>\(-0.3(50)(9.81)(4) = -588.6\)</td></tr>
+          <tr><td><code>150*6*cos(30&deg;)</code></td><td>\(150(6)\cos 30^\circ \approx 779.4\)</td></tr>
+          <tr><td><code>2e3</code> or <code>2000</code></td><td>\(2000\)</td></tr>
+          <tr><td><code>4.09</code></td><td>\(4.09\), a decimal: accepted when it is within 1% of the exact value</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Give each answer in the unit shown next to its box: joules, newtons, meters, meters per second or kilowatts. Signs matter for work: a force that opposes the motion does <em>negative</em> work, so type the minus sign. Inside <code>cos</code>, <code>sin</code> and <code>tan</code>, mark degrees with <code>&deg;</code>; a bare number there is read as radians.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the whole expression is faster and safer than rounding at each step: <code>sqrt(2*9.81*3)</code> is exact, while rounding \(v^2\) first and then taking the root can drift past the 1% tolerance.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  5. Registry  6. Self-test (window.__practiceSelfTest)
+   7. The shared view (a work ledger or a force-displacement graph)  8. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints, the worked
+   solution and the energy picture from the same numbers, so nothing is typed per instance.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  /* ================================================================ 1. Helpers */
+  var T = String.raw;
+  var PI = Math.PI, G = 9.81, D2R = PI / 180;
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }       // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)) + 1e-9; }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }
+  var J = '\\ \\text{J}', NU = '\\ \\text{N}', MS = '\\ \\text{m/s}', MU = '\\ \\text{m}', KG = '\\ \\text{kg}', NM = '\\ \\text{N/m}', KW = '\\ \\text{kW}', WU = '\\ \\text{W}', DEG = '^\\circ';
+  function sgn(x) { return x < 0 ? '-' : '+'; }
+  function signed(x) { return (x < 0 ? '-' : '+') + n4(Math.abs(x)); }          // "+ 12.3" / "- 12.3" inside sums
+  // ---- views: 'ledger' (T1 + ΣU = T2 as a waterfall, or any sum of terms) and 'area' (a force–displacement graph)
+  function ledger(o) {
+    return { kind: 'ledger', title: o.title, aria: o.aria, unit: o.unit || 'J', start: { label: o.start[0], value: o.start[1] },
+      items: o.items.map(function (it) { return { label: it[0], value: it[1], color: it[2] || 'accent' }; }),
+      end: { label: o.end[0], value: o.end[1] }, readouts: o.readouts, note: o.note };
+  }
+  function area(o) {
+    return { kind: 'area', title: o.title, aria: o.aria, x: o.x, y: o.y, pts: o.pts, from: o.from, to: o.to, color: o.color || 'warn', readouts: o.readouts, note: o.note };
+  }
+  function ro(label, tex) { return { label: label, tex: tex }; }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 The work of a force (Lesson 2) ---------- */
+  var SIGN_CASES = [
+    { s: 'A crane lowers a crate at constant speed on a vertical cable. What is the sign of the work done by the cable on the crate?', a: 'neg',
+      why: 'The cable pulls up while the crate moves down: \\(\\theta = 180^\\circ\\).', ex: { m: 20, d: 3, items: function (m, d) { var u = m * G * d; return [['U_W', u, 'z'], ['U_{\\text{cable}}', -u, 'warn']]; } } },
+    { s: 'A ball is thrown straight up. While it rises, what is the sign of the work done on it by its weight?', a: 'neg',
+      why: 'The weight points down while the ball moves up.', ex: { m: 0.5, d: 4, items: function (m, d) { return [['U_W', -m * G * d, 'z']]; } } },
+    { s: 'A crate is pushed across a level floor. What is the sign of the work done on it by the normal force of the floor?', a: 'zero',
+      why: 'The floor pushes straight up, perpendicular to the horizontal motion.', ex: { m: 30, d: 5, items: function (m, d) { return [['U_P', 0.4 * m * G * d + 60, 'warn'], ['U_f', -0.4 * m * G * d, 'r'], ['U_N', 0, 'ink']]; } } },
+    { s: 'A car brakes on a level road and skids to a stop. What is the sign of the work done on the car by friction?', a: 'neg',
+      why: 'Kinetic friction always opposes the sliding: \\(\\theta = 180^\\circ\\).', ex: { m: 1000, d: 20, items: function (m, d) { return [['U_f', -0.7 * m * G * d, 'r']]; } } },
+    { s: 'A skier slides down a slope. What is the sign of the work done on the skier by the weight?', a: 'pos',
+      why: 'The skier moves down, along the weight\'s direction: the angle between them is less than \\(90^\\circ\\).', ex: { m: 70, d: 30, items: function (m, d) { return [['U_W', m * G * d * 0.3, 'z'], ['U_f', -0.05 * m * G * d * 0.95, 'r']]; } } },
+    { s: 'A bob swings on a string from a fixed pivot. What is the sign of the work done on the bob by the string?', a: 'zero',
+      why: 'The string pulls toward the pivot, always perpendicular to the circular path.', ex: { m: 2, d: 1, items: function (m, d) { return [['U_W', m * G * 0.6, 'z'], ['U_{\\text{string}}', 0, 'ink']]; } } },
+    { s: 'A worker pushes a lawnmower forward with a force along its handle, which slopes down toward the mower. What is the sign of the work done by the push?', a: 'pos',
+      why: 'The push has a forward component along the motion, so \\(\\theta \\lt 90^\\circ\\).', ex: { m: 25, d: 10, items: function (m, d) { return [['U_P', 80 * Math.cos(35 * D2R) * d, 'warn'], ['U_f', -0.3 * (m * G + 80 * Math.sin(35 * D2R)) * d, 'r']]; } } },
+    { s: 'An elevator rises at constant speed. What is the sign of the work done on a passenger by the elevator floor?', a: 'pos',
+      why: 'The floor pushes up and the passenger moves up: the floor is not fixed, so its normal force does work.', ex: { m: 70, d: 8, items: function (m, d) { return [['U_N', m * G * d, 'ink'], ['U_W', -m * G * d, 'z']]; } } }
+  ];
+  function genWork(rng) {
+    var kind = pickW(rng, [['angled', 3], ['curved', 2], ['variable', 2], ['graph', 2], ['sign', 2]]), spec, view, right, wrong;
+    if (kind === 'angled') {
+      var P = rng.pick(range(40, 300, 10)), d = rng.pick(range(2, 20, 0.5)), al = rng.pick([10, 15, 20, 25, 30, 35, 40, 45, 50, 60]);
+      var obj = rng.pick([['sled', 'across level snow', 'a rope'], ['crate', 'across a level floor', 'a rope'], ['cart', 'along a level path', 'a handle'], ['suitcase', 'through an airport', 'its strap']]);
+      var U = P * d * Math.cos(al * D2R);
+      spec = { type: 'numeric', prompt: 'A ' + obj[0] + ' is pulled ' + m(nn(d) + MU) + ' ' + obj[1] + ' by ' + obj[2] + ' at ' + m(nn(al) + DEG) + ' above the horizontal, with a constant tension of ' + m(nn(P) + NU) + '. Find the work done by the tension.', label: '\\(U_P =\\)', answer: U, unit: 'J' };
+      spec.hints = ['Only the component of the force along the path does work.', 'The path is straight and the angle is constant: \\(U = F\\cos\\theta\\,\\Delta s\\).'];
+      spec.solution = M('U_P = (' + nn(P) + ')\\cos ' + nn(al) + DEG + '\\,(' + nn(d) + ') = ' + n4(U) + J) + '<p>The vertical component of the tension, \\(' + n4(P * Math.sin(al * D2R)) + '\\ \\text{N}\\), is perpendicular to the motion and does no work.</p>';
+      right = U; wrong = wrongOf(U, [P * d, P * d * Math.sin(al * D2R)]);
+      view = area({ title: 'Work as an area', aria: 'The tangential force, constant at P cos theta, plotted against the distance, with the rectangle under it shaded.',
+        x: { label: '\\(s\\) (m)', min: 0, max: d * 1.15 }, y: { label: '\\(F\\cos\\theta\\) (N)', min: 0, max: P * 1.15 }, pts: [[0, P * Math.cos(al * D2R)], [d * 1.15, P * Math.cos(al * D2R)]], from: 0, to: d,
+        readouts: [ro('\\(F\\cos\\theta\\)', n4(P * Math.cos(al * D2R)) + NU), ro('Distance', nn(d) + MU), ro('\\(U_P\\) (the area)', n4(U) + J)], note: 'A constant force along a straight path: the area is a rectangle.' });
+    } else if (kind === 'curved') {
+      var Fx = rng.pick(range(-60, 60, 5)), Fy = rng.pick(range(-60, 60, 5));
+      if (Math.abs(Fx) < 5) Fx = 25; if (Math.abs(Fy) < 5) Fy = -30;
+      var x1 = rng.pick(range(-3, 3, 0.5)), y1 = rng.pick(range(-2, 3, 0.5)), dx = rng.pick([-4, -3, -2.5, -2, -1.5, 1.5, 2, 2.5, 3, 3.5, 4]), dy = rng.pick([-3, -2, -1.5, -1, 1, 1.5, 2, 2.5, 3]);
+      var x2 = x1 + dx, y2 = y1 + dy, U2 = Fx * dx + Fy * dy;
+      if (Math.abs(U2) < 5) { Fy += 15; U2 = Fx * dx + Fy * dy; }
+      spec = { type: 'numeric', prompt: 'A constant force ' + m('\\Fvec = (' + nn(Fx) + '\\,\\ihat ' + sgn(Fy) + ' ' + nn(Math.abs(Fy)) + '\\,\\jhat)\\ \\text{N}') + ' acts on a particle as it moves along a winding path from ' + m('A(' + nn(x1) + ', ' + nn(y1) + ')') + ' to ' + m('B(' + nn(x2) + ', ' + nn(y2) + ')') + ', with coordinates in meters. Find the work done by ' + m('\\Fvec') + '.', label: '\\(U =\\)', answer: U2, unit: 'J' };
+      spec.hints = ['The force is constant in magnitude and direction, so the shape of the path does not matter.', '\\(U = \\Fvec\\cdot(\\rvec_B - \\rvec_A) = F_x\\,\\Delta x + F_y\\,\\Delta y\\).'];
+      spec.solution = M('U = F_x\\,\\Delta x + F_y\\,\\Delta y = (' + nn(Fx) + ')(' + nn(dx) + ') + (' + nn(Fy) + ')(' + nn(dy) + ') = ' + n4(Fx * dx) + ' ' + signed(Fy * dy) + ' = ' + n4(U2) + J);
+      right = U2; wrong = wrongOf(U2, [Math.hypot(Fx, Fy) * Math.hypot(dx, dy), Fx * dx, Fy * dy, -U2]);
+      view = ledger({ title: 'The dot product, term by term', aria: 'The work as the sum of its x and y parts.', start: ['0', 0], items: [['F_x\\Delta x', Fx * dx, 'warn'], ['F_y\\Delta y', Fy * dy, 'warn']], end: ['U', U2],
+        readouts: [ro('\\(\\Delta x\\)', nn(dx) + MU), ro('\\(\\Delta y\\)', nn(dy) + MU), ro('\\(U\\)', n4(U2) + J)], note: 'Only the displacement from A to B matters for a constant force.' });
+    } else if (kind === 'variable') {
+      var a = rng.pick(range(5, 40, 5)), b = rng.pick(range(2, 20, 1)), xa = rng.pick([0, 0, 0.5, 1]), xb = xa + rng.pick([1, 1.5, 2, 2.5, 3]);
+      var U3 = a * (xb - xa) + 0.5 * b * (xb * xb - xa * xa);
+      spec = { type: 'numeric', prompt: 'A force ' + m('F = (' + nn(a) + ' + ' + nn(b) + 'x)\\ \\text{N}') + ', with ' + m('x') + ' in meters, pushes a block along a straight line from ' + m('x = ' + nn(xa) + MU) + ' to ' + m('x = ' + nn(xb) + MU) + ', in its own direction. Find its work.', label: '\\(U =\\)', answer: U3, unit: 'J' };
+      spec.hints = ['The force varies, so integrate: \\(U = \\int F\\,dx\\).', '\\(\\int (a + bx)\\,dx = ax + \\tfrac12 bx^2\\); or find the area of the trapezoid under the line.'];
+      spec.solution = M('U = \\int_{' + nn(xa) + '}^{' + nn(xb) + '} (' + nn(a) + ' + ' + nn(b) + 'x)\\,dx = \\left[' + nn(a) + 'x + ' + nn(b / 2) + 'x^2\\right]_{' + nn(xa) + '}^{' + nn(xb) + '} = ' + n4(U3) + J);
+      right = U3; wrong = wrongOf(U3, [(a + b * xb) * (xb - xa), (a + b * xa) * (xb - xa), a * (xb - xa) + b * (xb - xa) * (xb - xa)]);
+      view = area({ title: 'Work as an area', aria: 'The force rising linearly with x, and the trapezoid under it between the two positions shaded.',
+        x: { label: '\\(x\\) (m)', min: 0, max: xb + 0.5 }, y: { label: '\\(F\\) (N)', min: 0, max: (a + b * (xb + 0.5)) * 1.1 }, pts: [[0, a], [xb + 0.5, a + b * (xb + 0.5)]], from: xa, to: xb,
+        readouts: [ro('\\(F(x_1)\\)', n4(a + b * xa) + NU), ro('\\(F(x_2)\\)', n4(a + b * xb) + NU), ro('\\(U\\) (the area)', n4(U3) + J)], note: 'A force that grows linearly: the area is a trapezoid.' });
+    } else if (kind === 'graph') {
+      var F1 = rng.pick(range(20, 120, 10)), s1 = rng.pick([1, 1.5, 2, 2.5]), s2 = s1 + rng.pick([1, 1.5, 2, 3]), s3 = s2 + rng.pick([0.5, 1, 1.5, 2]);
+      var U4 = 0.5 * s1 * F1 + (s2 - s1) * F1 + 0.5 * (s3 - s2) * F1;
+      spec = { type: 'numeric', prompt: 'The force along a particle\'s path rises steadily from zero to ' + m(nn(F1) + NU) + ' over the first ' + m(nn(s1) + MU) + ', stays at ' + m(nn(F1) + NU) + ' until ' + m('s = ' + nn(s2) + MU) + ', then falls steadily to zero at ' + m('s = ' + nn(s3) + MU) + '. Find its work over the whole ' + m(nn(s3) + MU) + '.', label: '\\(U =\\)', answer: U4, unit: 'J' };
+      spec.hints = ['Sketch the force–displacement graph: a trapezoid.', 'Split it into a triangle, a rectangle and a triangle.'];
+      spec.solution = M('U = \\tfrac12(' + nn(s1) + ')(' + nn(F1) + ') + (' + nn(s2 - s1) + ')(' + nn(F1) + ') + \\tfrac12(' + nn(s3 - s2) + ')(' + nn(F1) + ') = ' + n4(U4) + J);
+      right = U4; wrong = wrongOf(U4, [F1 * s3, F1 * (s2 - s1), 0.5 * F1 * s3]);
+      view = area({ title: 'Work as an area', aria: 'A trapezoidal force-displacement graph with the area under it shaded.',
+        x: { label: '\\(s\\) (m)', min: 0, max: s3 + 0.5 }, y: { label: '\\(F\\) (N)', min: 0, max: F1 * 1.2 }, pts: [[0, 0], [s1, F1], [s2, F1], [s3, 0], [s3 + 0.5, 0]], from: 0, to: s3,
+        readouts: [ro('Peak force', nn(F1) + NU), ro('\\(U\\) (the area)', n4(U4) + J)], note: 'Areas of simple shapes add up to the work.' });
+    } else {
+      var c = rng.pick(SIGN_CASES), order = ['pos', 'neg', 'zero', 'dep'], idx = order.indexOf(c.a);
+      var TXT = { pos: 'Positive', neg: 'Negative', zero: 'Zero', dep: 'It depends on the speed' };
+      var FB = { pos: 'Check the angle between the force and the motion.', neg: 'Check the angle between the force and the motion.', zero: 'Is the force really perpendicular to the motion?', dep: 'The sign of the work depends only on the angle between the force and the motion, not on the speed.' };
+      spec = { type: 'mc', prompt: c.s, choices: order.map(function (k) { return k === c.a ? { html: TXT[k], correct: true, feedback: c.why } : { html: TXT[k], feedback: FB[k] }; }), shuffle: false };
+      spec.hints = ['Compare the direction of the force with the direction of the motion.', 'Positive under \\(90^\\circ\\), zero at \\(90^\\circ\\), negative beyond \\(90^\\circ\\).'];
+      spec.solution = '<p>' + c.why + ' So the work is ' + TXT[c.a].toLowerCase() + '.</p>';
+      right = idx; wrong = (idx + 1) % 3;
+      var its = c.ex.items(c.ex.m, c.ex.d), sum = 0; its.forEach(function (q) { sum += q[1]; });
+      view = ledger({ title: 'An example with numbers', aria: 'The works of the forces in a numerical example of this situation, added up.', start: ['0', 0], items: its, end: ['\\Sigma U', sum],
+        readouts: [ro('Mass', nn(c.ex.m) + KG), ro('Total work', n4(sum) + J)], note: 'Illustrative numbers: each bar is the work of one force.' });
+      spec.explain = c.why;
+      return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+    }
+    spec.explain = spec.explain || 'Work is the integral of the force component along the path: \\(U = \\int F\\cos\\theta\\,ds\\).';
+    return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+  }
+
+  /* ---------- 2.2 Weight and springs (Lesson 3) ---------- */
+  function genWeightSpring(rng) {
+    var kind = pickW(rng, [['weight', 2], ['spring', 3], ['both', 2]]), spec, view, right, wrong;
+    if (kind === 'weight') {
+      var mass = rng.pick(range(0.5, 25, 0.5)), y1 = rng.pick(range(0, 12, 0.5)), y2 = rng.pick(range(0, 12, 0.5)), ytop = Math.max(y1, y2) + rng.pick([1, 1.5, 2, 3]);
+      if (Math.abs(y2 - y1) < 0.5) y2 = y1 + 2.5;
+      var U = -mass * G * (y2 - y1);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' package is carried from a shelf ' + m(nn(y1) + MU) + ' above the floor, up to a landing ' + m(nn(ytop) + MU) + ' up, and then to a table ' + m(nn(y2) + MU) + ' above the floor. Find the work done by its weight over the whole trip.', label: '\\(U_W =\\)', answer: U, unit: 'J' };
+      spec.hints = ['The weight is constant, so only the net change in height matters.', '\\(U_W = -W(y_2 - y_1)\\), with \\(y\\) measured upward.'];
+      spec.solution = M('U_W = -(' + nn(mass) + ')(9.81)(' + nn(y2) + ' - ' + nn(y1) + ') = ' + n4(U) + J) + '<p>The detour up to the landing adds nothing: the climb costs exactly what the descent returns.</p>';
+      right = U; wrong = wrongOf(U, [-U, -mass * G * ((ytop - y1) + (ytop - y2)), mass * G * Math.abs(y2 - y1) * 2]);
+      view = ledger({ title: 'The weight, leg by leg', aria: 'The work of the weight on the way up to the landing and on the way down to the table.', start: ['0', 0], items: [['\\text{up}', -mass * G * (ytop - y1), 'z'], ['\\text{down}', mass * G * (ytop - y2), 'z']], end: ['U_W', U],
+        readouts: [ro('\\(W\\)', n4(mass * G) + NU), ro('\\(\\Delta y\\)', nn(y2 - y1) + MU), ro('\\(U_W\\)', n4(U) + J)], note: 'The climb and the descent cancel, except for the net drop.' });
+    } else if (kind === 'spring') {
+      var k = rng.pick(range(100, 3000, 50)), ss = rng.pick([[0.05, 0.15], [0.1, 0.3], [0.02, 0.08], [0.2, 0.05], [0.25, 0.1], [0.04, 0.12], [0, 0.2], [0.15, 0]]);
+      var comp = rng.next() < 0.5, s1 = ss[0], s2 = ss[1], U2 = -0.5 * k * (s2 * s2 - s1 * s1), word = comp ? 'compression' : 'stretch';
+      spec = { type: 'numeric', prompt: 'A spring with ' + m('k = ' + nn(k) + NM) + ' goes from ' + m(nn(s1) + MU) + ' of ' + word + ' to ' + m(nn(s2) + MU) + ' of ' + word + '. Find the work done by the spring on the particle attached to it.', label: '\\(U_s =\\)', answer: U2, unit: 'J' };
+      spec.hints = ['Deformations are measured from the unstretched length.', '\\(U_s = -\\left(\\tfrac12 ks_2^2 - \\tfrac12 ks_1^2\\right)\\): squares, not the square of the difference.'];
+      spec.solution = M('U_s = -\\tfrac12(' + nn(k) + ')\\left(' + nn(s2) + '^2 - ' + nn(s1) + '^2\\right) = ' + n4(U2) + J) +
+        '<p>' + (Math.abs(s2) > Math.abs(s1) ? 'The deformation grows, so the spring resists: negative work.' : 'The spring relaxes toward its unstretched length: positive work.') + '</p>';
+      right = U2; wrong = wrongOf(U2, [-0.5 * k * (s2 - s1) * (s2 - s1), -U2, 0.5 * k * (s2 * s2 + s1 * s1)]);
+      var sgnS = comp ? -1 : 1, a1 = sgnS * s1, a2 = sgnS * s2, smax = Math.max(s1, s2) * 1.25 + 0.02;
+      view = area({ title: 'The spring force on the particle', aria: 'The spring force on the particle, F = -k s, against the deformation, with the area between the start and end deformations shaded.',
+        x: { label: '\\(s\\) (m): stretched \\(+\\), compressed \\(-\\)', min: -smax, max: smax }, y: { label: '\\(F = -ks\\) (N)', min: -k * smax, max: k * smax },
+        pts: [[-smax, k * smax], [smax, -k * smax]], from: a1, to: a2, color: 't',
+        readouts: [ro('\\(s_1\\)', nn(a1) + MU), ro('\\(s_2\\)', nn(a2) + MU), ro('\\(U_s\\)', n4(U2) + J)], note: 'The work is the signed area under F = -ks from s\u2081 to s\u2082.' });
+    } else {
+      var mb = rng.pick(range(0.5, 10, 0.5)), kb = rng.pick(range(200, 2000, 50)), dd = rng.pick([0.02, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12, 0.15]);
+      var UW = mb * G * dd, Us = -0.5 * kb * dd * dd;
+      spec = { type: 'fields', prompt: 'A ' + m(nn(mb) + KG) + ' block hangs from a vertical spring (' + m('k = ' + nn(kb) + NM) + '). Starting with the spring unstretched, the block is lowered slowly by ' + m(nn(dd) + MU) + '. Find the work done on the block by its weight and by the spring.',
+        fields: [{ name: 'UW', label: '\\(U_W =\\)', answer: UW, unit: 'J' }, { name: 'Us', label: '\\(U_s =\\)', answer: Us, unit: 'J' }] };
+      spec.hints = ['The block goes down: the weight does positive work \\(W\\,d\\).', 'The spring stretches from 0 to \\(d\\): \\(U_s = -\\tfrac12 kd^2\\).'];
+      spec.solution = M('U_W = (' + nn(mb) + ')(9.81)(' + nn(dd) + ') = ' + n4(UW) + J + ', \\qquad U_s = -\\tfrac12(' + nn(kb) + ')(' + nn(dd) + ')^2 = ' + n4(Us) + J);
+      right = { UW: typed(UW), Us: typed(Us) }; wrong = { UW: typed(UW), Us: typed(-Us) };
+      view = ledger({ title: 'Work of each force', aria: 'The work of the weight and of the spring on the lowered block.', start: ['0', 0], items: [['U_W', UW, 'z'], ['U_s', Us, 't']], end: ['\\Sigma U', UW + Us],
+        readouts: [ro('\\(U_W\\)', n4(UW) + J), ro('\\(U_s\\)', n4(Us) + J)], note: 'Lowered slowly, the hand holding the block does the rest of the (negative) work.' });
+      return { spec: Object.assign(spec, { explain: 'Weight: \\(-W\\,\\Delta y\\). Spring: \\(-\\left(\\tfrac12 ks_2^2 - \\tfrac12 ks_1^2\\right)\\).' }), view: view, test: { right: [right], wrong: [wrong] } };
+    }
+    spec.explain = 'Weight: \\(-W\\,\\Delta y\\). Spring: \\(-\\left(\\tfrac12 ks_2^2 - \\tfrac12 ks_1^2\\right)\\), with \\(s\\) from the unstretched length.';
+    return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+  }
+
+  /* ---------- 2.3 Friction and the normal force (Lesson 3) ---------- */
+  function genFriction(rng) {
+    var kind = pickW(rng, [['incline', 3], ['pull', 2], ['push', 2], ['loop', 1]]), spec, view, right, wrong;
+    var mass = rng.pick(range(2, 60, 1)), mu = rng.pick(range(0.1, 0.6, 0.05)), d = rng.pick(range(1, 12, 0.5)), W = mass * G, N, Uf, Nw, prompt, hints, sol, extra = [];
+    if (kind === 'incline') {
+      var th = rng.pick([10, 15, 20, 25, 30, 35, 40]), up = rng.next() < 0.3;
+      N = W * Math.cos(th * D2R); Nw = W;
+      prompt = 'A ' + m(nn(mass) + KG) + ' block slides ' + m(nn(d) + MU) + ' ' + (up ? 'up' : 'down') + ' a ' + m(nn(th) + DEG) + ' incline. The coefficient of kinetic friction is ' + m(nn(mu)) + '. Find the normal force and the work done by friction.';
+      hints = ['Perpendicular to the incline nothing accelerates: \\(N = mg\\cos\\theta\\).', 'Friction opposes the sliding, up or down: \\(U_f = -\\mu_k N d\\).'];
+      sol = M('N = (' + nn(mass) + ')(9.81)\\cos ' + nn(th) + DEG + ' = ' + n4(N) + NU);
+      extra = [['U_W', (up ? -1 : 1) * W * d * Math.sin(th * D2R), 'z']];
+    } else if (kind === 'pull' || kind === 'push') {
+      var P = rng.pick(range(20, Math.max(30, Math.floor(W * 0.8 / 10) * 10), 10)), al = rng.pick([10, 15, 20, 25, 30, 35, 40]);
+      var pull = kind === 'pull', sa = Math.sin(al * D2R);
+      if (P * sa < 0.06 * W) P = Math.ceil(0.08 * W / sa / 10) * 10;          // a wrong N = mg must not pass the 1% check
+      while (pull && P * sa > 0.6 * W && P > 10) P -= 10;
+      N = pull ? W - P * Math.sin(al * D2R) : W + P * Math.sin(al * D2R); Nw = W;
+      prompt = 'A ' + m(nn(mass) + KG) + ' crate is ' + (pull ? 'pulled' : 'pushed') + ' ' + m(nn(d) + MU) + ' across a level floor by a force ' + m('P = ' + nn(P) + NU) + ' at ' + m(nn(al) + DEG) + (pull ? ' above' : ' below') + ' the horizontal. The coefficient of kinetic friction is ' + m(nn(mu)) + '. Find the normal force and the work done by friction.';
+      hints = ['Vertically: \\(N ' + (pull ? '+' : '-') + ' P\\sin\\alpha - mg = 0\\).', 'Then \\(U_f = -\\mu_k N d\\).'];
+      sol = M('N = mg ' + (pull ? '-' : '+') + ' P\\sin\\alpha = ' + n4(W) + ' ' + (pull ? '-' : '+') + ' (' + nn(P) + ')\\sin ' + nn(al) + DEG + ' = ' + n4(N) + NU);
+      extra = [['U_P', P * Math.cos(al * D2R) * d, 'warn']];
+    } else {
+      var L = rng.pick(range(6, 40, 2));
+      var Uf2 = -mu * W * L;
+      spec = { type: 'fields', prompt: 'A ' + m(nn(mass) + KG) + ' crate is dragged slowly around a closed loop ' + m(nn(L) + MU) + ' long on a level floor and back to where it started. The coefficient of kinetic friction is ' + m(nn(mu)) + '. Find the work done by friction and by the weight over the trip.',
+        fields: [{ name: 'Uf', label: '\\(U_f =\\)', answer: Uf2, unit: 'J' }, { name: 'UW', label: '\\(U_W =\\)', answer: 0, unit: 'J' }] };
+      spec.hints = ['Friction acts against the motion all the way round: \\(U_f = -\\mu_k mg L\\).', 'The crate ends where it started, at the same height.'];
+      spec.solution = M('U_f = -(' + nn(mu) + ')(' + nn(mass) + ')(9.81)(' + nn(L) + ') = ' + n4(Uf2) + J + ', \\qquad U_W = -W\\,\\Delta y = 0');
+      spec.explain = 'Friction is not conservative: its work around a closed path is not zero.';
+      view = ledger({ title: 'Work around the loop', aria: 'The work of friction and of the weight around the closed loop.', start: ['0', 0], items: [['U_f', Uf2, 'r'], ['U_W', 0, 'z']], end: ['\\Sigma U', Uf2],
+        readouts: [ro('Path length', nn(L) + MU), ro('\\(U_f\\)', n4(Uf2) + J)], note: 'Back at the start, the weight has done no net work; friction has.' });
+      return { spec: spec, view: view, test: { right: [{ Uf: typed(Uf2), UW: '0' }], wrong: [{ Uf: typed(-Uf2), UW: '0' }] } };
+    }
+    Uf = -mu * N * d;
+    spec = { type: 'fields', prompt: prompt, fields: [{ name: 'N', label: '\\(N =\\)', answer: N, unit: 'N' }, { name: 'Uf', label: '\\(U_f =\\)', answer: Uf, unit: 'J' }] };
+    spec.hints = hints;
+    spec.solution = sol + M('U_f = -\\mu_k N d = -(' + nn(mu) + ')(' + n4(N) + ')(' + nn(d) + ') = ' + n4(Uf) + J);
+    spec.explain = 'Find \\(N\\) from the free-body diagram; it is \\(mg\\) only on a level surface with no other vertical force.';
+    right = { N: typed(N), Uf: typed(Uf) }; wrong = { N: typed(Nw), Uf: typed(-mu * Nw * d) };
+    var items = extra.concat([['U_f', Uf, 'r']]), tot = 0; items.forEach(function (q) { tot += q[1]; });
+    view = ledger({ title: 'Work of the forces that do work', aria: 'The works of the forces on the block, added up.', start: ['0', 0], items: items, end: ['\\Sigma U', tot],
+      readouts: [ro('\\(N\\)', n4(N) + NU), ro('\\(F_f = \\mu_k N\\)', n4(mu * N) + NU), ro('\\(U_f\\)', n4(Uf) + J)], note: 'The normal force does no work, but it sets the friction.' });
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Speeds and distances (Lesson 4) ---------- */
+  function genSpeed(rng) {
+    var kind = pickW(rng, [['skid', 2], ['incline', 3], ['push', 2], ['drop', 1], ['system', 2]]), spec, view, right, wrong, ans, items, T1, T2, readouts;
+    if (kind === 'skid') {
+      var kmh = rng.pick(range(30, 130, 5)), v = kmh / 3.6, mu = rng.pick(range(0.3, 0.9, 0.05)), grade = rng.pick([0, 0, 0, 3, 4, 5, 6, 8, -3, -4, -5]), mass = rng.pick(range(800, 2500, 50));
+      var th = Math.atan(grade / 100), dn = grade > 0, den = 2 * G * (mu * Math.cos(th) - (dn ? Math.sin(th) : -Math.sin(th)));
+      var where = grade === 0 ? 'on a level road' : 'on a ' + nn(Math.abs(grade)) + '% ' + (dn ? 'downhill' : 'uphill') + ' grade';
+      ans = v * v / den;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' car traveling at ' + m(nn(kmh) + '\\ \\text{km/h}') + ' locks its wheels ' + where + '. The coefficient of kinetic friction is ' + m(nn(mu)) + '. How far does it skid?' + (grade ? ' (The grade angle is ' + m('\\theta = \\tan^{-1}(' + nn(Math.abs(grade) / 100) + ')') + '.)' : ''), label: '\\(d =\\)', answer: ans, unit: 'm' };
+      spec.hints = ['Convert the speed to m/s, and set \\(T_2 = 0\\).', grade ? 'Friction: \\(-\\mu_k mg\\cos\\theta\\,d\\). Weight: \\(' + (dn ? '+' : '-') + 'mg\\sin\\theta\\,d\\).' : 'Only friction does work: \\(-\\mu_k mg\\,d\\).'];
+      spec.solution = M('\\tfrac12 mv_1^2 ' + (grade ? (dn ? '+' : '-') + ' mg\\sin\\theta\\,d ' : '') + '- \\mu_k mg' + (grade ? '\\cos\\theta' : '') + '\\,d = 0 \\quad\\Rightarrow\\quad d = \\frac{v_1^2}{2g(\\mu_k' + (grade ? '\\cos\\theta ' + (dn ? '-' : '+') + ' \\sin\\theta' : '') + ')} = \\frac{' + n4(v) + '^2}{' + n4(den) + '} = ' + n4(ans) + MU);
+      right = ans; wrong = wrongOf(ans, [kmh * kmh / den, v * v / (G * mu), v * v / (2 * G * mu) * (grade ? 1.3 : 1.5)]);
+      T1 = 0.5 * mass * v * v; var Wt = mass * G * Math.sin(th) * ans * (dn ? 1 : -1), Ff = -mu * mass * G * Math.cos(th) * ans;
+      items = grade ? [['U_W', Wt, 'z'], ['U_f', Ff, 'r']] : [['U_f', Ff, 'r']]; T2 = 0;
+      readouts = [ro('\\(v_1\\)', n4(v) + MS), ro('\\(T_1\\)', n4(T1) + J), ro('\\(d\\)', n4(ans) + MU)];
+    } else if (kind === 'incline') {
+      var mass2 = rng.pick(range(1, 40, 1)), th2 = rng.pick([20, 25, 30, 35, 40, 45]), mu2 = rng.pick(range(0, 0.4, 0.05)), L = rng.pick(range(1, 10, 0.5)), v1 = rng.pick([0, 0, 0, 1, 1.5, 2, 3]);
+      if (mu2 >= Math.tan(th2 * D2R) * 0.85) mu2 = +(Math.tan(th2 * D2R) * 0.5).toFixed(2);
+      var gain = 2 * G * L * (Math.sin(th2 * D2R) - mu2 * Math.cos(th2 * D2R));
+      ans = Math.sqrt(v1 * v1 + gain);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass2) + KG) + ' block ' + (v1 ? 'moving at ' + m(nn(v1) + MS) + ' starts down' : 'is released from rest at the top of') + ' a ' + m(nn(th2) + DEG) + ' incline ' + m(nn(L) + MU) + ' long' + (mu2 ? ', with ' + m('\\mu_k = ' + nn(mu2)) : ', smooth') + '. How fast is it moving at the bottom?', label: '\\(v_2 =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['Work of the weight: \\(+mg\\sin\\theta\\,L\\) (it drops \\(L\\sin\\theta\\)).', mu2 ? 'Work of friction: \\(-\\mu_k mg\\cos\\theta\\,L\\). The normal force does none.' : 'The incline is smooth, and its normal force does no work.'];
+      spec.solution = M('\\tfrac12 mv_1^2 + mg\\sin\\theta\\,L ' + (mu2 ? '- \\mu_k mg\\cos\\theta\\,L ' : '') + '= \\tfrac12 mv_2^2 \\quad\\Rightarrow\\quad v_2 = \\sqrt{v_1^2 + 2gL(\\sin\\theta' + (mu2 ? ' - \\mu_k\\cos\\theta' : '') + ')} = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(v1 * v1 + 2 * G * L), Math.sqrt(v1 * v1 + 2 * G * L * Math.sin(th2 * D2R)), Math.sqrt(Math.abs(v1 * v1 + 2 * G * L * (Math.sin(th2 * D2R) - mu2)))]);
+      T1 = 0.5 * mass2 * v1 * v1; items = [['U_W', mass2 * G * Math.sin(th2 * D2R) * L, 'z']]; if (mu2) items.push(['U_f', -mu2 * mass2 * G * Math.cos(th2 * D2R) * L, 'r']);
+      T2 = 0.5 * mass2 * ans * ans; readouts = [ro('\\(T_1\\)', n4(T1) + J), ro('\\(T_2\\)', n4(T2) + J), ro('\\(v_2\\)', n4(ans) + MS)];
+    } else if (kind === 'push') {
+      var mass3 = rng.pick(range(5, 80, 5)), mu3 = rng.pick(range(0.1, 0.5, 0.05)), d3 = rng.pick(range(2, 15, 0.5));
+      var P = Math.ceil(mu3 * mass3 * G * 1.25 / 10) * 10 + 10 * rng.int(0, Math.max(2, Math.round(mass3 / 8)));   // a push a person could give
+      ans = Math.sqrt(2 * (P - mu3 * mass3 * G) * d3 / mass3);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass3) + KG) + ' crate starts from rest and is pushed ' + m(nn(d3) + MU) + ' across a level floor by a horizontal force of ' + m(nn(P) + NU) + '. The coefficient of kinetic friction is ' + m(nn(mu3)) + '. How fast is it moving then?', label: '\\(v_2 =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['Two forces do work: the push, \\(+Pd\\), and friction, \\(-\\mu_k mg\\,d\\).', '\\(0 + U_P + U_f = \\tfrac12 mv_2^2\\).'];
+      spec.solution = M('0 + (' + nn(P) + ')(' + nn(d3) + ') - (' + nn(mu3) + ')(' + nn(mass3) + ')(9.81)(' + nn(d3) + ') = \\tfrac12(' + nn(mass3) + ')\\,v_2^2 \\quad\\Rightarrow\\quad v_2 = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(2 * P * d3 / mass3), Math.sqrt((P - mu3 * mass3 * G) * d3 / mass3)]);
+      T1 = 0; items = [['U_P', P * d3, 'warn'], ['U_f', -mu3 * mass3 * G * d3, 'r']]; T2 = 0.5 * mass3 * ans * ans;
+      readouts = [ro('\\(U_P\\)', n4(P * d3) + J), ro('\\(U_f\\)', n4(-mu3 * mass3 * G * d3) + J), ro('\\(v_2\\)', n4(ans) + MS)];
+    } else if (kind === 'drop') {
+      var mass4 = rng.pick(range(0.1, 3, 0.1)), h = rng.pick(range(2, 40, 1)), v4 = rng.pick(range(3, 20, 1)), how = rng.pick(['horizontally', 'straight up', 'at 30\u00b0 above the horizontal', 'at 45\u00b0 below the horizontal']);
+      ans = Math.sqrt(v4 * v4 + 2 * G * h);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass4) + KG) + ' ball is thrown ' + how + ' at ' + m(nn(v4) + MS) + ' from a window ' + m(nn(h) + MU) + ' above the ground. Ignoring air resistance, how fast is it moving when it hits the ground?', label: '\\(v_2 =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['Only the weight does work, and only the net drop \\(h\\) matters.', 'The direction of the throw does not matter: kinetic energy depends on speed only.'];
+      spec.solution = M('\\tfrac12 mv_1^2 + mgh = \\tfrac12 mv_2^2 \\quad\\Rightarrow\\quad v_2 = \\sqrt{v_1^2 + 2gh} = \\sqrt{' + nn(v4) + '^2 + 2(9.81)(' + nn(h) + ')} = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [v4 + Math.sqrt(2 * G * h), Math.sqrt(2 * G * h), Math.sqrt(v4 * v4 + G * h)]);
+      T1 = 0.5 * mass4 * v4 * v4; items = [['U_W', mass4 * G * h, 'z']]; T2 = 0.5 * mass4 * ans * ans;
+      readouts = [ro('\\(T_1\\)', n4(T1) + J), ro('\\(U_W\\)', n4(mass4 * G * h) + J), ro('\\(v_2\\)', n4(ans) + MS)];
+    } else {
+      var mA = rng.pick(range(2, 20, 1)), mB = rng.pick(range(1, 15, 1)), mu5 = rng.pick([0, 0.1, 0.15, 0.2, 0.25, 0.3]), h5 = rng.pick(range(0.5, 3, 0.25));
+      if (mB <= mu5 * mA * 1.1) mB = Math.ceil(mu5 * mA * 1.6) + 1;
+      var net = (mB - mu5 * mA) * G * h5;
+      ans = Math.sqrt(2 * net / (mA + mB));
+      spec = { type: 'numeric', prompt: 'Block A (' + m(nn(mA) + KG) + ') on a ' + (mu5 ? 'rough table (' + m('\\mu_k = ' + nn(mu5)) + ')' : 'smooth table') + ' is tied by a cord over a light, smooth pulley at the table edge to block B (' + m(nn(mB) + KG) + '), which hangs. The blocks are released from rest. How fast are they moving after B has fallen ' + m(nn(h5) + MU) + '?', label: '\\(v =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['Take both blocks as the system: the cord\'s tension does no net work.', 'Both blocks move ' + nn(h5) + ' m and have the same speed: \\(\\tfrac12(m_A + m_B)v^2 = m_B g h' + (mu5 ? ' - \\mu_k m_A g h' : '') + '\\).'];
+      spec.solution = M('0 + m_B g h ' + (mu5 ? '- \\mu_k m_A g h ' : '') + '= \\tfrac12(m_A + m_B)\\,v^2 \\quad\\Rightarrow\\quad v = \\sqrt{\\frac{2(' + n4(net) + ')}{' + nn(mA + mB) + '}} = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(2 * G * h5), Math.sqrt(2 * net / mB), Math.sqrt(2 * mB * G * h5 / (mA + mB))]);
+      T1 = 0; items = [['U_{W_B}', mB * G * h5, 'z']]; if (mu5) items.push(['U_f', -mu5 * mA * G * h5, 'r']); T2 = 0.5 * (mA + mB) * ans * ans;
+      readouts = [ro('System mass', nn(mA + mB) + KG), ro('\\(\\Sigma U\\)', n4(net) + J), ro('\\(v\\)', n4(ans) + MS)];
+    }
+    spec.explain = '\\(T_1 + \\sum U_{1\\to2} = T_2\\): add the work of every force that does work.';
+    view = ledger({ title: 'The principle of work and energy', aria: 'A waterfall: the kinetic energy at the start, plus each work in turn, gives the kinetic energy at the end.', start: ['T_1', T1], items: items, end: ['T_2', T2], readouts: readouts, note: 'Each bar starts where the last one ended; the last lands on T\u2082.' });
+    return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+  }
+
+  /* ---------- 2.5 Springs in work and energy (Lesson 4) ---------- */
+  function genSpring(rng) {
+    var kind = pickW(rng, [['stop', 2], ['friction', 2], ['launch', 2], ['incline', 2], ['stiff', 1]]), spec, right, wrong, ans, items, T1, T2, readouts;
+    var mass = rng.pick(range(0.5, 20, 0.5)), k = rng.pick(range(200, 5000, 100)), v = rng.pick(range(1, 8, 0.5));
+    while (v * Math.sqrt(mass / k) > 0.4) k *= 2;                       // compressions of centimeters, not meters
+    if (kind === 'stop') {
+      ans = v * Math.sqrt(mass / k);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' cart rolls at ' + m(nn(v) + MS) + ' along a smooth level track into a bumper spring with ' + m('k = ' + nn(k) + NM) + '. Find the maximum compression of the spring.', label: '\\(s_{\\max} =\\)', answer: ans, unit: 'm' };
+      spec.hints = ['At maximum compression the cart is momentarily at rest.', '\\(\\tfrac12 mv_1^2 - \\tfrac12 ks^2 = 0\\).'];
+      spec.solution = M('\\tfrac12(' + nn(mass) + ')(' + nn(v) + ')^2 = \\tfrac12(' + nn(k) + ')s^2 \\quad\\Rightarrow\\quad s = ' + nn(v) + '\\sqrt{\\frac{' + nn(mass) + '}{' + nn(k) + '}} = ' + n4(ans) + MU);
+      right = ans; wrong = wrongOf(ans, [v * mass / k, v * v * mass / k, v * Math.sqrt(2 * mass / k)]);
+      T1 = 0.5 * mass * v * v; items = [['U_s', -T1, 't']]; T2 = 0;
+      readouts = [ro('\\(T_1\\)', n4(T1) + J), ro('\\(s_{\\max}\\)', n4(ans) + MU), ro('Spring force then', n4(k * ans) + NU)];
+    } else if (kind === 'friction') {
+      var mu = rng.pick(range(0.1, 0.5, 0.05)), a = 0.5 * k, b = mu * mass * G, c = -0.5 * mass * v * v;
+      ans = (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' block slides at ' + m(nn(v) + MS) + ' on a level floor and hits a spring (' + m('k = ' + nn(k) + NM) + ') at the instant shown. Friction acts while the spring is compressed, with ' + m('\\mu_k = ' + nn(mu)) + '. Find the maximum compression.', label: '\\(s_{\\max} =\\)', answer: ans, unit: 'm' };
+      spec.hints = ['Friction acts over the compression \\(s\\) too: \\(-\\mu_k mg\\,s\\).', '\\(\\tfrac12 mv_1^2 - \\mu_k mg\\,s - \\tfrac12 ks^2 = 0\\): a quadratic in \\(s\\); take the positive root.'];
+      spec.solution = M('\\tfrac12 ks^2 + \\mu_k mg\\,s - \\tfrac12 mv_1^2 = 0 \\quad\\Rightarrow\\quad ' + n4(a) + 's^2 + ' + n4(b) + 's - ' + n4(-c) + ' = 0 \\quad\\Rightarrow\\quad s = ' + n4(ans) + MU);
+      right = ans; wrong = wrongOf(ans, [v * Math.sqrt(mass / k), (b + Math.sqrt(b * b - 4 * a * c)) / (2 * a)]);
+      T1 = 0.5 * mass * v * v; items = [['U_f', -b * ans, 'r'], ['U_s', -a * ans * ans, 't']]; T2 = 0;
+      readouts = [ro('\\(T_1\\)', n4(T1) + J), ro('\\(U_f\\)', n4(-b * ans) + J), ro('\\(s_{\\max}\\)', n4(ans) + MU)];
+    } else if (kind === 'launch') {
+      var s = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12, 0.15, 0.2]), mass2 = rng.pick(range(0.05, 2, 0.05));
+      ans = s * Math.sqrt(k / mass2);
+      while (ans > 12 && s > 0.02) { s = +(s / 2).toFixed(3); ans = s * Math.sqrt(k / mass2); }   // keep the launch speed sensible
+      spec = { type: 'numeric', prompt: 'A spring (' + m('k = ' + nn(k) + NM) + ') on a smooth level surface is compressed ' + m(nn(s) + MU) + ' against a ' + m(nn(mass2) + KG) + ' puck and released. How fast is the puck moving when it leaves the spring?', label: '\\(v_2 =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['The puck leaves the spring when the spring reaches its unstretched length.', '\\(0 + \\tfrac12 ks^2 = \\tfrac12 mv_2^2\\): the spring relaxes, so its work is positive.'];
+      spec.solution = M('\\tfrac12(' + nn(k) + ')(' + nn(s) + ')^2 = \\tfrac12(' + nn(mass2) + ')\\,v_2^2 \\quad\\Rightarrow\\quad v_2 = ' + nn(s) + '\\sqrt{\\frac{' + nn(k) + '}{' + nn(mass2) + '}} = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [k * s / mass2, s * k / Math.sqrt(mass2), Math.sqrt(k * s / mass2)]);
+      T1 = 0; items = [['U_s', 0.5 * k * s * s, 't']]; T2 = 0.5 * mass2 * ans * ans;
+      readouts = [ro('Energy in the spring', n4(0.5 * k * s * s) + J), ro('\\(v_2\\)', n4(ans) + MS)];
+    } else if (kind === 'incline') {
+      var th = rng.pick([20, 25, 30, 35, 40]), d = rng.pick(range(0.5, 4, 0.5)), mu2 = rng.pick([0, 0, 0.1, 0.15, 0.2, 0.25]);
+      if (mu2 >= Math.tan(th * D2R) * 0.8) mu2 = 0;
+      var f = mass * G * (Math.sin(th * D2R) - mu2 * Math.cos(th * D2R)), a2 = 0.5 * k;
+      ans = (f + Math.sqrt(f * f + 4 * a2 * f * d)) / (2 * a2);
+      while (ans > 0.5) { k *= 2; a2 = 0.5 * k; ans = (f + Math.sqrt(f * f + 4 * a2 * f * d)) / (2 * a2); }   // a realistic spring
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' crate is released from rest on a ' + m(nn(th) + DEG) + ' incline, ' + m(nn(d) + MU) + ' (along the incline) above the free end of a spring with ' + m('k = ' + nn(k) + NM) + (mu2 ? '. The coefficient of kinetic friction is ' + m(nn(mu2)) : '. The incline is smooth') + '. Find the maximum compression of the spring.', label: '\\(s_{\\max} =\\)', answer: ans, unit: 'm' };
+      spec.hints = ['The weight' + (mu2 ? ' and friction act' : ' acts') + ' over \\(d + s\\); the spring only over \\(s\\).', '\\(0 + mg(\\sin\\theta' + (mu2 ? ' - \\mu_k\\cos\\theta' : '') + ')(d + s) - \\tfrac12 ks^2 = 0\\): a quadratic in \\(s\\).'];
+      spec.solution = M(n4(f) + '(' + nn(d) + ' + s) - \\tfrac12(' + nn(k) + ')s^2 = 0 \\quad\\Rightarrow\\quad ' + n4(a2) + 's^2 - ' + n4(f) + 's - ' + n4(f * d) + ' = 0 \\quad\\Rightarrow\\quad s = ' + n4(ans) + MU);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(2 * f * d / k), (f + Math.sqrt(f * f + 4 * a2 * f * d)) / k]);
+      T1 = 0; items = [['U_W', mass * G * Math.sin(th * D2R) * (d + ans), 'z']]; if (mu2) items.push(['U_f', -mu2 * mass * G * Math.cos(th * D2R) * (d + ans), 'r']); items.push(['U_s', -a2 * ans * ans, 't']); T2 = 0;
+      readouts = [ro('Net push down the slope', n4(f) + NU), ro('\\(s_{\\max}\\)', n4(ans) + MU)];
+    } else {
+      var smax = rng.pick([0.05, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25, 0.3]);
+      ans = mass * v * v / (smax * smax);
+      spec = { type: 'numeric', prompt: 'A bumper spring must stop a ' + m(nn(mass) + KG) + ' cart moving at ' + m(nn(v) + MS) + ' on a smooth track within ' + m(nn(smax) + MU) + ' of compression. What is the smallest stiffness that will do?', label: '\\(k_{\\min} =\\)', answer: ans, unit: 'N/m' };
+      spec.hints = ['At maximum compression the cart is at rest: all its kinetic energy is in the spring.', '\\(\\tfrac12 mv^2 = \\tfrac12 ks_{\\max}^2\\), so \\(k = mv^2/s_{\\max}^2\\).'];
+      spec.solution = M('k = \\frac{mv^2}{s_{\\max}^2} = \\frac{(' + nn(mass) + ')(' + nn(v) + ')^2}{(' + nn(smax) + ')^2} = ' + n4(ans) + NM);
+      right = ans; wrong = wrongOf(ans, [mass * v * v / smax, 2 * mass * v * v / (smax * smax), mass * v / (smax * smax)]);
+      T1 = 0.5 * mass * v * v; items = [['U_s', -T1, 't']]; T2 = 0;
+      readouts = [ro('\\(T_1\\)', n4(T1) + J), ro('\\(k_{\\min}\\)', n4(ans) + NM)];
+    }
+    spec.explain = 'Measure the spring\'s deformation from its unstretched length, and include every force that acts over the compression.';
+    var view = ledger({ title: 'The principle of work and energy', aria: 'A waterfall: the kinetic energy at the start, plus each work in turn, gives the kinetic energy at the end.', start: ['T_1', T1], items: items, end: ['T_2', T2], readouts: readouts, note: 'Each bar starts where the last one ended; the last lands on T\u2082.' });
+    return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+  }
+
+  /* ---------- 2.6 Power and efficiency (Lesson 5) ---------- */
+  function genPower(rng) {
+    var kind = pickW(rng, [['hoist', 2], ['accel', 2], ['grade', 2], ['chain', 2], ['time', 1]]), spec, view, right, wrong, Pin, Pout;
+    if (kind === 'hoist' || kind === 'accel') {
+      var mass = rng.pick(range(50, 2000, 25)), v = rng.pick([0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3]), eff = rng.pick([0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9]), a = kind === 'accel' ? rng.pick([0.2, 0.25, 0.4, 0.5, 0.8, 1, 1.5]) : 0;
+      var F = mass * (G + a); Pout = F * v / 1000; Pin = Pout / eff;
+      spec = { type: 'fields', prompt: 'A motor-driven hoist lifts a ' + m(nn(mass) + KG) + ' load on a vertical cable' + (a ? '. At an instant when the load rises at ' + m(nn(v) + MS) + ' and is accelerating upward at ' + m(nn(a) + '\\ \\text{m/s}^2') : ' at a constant ' + m(nn(v) + MS)) + '. The hoist is ' + m(nn(eff * 100) + '\\%') + ' efficient. Find the power delivered to the load and the power the motor draws' + (a ? ' at that instant' : '') + '.',
+        fields: [{ name: 'Pout', label: '\\(P_\\text{out} =\\)', answer: Pout, unit: 'kW' }, { name: 'Pin', label: '\\(P_\\text{in} =\\)', answer: Pin, unit: 'kW' }] };
+      spec.hints = [a ? 'Find the cable force from \\(\\sum F_y = ma\\): \\(F = m(g + a)\\).' : 'At constant speed the cable force equals the weight.', '\\(P_\\text{out} = Fv\\), and \\(P_\\text{in} = P_\\text{out}/\\varepsilon\\). Give both in kW.'];
+      spec.solution = M('F = (' + nn(mass) + ')(9.81' + (a ? ' + ' + nn(a) : '') + ') = ' + n4(F) + NU + ', \\qquad P_\\text{out} = Fv = ' + n4(Pout) + KW + ', \\qquad P_\\text{in} = \\frac{' + n4(Pout) + '}{' + nn(eff) + '} = ' + n4(Pin) + KW);
+      right = { Pout: typed(Pout), Pin: typed(Pin) }; wrong = { Pout: typed(Pout), Pin: typed(Pout * eff) };
+    } else if (kind === 'grade') {
+      var mass2 = rng.pick(range(900, 2500, 50)), kmh = rng.pick(range(30, 120, 5)), gr = rng.pick([2, 3, 4, 5, 6, 8, 10]), R = rng.pick(range(200, 900, 50)), eff2 = rng.pick([0.8, 0.82, 0.85, 0.88, 0.9]);
+      var v2 = kmh / 3.6, th = Math.atan(gr / 100), F2 = mass2 * G * Math.sin(th) + R; Pout = F2 * v2 / 1000; Pin = Pout / eff2;
+      spec = { type: 'fields', prompt: 'A ' + m(nn(mass2) + KG) + ' car climbs a ' + m(nn(gr) + '\\%') + ' grade at a constant ' + m(nn(kmh) + '\\ \\text{km/h}') + '. Rolling resistance and air drag total ' + m(nn(R) + NU) + ', and the drivetrain is ' + m(nn(eff2 * 100) + '\\%') + ' efficient. Find the power at the wheels and the power the engine must deliver.',
+        fields: [{ name: 'Pw', label: '\\(P_\\text{wheels} =\\)', answer: Pout, unit: 'kW' }, { name: 'Pe', label: '\\(P_\\text{engine} =\\)', answer: Pin, unit: 'kW' }] };
+      spec.hints = ['The grade angle is \\(\\theta = \\tan^{-1}(' + nn(gr / 100) + ')\\); the driving force balances \\(mg\\sin\\theta\\) plus the resistance.', 'Convert the speed to m/s; \\(P = Fv\\), then divide by the efficiency.'];
+      spec.solution = M('F = mg\\sin\\theta + R = ' + n4(mass2 * G * Math.sin(th)) + ' + ' + nn(R) + ' = ' + n4(F2) + NU + ', \\qquad P_\\text{wheels} = F v = (' + n4(F2) + ')(' + n4(v2) + ') = ' + n4(Pout) + KW + ', \\qquad P_\\text{engine} = ' + n4(Pin) + KW);
+      right = { Pw: typed(Pout), Pe: typed(Pin) }; wrong = { Pw: typed(F2 * kmh / 1000), Pe: typed(F2 * kmh / 1000 / eff2) };
+    } else if (kind === 'chain') {
+      var e1 = rng.pick([0.85, 0.88, 0.9, 0.92, 0.95]), e2 = rng.pick([0.9, 0.92, 0.95, 0.97]), e3 = rng.pick([0.6, 0.65, 0.7, 0.75, 0.8]), Q = rng.pick([2, 3, 4, 5, 6, 8, 10, 12, 15]), hgt = rng.pick(range(5, 60, 5));
+      var e = e1 * e2 * e3; Pout = Q * G * hgt / 1000; Pin = Pout / e;
+      spec = { type: 'numeric', prompt: 'An electric motor (' + m('\\varepsilon = ' + nn(e1)) + ') drives a gearbox (' + m(nn(e2)) + ') that drives a pump (' + m(nn(e3)) + '). The pump lifts ' + m(nn(Q) + '\\ \\text{L/s}') + ' of water through a height of ' + m(nn(hgt) + MU) + '. What electrical power does the motor draw?', label: '\\(P_\\text{in} =\\)', answer: Pin, unit: 'kW' };
+      spec.hints = ['The useful output is the work done on the water per second: \\(\\dot m g h\\), with \\(1\\ \\text{L}\\) of water \\(= 1\\ \\text{kg}\\).', 'For machines in series the efficiencies multiply.'];
+      spec.solution = M('P_\\text{out} = (' + nn(Q) + ')(9.81)(' + nn(hgt) + ') = ' + n4(Pout * 1000) + WU + ', \\qquad \\varepsilon = (' + nn(e1) + ')(' + nn(e2) + ')(' + nn(e3) + ') = ' + n4(e) + ', \\qquad P_\\text{in} = ' + n4(Pin) + KW);
+      right = Pin; wrong = wrongOf(Pin, [Pout * e, Pout / e3, Pout / ((e1 + e2 + e3) / 3)]);
+      spec.explain = 'Efficiencies in series multiply: \\(\\varepsilon = \\varepsilon_1\\varepsilon_2\\varepsilon_3\\).';
+      view = ledger({ title: 'Where the power goes', aria: 'The input power, minus the losses in each machine, gives the useful output.', unit: 'kW', start: ['P_\\text{in}', Pin],
+        items: [['\\text{motor}', -Pin * (1 - e1), 'r'], ['\\text{gears}', -Pin * e1 * (1 - e2), 'r'], ['\\text{pump}', -Pin * e1 * e2 * (1 - e3), 'r']], end: ['P_\\text{out}', Pout],
+        readouts: [ro('\\(P_\\text{out}\\)', n4(Pout) + KW), ro('\\(\\varepsilon\\)', n4(e)), ro('\\(P_\\text{in}\\)', n4(Pin) + KW)], note: 'Each machine loses part of what it receives, as heat.' });
+      return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+    } else {
+      var mass3 = rng.pick(range(800, 2200, 50)), P = rng.pick(range(30, 150, 5)), kmh3 = rng.pick([50, 60, 72, 80, 90, 100]);
+      var v3 = kmh3 / 3.6, t = 0.5 * mass3 * v3 * v3 / (P * 1000);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass3) + KG) + ' car accelerates from rest on a level road with a constant ' + m(nn(P) + KW) + ' delivered at the wheels. Ignoring resistance, how long does it take to reach ' + m(nn(kmh3) + '\\ \\text{km/h}') + '?', label: '\\(t =\\)', answer: t, unit: 's' };
+      spec.hints = ['With constant power, the kinetic energy grows at the rate \\(P\\): \\(T_2 - T_1 = Pt\\).', 'Convert the speed to m/s and the power to W.'];
+      spec.solution = M('t = \\frac{\\tfrac12 mv^2}{P} = \\frac{\\tfrac12(' + nn(mass3) + ')(' + n4(v3) + ')^2}{' + grp(P * 1000) + '} = ' + n4(t) + '\\ \\text{s}');
+      right = t; wrong = wrongOf(t, [mass3 * v3 * v3 / (P * 1000), 0.5 * mass3 * kmh3 * kmh3 / (P * 1000), mass3 * v3 / (P * 1000)]);
+      spec.explain = '\\(\\sum P = dT/dt\\): with constant power, \\(T\\) grows linearly in time.';
+      view = ledger({ title: 'Energy from power', aria: 'The work of the engine, power times time, becomes the car\'s kinetic energy.', start: ['T_1', 0], items: [['Pt', 0.5 * mass3 * v3 * v3, 'warn']], end: ['T_2', 0.5 * mass3 * v3 * v3],
+        readouts: [ro('\\(T_2\\)', n4(0.5 * mass3 * v3 * v3) + J), ro('\\(t\\)', n4(t) + '\\ \\text{s}')], note: 'In practice traction, not power, limits the first part of a launch.' });
+      return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+    }
+    spec.explain = '\\(P = Fv\\) with the force at that instant; \\(P_\\text{in} = P_\\text{out}/\\varepsilon\\).';
+    view = ledger({ title: 'Where the power goes', aria: 'The input power, minus the losses, gives the output power.', unit: 'kW', start: ['P_\\text{in}', Pin], items: [['\\text{losses}', Pout - Pin, 'r']], end: ['P_\\text{out}', Pout],
+      readouts: [ro('\\(P_\\text{out}\\)', n4(Pout) + KW), ro('\\(P_\\text{in}\\)', n4(Pin) + KW)], note: 'The losses become heat in the motor, gears and bearings.' });
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Potential energy (Lesson 6) ---------- */
+  var NONCONS = [
+    ['Kinetic friction on a crate sliding across a floor', 'Its work grows with the distance slid, and is never zero around a loop.'],
+    ['Air drag on a falling ball', 'Drag always opposes the motion, like friction.'],
+    ['The push of a worker moving a cart', 'Its work depends on how and where the worker pushes, not only on the end points.'],
+    ['The thrust of a rocket motor', 'A motor adds energy; its work depends on how long it runs.']
+  ];
+  var CONS = [
+    ['The weight of a ball near the ground', 'Its work is \\(-W\\,\\Delta y\\): end points only.'],
+    ['The force of a linear spring on a block', 'Its work is \\(-\\left(\\tfrac12 ks_2^2 - \\tfrac12 ks_1^2\\right)\\): end points only.'],
+    ['The gravitational pull of the Earth on a satellite', 'Gravity at any distance is conservative.']
+  ];
+  function genPotential(rng) {
+    var kind = pickW(rng, [['datum', 3], ['spring', 2], ['change', 2], ['mc', 1]]), spec, view, right, wrong;
+    if (kind === 'datum') {
+      var mass = rng.pick(range(0.5, 50, 0.5)), yA = rng.pick(range(0, 15, 0.5)), yB = rng.pick(range(0, 15, 0.5)), dat = rng.pick(range(0, 15, 0.5));
+      if (Math.abs(yA - yB) < 0.5) yB = yA + 3;
+      var VA = mass * G * (yA - dat), VB = mass * G * (yB - dat);
+      spec = { type: 'fields', prompt: 'A ' + m(nn(mass) + KG) + ' box moves from ' + m('A') + ', ' + m(nn(yA) + MU) + ' above the floor, to ' + m('B') + ', ' + m(nn(yB) + MU) + ' above the floor. Taking the datum ' + m(nn(dat) + MU) + ' above the floor, find its gravitational potential energy at ' + m('A') + ' and at ' + m('B') + '.',
+        fields: [{ name: 'VA', label: '\\(V_A =\\)', answer: VA, unit: 'J' }, { name: 'VB', label: '\\(V_B =\\)', answer: VB, unit: 'J' }] };
+      spec.hints = ['Measure \\(y\\) upward from the datum, not from the floor.', '\\(V_g = Wy\\): negative below the datum.'];
+      spec.solution = M('V_A = (' + nn(mass) + ')(9.81)(' + nn(yA - dat) + ') = ' + n4(VA) + J + ', \\qquad V_B = (' + nn(mass) + ')(9.81)(' + nn(yB - dat) + ') = ' + n4(VB) + J) + '<p>The weight\'s work from A to B is \\(V_A - V_B = ' + n4(VA - VB) + '\\ \\text{J}\\), whatever the datum.</p>';
+      right = { VA: typed(VA), VB: typed(VB) }; wrong = { VA: typed(mass * G * yA), VB: typed(mass * G * yB) };
+      if (dat === 0) wrong = { VA: typed(-VA), VB: typed(VB) };
+      view = ledger({ title: 'Potential energy, A to B', aria: 'The potential energy at A, minus the work of the weight, gives the potential energy at B.', start: ['V_A', VA], items: [['-U_W', VB - VA, 'z']], end: ['V_B', VB],
+        readouts: [ro('Datum height', nn(dat) + MU), ro('\\(V_A - V_B = U_W\\)', n4(VA - VB) + J)], note: 'The datum shifts both energies by the same amount; their difference does not change.' });
+    } else if (kind === 'spring') {
+      var k = rng.pick(range(100, 5000, 100)), s = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25]), comp = rng.next() < 0.5;
+      var Ve = 0.5 * k * s * s;
+      spec = { type: 'numeric', prompt: 'A spring with ' + m('k = ' + nn(k) + NM) + ' is ' + (comp ? 'compressed' : 'stretched') + ' ' + m(nn(s) + MU) + ' from its unstretched length. How much elastic potential energy does it store?', label: '\\(V_e =\\)', answer: Ve, unit: 'J' };
+      spec.hints = ['\\(V_e = \\tfrac12 ks^2\\), with \\(s\\) the deformation.', 'It is positive whether the spring is stretched or compressed.'];
+      spec.solution = M('V_e = \\tfrac12(' + nn(k) + ')(' + nn(s) + ')^2 = ' + n4(Ve) + J);
+      right = Ve; wrong = wrongOf(Ve, [k * s * s, 0.5 * k * s, k * s]);
+      view = ledger({ title: 'Stored in the spring', aria: 'The elastic potential energy of the spring.', start: ['0', 0], items: [['\\tfrac12 ks^2', Ve, 't']], end: ['V_e', Ve],
+        readouts: [ro('Deformation', nn(s) + MU), ro('\\(V_e\\)', n4(Ve) + J)], note: 'Stretched or compressed by the same amount, the spring stores the same energy.' });
+      right = { value: typed(right) }; wrong = { value: typed(wrong) };
+    } else if (kind === 'change') {
+      var k2 = rng.pick(range(200, 3000, 100)), s1 = rng.pick([0.02, 0.04, 0.05, 0.06, 0.08, 0.1]), s2 = rng.pick([0.05, 0.08, 0.1, 0.12, 0.15, 0.2]), c1 = rng.next() < 0.5, c2 = rng.next() < 0.5;
+      if (Math.abs(s1 - s2) < 1e-9) s2 = s1 + 0.05;
+      var V1 = 0.5 * k2 * s1 * s1, V2 = 0.5 * k2 * s2 * s2, Us = V1 - V2;
+      spec = { type: 'numeric', prompt: 'A spring with ' + m('k = ' + nn(k2) + NM) + ' goes from ' + m(nn(s1) + MU) + ' of ' + (c1 ? 'compression' : 'stretch') + ' to ' + m(nn(s2) + MU) + ' of ' + (c2 ? 'compression' : 'stretch') + '. Find the work it does on the particle attached to it.', label: '\\(U_s =\\)', answer: Us, unit: 'J' };
+      spec.hints = ['\\(U_s = V_1 - V_2\\), with \\(V_e = \\tfrac12 ks^2\\) at each end.', 'Whether each deformation is a stretch or a compression does not matter: only its size.'];
+      spec.solution = M('V_1 = \\tfrac12(' + nn(k2) + ')(' + nn(s1) + ')^2 = ' + n4(V1) + J + ', \\qquad V_2 = \\tfrac12(' + nn(k2) + ')(' + nn(s2) + ')^2 = ' + n4(V2) + J + ', \\qquad U_s = V_1 - V_2 = ' + n4(Us) + J);
+      right = Us; wrong = wrongOf(Us, [-Us, -0.5 * k2 * (s2 - s1) * (s2 - s1), -0.5 * k2 * ((c2 ? -s2 : s2) - (c1 ? -s1 : s1)) * ((c2 ? -s2 : s2) - (c1 ? -s1 : s1))]);
+      view = ledger({ title: 'Potential energy, 1 to 2', aria: 'The elastic potential energy at the start, minus the spring\'s work, gives the elastic potential energy at the end.', start: ['V_1', V1], items: [['-U_s', V2 - V1, 't']], end: ['V_2', V2],
+        readouts: [ro('\\(V_1\\)', n4(V1) + J), ro('\\(V_2\\)', n4(V2) + J), ro('\\(U_s\\)', n4(Us) + J)], note: 'A conservative force\'s work is the drop in its potential energy.' });
+      right = { value: typed(right) }; wrong = { value: typed(wrong) };
+    } else {
+      var nc = rng.pick(NONCONS), cs = rng.shuffle(CONS.slice()).slice(0, 3);
+      var choices = cs.map(function (c) { return { html: c[0], feedback: c[1] }; });
+      var pos = rng.int(0, 3);
+      choices.splice(pos, 0, { html: nc[0], correct: true, feedback: nc[1] });
+      spec = { type: 'mc', prompt: 'Which of these forces is <em>not</em> conservative?', choices: choices, shuffle: false };
+      spec.hints = ['Ask of each: does its work depend only on where the particle starts and ends?', 'Forces that always oppose the motion, or that someone controls, fail the closed-path test.'];
+      spec.solution = '<p>' + nc[0] + ': ' + nc[1].charAt(0).toLowerCase() + nc[1].slice(1) + ' The others depend only on position, so they have potential energies.</p>';
+      spec.explain = 'A conservative force\'s work around any closed path is zero.';
+      view = ledger({ title: 'Around a closed loop', aria: 'Around a closed loop, the conservative force does zero work and friction does not.', start: ['0', 0], items: [['U_W', 0, 'z'], ['U_f', -294.3, 'r']], end: ['\\Sigma U', -294.3],
+        readouts: [ro('Example', '10\\ \\text{kg},\\ 10\\ \\text{m},\\ \\mu_k = 0.3')], note: 'Around a closed path, gravity\'s work is zero; friction\'s never is.' });
+      return { spec: spec, view: view, test: { right: [pos], wrong: [(pos + 1) % 4] } };
+    }
+    spec.explain = spec.explain || '\\(V_g = Wy\\) from your datum, \\(V_e = \\tfrac12 ks^2\\), and \\(U = V_1 - V_2\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Conservation of energy (Lesson 7) ---------- */
+  function genConserve(rng) {
+    var kind = pickW(rng, [['pendulum', 2], ['launcher', 2], ['friction', 2], ['collar', 2], ['blocks', 1]]), spec, right, wrong, ans, items, T1, T2, readouts;
+    if (kind === 'pendulum') {
+      var L = rng.pick(range(0.4, 3, 0.1)), t0 = rng.pick([20, 30, 40, 45, 50, 60, 70, 80, 90]), mass = rng.pick(range(0.2, 5, 0.1));
+      var h = L * (1 - Math.cos(t0 * D2R)); ans = Math.sqrt(2 * G * h);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' bob on a ' + m(nn(L) + MU) + ' string is released from rest with the string at ' + m(nn(t0) + DEG) + ' from the vertical. How fast is it moving at the bottom of its swing?', label: '\\(v =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['The string is perpendicular to the motion, so it does no work: energy is conserved.', 'The bob drops \\(h = L(1 - \\cos\\theta_0)\\).'];
+      spec.solution = M('h = ' + nn(L) + '(1 - \\cos ' + nn(t0) + DEG + ') = ' + n4(h) + MU + ', \\qquad v = \\sqrt{2gh} = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(2 * G * L), Math.sqrt(2 * G * L * Math.cos(t0 * D2R)), Math.sqrt(2 * G * L * Math.sin(t0 * D2R))]);
+      T1 = 0; items = [['U_W', mass * G * h, 'z']]; T2 = 0.5 * mass * ans * ans;
+      readouts = [ro('Drop \\(h\\)', n4(h) + MU), ro('\\(v\\)', n4(ans) + MS)];
+    } else if (kind === 'launcher') {
+      var k = rng.pick(range(100, 2000, 50)), s = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12]), mass2 = rng.pick(range(0.02, 0.5, 0.01));
+      var E = 0.5 * k * s * s; ans = E / (mass2 * G);
+      while (ans > 8) { mass2 = +(mass2 * 2).toFixed(2); ans = E / (mass2 * G); }                   // a toy, not a cannon
+      spec = { type: 'numeric', prompt: 'A spring launcher fires a ' + m(nn(mass2) + KG) + ' ball straight up. Its spring (' + m('k = ' + nn(k) + NM) + ') is compressed ' + m(nn(s) + MU) + ' before release. Ignoring air resistance and the spring\'s mass, how high above its release point does the ball rise?', label: '\\(h =\\)', answer: ans, unit: 'm' };
+      spec.hints = ['At the top the ball is momentarily at rest and the spring is unstretched.', '\\(\\tfrac12 ks^2 = mgh\\), with the datum at the release point.'];
+      spec.solution = M('h = \\frac{\\tfrac12 ks^2}{mg} = \\frac{\\tfrac12(' + nn(k) + ')(' + nn(s) + ')^2}{(' + nn(mass2) + ')(9.81)} = \\frac{' + n4(E) + '}{' + n4(mass2 * G) + '} = ' + n4(ans) + MU);
+      right = ans; wrong = wrongOf(ans, [k * s * s / (mass2 * G), E / mass2, 0.5 * k * s / (mass2 * G)]);
+      T1 = 0; items = [['U_s', E, 't'], ['U_W', -E, 'z']]; T2 = 0;
+      readouts = [ro('Spring energy', n4(E) + J), ro('\\(h\\)', n4(ans) + MU)];
+    } else if (kind === 'friction') {
+      var mass3 = rng.pick(range(20, 120, 5)), h3 = rng.pick(range(5, 60, 5)), frac = rng.pick([0.4, 0.5, 0.6, 0.7, 0.8, 0.85]);
+      var v3 = +Math.sqrt(2 * G * h3 * frac).toFixed(1), Unc = 0.5 * mass3 * v3 * v3 - mass3 * G * h3;
+      var who = rng.pick(['skier', 'sled', 'toboggan with its rider', 'mountain biker coasting']);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass3) + KG) + ' ' + who + ' starts from rest and descends ' + m(nn(h3) + MU) + ' vertically, reaching ' + m(nn(v3) + MS) + ' at the bottom. How much work did friction and air drag do?', label: '\\(U_{nc} =\\)', answer: Unc, unit: 'J' };
+      spec.hints = ['\\(T_1 + V_1 + U_{nc} = T_2 + V_2\\), with the datum at the bottom.', '\\(U_{nc} = \\tfrac12 mv_2^2 - mgh\\): it comes out negative.'];
+      spec.solution = M('0 + (' + nn(mass3) + ')(9.81)(' + nn(h3) + ') + U_{nc} = \\tfrac12(' + nn(mass3) + ')(' + nn(v3) + ')^2 \\quad\\Rightarrow\\quad U_{nc} = ' + n4(0.5 * mass3 * v3 * v3) + ' - ' + n4(mass3 * G * h3) + ' = ' + n4(Unc) + J);
+      right = Unc; wrong = wrongOf(Unc, [-Unc, 0.5 * mass3 * v3 * v3, -mass3 * G * h3]);
+      T1 = 0; items = [['U_W', mass3 * G * h3, 'z'], ['U_{nc}', Unc, 'r']]; T2 = 0.5 * mass3 * v3 * v3;
+      readouts = [ro('\\(V_1 - V_2\\)', n4(mass3 * G * h3) + J), ro('\\(T_2\\)', n4(T2) + J), ro('\\(U_{nc}\\)', n4(Unc) + J)];
+    } else if (kind === 'collar') {
+      var mass4, k4, L0, b, dd, l1, l2, s1, s2, v2sq;
+      for (var tries = 0; tries < 30; tries++) {                         // redraw until the collar really moves down
+        mass4 = rng.pick(range(0.5, 5, 0.5)); k4 = rng.pick(range(50, 600, 25)); L0 = rng.pick([0.2, 0.25, 0.3]); b = rng.pick([0.3, 0.4, 0.5]); dd = rng.pick([0.2, 0.3, 0.4, 0.5]);
+        l1 = b; l2 = Math.hypot(b, dd); s1 = l1 - L0; s2 = l2 - L0;
+        v2sq = (0.5 * k4 * (s1 * s1 - s2 * s2) + mass4 * G * dd) / (0.5 * mass4);
+        if (v2sq > 0.5) break;
+      }
+      if (!(v2sq > 0.5)) { mass4 = 2; k4 = 100; L0 = 0.2; b = 0.3; dd = 0.4; l1 = b; l2 = 0.5; s1 = 0.1; s2 = 0.3; v2sq = (0.5 * k4 * (s1 * s1 - s2 * s2) + mass4 * G * dd) / (0.5 * mass4); }
+      ans = Math.sqrt(v2sq);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass4) + KG) + ' collar slides on a smooth vertical rod. A spring (' + m('k = ' + nn(k4) + NM) + ', unstretched length ' + m(nn(L0) + MU) + ') joins it to a fixed point ' + m(nn(b) + MU) + ' to the side of the rod. The collar is released from rest level with that point. How fast is it moving after it has slid ' + m(nn(dd) + MU) + ' down?', label: '\\(v =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['Spring lengths: \\(' + nn(b) + '\\ \\text{m}\\) at the start, \\(\\sqrt{' + nn(b) + '^2 + ' + nn(dd) + '^2}\\) at the end; subtract the unstretched length for \\(s\\).', '\\(\\tfrac12 ks_1^2 + mg\\,d = \\tfrac12 mv^2 + \\tfrac12 ks_2^2\\), with the datum at the final position.'];
+      spec.solution = M('s_1 = ' + nn(b) + ' - ' + nn(L0) + ' = ' + n4(s1) + MU + ', \\qquad s_2 = ' + n4(l2) + ' - ' + nn(L0) + ' = ' + n4(s2) + MU) +
+        M('\\tfrac12(' + nn(k4) + ')(' + n4(s1) + ')^2 + (' + nn(mass4) + ')(9.81)(' + nn(dd) + ') = \\tfrac12(' + nn(mass4) + ')v^2 + \\tfrac12(' + nn(k4) + ')(' + n4(s2) + ')^2 \\quad\\Rightarrow\\quad v = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(2 * G * dd), Math.sqrt(Math.abs((mass4 * G * dd - 0.5 * k4 * dd * dd) / (0.5 * mass4)))]);
+      T1 = 0; items = [['U_W', mass4 * G * dd, 'z'], ['U_s', 0.5 * k4 * (s1 * s1 - s2 * s2), 't']]; T2 = 0.5 * mass4 * v2sq;
+      readouts = [ro('\\(s_1\\)', n4(s1) + MU), ro('\\(s_2\\)', n4(s2) + MU), ro('\\(v\\)', n4(ans) + MS)];
+    } else {
+      var mA = rng.pick(range(1, 12, 0.5)), mB = rng.pick(range(0.5, 8, 0.5)), h5 = rng.pick(range(0.3, 2.5, 0.1));
+      ans = Math.sqrt(2 * mB * G * h5 / (mA + mB));
+      spec = { type: 'numeric', prompt: 'Block A (' + m(nn(mA) + KG) + ') rests on a smooth table and is tied by a cord over a light, smooth pulley at the edge to block B (' + m(nn(mB) + KG) + '), which hangs. The system is released from rest. How fast are the blocks moving after B has fallen ' + m(nn(h5) + MU) + '?', label: '\\(v =\\)', answer: ans, unit: 'm/s' };
+      spec.hints = ['Only B changes height; the cord\'s tension does no net work on the system.', '\\(m_B g h = \\tfrac12(m_A + m_B)v^2\\).'];
+      spec.solution = M('(' + nn(mB) + ')(9.81)(' + nn(h5) + ') = \\tfrac12(' + nn(mA + mB) + ')\\,v^2 \\quad\\Rightarrow\\quad v = ' + n4(ans) + MS);
+      right = ans; wrong = wrongOf(ans, [Math.sqrt(2 * G * h5), Math.sqrt(2 * mB * G * h5 / mA)]);
+      T1 = 0; items = [['U_{W_B}', mB * G * h5, 'z']]; T2 = 0.5 * (mA + mB) * ans * ans;
+      readouts = [ro('System mass', nn(mA + mB) + KG), ro('\\(v\\)', n4(ans) + MS)];
+    }
+    spec.explain = '\\(T_1 + V_1 + \\sum U_{nc} = T_2 + V_2\\); count each weight and spring once.';
+    var view = ledger({ title: 'Energy bookkeeping', aria: 'A waterfall: the kinetic energy at the start, plus the work of each force (the drop in each potential energy), gives the kinetic energy at the end.', start: ['T_1', T1], items: items, end: ['T_2', T2], readouts: readouts, note: 'Conservative works are drops in potential energy: U\u2081\u2082 = V\u2081 \u2212 V\u2082.' });
+    return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+  }
+
+  /* ---------- 2.9 Curved paths (Lesson 8) ---------- */
+  function genCurved(rng) {
+    var kind = pickW(rng, [['loopmin', 2], ['loopN', 2], ['pendulum', 2], ['dip', 2], ['dome', 1]]), spec, view, right, wrong;
+    if (kind === 'loopmin') {
+      var R = rng.pick(range(0.2, 15, 0.1)), h = 2.5 * R;
+      spec = { type: 'numeric', prompt: 'A small cart is released from rest on a smooth track that runs down into a vertical circular loop of radius ' + m(nn(R) + MU) + '. From what minimum height above the bottom of the loop must it start to stay on the track at the top?', label: '\\(h_{\\min} =\\)', answer: h, unit: 'm' };
+      spec.hints = ['At the top, the cart just stays on when \\(N = 0\\): \\(mg = mv^2/R\\), so \\(v^2 = gR\\).', 'Energy from the start to the top: \\(mgh = \\tfrac12 mv^2 + mg(2R)\\).'];
+      spec.solution = M('gh = \\tfrac12 gR + 2gR \\quad\\Rightarrow\\quad h_{\\min} = \\tfrac52 R = \\tfrac52(' + nn(R) + ') = ' + n4(h) + MU);
+      right = h; wrong = wrongOf(h, [2 * R, 3 * R, 2.25 * R]);
+      view = ledger({ title: 'Forces toward the center, at the top', aria: 'At the top of the loop, the weight alone supplies m v squared over R when the cart just makes it.', unit: 'N/kg', start: ['0', 0], items: [['mg', G, 'z'], ['N', 0, 'ink']], end: ['mv^2/R', G],
+        readouts: [ro('\\(v_\\text{top}^2 = gR\\)', n4(G * R) + '\\ \\text{m}^2/\\text{s}^2'), ro('\\(h_{\\min}\\)', n4(h) + MU)], note: 'Per kilogram of cart: at the minimum height the track pushes with N = 0 at the top.' });
+    } else if (kind === 'loopN') {
+      var R2 = rng.pick(range(5, 15, 0.5)), k = rng.pick([2.6, 2.75, 2.8, 3, 3.2, 3.5, 4]), mass = rng.pick(range(40, 120, 5));
+      var h2 = k * R2, vt2 = 2 * G * (h2 - 2 * R2), vb2 = 2 * G * h2, Nt = mass * vt2 / R2 - mass * G, Nb = mass * G + mass * vb2 / R2;
+      spec = { type: 'fields', prompt: 'A ' + m(nn(mass) + KG) + ' rider on a coaster starts from rest ' + m(nn(h2) + MU) + ' above the bottom of a circular loop of radius ' + m(nn(R2) + MU) + '. Ignoring friction, find the normal force of the seat on the rider at the top and at the bottom of the loop.',
+        fields: [{ name: 'Nt', label: 'Top: \\(N =\\)', answer: Nt, unit: 'N' }, { name: 'Nb', label: 'Bottom: \\(N =\\)', answer: Nb, unit: 'N' }] };
+      spec.hints = ['Energy gives \\(v^2\\): \\(v_\\text{top}^2 = 2g(h - 2R)\\), \\(v_\\text{bottom}^2 = 2gh\\).', 'Top: \\(N + mg = mv^2/R\\). Bottom: \\(N - mg = mv^2/R\\).'];
+      spec.solution = M('v_\\text{top}^2 = 2(9.81)(' + nn(h2) + ' - ' + nn(2 * R2) + ') = ' + n4(vt2) + ', \\qquad N_\\text{top} = m\\frac{v_\\text{top}^2}{R} - mg = ' + n4(Nt) + NU) +
+        M('v_\\text{bottom}^2 = 2(9.81)(' + nn(h2) + ') = ' + n4(vb2) + ', \\qquad N_\\text{bottom} = mg + m\\frac{v_\\text{bottom}^2}{R} = ' + n4(Nb) + NU);
+      right = { Nt: typed(Nt), Nb: typed(Nb) }; wrong = { Nt: typed(mass * vt2 / R2 + mass * G), Nb: typed(Nb) };
+      view = ledger({ title: 'Forces toward the center, at the bottom', aria: 'At the bottom of the loop, the normal force minus the weight supplies m v squared over R.', unit: 'N', start: ['0', 0], items: [['-mg', -mass * G, 'z'], ['N', Nb, 'ink']], end: ['mv^2/R', mass * vb2 / R2],
+        readouts: [ro('\\(N_\\text{top}/mg\\)', n4(Nt / (mass * G))), ro('\\(N_\\text{bottom}/mg\\)', n4(Nb / (mass * G)))], note: 'At the bottom the track must hold up the weight and bend the path.' });
+      spec.explain = 'Energy for the speed, then \\(\\sum F_n = mv^2/\\rho\\) with \\(n\\) toward the center.';
+      return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+    } else if (kind === 'pendulum') {
+      var mass2 = rng.pick(range(0.2, 5, 0.1)), t0 = rng.pick([30, 40, 45, 50, 60, 70, 80, 90]), th = rng.pick([0, 0, 10, 15, 20, 25, 30]);
+      if (th >= t0) th = 0;
+      var Ts = mass2 * G * (3 * Math.cos(th * D2R) - 2 * Math.cos(t0 * D2R));
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass2) + KG) + ' pendulum bob is released from rest with its string at ' + m(nn(t0) + DEG) + ' from the vertical. Find the tension in the string ' + (th ? 'when it makes ' + m(nn(th) + DEG) + ' with the vertical.' : 'at the bottom of the swing.'), label: '\\(T_s =\\)', answer: Ts, unit: 'N' };
+      spec.hints = ['Energy: \\(v^2 = 2gL(\\cos\\theta - \\cos\\theta_0)\\).', 'Toward the pivot: \\(T_s - mg\\cos\\theta = mv^2/L\\). The length cancels.'];
+      spec.solution = M('T_s = mg\\left(3\\cos\\theta - 2\\cos\\theta_0\\right) = (' + nn(mass2) + ')(9.81)\\left(3\\cos ' + nn(th) + DEG + ' - 2\\cos ' + nn(t0) + DEG + '\\right) = ' + n4(Ts) + NU);
+      right = Ts; wrong = wrongOf(Ts, [mass2 * G * Math.cos(th * D2R), mass2 * G * (3 - 2 * Math.cos(t0 * D2R)) * (th ? 1.2 : 1.4), mass2 * G * (2 * Math.cos(th * D2R) - Math.cos(t0 * D2R))]);
+      var wN = mass2 * G * Math.cos(th * D2R);
+      view = ledger({ title: 'Forces toward the pivot', aria: 'The string tension minus the weight component away from the pivot supplies m v squared over L.', unit: 'N', start: ['0', 0], items: [['-mg\\cos\\theta', -wN, 'z'], ['T_s', Ts, 'ink']], end: ['mv^2/L', Ts - wN],
+        readouts: [ro('\\(T_s\\)', n4(Ts) + NU), ro('\\(T_s/mg\\)', n4(Ts / (mass2 * G)))], note: 'The length of the string does not matter.' });
+    } else if (kind === 'dip') {
+      var mass3 = rng.pick(range(800, 2500, 50)), v = rng.pick(range(8, 25, 1)), rho = rng.pick(range(30, 150, 10)), crest = rng.next() < 0.5;
+      if (crest && v * v / rho >= G * 0.95) v = Math.floor(Math.sqrt(G * rho) * 0.8);
+      var N = crest ? mass3 * (G - v * v / rho) : mass3 * (G + v * v / rho);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass3) + KG) + ' car drives at a steady ' + m(nn(v) + MS) + (crest ? ' over the top of a crest' : ' through the bottom of a dip') + ' that is a circular arc of radius ' + m(nn(rho) + MU) + '. Find the normal force of the road on the car there.', label: '\\(N =\\)', answer: N, unit: 'N' };
+      spec.hints = ['The centripetal acceleration is \\(v^2/\\rho = ' + n4(v * v / rho) + '\\ \\text{m/s}^2\\), toward the center of the arc.', crest ? 'Over the crest the center is below: \\(mg - N = mv^2/\\rho\\).' : 'In the dip the center is above: \\(N - mg = mv^2/\\rho\\).'];
+      spec.solution = M('N = m\\left(g ' + (crest ? '-' : '+') + ' \\frac{v^2}{\\rho}\\right) = (' + nn(mass3) + ')\\left(9.81 ' + (crest ? '-' : '+') + ' ' + n4(v * v / rho) + '\\right) = ' + n4(N) + NU);
+      right = N; wrong = wrongOf(N, [crest ? mass3 * (G + v * v / rho) : mass3 * (G - v * v / rho), mass3 * G]);
+      view = ledger({ title: 'Forces toward the center', aria: 'The weight and the normal force combine to supply m v squared over rho toward the center of the arc.', unit: 'N', start: ['0', 0],
+        items: crest ? [['mg', mass3 * G, 'z'], ['-N', -N, 'ink']] : [['-mg', -mass3 * G, 'z'], ['N', N, 'ink']], end: ['mv^2/\\rho', mass3 * v * v / rho],
+        readouts: [ro('\\(N/mg\\)', n4(N / (mass3 * G))), ro('\\(v^2/\\rho\\)', n4(v * v / rho) + '\\ \\text{m/s}^2')], note: crest ? 'Over a crest the car is lighter on the road; above v = sqrt(g\u03c1) it would leave it.' : 'In a dip the road must push harder than the weight.' });
+    } else {
+      var R5 = rng.pick(range(0.5, 5, 0.1)), v0 = rng.pick([0, 0, 0, 0.5, 1, 1.5, 2]);
+      if (v0 * v0 >= G * R5 * 0.8) v0 = 0;
+      var c = 2 / 3 + v0 * v0 / (3 * G * R5), ang = Math.acos(c) / D2R;
+      spec = { type: 'numeric', prompt: 'A small block ' + (v0 ? 'is given a speed of ' + m(nn(v0) + MS) + ' at the top of' : 'starts from rest (a tiny nudge) at the top of') + ' a smooth hemispherical dome of radius ' + m(nn(R5) + MU) + ' and slides down. At what angle from the vertical does it leave the surface? Give it in degrees.', label: '\\(\\theta =\\)', answer: ang, unit: '\u00b0' };
+      spec.hints = ['Energy: \\(v^2 = v_0^2 + 2gR(1 - \\cos\\theta)\\).', 'It leaves when \\(N = 0\\): \\(mg\\cos\\theta = mv^2/R\\). So \\(\\cos\\theta = \\tfrac23 + v_0^2/(3gR)\\).'];
+      spec.solution = M('\\cos\\theta = \\tfrac23 + \\frac{v_0^2}{3gR} = \\tfrac23 + \\frac{' + nn(v0) + '^2}{3(9.81)(' + nn(R5) + ')} = ' + n4(c) + ' \\quad\\Rightarrow\\quad \\theta = ' + n4(ang) + DEG);
+      right = ang; wrong = wrongOf(ang, [Math.acos(0.5) / D2R, 90 - ang, Math.acos(Math.min(0.999, c * 1.15)) / D2R]);
+      view = ledger({ title: 'Forces toward the center, where it leaves', aria: 'Where the block leaves, the weight component toward the center alone supplies m v squared over R.', unit: 'N/kg', start: ['0', 0], items: [['g\\cos\\theta', G * c, 'z'], ['-N', 0, 'ink']], end: ['v^2/R', G * c],
+        readouts: [ro('\\(\\cos\\theta\\)', n4(c)), ro('\\(\\theta\\)', n4(ang) + DEG)], note: 'Per kilogram: at departure the dome pushes with N = 0.' });
+    }
+    spec.explain = spec.explain || 'Energy for the speed, then \\(\\sum F_n = mv^2/\\rho\\) with \\(n\\) toward the center of curvature.';
+    return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } };
+  }
+
+  /* ================================================================ 5. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l02: L(2, '02-work-of-a-force.html', 'The Work of a Force'), l03: L(3, '03-weight-springs-friction.html', 'Weight, Springs and Friction'),
+    l04: L(4, '04-principle.html', 'The Principle of Work and Energy'), l05: L(5, '05-power-efficiency.html', 'Power and Efficiency'),
+    l06: L(6, '06-potential-energy.html', 'Conservative Forces and Potential Energy'), l07: L(7, '07-conservation.html', 'Conservation of Energy'),
+    l08: L(8, '08-curved-paths.html', 'Energy on Curved Paths')
+  };
+  var CATS = [
+    { id: 'work', label: 'Work of a force', gen: genWork, lessons: [LES.l02] },
+    { id: 'weight', label: 'Weight & springs', gen: genWeightSpring, lessons: [LES.l03] },
+    { id: 'friction', label: 'Friction & normal force', gen: genFriction, lessons: [LES.l03] },
+    { id: 'speed', label: 'Speeds & distances', gen: genSpeed, lessons: [LES.l04] },
+    { id: 'spring', label: 'Springs in motion', gen: genSpring, lessons: [LES.l04] },
+    { id: 'power', label: 'Power & efficiency', gen: genPower, lessons: [LES.l05] },
+    { id: 'potential', label: 'Potential energy', gen: genPotential, lessons: [LES.l06] },
+    { id: 'conserve', label: 'Conservation of energy', gen: genConserve, lessons: [LES.l07] },
+    { id: 'curved', label: 'Curved paths', gen: genCurved, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 6. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      if (v.note) out.push(['view note', v.note]);
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.kind === 'ledger') [v.start].concat(v.items, [v.end]).forEach(function (it) { out.push(['ledger label', '\\(' + it.label + '\\)']); });
+      if (v.kind === 'area') { out.push(['x label', v.x.label]); out.push(['y label', v.y.label]); }
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|sec|csc|arctan|left|right|Longrightarrow|quad|dot|ddot|ihat|jhat|khat|er|et|ez|Fvec|vvec|avec|int|iiint|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'point') return spec.answerPoint.every(isFinite);
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {}, kinds = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        kinds[p.view && p.view.kind] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['mc', 'numeric', 'fields', 'point'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          if (s.type === 'mc') {
+            if (s.choices.length < 4) f('fewer than 4 choices');
+            if (s.choices.filter(function (c) { return c.correct; }).length !== 1) f('not exactly one correct choice');
+            var hs = s.choices.map(function (c) { return c.html; });
+            if (hs.some(function (h, j) { return hs.indexOf(h) !== j; })) f('duplicate choices');
+            if (s.choices.some(function (c) { return !c.correct && !c.feedback; })) f('distractor without feedback');
+          }
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || ['ledger', 'area'].indexOf(vw.kind) < 0) f('bad view');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else if (vw.kind === 'ledger') {
+            var tot = ledgerTotals(vw), last = tot[tot.length - 2], end = tot[tot.length - 1];
+            if (!tot.every(isFinite)) f('ledger value not finite');
+            else if (Math.abs(last - end) > 1e-6 * Math.max(1, Math.abs(vw.start.value), Math.abs(end))) f('ledger does not add up: ' + last + ' vs ' + end);
+          } else if (!vw.pts.every(function (q) { return isFinite(q[0]) && isFinite(q[1]); }) || !isFinite(vw.from) || !isFinite(vw.to)) f('area view not finite');
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      st.viewKinds = Object.keys(kinds);
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec, view: sp.view }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 7. The shared view (a work ledger or a force–displacement graph) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  function ledgerTotals(vw) {                                // running totals: start, after each item, and the end
+    var c = vw.start.value, out = [c];
+    vw.items.forEach(function (it) { c += it.value; out.push(c); });
+    out.push(vw.end.value);
+    return out;
+  }
+  function interp(pts) {
+    return function (x) {
+      if (x <= pts[0][0]) return pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        if (x <= pts[i][0]) { var a = pts[i - 1], b = pts[i], u = (x - a[0]) / ((b[0] - a[0]) || 1); return a[1] + u * (b[1] - a[1]); }
+      }
+      return pts[pts.length - 1][1];
+    };
+  }
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var host = CYL.el('div', { class: 'pl-viewhost' });
+    stage.appendChild(host);
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see its energy picture here.' })]);
+    stage.appendChild(veil);
+    var cur = null, revealed = false;
+    function hint(text) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Energy picture' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: text }));
+    }
+    function idle() {                                      // a neutral placeholder the same size as a real view
+      host.innerHTML = '';
+      var g = CYL.el('div', { class: 'pl-ghost', 'aria-hidden': 'true' });
+      [62, 38, 80, 24, 54].forEach(function (w, i) {
+        var r = CYL.el('div', { class: 'pl-ghost-row' }), b = CYL.el('span');
+        b.style.marginLeft = (i % 2 ? 18 : 6) + '%'; b.style.width = w * 0.7 + '%';
+        r.appendChild(b); g.appendChild(r);
+      });
+      host.appendChild(g);
+      host.setAttribute('role', 'img');
+      host.setAttribute('aria-label', 'Placeholder: the energy picture for the current problem appears here after you solve it or open its solution.');
+    }
+    function build(vw) {
+      host.innerHTML = '';
+      host.removeAttribute('role'); host.removeAttribute('aria-label');
+      if (vw.kind === 'ledger') {
+        var works = vw.items.map(function (it, i) { return { key: 'w' + i, label: it.label, color: it.color }; });
+        var lg = ENERGY.ledger(host, { works: works, start: vw.start.label, end: vw.end.label, unit: vw.unit, title: vw.title + ' (' + vw.unit + ')', ariaLabel: vw.aria });
+        var tot = ledgerTotals(vw), lo = Math.min.apply(null, tot.concat([0])), hi = Math.max.apply(null, tot.concat([0]));
+        if (hi - lo < 1e-9) hi = lo + 1;
+        lg.setScale(lo - 0.04 * (hi - lo), hi + 0.04 * (hi - lo));
+        var v = { start: vw.start.value, end: vw.end.value };
+        vw.items.forEach(function (it, i) { v['w' + i] = it.value; });
+        lg.set(v);
+      } else {
+        host.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title }));
+        var ch = ENERGY.chart(host, { x: vw.x, y: vw.y, height: 280, ariaLabel: vw.aria });
+        var f = interp(vw.pts), a = Math.min(vw.from, vw.to), b = Math.max(vw.from, vw.to);
+        ch.area(f, { domain: [a, b], color: vw.color, fillOpacity: 0.3 });
+        ch.polyline(vw.pts, { color: vw.color, width: 2.6 });
+        ch.hline(0, { color: 'ink' });
+        if (Math.abs(vw.from) > 1e-9) ch.vline(vw.from, { color: 'ink', dashed: true, label: 'start' });
+        if (Math.abs(vw.to) > 1e-9) ch.vline(vw.to, { color: 'ink', dashed: true, label: 'end', labelDy: 16 });
+      }
+    }
+    function fillPanel(vw) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.kind === 'ledger' ? 'Numbers' : vw.title }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      if (vw.note) { var n = CYL.el('p', { class: 'pl-panel-note', html: vw.note }); panel.appendChild(n); CYL.renderMath(n); }
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+      hint('Hidden until you solve the problem (or open its solution), so it does not give the answer away.');
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      build(cur);
+      veil.hidden = true;
+      fillPanel(cur);
+    };
+    VIEW.isRevealed = function () { return revealed; };
+  });
+
+  /* ================================================================ 8. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like speed-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>
