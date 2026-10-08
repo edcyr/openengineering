@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Refresher: Newton, free-body diagrams and circular motion — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/widgets/fbd-builder.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m00-l1">
+<article class="lesson">
+
+  <section class="lesson-section" id="why">
+    <h2>Why start here</h2>
+    <p>
+      Race car vehicle dynamics can look intimidating: tire curves, load transfer, stability derivatives. Underneath,
+      almost all of it is something you already know: <strong>Newton's second law applied carefully to a car</strong>.
+      This lesson is a quick refresher of the tools the rest of the course leans on: units, \(\Sigma\mathbf{F} = m\mathbf{a}\),
+      circular motion and free-body diagrams. If they feel familiar, move quickly. If anything feels shaky, this
+      is the place to fix it.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="units">
+    <h2>Units you will use constantly</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Quantity</th><th>SI unit</th><th>Conversions you will need</th></tr></thead>
+        <tbody>
+          <tr><td>Speed</td><td>m/s</td><td>km/h \(\div 3.6\) → m/s; mph \(\times 0.447\) → m/s</td></tr>
+          <tr><td>Acceleration</td><td>m/s²</td><td>1 g = 9.81 m/s² — race engineers almost always quote accelerations in g</td></tr>
+          <tr><td>Force</td><td>N</td><td>Weight \(W = mg\): a 750 kg car weighs 7358 N</td></tr>
+          <tr><td>Angle</td><td>rad</td><td>1 rad = 57.3°; tire and steering data are usually quoted in degrees</td></tr>
+          <tr><td>Angular velocity</td><td>rad/s</td><td>Yaw rate is often logged in deg/s: multiply rad/s by 57.3</td></tr>
+          <tr><td>Power</td><td>W</td><td>1 kW = 1000 W; 1 hp ≈ 746 W</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout--misconception">
+      <p>“The front-left wheel carries 180 kg.” Race shops really do talk like this: “corner weight” scales read in kg
+      or lb. But the load on a tire is a <em>force</em>. Before using it in any equation, convert:
+      \(F_z = 180 \times 9.81 = 1766\) N.</p>
+    </div>
+    <p class="muted" style="font-size:15px">Every answer box in this course accepts calculations, so you can type
+    <code>180/3.6</code> or <code>180*g</code> directly. See the <a href="../../index.html#calculator">calculator guide</a>.</p>
+  </section>
+
+  <section class="lesson-section" id="newton">
+    <h2>Newton's second law for a car</h2>
+    <p>
+      For most of this course we treat the car as a rigid body. Its center of gravity (CG) moves according to the
+      <em>total</em> external force, however that force is spread around the car:
+    </p>
+    <div class="equation">\[ \Sigma \mathbf{F} = m\,\mathbf{a}_{CG} \]</div>
+    <p>
+      The car can also rotate. For rotation about a vertical axis through the CG, called <strong>yaw</strong>, the
+      matching law is \(\Sigma M_z = I_z \ddot\psi\), where \(I_z\) is the yaw moment of inertia and \(\ddot\psi\) the
+      yaw acceleration. In a <em>steady</em> turn the yaw rate is constant, so \(\ddot\psi = 0\) and the yaw moments
+      must balance. That balance is what decides whether a car understeers or oversteers (Module 5).
+    </p>
+    <p>
+      The only external forces on a car are gravity, the forces at the four tire contact patches, and aerodynamic
+      forces. Engine torque, brake torque and steering are all <em>internal</em>; they act on the car only by changing
+      what the tires do.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="circular">
+    <h2>Circular motion: accelerating at constant speed</h2>
+    <p>
+      A car driving around a circle of radius \(R\) at constant speed \(V\) is accelerating, because the
+      <em>direction</em> of its velocity is changing. The velocity vector turns at an angular rate \(\omega = V/R\),
+      so its rate of change has magnitude \(V\omega\), pointing toward the center:
+    </p>
+    <div class="equation">\[ a_y = \frac{V^2}{R} = V\,\omega \]</div>
+    <p>
+      In a steady turn the car's heading rotates at the same rate as its velocity, so the car's <strong>yaw rate</strong>
+      is \(r = V/R\). Speed, radius, yaw rate and lateral acceleration are tied together. Know any two and you know
+      the other two.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="fbd">
+    <h2>The free-body diagram of a car in a turn</h2>
+    <p>The recipe never changes:</p>
+    <ol>
+      <li><strong>Isolate</strong> the car: draw it on its own, cut free from the road.</li>
+      <li><strong>Add every external force</strong> where it acts: gravity at the CG, and contact forces wherever the
+      car touched something (the four contact patches).</li>
+      <li><strong>Choose axes</strong> and write \(\Sigma F = ma\) in each direction (and \(\Sigma M\) if needed).</li>
+    </ol>
+    <p>
+      Viewed from behind, a car in a steady left turn has its weight acting down at the CG, the road pushing up on each
+      tire, and the road pushing sideways on each tire toward the center of the turn. Writing the force balances:
+    </p>
+    <div class="equation">\[ \text{vertical: } N_{\text{in}} + N_{\text{out}} = mg \qquad \text{lateral: } F_{y,\text{in}} + F_{y,\text{out}} = m\frac{V^2}{R} \]</div>
+    <p>
+      Taking moments about the CG adds a third equation. The sideways tire forces act at ground level, a height
+      \(h\) below the CG, so they try to roll the car outward. Only a difference between the normal forces can balance
+      that moment. With track width \(t\):
+    </p>
+    <div class="equation">\[ (N_{\text{out}} - N_{\text{in}})\,\frac{t}{2} = (F_{y,\text{in}} + F_{y,\text{out}})\,h \]</div>
+    <p>That one line is the seed of Module 3, load transfer.</p>
+
+    <div class="widget" data-widget="fbd-builder" id="fbd1">
+      <div class="widget__title">Free-body diagram builder</div>
+      <p class="widget__desc">The car is seen from behind, turning left. Tick the forces you think act on it, then press <em>Check my diagram</em>. Arrows are drawn to scale with the mass, speed and radius you choose.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>Build the diagram, check it, and read the note beside every option, including the ones you got right.</li>
+        <li>Double the speed. By what factor does the sideways force grow? Halve the radius instead. Which change is “worse” for the tires?</li>
+        <li>Change the mass. Why does the “friction coefficient needed” not change? (You will meet this result again in Lesson 1.1.)</li>
+        <li>Watch the normal-force arrows as the speed rises. Which tire carries more load, and why?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“Centrifugal force throws the car outward.” In a ground-fixed (inertial) frame there is no outward force at
+      all. The car's natural tendency is to keep going straight, and the tires must keep pulling it <em>inward</em>.
+      The sensation of being pushed outward is your body wanting to go straight while the car turns under you. If you
+      ever see “\(mV^2/R\)” drawn outward on a free-body diagram, it is d'Alembert's trick of moving \(m\mathbf{a}\) to the
+      force side. That is legitimate only if you then <em>don't</em> also write \(m\mathbf{a}\).</p>
+    </div>
+
+    <div class="callout callout--example">
+      <p>A 750 kg car takes a 100 m radius corner at 108 km/h. Find its lateral acceleration, the total sideways tire force and the friction coefficient it needs.</p>
+      <p>\(V = 108 / 3.6 = 30\ \text{m/s}\), so \(a_y = V^2/R = 900/100 = 9.0\ \text{m/s}^2 = 0.92\ \text{g}\).</p>
+      <p>\(\Sigma F_y = m a_y = 750 \times 9.0 = 6750\ \text{N}\), and the tires need \(\mu \ge F_y / (mg) = 0.92\). A road car on good tires could just manage this; a race car on slicks would have grip to spare.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m00-l1-n1" data-answer="40" data-tol="0.005" data-units="m/s">
+        <p>A car's speed is 144 km/h. What is it in m/s?</p>
+        <div class="hint"><p>1 km/h = 1000 m / 3600 s.</p></div>
+        <div class="solution"><p>\(144 / 3.6 = 40\ \text{m/s}\).</p></div>
+      </div>
+
+      <div class="numeric" data-id="m00-l1-n2" data-answer="1.062" data-tol="0.01" data-units="g">
+        <p>A car drives around a 60 m radius corner at 25 m/s. What is its lateral acceleration, in g?</p>
+        <div class="hint"><p>\(a_y = V^2/R\) gives m/s². Divide by 9.81 to convert to g.</p></div>
+        <div class="solution"><p>\(a_y = 625/60 = 10.42\ \text{m/s}^2 = 10.42/9.81 = 1.06\ \text{g}\).</p></div>
+      </div>
+
+      <div class="numeric" data-id="m00-l1-n3" data-answer="7500" data-tol="0.01" data-units="N">
+        <p>A Formula SAE car and driver (300 kg in total) circle a 9 m radius skidpad at 15 m/s. What total sideways force must the four tires provide?</p>
+        <div class="hint"><p>\(\Sigma F_y = m V^2 / R\).</p></div>
+        <div class="solution"><p>\(F_y = 300 \times 15^2 / 9 = 300 \times 25 = 7500\ \text{N}\), equivalent to 2.55 g. That is a lot to ask of the tires; real skidpad speeds are lower.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m00-l1-n4" data-answer="17.19" data-tol="0.01" data-units="deg/s">
+        <p>In a steady 100 m radius turn at 30 m/s, what is the car's yaw rate, in degrees per second?</p>
+        <div class="hint"><p>In a steady turn, \(r = V/R\) in rad/s.</p></div>
+        <div class="solution"><p>\(r = 30/100 = 0.30\ \text{rad/s} = 0.30 \times 57.3 = 17.2\ \text{deg/s}\).</p></div>
+      </div>
+
+      <div class="mcq" data-id="m00-l1-q1">
+        <p class="mcq__prompt">A car drives around a roundabout at a perfectly steady 40 km/h. Is it accelerating?</p>
+        <ul>
+          <li>No: its speed is constant.<span class="why">Speed is constant, but velocity is a vector, and its direction is changing.</span></li>
+          <li data-correct>Yes: toward the center of the roundabout, with magnitude \(V^2/R\).<span class="why">Changing direction is acceleration. Without a net inward force the car would go straight.</span></li>
+          <li>Yes: outward, away from the center.<span class="why">The acceleration points toward the center. The outward sensation is your body's inertia.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m00-l1-q2">
+        <p class="mcq__prompt">What external force actually makes a car go around a corner?</p>
+        <ul>
+          <li>The engine, through the driven wheels.<span class="why">The engine provides forward force. Turning needs a sideways force.</span></li>
+          <li>The steering system.<span class="why">Steering changes the wheel angle, an internal action. The external force still comes from the road.</span></li>
+          <li data-correct>Sideways friction forces from the road on the tires.<span class="why">They are the only horizontal external forces available (ignoring aerodynamics), so they must supply all of \(mV^2/R\).</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m00-l1-q3">
+        <p class="mcq__prompt">A corner-weight scale under the right-front wheel reads 180 kg. What vertical force does that tire carry?</p>
+        <ul>
+          <li>180 N.<span class="why">The scale reports mass. Multiply by \(g\) to get force.</span></li>
+          <li data-correct>About 1766 N.<span class="why">\(180 \times 9.81 = 1766\) N. Always convert corner weights to newtons before using them.</span></li>
+          <li>18.3 N.<span class="why">That divides by \(g\) instead of multiplying.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 13, <em>Historical Note on Vehicle Dynamics Development</em>. It's an unusual way to start a course, but it explains where the ideas in this book came from, and why aircraft engineers ended up shaping how we analyze cars.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>Which developments in tire testing made modern vehicle dynamics possible?</li>
+        <li>What did engineers borrow from aircraft stability and control, and why did it fit cars so well?</li>
+        <li>Which ideas from the chapter do you expect to meet later in this course?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Newton's second law (translation)</td><td>\(\Sigma \mathbf{F} = m\,\mathbf{a}_{CG}\)</td></tr>
+          <tr><td>Yaw rotation</td><td>\(\Sigma M_z = I_z \ddot\psi\); in a steady turn \(\Sigma M_z = 0\)</td></tr>
+          <tr><td>Circular motion</td><td>\(a_y = V^2/R = V r\), with yaw rate \(r = V/R\)</td></tr>
+          <tr><td>Weight</td><td>\(W = mg\); corner weights in kg × 9.81 = N</td></tr>
+          <tr><td>FBD of a turning car</td><td>Gravity + normal forces + inward tire forces. No “centrifugal force”.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: before we can write equations with signs, we need to agree which way is positive. Lesson 0.2 sets up the vehicle axis system.</p>
+  </section>
+
+</article>
+</body>
+</html>

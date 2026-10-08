@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slip angle and lateral force — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/tire.js"></script>
+  <script defer src="../../assets/js/widgets/tires.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m02-l1">
+<article class="lesson">
+
+  <section class="lesson-section" id="why-slip">
+    <h2>Why a cornering tire must slip</h2>
+    <p>
+      In Module 1 we treated the tire as a block of rubber with a friction coefficient \(\mu\). That tells us the
+      <em>maximum</em> force, but not how a tire actually produces force below the maximum. For that we need
+      the single most important idea in tire mechanics: the <strong>slip angle</strong>.
+    </p>
+    <p>
+      If a rolling wheel travels exactly in the direction it is pointing, it produces (ideally) no sideways force.
+      To produce a lateral force, the wheel must be pointed at a small angle to its direction of travel. That angle
+      is the slip angle, \(\alpha\).
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 380 300" width="380" role="img" aria-label="Top view of a tire showing the wheel heading, the direction of travel at slip angle alpha, and the lateral force">
+        <defs>
+          <marker id="fa1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-s1-fill"/></marker>
+          <marker id="fa2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-s2-fill"/></marker>
+        </defs>
+        <rect x="170" y="110" width="40" height="120" rx="10" class="fig-stroke" fill="none" stroke-width="2"/>
+        <line x1="190" y1="170" x2="190" y2="30" class="fig-muted" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="196" y="26" class="fig-text">wheel heading</text>
+        <line x1="190" y1="170" x2="219" y2="36" class="fig-s1" stroke-width="3" marker-end="url(#fa1)"/>
+        <text x="226" y="56" class="fig-text">direction of travel, V</text>
+        <path d="M190,100 A70,70 0 0 1 204.6,101.5" fill="none" class="fig-stroke" stroke-width="1.5"/>
+        <text x="194" y="94" class="fig-text" font-style="italic">α</text>
+        <line x1="190" y1="170" x2="80" y2="170" class="fig-s2" stroke-width="3" marker-end="url(#fa2)"/>
+        <text x="40" y="160" class="fig-text">lateral force Fy</text>
+        <text x="190" y="256" class="fig-text" text-anchor="middle">contact patch (top view)</text>
+      </svg>
+      <figcaption>The wheel points slightly inside its direction of travel. The road pushes the tire sideways, toward the side the wheel is pointing.</figcaption>
+    </figure>
+
+    <p>
+      Why does this produce a force? Think about a single piece of tread. It touches down at the front of the contact
+      patch and, as long as it grips, stays stuck to that spot on the road. But the wheel is carrying it along a
+      slightly different direction from where it is pointing, so as the tread element moves toward the back of the
+      patch it gets dragged further and further sideways. The rubber deflects like a stiff spring, and the sum of all
+      those little spring forces is the lateral force.
+    </p>
+    <ul>
+      <li>At <strong>small</strong> slip angles every element grips, the deflections are proportional to \(\alpha\), and so is the force.</li>
+      <li>As \(\alpha\) grows, elements near the back of the patch need more force than friction can supply, so they start to slide. The force keeps rising, but more slowly.</li>
+      <li>Eventually <strong>the whole patch slides</strong>. The force peaks and then levels off or falls.</li>
+    </ul>
+    <div class="callout callout--misconception">
+      <p>“Slip angle means the tire is skidding.” Not at small angles — most of the contact patch is gripping the road.
+      The slip comes from rubber <em>deforming</em>, not sliding. Sliding only takes over near and beyond the peak.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="curve">
+    <h2>The lateral force curve</h2>
+    <p>Plotting lateral force against slip angle gives the most important graph in vehicle dynamics. It has three regions:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Region</th><th>What the contact patch is doing</th><th>What the driver feels</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Linear</strong></td><td>Almost all elements gripping; \(F_y \approx C_\alpha\,\alpha\)</td><td>Precise, predictable response to steering</td></tr>
+          <tr><td><strong>Transitional</strong></td><td>Sliding spreads forward from the back of the patch</td><td>Steering goes lighter; the car starts to “move around”</td></tr>
+          <tr><td><strong>Frictional</strong></td><td>Most or all of the patch is sliding</td><td>More steering gives no more grip — the car slides</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The slope at the origin is the <strong>cornering stiffness</strong>:</p>
+    <div class="equation">\[ C_\alpha = \left.\frac{dF_y}{d\alpha}\right|_{\alpha = 0} \qquad\Rightarrow\qquad F_y \approx C_\alpha\,\alpha \quad\text{(small } \alpha\text{)} \]</div>
+    <p>
+      Cornering stiffness is usually quoted in N/deg. Like a spring stiffness, it tells you how much “deflection”
+      (slip angle) the tire needs to make a given force. The peak force is
+      \(F_{y,\max} = \mu_{\text{peak}} F_z\), and it occurs at a slip angle that depends on the tire's construction
+      — typically a few degrees for a race tire.
+    </p>
+    <div class="callout callout--key">
+      <p>A tire produces force by operating at a slip angle. The cornering stiffness sets how much slip angle each axle
+      needs at a given lateral force — and in Module 5 the <em>difference</em> between the front and rear slip angles
+      determines whether a car understeers or oversteers.</p>
+    </div>
+    <p class="muted" style="font-size:15px">
+      Sign convention: in the SAE axis system (Module 0) a positive slip angle produces a <em>negative</em> lateral force.
+      In this lesson we plot magnitudes to keep the pictures simple.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="load-sensitivity">
+    <h2>Load sensitivity: more load, less \(\mu\)</h2>
+    <p>
+      Push a tire harder into the road and it produces more lateral force — but not proportionally more. Double the
+      vertical load and the peak force rises by less than double. Equivalently, the friction coefficient falls as load
+      rises. This is called <strong>tire load sensitivity</strong>, and it is one of the most consequential facts in
+      race car engineering.
+    </p>
+    <p>A simple model that captures it is a friction coefficient that falls linearly with load:</p>
+    <div class="equation">\[ \mu(F_z) = \mu_0\left[1 - s\,\frac{F_z - F_{z0}}{F_{z0}}\right], \qquad F_{y,\max} = \mu(F_z)\,F_z \]</div>
+    <p>
+      Here \(F_{z0}\) is a reference load, \(\mu_0\) the friction coefficient at that load, and \(s\) the load
+      sensitivity (0 means no sensitivity). Now consider two tires sharing a total load \(2F_{z0}\). If one gains
+      \(\Delta F\) and the other loses \(\Delta F\), a few lines of algebra give their combined peak force:
+    </p>
+    <div class="equation">\[ F_{y,\text{pair}} = 2\mu_0 F_{z0} \;-\; \frac{2\mu_0\, s\, \Delta F^2}{F_{z0}} \]</div>
+    <p>
+      The second term is always a loss, and it grows with the <em>square</em> of the load difference. Uneven loading
+      costs grip. Module 3 shows that this is exactly what happens to the inside and outside tires in a corner — and
+      how engineers use it to tune a car's balance.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="model">
+    <h2>A tire model you can play with</h2>
+    <p>
+      Real tire curves come from test machines. Engineers fit them with empirical formulas; the most widely used is the
+      <strong>Magic Formula</strong> developed by Hans Pacejka and colleagues. A simplified version is:
+    </p>
+    <div class="equation">\[ F_y = D \sin\!\Big(C \arctan\big[B\alpha - E\,(B\alpha - \arctan B\alpha)\big]\Big) \]</div>
+    <p>
+      \(D\) is the peak force, \(C\) controls the shape, \(E\) the curvature near the peak, and \(B\) is chosen so
+      that the slope at the origin equals the cornering stiffness (\(BCD = C_\alpha\)). You do not need to memorize
+      it — it is just a convenient curve with the right features. The explorer below uses it together with the
+      load-sensitivity model above.
+    </p>
+
+    <div class="widget" data-widget="tire-curve">
+      <div class="widget__title">Tire curve explorer</div>
+      <p class="widget__desc">Left: lateral force vs slip angle at the selected load. Right: how peak force grows with load. The green points show a pair of tires that share 6000 N between them with a load transfer of ΔFz.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>At the default settings, where does the curve leave the dashed linear line? Read off the slip angle and the force there.</li>
+        <li>Increase the load from 3000 N to 6000 N. Does the peak force double? What happens to \(\mu\)?</li>
+        <li>Set the load sensitivity \(s\) to zero. What happens to the pair-of-tires loss? Why?</li>
+        <li>With \(s = 0.12\), note the pair loss at \(\Delta F_z = 1000\) N, then at 2000 N. Does the ratio match the \(\Delta F^2\) prediction?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>A front tire has a cornering stiffness of 1500 N/deg. In a gentle corner it must provide 2400 N of lateral force.
+      Assuming it is in the linear region, what slip angle does it run?</p>
+      <p>\[ \alpha = \frac{F_y}{C_\alpha} = \frac{2400\ \text{N}}{1500\ \text{N/deg}} = 1.6^\circ \]</p>
+      <p>This is well inside the linear region of a typical race tire, so the linear model is a good approximation here.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m02-l1-n1" data-answer="2.5" data-tol="0.01" data-units="deg">
+        <p>A tire has a cornering stiffness of 1200 N/deg. Assuming linear behavior, what slip angle is needed for 3000 N of lateral force?</p>
+        <div class="hint"><p>In the linear region, \(F_y = C_\alpha \alpha\).</p></div>
+        <div class="solution"><p>\(\alpha = F_y / C_\alpha = 3000 / 1200 = 2.5^\circ\).</p></div>
+      </div>
+
+      <div class="numeric" data-id="m02-l1-n2" data-answer="9240" data-tol="0.005" data-units="N">
+        <p>Using the load-sensitivity model with \(\mu_0 = 1.6\), \(s = 0.15\) and \(F_{z0} = 3000\) N, find the combined peak
+        lateral force of two tires loaded to 4500 N and 1500 N.</p>
+        <div class="hint"><p>Find \(\mu\) for each tire separately, multiply by its own load, then add.</p></div>
+        <div class="solution">
+          <p>\(\mu(4500) = 1.6\,[1 - 0.15 \times 0.5] = 1.48\), so \(F_{y,\max} = 1.48 \times 4500 = 6660\) N.</p>
+          <p>\(\mu(1500) = 1.6\,[1 + 0.15 \times 0.5] = 1.72\), so \(F_{y,\max} = 1.72 \times 1500 = 2580\) N.</p>
+          <p>Total \(= 9240\) N, compared with \(2 \times 1.6 \times 3000 = 9600\) N if the loads were equal — a 3.75% loss.
+          Check: \(2\mu_0 s\,\Delta F^2/F_{z0} = 2(1.6)(0.15)(1500^2)/3000 = 360\) N. ✓</p>
+        </div>
+      </div>
+
+      <div class="numeric" data-id="m02-l1-n3" data-answer="90" data-tol="0.01" data-units="N">
+        <p>Same tires as above, but now the load difference is halved: 3750 N and 2250 N. How much grip is lost compared with equal loads?</p>
+        <div class="hint"><p>Use the pair formula: loss \(= 2\mu_0 s\,\Delta F^2 / F_{z0}\). What is \(\Delta F\) now?</p></div>
+        <div class="solution"><p>\(\Delta F = 750\) N, so loss \(= 2(1.6)(0.15)(750^2)/3000 = 90\) N — one quarter of the 360 N loss, because the loss scales with \(\Delta F^2\).</p></div>
+      </div>
+
+      <div class="mcq" data-id="m02-l1-q1">
+        <p class="mcq__prompt">A tire is operating at 1° slip angle, well inside its linear region. The driver adds steering so it runs at 2°. Approximately what happens to its lateral force?</p>
+        <ul>
+          <li data-correct>It roughly doubles.<span class="why">In the linear region \(F_y \approx C_\alpha \alpha\), so doubling \(\alpha\) doubles \(F_y\).</span></li>
+          <li>It increases by about \(\sqrt{2}\).<span class="why">That square-root relationship was corner speed vs radius in Module 1, not force vs slip angle.</span></li>
+          <li>It stays the same, because friction force does not depend on sliding speed.<span class="why">That is true in the fully sliding (frictional) region, not at 1–2°.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m02-l1-q2">
+        <p class="mcq__prompt">A load-sensitive tire's vertical load is doubled. What happens to its peak lateral force?</p>
+        <ul>
+          <li>It doubles, because \(F = \mu N\).<span class="why">That would be true only if \(\mu\) were constant. For a load-sensitive tire, \(\mu\) falls as load rises.</span></li>
+          <li data-correct>It increases, but by less than double.<span class="why">More load still means more force, but the friction coefficient drops, so the increase is less than proportional.</span></li>
+          <li>It decreases, because \(\mu\) falls.<span class="why">\(\mu\) falls, but the load rises more — for realistic tires the product \(\mu F_z\) still increases.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m02-l1-q3">
+        <p class="mcq__prompt">A driver keeps adding steering past the slip angle at peak lateral force on the front tires. What happens?</p>
+        <ul>
+          <li>The car turns more sharply, since more slip angle always means more force.<span class="why">Only up to the peak. Beyond it, extra slip angle produces the same or less force.</span></li>
+          <li data-correct>The front tires produce no more (or slightly less) force, and the car runs wide — it understeers.<span class="why">The front tires are in the frictional region. Unwinding the steering back toward the peak slip angle is often faster.</span></li>
+          <li>The rear of the car steps out.<span class="why">That would require the <em>rear</em> tires to exceed their peak. Here it is the fronts that are saturated.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 2, <em>Tire Behavior</em> — the material on slip angle, lateral force and the effect of load. For more on how raw test data is turned into usable curves, skim Chapter 14, <em>Tire Data Treatment</em>.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How do the authors explain the build-up of force across the contact patch?</li>
+        <li>How is lateral force data presented against load, and how is load sensitivity visible on those plots?</li>
+        <li>Why is it useful to “normalize” tire data (divide by load, or by the peak), and what can go wrong if you do?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Linear tire</td><td>\(F_y \approx C_\alpha\,\alpha\)</td></tr>
+          <tr><td>Peak force</td><td>\(F_{y,\max} = \mu_{\text{peak}}\,F_z\)</td></tr>
+          <tr><td>Load sensitivity</td><td>\(\mu(F_z) = \mu_0[1 - s\,(F_z - F_{z0})/F_{z0}]\)</td></tr>
+          <tr><td>Pair of tires with load transfer \(\Delta F\)</td><td>Loss \(= 2\mu_0 s\,\Delta F^2 / F_{z0}\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next in this module: the same ideas in the longitudinal direction (slip ratio), and what happens when a tire must brake and corner at once.</p>
+  </section>
+
+</article>
+</body>
+</html>

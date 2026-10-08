@@ -37,7 +37,14 @@ COURSES = [
                 5: 'Thrust-to-weight ratio and wing loading', 6: 'Configuration layout and fuselage sizing', 7: 'Propulsion selection and integration',
                 8: 'Landing gear and subsystems', 9: 'Aerodynamics: lift and the drag build-up', 10: 'Component weights and center of gravity',
                 11: 'Stability, control and tail sizing', 12: 'Performance, cost and trade studies'}),
+  # A standalone course has its own home page, navigation and progress (synced whole by sync-modules.sh), so it
+  # gets no generated course page; its home-page card reads modules and lessons from its manifest, course-data.js.
+  dict(slug='race-vehicle-dynamics', kind='standalone', title='Race Vehicle Dynamics', level='Second-year mechanical · Ravens Racing', mark='RVD',
+       blurb='Why is one car faster than another through the same corner? The answer, built from Newton\'s laws, friction and moments up to the tools race engineers use to set up a car, with interactive models you can push to the limit. A companion to Milliken\'s <em>Race Car Vehicle Dynamics</em>.',
+       extras=(('reference/formulas.html', 'Formula sheet'), ('reference/glossary.html', 'Glossary'), ('instructor-guide.html', 'Instructor guide'))),
 ]
+STANDALONE = [c for c in COURSES if c.get('kind') == 'standalone']
+COURSES = [c for c in COURSES if c.get('kind') != 'standalone']
 
 # ------------------------------------------------------------------ module facts from cyl-core.js
 PG = re.compile(r"""pg\('([a-z0-9]+)',\s*(null|\d+),\s*(['"])(.*?)\3,\s*'([^']*)',\s*(null|\d+)""")
@@ -66,6 +73,30 @@ def hours_text(h):
 
 for c in COURSES:
     c['mods'] = [module_info(c, m) for m in c['modules']]
+
+# ------------------------------------------------------------------ standalone course facts from course-data.js
+def standalone_info(c):
+    src = open(os.path.join(SITE, c['slug'], 'assets/js/course-data.js'), encoding='utf-8').read()
+    src = src[src.index('modules: ['):src.index('references: [')]
+    ids = list(re.finditer(r'\bid:\s*"(m\d+)(?:-(l\d+))?"', src))
+    mods = []
+    for i, k in enumerate(ids):
+        seg = src[k.end():ids[i + 1].start() if i + 1 < len(ids) else len(src)]
+        def val(key):
+            q = re.search(r'\b' + key + r':\s*("(?:[^"\\]|\\.)*"|\d+|true)', seg)
+            return json.loads(q.group(1)) if q else None
+        if k.group(2) is None:
+            mods.append(dict(number=val('number'), title=val('title'), lessons=[]))
+        else:
+            mods[-1]['lessons'].append(dict(id=k.group(1) + '-' + k.group(2), title=val('title'), file=val('file'), status=val('status'), min=val('minutes') or 0))
+    for m in mods:
+        m['ready'] = [l for l in m['lessons'] if l['status'] in ('ready', 'draft') and l['file']]
+    # c['mods'] holds only the modules with lessons to open, so the home page's totals count what students can use
+    c['mods'] = [dict(title=m['title'], number=m['number'], lessons=m['ready'], total=len(m['lessons'])) for m in mods if m['ready']]
+    c['planned_mods'] = [m for m in mods if not m['ready']]
+
+for c in STANDALONE:
+    standalone_info(c)
 
 # ------------------------------------------------------------------ hero figures
 def hero_ecor():
@@ -128,6 +159,7 @@ HEROES = {'ecor1034': hero_ecor, 'maae2101': hero_maae, 'aero3002': hero_aero}
 MAIN_PATH = os.path.join(SITE, 'index.html')
 MAIN = open(MAIN_PATH, encoding='utf-8').read()
 CSS = MAIN[MAIN.index('<style>') + 7:MAIN.index('</style>')]
+CSS = re.sub(r'\n  /\* -+ Race Vehicle Dynamics: .*?(?=\n  footer \{)', '', CSS, flags=re.S)   # home-page card only
 EXTRA_CSS = '''
   /* ---------- course pages ---------- */
   :root { --e0: #18212b; --e1: #c2410c; --e2: #6d44e0; --e3: #1769bd; --e4: #23793a; --e5: #b8327a; --e6: #9a5100; }
@@ -394,7 +426,37 @@ def home_courses():
               <a class="btn primary sm" href="%s/">Go to the course</a>
             </div>
           </article>''' % (c['code'].split()[1], esc(c['level']), c['slug'], c['code'], esc(c['title']), c['blurb'], meta, mods, c['slug']))
+    out += [standalone_card(c) for c in STANDALONE]
     return '\n\n'.join(out)
+
+def standalone_card(c):
+    # Styled like the course itself (class card-rvd in the home page's CSS): racing-red mark, kicker and module
+    # numbers, as in its top bar, course map and sidebar. Each module links to its first lesson.
+    base = c['slug'] + '/'
+    mods = ''.join('<li><a href="%s%s"><span class="n">%d</span>%s</a> <span class="min">%s</span></li>' % (
+        base, m['lessons'][0]['file'], m['number'], esc(m['title']),
+        ('%d lessons' % m['total']) if len(m['lessons']) == m['total'] else ('%d of %d lessons' % (len(m['lessons']), m['total']))) for m in c['mods'])
+    if c['planned_mods']:
+        mods += '<li class="planned"><span>Coming next: %s</span></li>' % ' · '.join(esc(m['title']) for m in c['planned_mods'])
+    meta = '<li>%d modules</li><li>%d lessons</li>' % (len(c['mods']), sum(len(m['lessons']) for m in c['mods']))
+    if c['planned_mods']: meta += '<li>%d more planned</li>' % len(c['planned_mods'])
+    extras = ' · '.join('<a href="%s%s">%s</a>' % (base, h, t) for h, t in c['extras'])
+    return '''          <article class="card card-rvd">
+            <div class="card-top">
+              <span class="mark mark-rvd" aria-hidden="true">%s</span>
+              <div>
+                <p class="card-kicker">%s</p>
+                <h4><a href="%s">%s</a></h4>
+              </div>
+            </div>
+            <p class="card-desc">%s</p>
+            <ul class="meta">%s</ul>
+            <ol class="course-mods">%s</ol>
+            <p class="extras">%s</p>
+            <div class="card-actions">
+              <a class="btn primary sm" href="%s">Go to the course</a>
+            </div>
+          </article>''' % (c['mark'], esc(c['level']), base, esc(c['title']), c['blurb'], meta, mods, extras, base)
 
 def home_downloads():
     return '\n'.join('            <li><a href="%s/downloads/%s.zip" download>%s <span>%s · zip · %s</span></a></li>' % (c['slug'], m['slug'], esc(m['title']), c['code'], m['zip']) for c in COURSES for m in c['mods'])
@@ -408,8 +470,9 @@ def splice(s, name, body):
 for c in COURSES:
     open(os.path.join(SITE, c['slug'], 'index.html'), 'w', encoding='utf-8').write(course_page(c))
 s = splice(splice(MAIN, 'COURSES', home_courses()), 'DOWNLOADS', home_downloads())
-nmod = sum(len(c['mods']) for c in COURSES); nles = sum(len(m['lessons']) for c in COURSES for m in c['mods'])
-s = re.sub(r'<li><span><strong>\d+</strong> courses</span></li>', '<li><span><strong>%d</strong> courses</span></li>' % len(COURSES), s)
+ALL = COURSES + STANDALONE
+nmod = sum(len(c['mods']) for c in ALL); nles = sum(len(m['lessons']) for c in ALL for m in c['mods'])
+s = re.sub(r'<li><span><strong>\d+</strong> courses</span></li>', '<li><span><strong>%d</strong> courses</span></li>' % len(ALL), s)
 s = re.sub(r'<li><span><strong>\d+</strong> modules</span></li>', '<li><span><strong>%d</strong> modules</span></li>' % nmod, s)
 s = re.sub(r'<li><span><strong>\d+</strong> lessons</span></li>', '<li><span><strong>%d</strong> lessons</span></li>' % nles, s)
 open(MAIN_PATH, 'w', encoding='utf-8').write(s)
@@ -427,7 +490,7 @@ script = '''<script>
     if ((m = /^\\/downloads\\/([a-z0-9-]+)\\.zip$/.exec(p)) && MOVED[m[1]]) { location.replace('/' + MOVED[m[1]] + '/downloads/' + m[1] + '.zip'); return; }
     if (l !== p && /^\\/(%s)(\\/|$)/.test(l)) location.replace(l + rest);
   })();
-</script>''' % (json.dumps(moves), '|'.join(c['slug'] for c in COURSES))
+</script>''' % (json.dumps(moves), '|'.join(c['slug'] for c in ALL))
 s = re.sub(r'<script>.*?</script>\n', '', s, flags=re.S)
 s = s.replace('<body>', '<body>\n' + script, 1)
 open(p404, 'w', encoding='utf-8').write(s)
@@ -443,5 +506,11 @@ for c in COURSES:
             for f in sorted(fs):
                 rel = os.path.relpath(os.path.join(dp, f), SITE).replace(os.sep, '/')
                 if f.endswith('.html') and f != 'index.html' and '/assets/' not in rel: urls.append(HOST + rel)
+for c in STANDALONE:
+    urls.append(HOST + c['slug'] + '/')
+    for dp, _, fs in sorted(os.walk(os.path.join(SITE, c['slug']))):
+        for f in sorted(fs):
+            rel = os.path.relpath(os.path.join(dp, f), SITE).replace(os.sep, '/')
+            if f.endswith('.html') and f not in ('index.html', 'planned.html') and '/assets/' not in rel: urls.append(HOST + rel)
 open(os.path.join(SITE, 'sitemap.xml'), 'w', encoding='utf-8').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join('  <url><loc>%s</loc></url>\n' % u for u in urls) + '</urlset>\n')
-print('courses:', ', '.join('%s (%d modules)' % (c['code'], len(c['mods'])) for c in COURSES), '| sitemap:', len(urls), 'URLs')
+print('courses:', ', '.join('%s (%d modules)' % (c.get('code', c['title']), len(c['mods'])) for c in ALL), '| sitemap:', len(urls), 'URLs')

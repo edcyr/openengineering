@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Combined slip and the friction ellipse — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/tire.js"></script>
+  <script defer src="../../assets/js/widgets/combined-slip.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m02-l3">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>One contact patch, one budget</h2>
+    <p>
+      In Lesson 1.1 the friction circle said that a car cannot brake and corner at full strength at the same time.
+      In Lessons 2.1 and 2.2 we met the two ways a tire makes force: slip angle for lateral force, slip ratio for
+      longitudinal force. Real driving mixes them constantly: trail braking into a corner, feeding in power on the way
+      out. This lesson puts the two together at the level of a single tire. The result explains locked-wheel
+      understeer, power oversteer, and why smooth drivers are fast.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="ellipse">
+    <h2>The friction ellipse</h2>
+    <p>
+      A tire has one contact patch. Whether the force it is asked for points forward, backward, sideways or somewhere
+      in between, the rubber in that patch has only so much grip to offer. If the peak longitudinal and lateral forces
+      are \(F_{x,\max}\) and \(F_{y,\max}\), a good first model of the limit is an ellipse:
+    </p>
+    <div class="equation">\[ \left(\frac{F_x}{F_{x,\max}}\right)^2 + \left(\frac{F_y}{F_{y,\max}}\right)^2 \le 1 \]</div>
+    <p>
+      When \(F_{x,\max} = F_{y,\max}\) this is the friction circle from Lesson 1.1. In practice tires usually have
+      slightly more longitudinal than lateral grip, so the boundary is an ellipse. The car's g-g envelope is, roughly,
+      the four tires' ellipses added together, with load transfer moving grip between them.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="how">
+    <h2>How the slips share the budget</h2>
+    <p>
+      When a tire has both a slip angle and a slip ratio, its tread elements are dragged diagonally through the contact
+      patch. They deflect in the direction of that combined slip, start sliding when the total deflection force exceeds
+      friction, and push back in roughly the direction of the combined slip.
+    </p>
+    <p>
+      The model in this lesson captures that with one idea: measure each slip as a fraction of the slip that gives
+      peak force on its own,
+    </p>
+    <div class="equation">\[ n_x = \frac{\kappa}{\kappa_{\text{peak}}}, \qquad n_y = \frac{\alpha}{\alpha_{\text{peak}}}, \qquad n = \sqrt{n_x^2 + n_y^2} \]</div>
+    <p>
+      The tire then produces the force it would make at a “total slip” of \(n\), shared between the two directions in
+      proportion to \(n_x\) and \(n_y\). With only one kind of slip present, this reduces exactly to the pure curves
+      of Lessons 2.1 and 2.2. At \(n = 1\) the forces land exactly on the friction ellipse.
+    </p>
+    <div class="callout callout--key">
+      <p>Asking a tire for longitudinal force always costs lateral force, and vice versa. Braking or accelerating in a
+      corner moves the operating point around the friction ellipse; it does not create extra grip.</p>
+    </div>
+
+    <div class="widget" data-widget="combined-slip">
+      <div class="widget__title">Combined-slip explorer</div>
+      <p class="widget__desc">Top: the tire's force in the Fx–Fy plane. The blue curve is the friction ellipse; the gray curves show how force changes as slip ratio is swept at a fixed slip angle. Below: lateral force vs slip angle, and longitudinal force vs slip ratio. Dashed curves are the pure (single-slip) tire; red curves are at the current amount of the other slip. Drag the red point around the force plane to choose any combination inside the ellipse; the sliders follow. Use the presets or sliders for locked wheels and wheelspin.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>Start from <em>Pure cornering</em> and slowly add braking slip. Watch the red point slide around the ellipse: Fx grows while Fy shrinks.</li>
+        <li>Choose <em>Locked wheel</em>, then move the slip angle from 2° to 15°. How much lateral force can a locked wheel make? What would the driver feel through the steering wheel?</li>
+        <li>On the <em>Trail braking</em> preset, how much lateral force is lost compared with pure cornering? Now find a slip ratio that gives a 25% loss.</li>
+        <li>Choose <em>Too much power</em>. If this were a rear tire mid-corner, which end of the car would slide first?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>A tire with \(F_z = 3000\) N has \(\mu_x = 1.5\) and \(\mu_y = 1.4\), so \(F_{x,\max} = 4500\) N and \(F_{y,\max} = 4200\) N.
+      While trail braking it supplies 3000 N of braking force. What is the most lateral force it can add?</p>
+      <p>\[ F_y = F_{y,\max}\sqrt{1 - \left(\frac{F_x}{F_{x,\max}}\right)^2} = 4200\sqrt{1 - \left(\tfrac{3000}{4500}\right)^2} = 4200 \times 0.745 = 3130\ \text{N} \]</p>
+      <p>Using two-thirds of the braking capacity still leaves three-quarters of the cornering capacity. The ellipse is
+      “flat” near its top, which is exactly why gentle trail braking costs so little cornering force.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="car">
+    <h2>What combined slip does to the whole car</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Situation</th><th>What the tires are doing</th><th>What the car does</th></tr></thead>
+        <tbody>
+          <tr><td>Front wheels locked</td><td>Front tires slide straight along their path, so almost no lateral force</td><td>Goes straight on regardless of steering: “locked-wheel understeer”</td></tr>
+          <tr><td>Rear wheels locked</td><td>Rear tires lose their lateral force while the fronts keep theirs</td><td>Rear swings round and the car spins. This is why brake bias is set forward.</td></tr>
+          <tr><td>Too much throttle (rear-drive)</td><td>Rear tires spend grip on Fx, so they have less for Fy</td><td>Power oversteer: the rear steps out</td></tr>
+          <tr><td>Too much throttle (front-drive)</td><td>Front tires spend grip on Fx</td><td>Power understeer: the car runs wide</td></tr>
+          <tr><td>Trail braking</td><td>Front tires share a little Fx with Fy, near the top of the ellipse</td><td>Small loss of front lateral force, more than repaid by load transfer onto the front (Module 3)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout--misconception">
+      <p>“If I lock the brakes, I can still steer around the obstacle if I turn hard enough.” A locked tire's force
+      opposes its sliding direction, which is almost straight backward. Turning the wheel changes almost nothing until
+      the driver releases the brake enough for the tire to roll again. Avoiding this is the whole point of ABS.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m02-l3-n1" data-answer="3000" data-tol="0.01" data-units="N">
+        <p>A tire at \(F_z = 2500\) N has \(\mu_x = 1.6\) and \(\mu_y = 1.5\). It is braking with 2400 N. Using the friction ellipse, what is the maximum lateral force it can produce at the same time?</p>
+        <div class="hint"><p>Find \(F_{x,\max}\) and \(F_{y,\max}\) first, then use \(F_y = F_{y,\max}\sqrt{1 - (F_x/F_{x,\max})^2}\).</p></div>
+        <div class="solution"><p>\(F_{x,\max} = 4000\) N and \(F_{y,\max} = 3750\) N. \(F_x/F_{x,\max} = 0.6\), so \(F_y = 3750\sqrt{1 - 0.36} = 3750 \times 0.8 = 3000\) N.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m02-l3-n2" data-answer="1803" data-tol="0.01" data-units="N">
+        <p>A rear tire carries 2500 N and obeys a friction <em>circle</em> with \(\mu = 1.4\). Mid-corner it must supply 3000 N of lateral force.
+        What is the largest driving force the driver can add before the tire saturates?</p>
+        <div class="hint"><p>For a circle, \(F_x^2 + F_y^2 \le (\mu F_z)^2\).</p></div>
+        <div class="solution"><p>\(\mu F_z = 3500\) N, so \(F_x = \sqrt{3500^2 - 3000^2} = \sqrt{3.25 \times 10^6} = 1803\) N. Any more throttle than this and the rear tire starts to slide: power oversteer.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m02-l3-q1">
+        <p class="mcq__prompt">A driver brakes so hard that both <em>rear</em> wheels lock while the fronts keep rolling. What does the car most likely do?</p>
+        <ul>
+          <li>Stop in a straight line, just a little further away.<span class="why">That is closer to what happens with locked <em>fronts</em>. Locked rears lose their ability to hold the back of the car in line.</span></li>
+          <li data-correct>Spin, because the rear tires can no longer make lateral force but the fronts still can.<span class="why">Any small yaw disturbance is resisted only by the front tires, which turns the car further. This is why brake bias is set toward the front.</span></li>
+          <li>Understeer, because the rear tires are sliding.<span class="why">Losing <em>rear</em> lateral grip produces oversteer, not understeer.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m02-l3-q2">
+        <p class="mcq__prompt">Why does a small amount of trail braking cost only a little cornering force?</p>
+        <ul>
+          <li data-correct>The friction ellipse is nearly flat near pure cornering, so a modest Fx moves the operating point only slightly down in Fy.<span class="why">With \(F_x\) at 30% of its maximum, \(F_y\) can still reach \(\sqrt{1 - 0.09} = 95\%\) of its maximum.</span></li>
+          <li>Braking increases the friction coefficient.<span class="why">Braking does not change \(\mu\). It changes where on the ellipse the tire operates.</span></li>
+          <li>Lateral and longitudinal grip are independent.<span class="why">They are not — that is the whole point of the friction ellipse.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m02-l3-q3">
+        <p class="mcq__prompt">A rear-wheel-drive car is balanced mid-corner. The driver applies full throttle. Which end of the car is most likely to lose grip first, and why?</p>
+        <ul>
+          <li>The front, because acceleration moves load off the front tires.<span class="why">Load does move rearward, which helps the rear. But the rear tires are now also carrying a large Fx.</span></li>
+          <li data-correct>The rear, because the driven tires spend part of their grip budget on Fx and have less left for Fy.<span class="why">This is power oversteer. With modest throttle, the rearward load transfer can outweigh it. Too much throttle and the rear slides.</span></li>
+          <li>Neither, because the engine adds energy, not force, to the tires.<span class="why">The engine's torque appears as a longitudinal force at the driven contact patches.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 2, <em>Tire Behavior</em>, on combined lateral and longitudinal force (the friction ellipse or “friction circle” plots). Then revisit Chapter 9, <em>“g-g” Diagram</em>, and see how the car's envelope is built up from the four tires.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How is combined-slip data usually plotted, and what do lines of constant slip angle look like on those plots?</li>
+        <li>Is a real tire's combined-force boundary exactly an ellipse? Where does it differ?</li>
+        <li>How do the authors relate a single tire's friction ellipse to the whole car's g-g diagram?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Friction ellipse</td><td>\((F_x/F_{x,\max})^2 + (F_y/F_{y,\max})^2 \le 1\)</td></tr>
+          <tr><td>Available lateral force under braking</td><td>\(F_y = F_{y,\max}\sqrt{1 - (F_x/F_{x,\max})^2}\)</td></tr>
+          <tr><td>Normalized combined slip</td><td>\(n = \sqrt{(\kappa/\kappa_{\text{peak}})^2 + (\alpha/\alpha_{\text{peak}})^2}\)</td></tr>
+          <tr><td>Locked or spinning tire</td><td>Force points along the sliding direction, so little lateral force</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: the last tire lesson looks at the conditions that set the size of the ellipse in the first place: camber, pressure and temperature.</p>
+  </section>
+
+</article>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inside the roll moment: roll centers and unsprung mass — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/tire.js"></script>
+  <script defer src="../../assets/js/models/roll.js"></script>
+  <script defer src="../../assets/js/widgets/roll-brake.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m03-l2">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>Opening up the roll moment</h2>
+    <p>
+      Lesson 3.1 made one big simplification: the whole car rolled about an axis on the ground, so every newton of
+      lateral load transfer went through the springs and anti-roll bars. That gave a clean rule: total transfer
+      \(m a_y h / t\), split front-to-rear by roll stiffness. It is a good first model, but real cars move load through
+      three separate paths, and only one of them involves the springs at all.
+    </p>
+    <p>
+      Why care? Because the other two paths are tuning tools too. Suspension geometry (the <em>roll-center height</em>)
+      changes how much load each axle transfers and how much the body rolls. Body roll matters because it changes
+      camber (Lesson 2.4) and, on cars with wings, the aerodynamic platform.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="masses">
+    <h2>Sprung and unsprung mass</h2>
+    <ul>
+      <li><strong>Unsprung mass</strong> \(m_{us}\): everything that moves with the wheel. That means the tire, wheel, upright,
+      brakes and part of the links and springs. It sits low, at roughly wheel-center height \(h_{us}\).</li>
+      <li><strong>Sprung mass</strong> \(m_s\): everything carried on the springs. That means the chassis, engine, driver and fuel. Its CG is at height \(h_s\).</li>
+    </ul>
+    <p>On a race car the unsprung mass is typically somewhere around a tenth of the total. Both masses are pushed sideways in a corner, but their lateral forces reach the tires by different routes.</p>
+  </section>
+
+  <section class="lesson-section" id="roll-center">
+    <h2>Roll centers and the roll axis</h2>
+    <p>
+      Look at one axle from the front. The suspension links connect the wheels to the body, and their geometry defines
+      a point called the <strong>roll center</strong> (RC). It has two meanings that turn out to be the same:
+    </p>
+    <ul>
+      <li>It is the point about which the body <em>rolls</em> relative to the ground, at least for small motions.</li>
+      <li>It is the point through which lateral forces pass from the tires into the body <em>without</em> making it roll.</li>
+    </ul>
+    <p>
+      Each axle has its own roll center. The line joining the front and rear roll centers is the <strong>roll axis</strong>.
+      The figure below shows how to find it from the suspension links. Module 8 explores how it moves as the suspension
+      moves. In this lesson, treat each roll-center height \(h_{rc}\) as a number the designer chooses, typically a few
+      centimeters above the ground.
+    </p>
+    <figure>
+      <svg viewBox="0 0 600 270" width="600" role="img" aria-label="Front view of a double-wishbone axle. For each wheel, the upper and lower wishbones are extended with dashed lines until they meet at that wheel's instant center, on the far side of the car. A line from each tire contact patch to its instant center is drawn; the two lines cross on the centerline at the roll center, a height h_rc above the ground."><line x1="10" y1="238" x2="590" y2="238" class="fig-stroke" stroke-width="2"/><rect x="232.8" y="120.4" width="134.4" height="96.6" rx="10" class="fig-chassis" stroke-width="1.5"/><text x="300.0" y="154.0" text-anchor="middle" class="fig-text fig-halo" style="font-size:12px">chassis</text><rect x="436.5" y="112.0" width="42.0" height="126.0" rx="8" class="fig-wheelc"/><rect x="121.5" y="112.0" width="42.0" height="126.0" rx="8" class="fig-wheelc"/><line x1="438.6" y1="141.4" x2="37.5" y2="170.8" class="fig-s1" stroke-width="1.4" stroke-dasharray="6 5"/><line x1="447.0" y1="212.8" x2="37.5" y2="170.8" class="fig-s1" stroke-width="1.4" stroke-dasharray="6 5"/><line x1="457.5" y1="238.0" x2="37.5" y2="170.8" class="fig-s1" stroke-width="2.4"/><line x1="161.4" y1="141.4" x2="562.5" y2="170.8" class="fig-s2" stroke-width="1.4" stroke-dasharray="6 5"/><line x1="153.0" y1="212.8" x2="562.5" y2="170.8" class="fig-s2" stroke-width="1.4" stroke-dasharray="6 5"/><line x1="142.5" y1="238.0" x2="562.5" y2="170.8" class="fig-s2" stroke-width="2.4"/><line x1="363.0" y1="146.9" x2="438.6" y2="141.4" class="fig-stroke" stroke-width="5" stroke-linecap="round"/><line x1="346.2" y1="202.5" x2="447.0" y2="212.8" class="fig-stroke" stroke-width="5" stroke-linecap="round"/><line x1="447.0" y1="212.8" x2="438.6" y2="141.4" class="fig-stroke" stroke-width="7" stroke-linecap="round"/><circle cx="363.0" cy="146.9" r="4.5" class="fig-fill"/><circle cx="346.2" cy="202.5" r="4.5" class="fig-fill"/><circle cx="438.6" cy="141.4" r="5.5" class="fig-joint"/><circle cx="447.0" cy="212.8" r="5.5" class="fig-joint"/><circle cx="457.5" cy="238.0" r="5" class="fig-fill"/><text x="457.5" y="257.0" text-anchor="middle" class="fig-text fig-halo" style="font-size:12px">contact patch</text><line x1="237.0" y1="146.9" x2="161.4" y2="141.4" class="fig-stroke" stroke-width="5" stroke-linecap="round"/><line x1="253.8" y1="202.5" x2="153.0" y2="212.8" class="fig-stroke" stroke-width="5" stroke-linecap="round"/><line x1="153.0" y1="212.8" x2="161.4" y2="141.4" class="fig-stroke" stroke-width="7" stroke-linecap="round"/><circle cx="237.0" cy="146.9" r="4.5" class="fig-fill"/><circle cx="253.8" cy="202.5" r="4.5" class="fig-fill"/><circle cx="161.4" cy="141.4" r="5.5" class="fig-joint"/><circle cx="153.0" cy="212.8" r="5.5" class="fig-joint"/><circle cx="142.5" cy="238.0" r="5" class="fig-fill"/><text x="142.5" y="257.0" text-anchor="middle" class="fig-text fig-halo" style="font-size:12px">contact patch</text><circle cx="37.5" cy="170.8" r="7" class="fig-s1-fill"/><text x="29.5" y="156.8" text-anchor="start" class="fig-text fig-s1-fill fig-halo" style="font-size:12.5px;font-weight:700">IC, right wheel</text><circle cx="562.5" cy="170.8" r="7" class="fig-s2-fill"/><text x="570.5" y="156.8" text-anchor="end" class="fig-text fig-s2-fill fig-halo" style="font-size:12.5px;font-weight:700">IC, left wheel</text><text x="400.8" y="132.2" text-anchor="middle" class="fig-text fig-halo" style="font-size:11.5px">upper wishbone</text><text x="396.6" y="197.6" text-anchor="middle" class="fig-text fig-halo" style="font-size:11.5px">lower wishbone</text><circle cx="300.0" cy="212.8" r="7.5" class="fig-s4-fill"/><text x="300" y="234.8" text-anchor="middle" class="fig-text fig-s4-fill fig-halo" style="font-size:13px;font-weight:700">roll center</text><line x1="358" y1="238" x2="358" y2="212.8" class="fig-muted" stroke-width="1.2"/><line x1="308" y1="212.8" x2="364" y2="212.8" class="fig-muted fig-dash" stroke-width="1"/><text x="364" y="230.4" class="fig-text fig-dimlabel fig-halo" style="font-size:12.5px">h<tspan dy="3" style="font-size:9.5px">rc</tspan></text><circle cx="35.5" cy="194.8" r="10" class="fig-s1-fill"/><text x="35.5" y="199.3" text-anchor="middle" class="fig-step">1</text><circle cx="100.5" cy="200.9" r="10" class="fig-s1-fill"/><text x="100.5" y="205.4" text-anchor="middle" class="fig-step">2</text><circle cx="300.0" cy="188.8" r="10" class="fig-s4-fill"/><text x="300.0" y="193.3" text-anchor="middle" class="fig-step">3</text><text x="12" y="20" class="fig-text" style="font-size:12px">front view of one axle</text></svg>
+      <figcaption><strong>Finding the roll center.</strong> ① Extend each wheel's upper and lower wishbones (dashed) until they meet: that point is the wheel's <em>instant center</em> (IC). ② Draw a line from the tire's contact patch through its IC. ③ Do the same for the other wheel. Where the two lines cross is the roll center. For this symmetric layout it lies on the centerline, here 12 cm above the ground. (Link angles exaggerated slightly so the ICs fit in the picture.)</figcaption>
+    </figure>
+    <p>
+      Why does this work? At any instant, each wheel moves relative to the body as if it were pinned at its instant center: the wishbones only allow motion about that point. A sideways force at the contact patch therefore reaches the body along the line from the contact patch through the IC. Where the left and right lines meet, the tire forces can act on the body <em>without</em> creating a roll moment about that point. That is the roll center.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="components">
+    <h2>Three paths for lateral load transfer</h2>
+    <p>For each axle, with track \(t\), the per-wheel load change in steady cornering is the sum of three parts:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Component</th><th>Per-wheel load change</th><th>What sets it</th></tr></thead>
+        <tbody>
+          <tr class="lt-row lt-unsprung"><td><span class="lt-swatch"></span><strong>Unsprung</strong></td><td>\(\Delta F_{z,us} = \dfrac{m_{us}\,a_y\,h_{us}}{t}\)</td><td>Wheel and brake mass, wheel size. Not adjustable at the track.</td></tr>
+          <tr class="lt-row lt-geometric"><td><span class="lt-swatch"></span><strong>Geometric</strong></td><td>\(\Delta F_{z,geo} = \dfrac{m_{s,\text{axle}}\,a_y\,h_{rc}}{t}\)</td><td>Roll-center height: transferred through the links, immediately, with no roll needed</td></tr>
+          <tr class="lt-row lt-elastic"><td><span class="lt-swatch"></span><strong>Elastic</strong></td><td>\(\Delta F_{z,el} = \dfrac{K_{\phi,\text{axle}}}{K_\phi}\cdot\dfrac{M_\phi}{t}\)</td><td>Springs and anti-roll bars, through body roll</td></tr>
+        </tbody>
+      </table>
+    </div>
+<figure>
+      <svg viewBox="0 0 740 305" width="740" role="img" aria-label="Three rear-view panels of one axle. Left: the sprung mass lateral load m_s a_y acts at the sprung CG, height h_s, giving a total load change at the tires. Middle: the same force acting at the roll center, carried by the suspension links, gives the geometric load change, proportional to h_rc. Right: the leftover couple M_phi equal to m_s a_y times h_s minus h_rc, resisted by the springs, gives the elastic load change. The tire load arrows in the middle and right panels add up to those in the left panel."><text x="115.0" y="26.0" text-anchor="middle" class="fig-text" style="font-size:13px;font-weight:700">Load at the sprung CG</text><line x1="7" y1="215" x2="223" y2="215" class="fig-stroke" stroke-width="2"/><rect x="31" y="165" width="24" height="50" rx="5" class="fig-wheelc"/><rect x="175" y="165" width="24" height="50" rx="5" class="fig-wheelc"/><rect x="33" y="78" width="164" height="58" rx="10" class="fig-chassis" stroke-width="1.5"/><line x1="77" y1="136" x2="56" y2="172" class="fig-muted" stroke-width="1.2"/><line x1="89" y1="136" x2="56" y2="200" class="fig-muted" stroke-width="1.2"/><polyline points="45.0,165.0 45.4,162.0 51.9,159.0 40.5,153.5 52.9,151.3 41.6,145.8 54.0,143.6 48.6,139.0 49.0,136.0" fill="none" class="fig-muted" stroke-width="1.2" stroke-linejoin="round"/><line x1="153" y1="136" x2="174" y2="172" class="fig-muted" stroke-width="1.2"/><line x1="141" y1="136" x2="174" y2="200" class="fig-muted" stroke-width="1.2"/><polyline points="185.0,165.0 184.6,162.0 190.0,157.4 177.6,155.2 188.9,149.7 176.5,147.5 187.9,142.0 181.4,139.0 181.0,136.0" fill="none" class="fig-muted" stroke-width="1.2" stroke-linejoin="round"/><circle cx="115" cy="110.0" r="5" class="fig-fill"/><circle cx="115" cy="185.0" r="4" class="fig-joint"/><line x1="115.0" y1="110.0" x2="152.0" y2="110.0" class="fig-s4" stroke-width="3"/><polygon points="163.0,110.0 152.0,116.0 152.0,104.0" class="fig-s4-fill"/><text x="139.0" y="102.0" text-anchor="middle" class="fig-text fig-s4-fill" style="font-size:12.5px;font-weight:700">m<tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"> a</tspan><tspan dy="3" style="font-size:9.5px">y</tspan></text><line x1="23" y1="215.0" x2="23" y2="110.0" class="fig-muted" stroke-width="1.2"/><line x1="19" y1="215.0" x2="27" y2="215.0" class="fig-muted" stroke-width="1.2"/><line x1="19" y1="110.0" x2="27" y2="110.0" class="fig-muted" stroke-width="1.2"/><text x="17.0" y="166.5" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:12px">h<tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"></tspan></text><line x1="187.0" y1="281.0" x2="187.0" y2="227.0" class="fig-s1" stroke-width="3"/><polygon points="187.0,216.0 193.1,227.0 180.9,227.0" class="fig-s1-fill"/><line x1="43.0" y1="216.0" x2="43.0" y2="270.0" class="fig-s1" stroke-width="3"/><polygon points="43.0,281.0 37.0,270.0 49.0,270.0" class="fig-s1-fill"/><text x="115.0" y="292.0" text-anchor="middle" class="fig-text" style="font-size:13px">ΔF<tspan dy="3" style="font-size:9.5px">z</tspan><tspan dy="-3"> t = m</tspan><tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"> a</tspan><tspan dy="3" style="font-size:9.5px">y</tspan><tspan dy="-3"> h</tspan><tspan dy="3" style="font-size:9.5px">s</tspan></text><text x="237.0" y="128.0" text-anchor="middle" class="fig-text" style="font-size:30px;font-weight:300">=</text><text x="360.0" y="26.0" text-anchor="middle" class="fig-text fig-s2-fill" style="font-size:13px;font-weight:700">Geometric part</text><text x="360.0" y="44.0" text-anchor="middle" class="fig-text" style="font-size:11.5px">same force, acting at the roll center</text><line x1="252" y1="215" x2="468" y2="215" class="fig-stroke" stroke-width="2"/><rect x="276" y="165" width="24" height="50" rx="5" class="fig-wheelc"/><rect x="420" y="165" width="24" height="50" rx="5" class="fig-wheelc"/><rect x="278" y="78" width="164" height="58" rx="10" class="fig-chassis" stroke-width="1.5"/><line x1="322" y1="136" x2="301" y2="172" class="fig-s2" stroke-width="2.6"/><line x1="334" y1="136" x2="301" y2="200" class="fig-s2" stroke-width="2.6"/><polyline points="290.0,165.0 290.4,162.0 296.9,159.0 285.5,153.5 297.9,151.3 286.6,145.8 299.0,143.6 293.6,139.0 294.0,136.0" fill="none" class="fig-muted" stroke-width="1.2" stroke-linejoin="round"/><line x1="398" y1="136" x2="419" y2="172" class="fig-s2" stroke-width="2.6"/><line x1="386" y1="136" x2="419" y2="200" class="fig-s2" stroke-width="2.6"/><polyline points="430.0,165.0 429.6,162.0 435.0,157.4 422.6,155.2 433.9,149.7 421.5,147.5 432.9,142.0 426.4,139.0 426.0,136.0" fill="none" class="fig-muted" stroke-width="1.2" stroke-linejoin="round"/><circle cx="360" cy="185.0" r="5" class="fig-s4-fill"/><line x1="360.0" y1="185.0" x2="397.0" y2="185.0" class="fig-s4" stroke-width="3"/><polygon points="408.0,185.0 397.0,191.1 397.0,178.9" class="fig-s4-fill"/><text x="352.0" y="189.0" text-anchor="end" class="fig-text fig-s4-fill" style="font-size:11.5px;font-weight:700">RC</text><line x1="268" y1="215.0" x2="268" y2="185.0" class="fig-muted" stroke-width="1.2"/><line x1="264" y1="215.0" x2="272" y2="215.0" class="fig-muted" stroke-width="1.2"/><line x1="264" y1="185.0" x2="272" y2="185.0" class="fig-muted" stroke-width="1.2"/><text x="262.0" y="204.0" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:12px">h<tspan dy="3" style="font-size:9.5px">rc</tspan><tspan dy="-3"></tspan></text><text x="266.0" y="160.0" text-anchor="end" class="fig-text fig-s2-fill" style="font-size:11.5px">links</text><line x1="432.0" y1="233.9" x2="432.0" y2="224.0" class="fig-s1" stroke-width="3"/><polygon points="432.0,216.0 436.4,224.0 427.6,224.0" class="fig-s1-fill"/><line x1="288.0" y1="216.0" x2="288.0" y2="225.8" class="fig-s1" stroke-width="3"/><polygon points="288.0,233.9 283.6,225.8 292.4,225.8" class="fig-s1-fill"/><text x="360.0" y="292.0" text-anchor="middle" class="fig-text" style="font-size:13px">ΔF<tspan dy="3" style="font-size:9.5px">z,geo</tspan><tspan dy="-3"> t = m</tspan><tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"> a</tspan><tspan dy="3" style="font-size:9.5px">y</tspan><tspan dy="-3"> h</tspan><tspan dy="3" style="font-size:9.5px">rc</tspan></text><text x="482.0" y="128.0" text-anchor="middle" class="fig-text" style="font-size:30px;font-weight:300">+</text><text x="605.0" y="26.0" text-anchor="middle" class="fig-text fig-s3-fill" style="font-size:13px;font-weight:700">Elastic part</text><text x="605.0" y="44.0" text-anchor="middle" class="fig-text" style="font-size:11.5px">the roll moment, a couple about the RC</text><line x1="497" y1="215" x2="713" y2="215" class="fig-stroke" stroke-width="2"/><rect x="521" y="165" width="24" height="50" rx="5" class="fig-wheelc"/><rect x="665" y="165" width="24" height="50" rx="5" class="fig-wheelc"/><rect x="523" y="78" width="164" height="58" rx="10" class="fig-chassis" stroke-width="1.5"/><line x1="567" y1="136" x2="546" y2="172" class="fig-muted" stroke-width="1.2"/><line x1="579" y1="136" x2="546" y2="200" class="fig-muted" stroke-width="1.2"/><polyline points="535.0,165.0 535.4,162.0 541.9,159.0 530.5,153.5 542.9,151.3 531.6,145.8 544.0,143.6 538.6,139.0 539.0,136.0" fill="none" class="fig-s3" stroke-width="2.4" stroke-linejoin="round"/><line x1="643" y1="136" x2="664" y2="172" class="fig-muted" stroke-width="1.2"/><line x1="631" y1="136" x2="664" y2="200" class="fig-muted" stroke-width="1.2"/><polyline points="675.0,165.0 674.6,162.0 680.0,157.4 667.6,155.2 678.9,149.7 666.5,147.5 677.9,142.0 671.4,139.0 671.0,136.0" fill="none" class="fig-s3" stroke-width="2.4" stroke-linejoin="round"/><circle cx="605" cy="185.0" r="4" class="fig-joint"/><circle cx="605" cy="110.0" r="4" class="fig-fill"/><polyline points="584.2,197.0 582.9,194.3 581.9,191.4 581.2,188.4 581.0,185.4 581.1,182.4 581.7,179.4 582.6,176.5 583.8,173.7 585.4,171.1 587.3,168.8 589.5,166.7 591.9,164.9 594.6,163.4 597.4,162.2 600.3,161.5 603.3,161.1 606.4,161.0 609.4,161.4 612.3,162.1 615.1,163.2 617.8,164.7 620.3,166.5 622.5,168.6 624.4,170.9 626.0,173.5 627.3,176.2 628.3,179.1 628.8,182.1 629.0,185.1 628.8,188.1 628.2,191.1 627.3,194.0 625.9,196.7 624.3,199.3 622.3,201.6 620.1,203.7 619.4,204.7" fill="none" class="fig-s4" stroke-width="3" stroke-linecap="round"/><polygon points="609.2,208.6 617.3,199.1 621.6,210.3" class="fig-s4-fill"/><text x="605.0" y="154.0" text-anchor="middle" class="fig-text fig-s4-fill" style="font-size:13px;font-weight:700">M<tspan dy="3" style="font-size:9.5px">φ</tspan></text><text x="575.0" y="189.0" text-anchor="end" class="fig-text fig-s4-fill" style="font-size:11.5px;font-weight:700">RC</text><line x1="705" y1="185.0" x2="705" y2="110.0" class="fig-muted" stroke-width="1.2"/><line x1="701" y1="185.0" x2="709" y2="185.0" class="fig-muted" stroke-width="1.2"/><line x1="701" y1="110.0" x2="709" y2="110.0" class="fig-muted" stroke-width="1.2"/><text x="705.0" y="100.0" text-anchor="middle" class="fig-text fig-dimlabel" style="font-size:12px">h<tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"> − h</tspan><tspan dy="3" style="font-size:9.5px">rc</tspan></text><text x="511.0" y="160.0" text-anchor="end" class="fig-text fig-s3-fill" style="font-size:11.5px">springs</text><line x1="677.0" y1="262.1" x2="677.0" y2="227.0" class="fig-s1" stroke-width="3"/><polygon points="677.0,216.0 683.0,227.0 671.0,227.0" class="fig-s1-fill"/><line x1="533.0" y1="216.0" x2="533.0" y2="251.1" class="fig-s1" stroke-width="3"/><polygon points="533.0,262.1 527.0,251.1 539.0,251.1" class="fig-s1-fill"/><text x="605.0" y="292.0" text-anchor="middle" class="fig-text" style="font-size:13px">ΔF<tspan dy="3" style="font-size:9.5px">z,el</tspan><tspan dy="-3"> t = m</tspan><tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"> a</tspan><tspan dy="3" style="font-size:9.5px">y</tspan><tspan dy="-3"> (h</tspan><tspan dy="3" style="font-size:9.5px">s</tspan><tspan dy="-3"> − h</tspan><tspan dy="3" style="font-size:9.5px">rc</tspan><tspan dy="-3">)</tspan></text></svg>
+      <figcaption><strong>Splitting the sprung-mass load into its two paths</strong> (one axle, rear view, turning left). This is the force–couple trick from statics: a force at the CG is equivalent to the same force moved down to the roll center, plus a couple equal to the force times the distance it moved. The force at the roll center passes through the links, so it transfers load without rolling the body (geometric). The couple is the roll moment, which rolls the body until the springs and anti-roll bars push back (elastic). Tire arrows are to scale and add up: with \(h_{rc} = 0.12\) m and \(h_s = 0.42\) m, the geometric part is 29% of this axle's sprung-mass transfer and the elastic part 71%. On a whole car, the elastic part is then shared between the axles by their roll stiffness, which is the \(K_{\phi,\text{axle}}/K_\phi\) factor in the table above. Here \(m_s a_y\) is the inertial load (\(m\mathbf{a}\) moved to the force side, as in Lesson 0.1).</figcaption>
+    </figure>
+    <p>
+      Here \(m_{s,\text{axle}}\) is the share of sprung mass carried by that axle, and \(M_\phi\) is the
+      <strong>roll moment</strong>: the sprung mass's lateral force acting about the roll axis,
+    </p>
+    <div class="equation">\[ M_\phi = m_s\,a_y\,(h_s - h_{ra}) \]</div>
+    <p>
+      where \(h_{ra}\) is the height of the roll axis directly beneath the sprung CG. The distance
+      \(h_s - h_{ra}\) is the <em>roll moment arm</em>. The springs and bars resist the roll moment, so the body rolls through
+    </p>
+    <div class="equation">\[ \phi = \frac{M_\phi}{K_\phi} \qquad \text{(with } K_\phi \text{ in N}{\cdot}\text{m/deg)} \]</div>
+    <p>Engineers usually quote this per g of lateral acceleration, as the <strong>roll gradient</strong> in deg/g.</p>
+    <div class="callout callout--key">
+      <p>The three components always add up to the same total as Lesson 3.1. Moment balance about the ground still gives
+      \(\Sigma \Delta F_z\,t = m a_y h\). Roll centers and unsprung mass don't change <em>how much</em> load is
+      transferred; they change <em>which axle</em> transfers it and <em>how much the body rolls</em> while doing so.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="explore">
+    <h2>Explore the split</h2>
+    <div class="widget" data-widget="roll-components" data-preset="club">
+      <div class="widget__title">Roll-center and load-transfer explorer</div>
+      <p class="widget__desc">Top: a side view of the roll axis (red) through the front and rear roll centers, with the roll moment arm from the sprung CG (purple). Bottom: each axle's load transfer split into its three components. The dashed lines show what Lesson 3.1's simple model would predict.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--key" data-title="Why the bars differ from the dashed lines">
+      <p>
+        Both models move the <em>same total</em> load: with equal tracks, the bars add up to the Lesson 3.1 total
+        \(m a_y h / t\) (1966 N for the club racer at 1 g). What differs is <em>how that total is split between the axles</em>.
+      </p>
+      <p>
+        Lesson 3.1 put the roll axis on the ground and treated the whole car as one mass on springs. So <em>all</em> of the
+        transfer went through the springs and bars, and it was shared in the roll-stiffness ratio: 58% front, 42% rear.
+        In this explorer only the <strong>elastic</strong> part follows that ratio. The other two parts take their own routes:
+      </p>
+      <ul>
+        <li><strong>Unsprung</strong> transfer stays with the axle whose wheels and brakes created it. With 60 kg at each end it splits
+        roughly 50/50 (118 N each), however stiff the springs are.</li>
+        <li><strong>Geometric</strong> transfer goes through each axle's links. It depends on that axle's sprung mass and its own
+        roll-center height, not on the springs. The club racer's rear roll center (10 cm) is higher than its front (5 cm), so the rear
+        takes more: 198 N against 107 N.</li>
+        <li><strong>Elastic</strong> transfer is what is left: the roll moment about the roll axis. That is smaller than in Lesson 3.1
+        because the moment arm is \(h_s - h_{ra}\) rather than the full CG height. Only this part (1426 N in total) is split 58/42.</li>
+      </ul>
+      <p>
+        About 540 N of the 1966 N bypasses the springs and is shared far more evenly than 58/42. So the front ends up carrying
+        53.5% instead of 58%: less than the simple model predicts at the front, more at the rear. To see the two models converge,
+        set both roll-center heights to zero. The geometric part vanishes and the front share rises to 57%. The last 1% is the unsprung mass.
+      </p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the club racer at 1 g, compare the front share of load transfer with the simple model's 58%. Which components cause the difference?</li>
+        <li>Raise the front roll center from 5 cm to 15 cm. What happens to the front share, the body roll and the limit balance? Do the same for the rear.</li>
+        <li>Set both roll centers to 0 cm. How close is the result to the simple model now? What is left over?</li>
+        <li>Raise both roll centers until the roll moment arm is nearly zero. What happens to body roll? Read the warning that appears.</li>
+        <li>Halve the total roll stiffness. Which components change, and which stay exactly the same?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>The club racer has \(m_s = 630\) kg (52% on the front axle), \(m_{us} = 60\) kg per axle, \(h_s = 0.42\) m, \(h_{us} = 0.30\) m,
+      track 1.50 m, roll centers 0.05 m (front) and 0.10 m (rear), and 58% front roll stiffness. Find the front axle's load transfer at 1 g.</p>
+      <p><strong>Unsprung:</strong> \(60 \times 9.81 \times 0.30 / 1.50 = 118\) N.</p>
+      <p><strong>Geometric:</strong> front sprung mass \(0.52 \times 630 = 327.6\) kg, so \(327.6 \times 9.81 \times 0.05 / 1.50 = 107\) N.</p>
+      <p><strong>Roll axis under the CG:</strong> the CG is 48% of the wheelbase behind the front axle, so
+      \(h_{ra} = 0.05 + (0.10 - 0.05)\times 0.48 = 0.074\) m. Roll moment \(M_\phi = 630 \times 9.81 \times (0.42 - 0.074) = 2138\) N·m.</p>
+      <p><strong>Elastic:</strong> \(0.58 \times 2138 / 1.50 = 827\) N.</p>
+      <p>Front total \(= 118 + 107 + 827 = 1052\) N. Doing the same for the rear gives 914 N, so the front carries 53.5% of the transfer.
+      That is noticeably less than the 58% the simple model assumed, because the rear roll center is higher.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="tradeoffs">
+    <h2>High or low roll centers?</h2>
+    <p>
+      If roll-center height is a tuning lever, why not raise it until the body doesn't roll at all? Because the
+      geometric path has side effects. When the roll center is above the ground, the lateral tire forces acting
+      through the links also push the body <em>up</em>, an effect called <strong>jacking</strong>. A jacked-up car
+      has a higher CG just when it needs a low one, and the jacking varies as grip varies, which drivers feel as
+      unpredictability. Roll centers also move as the suspension moves (Module 8).
+    </p>
+    <p>
+      So most race cars use fairly low roll centers and control roll with springs and anti-roll bars, then use
+      small roll-center changes to fine-tune the balance between the axles.
+    </p>
+    <div class="callout callout--misconception">
+      <p>“The body is pinned at the roll center and swings about it.” The roll center is not a physical joint. It
+      is a construction from the link geometry that is only exact for small motions, and it moves as the car rolls and
+      heaves. It is a very useful idea, but treat it as an approximation.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m03-l2-n1" data-answer="58.86" data-tol="0.01" data-units="N">
+        <p>A Formula SAE car has 120 kg of sprung mass on its front axle, a front roll center 4 cm above the ground and a front track of 1.20 m.
+        What is the geometric load transfer (per wheel) on the front axle at 1.5 g?</p>
+        <div class="hint"><p>\(\Delta F_{z,geo} = m_{s,\text{axle}}\,a_y\,h_{rc}/t\), with \(a_y\) in m/s².</p></div>
+        <div class="solution"><p>\(120 \times (1.5 \times 9.81) \times 0.04 / 1.20 = 58.9\) N, small because the roll center is low.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m03-l2-n2" data-answer="1.711" data-tol="0.01" data-units="deg">
+        <p>The club racer (\(m_s = 630\) kg, \(h_s = 0.42\) m, \(h_{ra} = 0.074\) m) corners at 1.2 g. Its total roll stiffness is 1500 N·m/deg. How far does the body roll?</p>
+        <div class="hint"><p>Find the roll moment \(M_\phi = m_s a_y (h_s - h_{ra})\), then \(\phi = M_\phi / K_\phi\).</p></div>
+        <div class="solution"><p>\(M_\phi = 630 \times 11.77 \times 0.346 = 2566\) N·m, so \(\phi = 2566/1500 = 1.71^\circ\). That is a roll gradient of about 1.4°/g.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m03-l2-n3" data-answer="992.2" data-tol="0.01" data-units="N">
+        <p>For the same car and corner, the front axle has 58% of the roll stiffness and a 1.50 m track. What is the elastic load transfer on the front axle?</p>
+        <div class="hint"><p>\(\Delta F_{z,el,f} = (K_{\phi f}/K_\phi)\,M_\phi / t_f\). Reuse your roll moment from the previous question.</p></div>
+        <div class="solution"><p>\(0.58 \times 2566 / 1.50 = 992\) N.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m03-l2-q1">
+        <p class="mcq__prompt">At the track, an engineer can change springs and anti-roll bars quickly. Which components of lateral load transfer can those parts change?</p>
+        <ul>
+          <li>All three.<span class="why">Springs and bars act only on the roll moment, so they cannot change the unsprung or geometric paths.</span></li>
+          <li data-correct>Only the elastic component, specifically how it is split between the axles.<span class="why">The unsprung part depends on unsprung mass and height, and the geometric part on roll-center height. Springs and bars only share out the roll moment.</span></li>
+          <li>Only the geometric component.<span class="why">The geometric path goes through the suspension links, which springs and bars don't change.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m03-l2-q2">
+        <p class="mcq__prompt">With everything else unchanged, the front roll center is raised. What happens?</p>
+        <ul>
+          <li data-correct>The front axle takes a larger share of the load transfer and the body rolls less, so the car tends toward more understeer.<span class="why">More geometric transfer at the front, and a higher roll axis, so a smaller roll moment. With load-sensitive tires, more front transfer means less front grip.</span></li>
+          <li>The total lateral load transfer falls.<span class="why">The total is still \(m a_y h\) divided among the tracks. Only the split and the roll change.</span></li>
+          <li>The rear axle takes more of the transfer, giving more oversteer.<span class="why">Raising the <em>front</em> roll center adds geometric transfer at the front.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m03-l2-q3">
+        <p class="mcq__prompt">A designer puts the roll axis at the height of the sprung CG. What is the main consequence?</p>
+        <ul>
+          <li>The car has no lateral load transfer.<span class="why">Load transfer still happens, entirely through the links instead of the springs.</span></li>
+          <li data-correct>There is no roll moment, so the body doesn't roll. But large jacking forces push the body up and make the car harder to control.<span class="why">With zero moment arm, nothing makes the body roll. The lateral forces acting through high roll centers lift the car instead.</span></li>
+          <li>The springs carry all of the load transfer.<span class="why">It is the opposite: the geometric path carries it all, and the springs see no roll moment.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 18, <em>Wheel Loads</em>, for the full breakdown of lateral load transfer. Then read Chapter 16, <em>Ride and Roll Rates</em>, for how roll stiffness is built up, and skim Chapter 17, <em>Suspension Geometry</em>, for how roll centers are found.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How does the book's treatment handle different front and rear track widths and unequal unsprung masses?</li>
+        <li>What does it say about roll centers below ground level, and about how roll centers move in roll?</li>
+        <li>How does tire (vertical) stiffness enter the roll-rate calculation?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Unsprung transfer</td><td>\(m_{us} a_y h_{us} / t\)</td></tr>
+          <tr><td>Geometric transfer</td><td>\(m_{s,\text{axle}} a_y h_{rc} / t\)</td></tr>
+          <tr><td>Roll moment</td><td>\(M_\phi = m_s a_y (h_s - h_{ra})\)</td></tr>
+          <tr><td>Elastic transfer</td><td>\((K_{\phi,\text{axle}}/K_\phi)\,M_\phi / t\)</td></tr>
+          <tr><td>Body roll</td><td>\(\phi = M_\phi / K_\phi\); roll gradient in deg/g</td></tr>
+          <tr><td>Total</td><td>Unchanged: the paths only redistribute it</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: load transfer in the other direction, and how it decides which wheels lock first under braking.</p>
+  </section>
+
+</article>
+</body>
+</html>

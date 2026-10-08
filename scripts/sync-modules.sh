@@ -72,5 +72,57 @@ echo "$COURSES" | while IFS='|' read -r course from code mods; do
   done
   echo "synced $code: $mods"
 done
+
+# Standalone courses: a whole course folder with its own home page, navigation and progress (not built from
+# modules), copied as it is, less its authoring files, then patched with a link back to this site and the license.
+# Each STANDALONE line is "<site folder>|<source folder, relative to the folder above this site>".
+STANDALONE="race-vehicle-dynamics|Ravens Racing/race-vehicle-dynamics-course"
+
+patch_standalone() {
+  python3 - "$1" <<'PY'
+import sys, pathlib
+root = pathlib.Path(sys.argv[1])
+core = root / 'assets/js/course.js'
+s = core.read_text()
+home = 'const home = h("a", "nav-home", nav, "Course home");'
+link = ('// openengineering.ca: link back to the site\'s course list\n'
+        '    const site = h("a", "nav-site", nav);\n'
+        '    site.href = `${root}/../index.html#courses`;\n'
+        '    h("span", "nav-site__arrow", site, "\\u2190").setAttribute("aria-hidden", "true");\n'
+        '    site.appendChild(document.createTextNode("All courses \\u00b7 Open Engineering"));\n    ')
+fill = 'content.forEach((n) => wrap.appendChild(n));'
+lic = ('\n    // openengineering.ca: license line under the content of every page\n'
+       '    const lic = h("p", wrap.className + " site-license", main, "\\u00a9 2026 Open Engineering \\u00b7 ");\n'
+       '    const cc = h("a", null, lic, "CC BY-NC-SA 4.0");\n'
+       '    cc.href = "https://creativecommons.org/licenses/by-nc-sa/4.0/";\n'
+       '    cc.rel = "license";')
+assert s.count(home) == 1 and s.count(fill) == 1, core
+s = s.replace(home, link + home).replace(fill, fill + lic)
+core.write_text(s)
+css = root / 'assets/css/course.css'
+css.write_text(css.read_text() + """
+/* openengineering.ca: link back to the site (top of the sidebar) and license line */
+.sidebar a.nav-site {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px 12px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted); font-size: 13.5px; font-weight: 600;
+}
+.sidebar a.nav-site:hover { color: var(--text); }
+.nav-site__arrow { color: var(--accent); }
+.site-license { margin-top: 48px; margin-bottom: 0; padding-top: 14px; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text-muted); }
+.site-license a { color: inherit; }
+@media print { .nav-site { display: none !important; } }
+""")
+PY
+}
+echo "$STANDALONE" | while IFS='|' read -r course from; do
+  dir="$SRC/$from"
+  if [ ! -d "$dir" ]; then echo "missing: $dir" >&2; exit 1; fi
+  rsync -a --delete --exclude '.DS_Store' --exclude 'README.md' --exclude 'templates/' "$dir/" "$SITE/$course/"
+  cp "$SITE/scripts/LICENSE-module.txt" "$SITE/$course/LICENSE.txt"
+  patch_standalone "$SITE/$course"
+  echo "synced $course (standalone course)"
+done
 find "$SITE" -type d ! -path '*/.git*' -exec chmod 755 {} +
 find "$SITE" -type f ! -path '*/.git/*' -exec chmod 644 {} +

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The driver–vehicle system: stability and control — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/bicycle.js"></script>
+  <script defer src="../../assets/js/widgets/driver-vehicle.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m01-l2">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>Same envelope, different lap times</h2>
+    <p>
+      In Lesson 1.1 the g-g diagram told us what a car <em>can</em> do. But imagine two cars with identical envelopes.
+      In one, the driver can sit right at the edge of the envelope lap after lap. The other twitches and snaps
+      whenever it gets near the limit, so the driver backs off to keep it on the road. On paper they are equal. On
+      the stopwatch, the first car wins every time.
+    </p>
+    <p>
+      Bill Milliken spent his early career in aircraft flight testing, where the question was never just “how fast
+      can it fly?” but also “can a pilot fly it safely and precisely?” He brought the same two ideas to race cars:
+      <strong>stability</strong> and <strong>control</strong>. This lesson introduces both, and treats the driver
+      as part of the system.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="loop">
+    <h2>Open loop and closed loop</h2>
+    <p>
+      A driver does not steer by memorizing a sequence of inputs. They watch where the car is going, feel how it is
+      rotating, and continuously correct. Engineers call this a <strong>closed-loop</strong> system: the output
+      (the car's motion) is fed back to the input (the driver's hands and feet).
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 640 230" width="640" role="img" aria-label="Block diagram: the driver commands the vehicle; the vehicle's motion is sensed and fed back to the driver; disturbances act on the vehicle">
+        <defs>
+          <marker id="loopArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-fill"/></marker>
+          <marker id="loopArrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-s2-fill"/></marker>
+        </defs>
+        <rect x="50" y="70" width="170" height="80" rx="10" fill="none" class="fig-stroke" stroke-width="2"/>
+        <text x="135" y="104" text-anchor="middle" class="fig-text" font-weight="700">Driver</text>
+        <text x="135" y="126" text-anchor="middle" class="fig-text" font-size="13">sees · feels · decides</text>
+        <rect x="380" y="70" width="170" height="80" rx="10" fill="none" class="fig-stroke" stroke-width="2"/>
+        <text x="465" y="104" text-anchor="middle" class="fig-text" font-weight="700">Vehicle</text>
+        <text x="465" y="126" text-anchor="middle" class="fig-text" font-size="13">tires · mass · balance</text>
+        <line x1="220" y1="110" x2="376" y2="110" class="fig-stroke" stroke-width="2" marker-end="url(#loopArrow)"/>
+        <text x="298" y="100" text-anchor="middle" class="fig-text" font-size="13">steer, throttle, brake</text>
+        <polyline points="550,110 600,110 600,195 135,195 135,154" fill="none" class="fig-s1" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#loopArrow)"/>
+        <text x="368" y="216" text-anchor="middle" class="fig-text" font-size="13">feedback: path seen, yaw and g felt, steering torque</text>
+        <text x="606" y="100" class="fig-text" font-size="13" text-anchor="end">motion</text>
+        <line x1="465" y1="18" x2="465" y2="66" class="fig-s2" stroke-width="2" marker-end="url(#loopArrow2)"/>
+        <text x="475" y="34" class="fig-text" font-size="13">gusts, bumps</text>
+      </svg>
+      <figcaption>The driver–vehicle loop. Cut the dashed feedback path and you have an <em>open-loop</em> test: the car's response with the driver's input held fixed.</figcaption>
+    </figure>
+
+    <p>Vehicle engineers study the car in both ways:</p>
+    <ul>
+      <li><strong>Open-loop tests</strong> fix the input and watch the car respond: hands off the wheel after a bump,
+      or a sudden fixed step of steering. These reveal properties that belong to the car alone.</li>
+      <li><strong>Closed-loop tests</strong> give the driver a task, like a lane change or a lap, and measure how well it is done and
+      how hard the driver had to work. These reveal how the car and driver perform <em>together</em>.</li>
+    </ul>
+  </section>
+
+  <section class="lesson-section" id="stability">
+    <h2>Stability: does the car settle down by itself?</h2>
+    <p>
+      An <strong>equilibrium</strong> is a condition the car can hold steadily, such as driving straight at constant
+      speed. <strong>Stability</strong> asks what happens after a small disturbance, like a gust of wind or a bump,
+      with the driver's inputs held fixed.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 600 150" width="600" role="img" aria-label="Three balls: in a bowl (stable), on a flat surface (neutral), on top of a hill (unstable)">
+        <path d="M20,60 Q100,140 180,60" fill="none" class="fig-stroke" stroke-width="2"/>
+        <circle cx="100" cy="88" r="12" class="fig-s1-fill"/>
+        <line x1="220" y1="100" x2="380" y2="100" class="fig-stroke" stroke-width="2"/>
+        <circle cx="300" cy="88" r="12" class="fig-s1-fill"/>
+        <path d="M420,100 Q500,20 580,100" fill="none" class="fig-stroke" stroke-width="2"/>
+        <circle cx="500" cy="48" r="12" class="fig-s2-fill"/>
+        <text x="100" y="128" text-anchor="middle" class="fig-text" font-weight="700">Stable</text>
+        <text x="100" y="145" text-anchor="middle" class="fig-text" font-size="12.5">nudge it: it comes back</text>
+        <text x="300" y="128" text-anchor="middle" class="fig-text" font-weight="700">Neutral</text>
+        <text x="300" y="145" text-anchor="middle" class="fig-text" font-size="12.5">it stays where it is pushed</text>
+        <text x="500" y="128" text-anchor="middle" class="fig-text" font-weight="700">Unstable</text>
+        <text x="500" y="145" text-anchor="middle" class="fig-text" font-size="12.5">it runs away</text>
+      </svg>
+      <figcaption>The classic picture of stability. For a car, the “nudge” is a disturbance in yaw and the question is whether the rotation dies out or grows.</figcaption>
+    </figure>
+
+    <p>
+      Here is the physical picture for a car. Suppose a gust swings the nose slightly to the left. Now <em>both</em>
+      axles are running at a small slip angle, and both tires push sideways. The front tires push ahead of the center
+      of gravity; the rear tires push behind it. It is a tug-of-war in yaw:
+    </p>
+    <ul>
+      <li>If the <strong>rear</strong> tires win, the car straightens itself out, like the feathers on an arrow or a weathervane turning into the wind.</li>
+      <li>If the <strong>front</strong> tires win, the yaw is made worse, and the car keeps rotating further.</li>
+    </ul>
+    <p>
+      A car whose front tires “win” tends to <strong>oversteer</strong>; one whose rear tires win tends to
+      <strong>understeer</strong> (Module 5 makes these definitions precise). There is a second effect: as the car
+      rotates, its own yaw rate also creates slip angles that resist the rotation — a kind of damping. That damping
+      gets <em>weaker as speed rises</em>. So an oversteering car can be perfectly stable in town and become unstable
+      above a <strong>critical speed</strong>:
+    </p>
+    <div class="equation">\[ U_{\text{crit}} = \sqrt{\frac{L}{|K|}} \]</div>
+    <p>
+      where \(L\) is the wheelbase and \(K\) is the <em>understeer gradient</em>, a single number that summarizes the
+      car's balance (negative for oversteer). You will derive this in Module 5; for now, just notice the trend:
+      the more oversteer (larger \(|K|\)), the lower the speed at which the car becomes unstable. An understeering
+      car (\(K &gt; 0\)) has no critical speed at all.
+    </p>
+
+    <div class="widget" data-widget="hands-off">
+      <div class="widget__title">Hands-off disturbance test (open loop)</div>
+      <p class="widget__desc">The car drives straight with the steering wheel held still. A short sideways gust gives it a yaw nudge between 0.3 and 0.6 s. Change the car's balance and speed, then watch the top view and the plots: does the rotation die out or grow?</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>Start with a 50% understeer car. Raise the speed from 15 to 45 m/s. Does it ever become unstable? What changes in the yaw-rate trace?</li>
+        <li>Set the balance to “Oversteer 50%”. Read the critical speed, then test speeds just below and just above it.</li>
+        <li>Keep a ghost of a stable run and compare the <em>Heading change</em> of an understeer car and a neutral car. Which one wanders further off its original line?</li>
+        <li>Notice that even the stable cars end up on a <em>new</em> heading. Who is responsible for getting the car back to its original path?</li>
+        <li>Run an unstable case in <em>Slow motion</em>. Compare where the car's nose points with the purple arrow showing where it is actually going. The growing gap between them is the sideslip angle \(\beta\).</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“An unstable car is one that has run out of grip.” Not necessarily. The gust in the test above is small, and
+      the tires start well inside their linear range. Instability is about whether the tire forces <em>restore</em>
+      or <em>amplify</em> a disturbance, and that can happen far below the limit. Running out of grip makes things
+      worse, but it is a separate effect.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="control">
+    <h2>Control: can the driver put the car where they want it?</h2>
+    <p>
+      Stability is about the car alone. <strong>Control</strong> (or controllability) is about the car and driver
+      together: how easily and precisely can the driver make the car follow the path they choose? Two things matter:
+    </p>
+    <ul>
+      <li><strong>Response:</strong> how much the car turns for a given steering input, and how quickly. A heavily
+      understeering car can be stable yet sluggish. It needs a lot of steering and arrives late at the new
+      direction.</li>
+      <li><strong>Predictability:</strong> whether the response stays consistent as speed and grip change, so the
+      driver's learned “feel” still applies near the limit.</li>
+    </ul>
+  </section>
+
+  <section class="lesson-section" id="driver">
+    <h2>The driver as a feedback controller</h2>
+    <p>
+      If you have taken a controls course, you know this loop. If not, here is all you need for now. A driver
+      behaves roughly like a controller with three properties:
+    </p>
+    <ol>
+      <li><strong>Preview:</strong> the driver looks ahead, typically about a second down the road, and aims the car at a point there.</li>
+      <li><strong>Gain:</strong> how strongly they correct an error. Too little and the car drifts off line; too much and they overcorrect.</li>
+      <li><strong>Delay:</strong> a human takes roughly 0.15–0.3 s to perceive an error and start correcting it. During that time the car keeps moving on old information.</li>
+    </ol>
+    <p>
+      Drivers also <em>feel</em> yaw rate and lateral acceleration through their body and the steering wheel,
+      usually before they can see the path error. That “seat-of-the-pants” feedback lets a skilled driver catch a
+      car that is starting to rotate, which is exactly what an unstable car needs.
+    </p>
+    <div class="callout callout--key">
+      <p>A driver can drive a car that is slightly unstable, but only by constantly catching it. The car's stability
+      and response decide how much of the driver's attention and skill go into simply keeping it on the road, and how
+      much is left for going fast.</p>
+    </div>
+
+    <div class="widget" data-widget="lane-change">
+      <div class="widget__title">Double lane change (closed loop)</div>
+      <p class="widget__desc">The classic avoidance maneuver: move over 3.5 m, then back again, without hitting the cones. Watch a model driver with adjustable gain, reaction time and yaw feel, or switch to <em>You drive</em> and try it yourself. The lower plot shows the steering input: a busy, saw-toothed trace means a hard-working driver.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>Run the defaults (slight understeer, 30 m/s). Keep the run as a ghost. Then set the balance to “Understeer 100%” and run again. Which car follows the line more closely?</li>
+        <li>Set the balance to “Oversteer 50%” at 35 m/s. The readout says the car alone is unstable. Can the model driver still complete the maneuver? Try reaction times of 0.15 s and 0.3 s.</li>
+        <li>With that same unstable car, set the yaw feel to zero. What does this tell you about why drivers value feedback through the seat and steering wheel?</li>
+        <li>Go back to a stable car and turn the steering gain up to 3 with a 0.4 s reaction time. What goes wrong, even though the car itself is stable?</li>
+        <li>Switch to <em>You drive</em> at half speed. Compare your steering trace and reversal count for an understeer car and a neutral car.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="tradeoff">
+    <h2>Why the fastest car is not always the easiest to drive</h2>
+    <p>
+      A strongly understeering car is stable and forgiving, but it is reluctant to turn. The driver must wait for it
+      at corner entry, and it scrubs speed with its front tires. A car close to neutral turns in eagerly and uses
+      both axles fully at the limit, which is good for the g-g envelope. The cost is a smaller stability margin, so
+      the driver must work harder and react faster to keep it there.
+    </p>
+    <p>
+      Race engineers therefore tune the balance to sit near neutral, but on the side that <em>this</em> driver can
+      exploit confidently, for <em>this</em> race distance. Fatigue, tire wear, changing fuel load and track
+      conditions all shift the best compromise. This is the engineering judgment that Module 9's capstone asks you to
+      practice.
+    </p>
+    <div class="callout callout--misconception">
+      <p>“Understeer is safe, so more understeer is always better.” More understeer adds stability, but the car
+      becomes sluggish and imprecise, as you saw in the lane change at higher speed. It also wastes rear-tire grip at
+      the limit. Too much understeer is slow, and it can be dangerous in an emergency maneuver.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m01-l2-n1" data-answer="12.5" data-tol="0.01" data-units="m">
+        <p>A driver approaching a braking zone at 180 km/h has a reaction time of 0.25 s. How far does the car travel
+        before the driver even begins to respond to something they see?</p>
+        <div class="hint"><p>Convert the speed to m/s first. Distance = speed × time.</p></div>
+        <div class="solution"><p>\(180\ \text{km/h} \div 3.6 = 50\ \text{m/s}\), so \(d = 50 \times 0.25 = 12.5\ \text{m}\): about three car lengths of driving on old information.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m01-l2-n2" data-answer="90" data-tol="0.01" data-units="km/h">
+        <p>A car has a wheelbase of 2.5 m and an understeer gradient of \(K = -0.0040\ \text{rad/(m/s}^2)\) (it oversteers).
+        Above what speed is it unstable without driver correction? Give your answer in km/h.</p>
+        <div class="hint"><p>Use \(U_{\text{crit}} = \sqrt{L/|K|}\), which gives m/s.</p></div>
+        <div class="solution"><p>\(U_{\text{crit}} = \sqrt{2.5 / 0.0040} = \sqrt{625} = 25\ \text{m/s} = 90\ \text{km/h}\). A car like this would be fine in a parking lot and treacherous on a fast straight.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m01-l2-q1">
+        <p class="mcq__prompt">A car drives straight with the steering wheel clamped. A small bump gives it a slight yaw, and the yaw rate keeps
+        growing until the car spins. What does this tell you?</p>
+        <ul>
+          <li>The tires had no grip left.<span class="why">Not necessarily: instability can begin well inside the tires' linear range. Growth from a small disturbance is the signature of instability, not of saturation.</span></li>
+          <li data-correct>The car is unstable at that speed: its tire forces amplify a yaw disturbance instead of restoring it.<span class="why">With no driver input (open loop), a disturbance that grows by itself means the equilibrium is unstable.</span></li>
+          <li>The driver overcorrected.<span class="why">The wheel was clamped. This was an open-loop test with no driver corrections at all.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m01-l2-q2">
+        <p class="mcq__prompt">An oversteering car is stable at 60 km/h but unstable at 150 km/h. Why does speed matter?</p>
+        <ul>
+          <li data-correct>The damping effect of the tires on yaw rotation weakens as speed rises, so above a critical speed the oversteer tendency wins.<span class="why">The slip angles created by a given yaw rate scale with \(r/U\), so the same rotation produces less restoring force at higher speed.</span></li>
+          <li>The tires have less grip at high speed.<span class="why">Grip may change slightly with speed, but that is not the reason. The car becomes unstable even with constant tire properties.</span></li>
+          <li>The driver's reaction time is longer at high speed.<span class="why">Stability is an open-loop property of the car alone. No driver is involved.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m01-l2-q3">
+        <p class="mcq__prompt">In the lane change, a model driver with a high steering gain and a long reaction time weaves increasingly
+        and spins a car that is stable on its own. What is happening?</p>
+        <ul>
+          <li>The car became unstable because of the lane change.<span class="why">The open-loop stability of this car does not change. The problem is in the loop, not in the car alone.</span></li>
+          <li data-correct>The driver is correcting hard based on old information, so each correction arrives too late and overshoots. The closed loop is unstable even though the car is not.<span class="why">Gain and delay together can destabilize a loop. That is why calm, smooth inputs are often faster.</span></li>
+          <li>The steering is too slow to respond.<span class="why">The steering responds instantly in the model; the delay is in the driver's perception and reaction.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 1, <em>The Problem Imposed by Racing</em>, focusing on how the driver and
+      vehicle are treated as one system. Then skim the opening pages of Chapters 5 and 6, <em>Simplified Steady-State</em>
+      and <em>Simplified Transient Stability and Control</em>, to see where this lesson is heading.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>Which ideas from aircraft stability and control do the authors carry over to the automobile, and which do not fit?</li>
+        <li>How do the authors distinguish stability from control (or “controllability”)?</li>
+        <li>What do they say a driver needs from a car in order to drive it at the limit?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>In one line</th></tr></thead>
+        <tbody>
+          <tr><td>Open loop</td><td>The car's response with the inputs held fixed. Reveals properties of the car alone.</td></tr>
+          <tr><td>Closed loop</td><td>The driver observes and corrects. Reveals how car and driver perform together.</td></tr>
+          <tr><td>Stability</td><td>Does a small disturbance die out (stable) or grow (unstable)?</td></tr>
+          <tr><td>Critical speed</td><td>\(U_{\text{crit}} = \sqrt{L/|K|}\) for an oversteering car; understeering cars have none.</td></tr>
+          <tr><td>Control</td><td>How readily and predictably the car follows the driver's intended path.</td></tr>
+          <tr><td>Driver as controller</td><td>Preview, gain and delay. Too much gain with too much delay causes overcorrection.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: Module 2 opens up the tire, the source of every force in this lesson, to see how slip angle creates those restoring (or destabilizing) forces.</p>
+  </section>
+
+</article>
+</body>
+</html>

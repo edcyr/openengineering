@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The SAE vehicle axis system and sign conventions — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/widgets/axes.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m00-l2">
+<article class="lesson">
+
+  <section class="lesson-section" id="why">
+    <h2>Why sign conventions matter</h2>
+    <p>
+      Ask two engineers whether a car turning right has a positive or negative yaw rate and you may get two different
+      answers, and both can be right. Vehicle dynamics uses more than one standard set of axes, and a sign error is
+      the most common mistake in the whole subject. It is also the easiest one to avoid if you set up your axes
+      deliberately before writing a single equation.
+    </p>
+    <p>
+      RCVD uses the <strong>SAE vehicle axis system</strong> (from the SAE J670 vehicle-dynamics terminology standard).
+      Many modern textbooks and simulation tools use <strong>ISO 8855</strong> instead. This lesson teaches the SAE
+      system used in the book and shows how to translate to ISO.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="frames">
+    <h2>Earth-fixed and vehicle-fixed axes</h2>
+    <p>Two coordinate frames are in play at once:</p>
+    <ul>
+      <li><strong>Earth-fixed axes</strong> \((X, Y, Z)\) are attached to the ground. Use them to describe <em>where</em>
+      the car is on the track, for example the path traced on a track map.</li>
+      <li><strong>Vehicle-fixed (body) axes</strong> \((x, y, z)\) have their origin at the car's CG and move and rotate
+      with it. Use them to describe what the car is <em>doing</em>: its accelerations, rotation rates and tire forces.
+      An accelerometer bolted to the chassis measures along these axes.</li>
+    </ul>
+    <p>The <strong>heading</strong> (yaw angle) \(\psi\) is the angle between the vehicle's \(x\) axis and the earth's \(X\) axis.</p>
+  </section>
+
+  <section class="lesson-section" id="sae">
+    <h2>The SAE axes and rotations</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Axis</th><th>SAE (RCVD)</th><th>ISO 8855</th><th>Rotation about it</th></tr></thead>
+        <tbody>
+          <tr><td>\(x\)</td><td>forward</td><td>forward</td><td><strong>Roll</strong> \(\phi\), rate \(p\). Positive in both: right side down</td></tr>
+          <tr><td>\(y\)</td><td>to the <strong>right</strong></td><td>to the <strong>left</strong></td><td><strong>Pitch</strong> \(\theta\), rate \(q\). SAE positive: nose up. ISO positive: nose down</td></tr>
+          <tr><td>\(z\)</td><td><strong>down</strong></td><td><strong>up</strong></td><td><strong>Yaw</strong> \(\psi\), rate \(r\). SAE positive: nose right. ISO positive: nose left</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Both systems are <strong>right-handed</strong>: point your right hand's fingers along \(x\), curl them toward \(y\),
+      and your thumb points along \(z\). Check it for SAE: forward × right = down. ✓ The positive sense of each
+      rotation also follows the right-hand rule: thumb along the axis, fingers curl in the positive direction.
+    </p>
+    <div class="callout callout--key">
+      <p>In SAE axes, a car turning <strong>right</strong> has positive yaw rate and positive lateral acceleration.
+      In ISO axes the same right turn has negative yaw rate and negative lateral acceleration. Same physics, opposite
+      signs. Always state your convention.</p>
+    </div>
+
+    <div class="widget" data-widget="axes-3d" id="axes3d">
+      <div class="widget__title">Vehicle axes in 3-D</div>
+      <p class="widget__desc">Rotate the car with the roll, pitch and yaw sliders and watch its body axes move with it. Switch between SAE and ISO: the car stays put, but the axes and the signs change. Drag the picture to orbit the camera.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>In SAE, set yaw to +30°. Which way did the nose turn? Switch to ISO. What does the yaw slider read now, and why?</li>
+        <li>Set a positive roll. Is it the same physical motion in both conventions? Use the right-hand rule on the x axis to explain why.</li>
+        <li>Use the curved arrows to check the right-hand rule for pitch in each convention. Point your right thumb along the y axis on screen.</li>
+        <li>Orbit the camera to look straight down from above. Which way does z point in each convention?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="angles">
+    <h2>The angles that describe a cornering car</h2>
+    <p>Seen from above, four angles appear again and again. In SAE they are all measured <strong>clockwise positive</strong> (looking down), because \(z\) points down:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Angle</th><th>Between</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Heading \(\psi\)</td><td>Earth \(X\) and vehicle \(x\)</td><td>Where the car points on the track</td></tr>
+          <tr><td>Sideslip \(\beta\)</td><td>Vehicle \(x\) and the velocity at the CG</td><td>How much the car is moving sideways relative to where it points</td></tr>
+          <tr><td>Steer \(\delta\)</td><td>Vehicle \(x\) and the front wheel's heading</td><td>How far the front wheels are turned</td></tr>
+          <tr><td>Slip angle \(\alpha\)</td><td>A wheel's heading and the velocity of its contact patch</td><td>What the tire “feels”, and what generates its lateral force (Lesson 2.1)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The car's direction of travel on the track (its <em>course angle</em>) is \(\psi + \beta\). The slip angles
+      follow from rigid-body kinematics. The yaw rate \(r\) adds a sideways velocity \(a\,r\) at the front axle (a
+      distance \(a\) ahead of the CG) and subtracts \(b\,r\) at the rear axle (a distance \(b\) behind it). For small
+      angles, in SAE axes:
+    </p>
+    <div class="equation">\[ \alpha_f = \beta + \frac{a\,r}{V} - \delta, \qquad \alpha_r = \beta - \frac{b\,r}{V} \]</div>
+    <p>
+      In SAE, a positive slip angle produces a <em>negative</em> (leftward) lateral force: \(F_y = -C_\alpha\,\alpha\).
+      So in a right turn, where the tires must push the car to the right, both slip angles are negative. These two equations are the
+      starting point of the bicycle model in Module 5.
+    </p>
+
+    <div class="widget" data-widget="angles-top" id="anglestop">
+      <div class="widget__title">Steer, sideslip and slip angles</div>
+      <p class="widget__desc">A top view of the car (front at the top). Set the steer angle, yaw rate and sideslip, and see the velocity at each axle (purple), the resulting slip angles, and which way each tire's force points (orange). Real slip angles are only a few degrees, so each angle is drawn as a shaded wedge, magnified by the factor shown under the drawing (the numbers are exact). Press <em>True size</em> to see how small they really are. Try the presets, then switch convention.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>Load <em>Right turn</em> and read the signs of \(\delta\), \(r\), \(\beta\) and both slip angles in SAE. Then switch to ISO. Which numbers change sign? Did anything in the picture move?</li>
+        <li>From <em>Straight</em>, add yaw rate only. Why do the front and rear slip angles have opposite signs?</li>
+        <li>Load <em>Drifting right</em>. The steering points <em>left</em>, yet the front tire force still points right, into the turn. Use the slip angle to explain how.</li>
+        <li>Lower the speed with the yaw rate held fixed. What happens to the \(a\,r/V\) and \(b\,r/V\) terms?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>A car at \(V = 25\) m/s has \(a = 1.2\) m, yaw rate \(r = 0.20\) rad/s (turning right), sideslip \(\beta = -1.0^\circ\) and steer \(\delta = +3.0^\circ\), all in SAE. Find the front slip angle.</p>
+      <p>\(a\,r/V = 1.2 \times 0.20 / 25 = 0.0096\ \text{rad} = 0.55^\circ\), so \(\alpha_f = -1.0 + 0.55 - 3.0 = -3.45^\circ\).</p>
+      <p>The slip angle is negative, so the front tire force is positive: to the right, toward the center of a right turn, as it must be.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m00-l2-n1" data-answer="-1.60" data-abs="0.03" data-units="deg">
+        <p>Same car as the worked example (\(V = 25\) m/s, \(r = 0.20\) rad/s, \(\beta = -1.0^\circ\)), with the rear axle \(b = 1.3\) m behind the CG. What is the rear slip angle in SAE axes?</p>
+        <div class="hint"><p>\(\alpha_r = \beta - b\,r/V\). Convert \(b\,r/V\) from radians to degrees before adding it to \(\beta\).</p></div>
+        <div class="solution"><p>\(b\,r/V = 1.3 \times 0.20/25 = 0.0104\ \text{rad} = 0.60^\circ\), so \(\alpha_r = -1.0 - 0.60 = -1.60^\circ\). Negative: the rear force also points right, into the turn.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m00-l2-n2" data-answer="26" data-abs="0.05" data-units="deg">
+        <p>On a track map, a car's heading is \(\psi = 30^\circ\) and its sideslip is \(\beta = -4^\circ\) (SAE, clockwise positive). In what direction is it actually traveling (its course angle)?</p>
+        <div class="hint"><p>Course angle \(= \psi + \beta\).</p></div>
+        <div class="solution"><p>\(30 + (-4) = 26^\circ\). The nose points 4° further clockwise than the direction of travel.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m00-l2-q1">
+        <p class="mcq__prompt">Using SAE axes, a car is in a steady <strong>left</strong> turn. What are the signs of its yaw rate \(r\) and lateral acceleration \(a_y\)?</p>
+        <ul>
+          <li>Both positive.<span class="why">That is a right turn in SAE, where y points right and positive yaw is nose-right.</span></li>
+          <li data-correct>Both negative.<span class="why">Turning left means nose-left yaw (negative about z-down) and acceleration toward the left (negative y).</span></li>
+          <li>Yaw rate negative, lateral acceleration positive.<span class="why">In a steady turn the acceleration points toward the center, the same side the car is turning to.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m00-l2-q2">
+        <p class="mcq__prompt">A data logger set up with ISO 8855 axes records a yaw rate of +15 deg/s. What would the same motion read in SAE axes?</p>
+        <ul>
+          <li>+15 deg/s.<span class="why">ISO z points up, SAE z points down, so rotations about z have opposite signs.</span></li>
+          <li data-correct>−15 deg/s (the car is turning left).<span class="why">ISO positive yaw is nose-left; in SAE, nose-left is negative.</span></li>
+          <li>It depends on the car's speed.<span class="why">The conversion is purely about axis directions.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m00-l2-q3">
+        <p class="mcq__prompt">What is the difference between the sideslip angle \(\beta\) and a tire's slip angle \(\alpha\)?</p>
+        <ul>
+          <li>They are two names for the same angle.<span class="why">They differ whenever the car is rotating or the wheel is steered.</span></li>
+          <li data-correct>\(\beta\) describes the whole car's velocity at the CG relative to its x axis. \(\alpha\) describes one tire's contact-patch velocity relative to that wheel's heading.<span class="why">Yaw rate and steer make the front and rear slip angles differ from \(\beta\) and from each other.</span></li>
+          <li>\(\beta\) is measured in the ground frame and \(\alpha\) in the vehicle frame.<span class="why">Both are angles between a velocity and a body-fixed direction. What differs is which point and which heading.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 4, <em>Vehicle Axis Systems</em>. Keep its figures handy. You will refer back to them throughout the book and this course.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>Which axis systems does the chapter define besides the vehicle-fixed one, such as for the tire or the ground, and why is each needed?</li>
+        <li>How does the book define the positive directions of tire forces and moments?</li>
+        <li>Compare the book's figures with the ISO table in this lesson. Where would a careless conversion go wrong?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>SAE vehicle axes</td><td>x forward, y right, z down (right-handed)</td></tr>
+          <tr><td>ISO 8855 vehicle axes</td><td>x forward, y left, z up</td></tr>
+          <tr><td>Rotations</td><td>roll \(\phi\) about x, pitch \(\theta\) about y, yaw \(\psi\) about z (right-hand rule)</td></tr>
+          <tr><td>Course angle</td><td>\(\psi + \beta\)</td></tr>
+          <tr><td>Slip angles (SAE, small angles)</td><td>\(\alpha_f = \beta + a r/V - \delta,\quad \alpha_r = \beta - b r/V\)</td></tr>
+          <tr><td>Tire lateral force (SAE)</td><td>\(F_y = -C_\alpha\,\alpha\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A note on this course: to keep pictures simple, some later interactives plot magnitudes or use left-positive axes. Each one says which it uses. Now you know why that matters.</p>
+  </section>
+
+</article>
+</body>
+</html>

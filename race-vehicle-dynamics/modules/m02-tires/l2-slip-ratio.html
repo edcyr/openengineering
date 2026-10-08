@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slip ratio: traction and braking — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/tire.js"></script>
+  <script defer src="../../assets/js/widgets/slip-ratio.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m02-l2">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>The other half of the friction circle</h2>
+    <p>
+      Lesson 2.1 explained how a tire makes <em>sideways</em> force. Every braking zone and every corner exit asks
+      for force in the <em>fore–aft</em> direction instead. On the g-g diagram, that is the top and bottom of the
+      envelope. The good news is that the mechanism is the same. Where lateral force needs a slip angle,
+      longitudinal force needs a <strong>slip ratio</strong>.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="definition">
+    <h2>Wheel speed vs vehicle speed</h2>
+
+    <figure>
+      <svg viewBox="0 0 400 250" width="400" role="img" aria-label="Side view of a wheel rolling to the right with vehicle speed V, wheel angular speed Omega, effective radius r_e and longitudinal force Fx at the contact patch">
+        <defs>
+          <marker id="srA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-s1-fill"/></marker>
+          <marker id="srB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-s2-fill"/></marker>
+          <marker id="srC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="fig-fill"/></marker>
+        </defs>
+        <line x1="20" y1="210" x2="380" y2="210" class="fig-stroke" stroke-width="2"/>
+        <circle cx="180" cy="130" r="80" fill="none" class="fig-stroke" stroke-width="2"/>
+        <circle cx="180" cy="130" r="4" class="fig-fill"/>
+        <line x1="180" y1="130" x2="180" y2="210" class="fig-muted" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="186" y="178" class="fig-text">r<tspan font-size="11" dy="4">e</tspan></text>
+        <line x1="180" y1="130" x2="300" y2="130" class="fig-s1" stroke-width="3" marker-end="url(#srA)"/>
+        <text x="306" y="135" class="fig-text">V</text>
+        <path d="M92,95 A95,95 0 0 1 268,95" fill="none" class="fig-stroke" stroke-width="1.5" marker-end="url(#srC)"/>
+        <text x="180" y="28" text-anchor="middle" class="fig-text">Ω</text>
+        <line x1="180" y1="222" x2="260" y2="222" class="fig-s2" stroke-width="3" marker-end="url(#srB)"/>
+        <text x="266" y="227" class="fig-text">Fx (driving)</text>
+      </svg>
+      <figcaption>A free-rolling wheel satisfies \(\Omega r_e = V\). Any difference between the two is longitudinal slip.</figcaption>
+    </figure>
+
+    <p>
+      A wheel that is simply rolling, neither driven nor braked, turns at exactly the rate that matches the ground
+      speed: \(\Omega r_e = V\), where \(r_e\) is the <em>effective rolling radius</em>. To make a longitudinal force,
+      the wheel must turn slightly faster (driving) or slower (braking) than that. The <strong>slip ratio</strong>
+      measures the mismatch:
+    </p>
+    <div class="equation">\[ \kappa = \frac{\Omega r_e - V}{V} \]</div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Condition</th><th>Slip ratio</th></tr></thead>
+        <tbody>
+          <tr><td>Free rolling</td><td>\(\kappa = 0\)</td></tr>
+          <tr><td>Driving (wheel turning faster than the road)</td><td>\(\kappa &gt; 0\)</td></tr>
+          <tr><td>Braking (wheel turning slower than the road)</td><td>\(\kappa &lt; 0\)</td></tr>
+          <tr><td>Locked wheel</td><td>\(\kappa = -1\) (−100%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Why must a tire slip to make force? The same reason as in Lesson 2.1. Under braking, tread elements entering
+      the contact patch stick to the road, but the wheel is turning a little slower than the road is passing. Each
+      element is stretched more and more as it moves back through the patch, like a spring being pulled. The sum of
+      those spring forces is \(F_x\). At small slip ratios almost the whole patch grips; as slip grows, the rear of
+      the patch starts to slide.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="curve">
+    <h2>The longitudinal force curve</h2>
+    <p>Plot \(F_x\) against \(\kappa\) and you get a curve that looks very like the lateral force curve:</p>
+    <ul>
+      <li><strong>Linear region:</strong> \(F_x \approx C_\kappa\,\kappa\), where \(C_\kappa\) is the <em>longitudinal
+      stiffness</em> in N per unit slip. It is usually much stiffer than the lateral equivalent, so the slip is small: a few percent.</li>
+      <li><strong>Peak:</strong> \(F_{x,\max} = \mu_{x}\,F_z\), typically somewhere around 5–15% slip depending on the tire.</li>
+      <li><strong>Sliding:</strong> past the peak the force falls. A locked wheel (−100%) slides at a noticeably lower
+      friction coefficient than the peak, and it flat-spots the tire.</li>
+    </ul>
+    <div class="callout callout--key">
+      <p>Maximum braking and maximum traction both happen at a <em>small</em> slip ratio, just before the peak. A
+      locked wheel or a spinning wheel is always slower than one held at the peak.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="lockup">
+    <h2>Why wheels lock so suddenly</h2>
+    <p>
+      Treat the wheel as a rigid body spinning about its axle. Brake torque \(T_b\) slows it down; the tire force
+      \(F_x\) acting at radius \(r_e\) speeds it back up:
+    </p>
+    <div class="equation">\[ I_w\,\dot\Omega = F_x\,r_e - T_b \]</div>
+    <p>
+      In steady braking the two torques balance and the wheel settles at whatever slip ratio makes
+      \(F_x = T_b / r_e\). On the rising part of the curve that balance is <strong>stable</strong>. If the wheel slows
+      slightly, slip grows, \(F_x\) rises, and the wheel is pushed back.
+    </p>
+    <p>
+      Now ask for more brake torque than the peak can balance. There is no operating point. The wheel slows, slip
+      grows, \(F_x\) <em>falls</em>, so the wheel slows even faster. The wheel goes from turning to locked in a
+      fraction of a second. The same instability in the driving direction gives sudden wheelspin.
+    </p>
+    <p>
+      <strong>ABS</strong> and <strong>traction control</strong> break this runaway: they sense the slip and trim the
+      torque to hold the tire in a band just below its peak. Many racing series ban both, which is why
+      <em>threshold braking</em> (holding the pedal right at the edge of lock-up) is a core racing skill.
+    </p>
+
+    <div class="widget" data-widget="slip-ratio">
+      <div class="widget__title">Slip ratio and wheel-lock explorer</div>
+      <p class="widget__desc">Apply a brake (negative) or drive (positive) torque to one wheel. The red dashed line is the force that torque demands. Where it crosses the tire curve, the wheel finds a steady slip. If it can't cross, watch what happens, then turn on the driver aids.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>Slowly increase the brake torque (more negative). Note the slip ratio and stopping distance just before the wheel locks, then just after.</li>
+        <li>With the wheel locked, switch on ABS. How much stopping distance does it save from 100 km/h?</li>
+        <li>Increase the vertical load to 5000 N. Does the torque needed to lock the wheel go up or down? Connect this to longitudinal load transfer under braking (Module 3).</li>
+        <li>Reduce the longitudinal stiffness coefficient. What happens to the slip ratio at a fixed braking force, and to the slip ratio at the peak?</li>
+        <li>Try the driving side: find the torque at which the wheel starts to spin.</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>A car is braking at 30 m/s. Its wheel speed sensor reads 95 rad/s, and the effective rolling radius is 0.30 m. What is the slip ratio?</p>
+      <p>\[ \kappa = \frac{\Omega r_e - V}{V} = \frac{95 \times 0.30 - 30}{30} = \frac{28.5 - 30}{30} = -0.05 \]</p>
+      <p>The tire is running at −5% slip: braking, comfortably on the rising side of a typical curve.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m02-l2-n1" data-answer="-8" data-abs="0.1" data-units="%">
+        <p>A car travels at 25 m/s. A braked wheel with effective rolling radius 0.32 m turns at 71.875 rad/s. What is its slip ratio, in percent?</p>
+        <div class="hint"><p>Compute the wheel's surface speed \(\Omega r_e\) first, then use \(\kappa = (\Omega r_e - V)/V\). Watch the sign.</p></div>
+        <div class="solution"><p>\(\Omega r_e = 71.875 \times 0.32 = 23.0\ \text{m/s}\), so \(\kappa = (23.0 - 25)/25 = -0.08 = -8\%\). Negative, because the wheel is braking.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m02-l2-n2" data-answer="2" data-tol="0.01" data-units="%">
+        <p>A tire has a longitudinal stiffness of 90 000 N per unit slip. Assuming linear behavior, what slip ratio (in percent) does it need to deliver 1800 N of driving force?</p>
+        <div class="hint"><p>In the linear region, \(F_x = C_\kappa \kappa\). Convert the result to percent.</p></div>
+        <div class="solution"><p>\(\kappa = 1800 / 90\,000 = 0.02 = 2\%\). That is a very small slip, which is why a tire making plenty of force still looks as if it is just rolling.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m02-l2-n3" data-answer="6.55" data-tol="0.02" data-units="m">
+        <p>A car stops from 100 km/h. With threshold braking its tires work at a peak \(\mu = 1.5\); with the wheels locked they slide at \(\mu = 1.2\).
+        How much <em>longer</em> is the locked-wheel stop? Assume constant deceleration \(\mu g\).</p>
+        <div class="hint"><p>Stopping distance \(d = v^2 / (2 \mu g)\). Remember to convert km/h to m/s.</p></div>
+        <div class="solution">
+          <p>\(v = 27.78\ \text{m/s}\), \(v^2 = 771.6\ \text{m}^2/\text{s}^2\).</p>
+          <p>Peak: \(771.6 / (2 \times 1.5 \times 9.81) = 26.2\ \text{m}\). Locked: \(771.6 / (2 \times 1.2 \times 9.81) = 32.8\ \text{m}\).</p>
+          <p>Difference \(\approx 6.6\ \text{m}\) — more than a car length, and the locked car also cannot steer (Lesson 2.3).</p>
+        </div>
+      </div>
+
+      <div class="mcq" data-id="m02-l2-q1">
+        <p class="mcq__prompt">A driver brakes harder and harder in a straight line. Just past the peak of the \(F_x\)–\(\kappa\) curve, what happens to the wheel?</p>
+        <ul>
+          <li>It settles at a new, slightly higher slip ratio.<span class="why">Past the peak, extra slip reduces \(F_x\), so the tire can no longer balance the brake torque. There is no steady point to settle at.</span></li>
+          <li data-correct>It locks almost immediately, because extra slip reduces the tire force, which lets the brake slow the wheel even more.<span class="why">This positive feedback is what makes lock-up so sudden, and why ABS must react within milliseconds.</span></li>
+          <li>Nothing changes until the slip ratio reaches −100%.<span class="why">The curve starts falling right after the peak. That is where the trouble starts.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m02-l2-q2">
+        <p class="mcq__prompt">What does an anti-lock braking system actually control?</p>
+        <ul>
+          <li>The vertical load on each tire.<span class="why">ABS cannot change wheel loads; it modulates brake pressure.</span></li>
+          <li data-correct>The brake pressure on each wheel, to keep that wheel's slip ratio in a band just below the peak.<span class="why">It watches wheel speed (and so slip) and releases or reapplies pressure to stay near maximum \(F_x\).</span></li>
+          <li>The friction coefficient of the tire.<span class="why">\(\mu\) is a property of the tire and road. ABS chooses where on the curve the tire operates.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m02-l2-q3">
+        <p class="mcq__prompt">Why is the slip ratio for a given longitudinal force usually much smaller than the slip angle needed for the same lateral force (in radians)?</p>
+        <ul>
+          <li data-correct>The tread and carcass are much stiffer in the fore–aft direction, so the longitudinal stiffness is high.<span class="why">A high \(C_\kappa\) means a small \(\kappa\) gives a large force. That is why slip ratios are quoted in single-digit percent.</span></li>
+          <li>Because longitudinal friction is higher than lateral friction.<span class="why">Peak friction sets the maximum force, not how much slip is needed below the peak.</span></li>
+          <li>Because the wheel is rotating.<span class="why">A cornering tire is rotating too. The difference is in the stiffness of the structure in each direction.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 2, <em>Tire Behavior</em>, on longitudinal slip and traction/braking force. Then look at Chapter 20, <em>Driving and Braking</em>, which uses the same ideas at the scale of the whole car.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How is slip ratio defined in the book? Compare it with the definition used here, and check that the signs agree.</li>
+        <li>How do the shapes of the traction and braking sides of the curve compare?</li>
+        <li>How do the authors connect the tire's longitudinal behavior to a car's brake balance and driveline layout?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Slip ratio</td><td>\(\kappa = (\Omega r_e - V)/V\); locked \(\kappa = -1\)</td></tr>
+          <tr><td>Linear tire</td><td>\(F_x \approx C_\kappa\,\kappa\)</td></tr>
+          <tr><td>Peak force</td><td>\(F_{x,\max} = \mu_x F_z\) at a small slip ratio</td></tr>
+          <tr><td>Wheel spin dynamics</td><td>\(I_w \dot\Omega = F_x r_e - T_b\); past the peak, lock-up runs away</td></tr>
+          <tr><td>Stopping distance</td><td>\(d = v^2 / (2\mu g)\), so peak beats sliding</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: what happens when a tire must brake <em>and</em> corner at the same time?</p>
+  </section>
+
+</article>
+</body>
+</html>
