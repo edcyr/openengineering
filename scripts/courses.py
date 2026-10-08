@@ -37,11 +37,12 @@ COURSES = [
                 5: 'Thrust-to-weight ratio and wing loading', 6: 'Configuration layout and fuselage sizing', 7: 'Propulsion selection and integration',
                 8: 'Landing gear and subsystems', 9: 'Aerodynamics: lift and the drag build-up', 10: 'Component weights and center of gravity',
                 11: 'Stability, control and tail sizing', 12: 'Performance, cost and trade studies'}),
-  # A standalone course has its own home page, navigation and progress (synced whole by sync-modules.sh), so it
-  # gets no generated course page; its home-page card reads modules and lessons from its manifest, course-data.js.
-  dict(slug='race-vehicle-dynamics', kind='standalone', title='Race Vehicle Dynamics', level='Second-year mechanical · Ravens Racing', mark='RVD',
+  # A standalone course has its own home page, navigation and progress (synced whole by sync-modules.sh, with its
+  # zip), so it gets no generated course page; its home-page card reads modules and lessons from its manifest,
+  # course-data.js. dl labels its entry in the home page's download list.
+  dict(slug='race-vehicle-dynamics', kind='standalone', title='Race Vehicle Dynamics', level='Formula SAE - Ravens Racing', mark='RVD', dl='Formula SAE',
        blurb='Why is one car faster than another through the same corner? The answer, built from Newton\'s laws, friction and moments up to the tools race engineers use to set up a car, with interactive models you can push to the limit. A companion to Milliken\'s <em>Race Car Vehicle Dynamics</em>.',
-       extras=(('reference/formulas.html', 'Formula sheet'), ('reference/glossary.html', 'Glossary'), ('instructor-guide.html', 'Instructor guide'))),
+       extras=(('reference/formulas.html', 'Formula sheet'), ('reference/glossary.html', 'Glossary'))),
 ]
 STANDALONE = [c for c in COURSES if c.get('kind') == 'standalone']
 COURSES = [c for c in COURSES if c.get('kind') != 'standalone']
@@ -94,6 +95,7 @@ def standalone_info(c):
     # c['mods'] holds only the modules with lessons to open, so the home page's totals count what students can use
     c['mods'] = [dict(title=m['title'], number=m['number'], lessons=m['ready'], total=len(m['lessons'])) for m in mods if m['ready']]
     c['planned_mods'] = [m for m in mods if not m['ready']]
+    c['zip'] = '%.1f MB' % (os.path.getsize(os.path.join(SITE, c['slug'], 'downloads', c['slug'] + '.zip')) / 1e6)
 
 for c in STANDALONE:
     standalone_info(c)
@@ -455,11 +457,13 @@ def standalone_card(c):
             <p class="extras">%s</p>
             <div class="card-actions">
               <a class="btn primary sm" href="%s">Go to the course</a>
+              <a class="btn sm" href="%sdownloads/%s.zip" download>Download for offline use (%s)</a>
             </div>
-          </article>''' % (c['mark'], esc(c['level']), base, esc(c['title']), c['blurb'], meta, mods, extras, base)
+          </article>''' % (c['mark'], esc(c['level']), base, esc(c['title']), c['blurb'], meta, mods, extras, base, base, c['slug'], c['zip'])
 
 def home_downloads():
-    return '\n'.join('            <li><a href="%s/downloads/%s.zip" download>%s <span>%s · zip · %s</span></a></li>' % (c['slug'], m['slug'], esc(m['title']), c['code'], m['zip']) for c in COURSES for m in c['mods'])
+    return '\n'.join(['            <li><a href="%s/downloads/%s.zip" download>%s <span>%s · zip · %s</span></a></li>' % (c['slug'], m['slug'], esc(m['title']), c['code'], m['zip']) for c in COURSES for m in c['mods']] +
+                     ['            <li><a href="%s/downloads/%s.zip" download>%s <span>%s · zip · %s</span></a></li>' % (c['slug'], c['slug'], esc(c['title']), c['dl'], c['zip']) for c in STANDALONE])
 
 def splice(s, name, body):
     a, b = '<!--%s-->' % name, '<!--/%s-->' % name

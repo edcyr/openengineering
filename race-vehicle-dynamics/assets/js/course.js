@@ -111,16 +111,13 @@
   function buildSidebar() {
     const nav = h("nav", "sidebar");
     nav.setAttribute("aria-label", "Course contents");
-    // openengineering.ca: link back to the site's course list
+    // openengineering.ca: link back to the site's course list (the site itself when opened from a download)
     const site = h("a", "nav-site", nav);
-    site.href = `${root}/../index.html#courses`;
+    site.href = location.protocol === "file:" ? "https://openengineering.ca/#courses" : `${root}/../index.html#courses`;
     h("span", "nav-site__arrow", site, "\u2190").setAttribute("aria-hidden", "true");
     site.appendChild(document.createTextNode("All courses \u00b7 Open Engineering"));
     const home = h("a", "nav-home", nav, "Course home");
     home.href = `${root}/index.html`;
-    const guide = h("a", "nav-home", nav, "Instructor guide");
-    guide.href = `${root}/instructor-guide.html`;
-    guide.style.fontWeight = "400";
 
     const current = body.dataset.lesson;
     C.modules.forEach((mod) => {

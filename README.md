@@ -15,14 +15,14 @@ Source for **https://openengineering.ca**: interactive learning modules grouped 
 | `<course>/index.html` | Course page (generated): modules, lesson lists, progress read from each module's saved progress, downloads. |
 | `<course>/<module>/` | The **student** build of each module, patched with a link back to its course page. |
 | `<course>/downloads/*.zip` | The student zips, for offline use. |
-| `race-vehicle-dynamics/` | A **standalone** course: its own home page, navigation and progress (`rvd-progress-v1`), copied whole without `README.md` and `templates/`, and patched with a link back to the home page and a license line. It has no generated course page and no zip (its equations load KaTeX from a CDN). |
+| `race-vehicle-dynamics/` | A **standalone** course: its own home page, navigation and progress (`rvd-progress-v1`), copied whole without `README.md`, `templates/` and its instructor guide, and patched: the modules' KaTeX build replaces the CDN links (so it works offline), a link back to the home page, a license line. No generated course page. Its zip, `downloads/race-vehicle-dynamics.zip`, is written by the sync script with fixed dates, so it only changes when the course does. |
 | `scripts/sync-modules.sh` | Copies modules and zips into their course folders (the `COURSES` list), and standalone courses whole (the `STANDALONE` list). |
 | `scripts/courses.py` | Builds the course pages, the home page's course list, `404.html` redirects and `sitemap.xml`. Course titles and module descriptions are in its `COURSES` list; lesson titles and times come from each module's `cyl-core.js`, or for a standalone course (`kind='standalone'`) from its `assets/js/course-data.js`, which also decides which of its modules count as available. |
 | `scripts/hero-aero3002.svg` | AERO 3002 hero chart, written by `../conceptual-aircraft-design/_build/course-home.py`. |
 | `404.html` | Redirects upper-case course codes (`/ECOR1034` → `/ecor1034`) and the old module addresses from before the courses (`/curvilinear-motion/…` → `/ecor1034/curvilinear-motion/…`, `/downloads/<slug>.zip` → `/<course>/downloads/<slug>.zip`). |
 | `LICENSE.md`, `CNAME`, `.nojekyll`, `robots.txt`, `sitemap.xml`, `favicon.svg` | As usual for GitHub Pages. |
 
-Instructor copies of the modules (answer keys, instructor guides) are deliberately **not** published here. Race Vehicle Dynamics publishes its instructor guide, which has no answers: design notes, pacing, an assessment plan and the textbook mapping.
+Instructor copies (answer keys, instructor guides) are deliberately **not** published here; for Race Vehicle Dynamics the sync script leaves out `instructor-guide.html` and removes the links to it.
 
 ## Updating
 
