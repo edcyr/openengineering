@@ -40,7 +40,7 @@ Progress is saved per module in the browser (localStorage, keyed by each module'
 
 ## License
 
-© 2026 Open Engineering. Content licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/); see `LICENSE.md`. The sync script adds a `LICENSE.txt` to each module folder and download zip, and a license line to every module page footer (text in `scripts/LICENSE-module.txt`).
+© 2026 Open Engineering · © ProfCyr. Content licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/); see `LICENSE.md`. The sync script adds a `LICENSE.txt` to each module folder and download zip, and a license line to every module page footer (text in `scripts/LICENSE-module.txt`).
 
 ## Publishing with GitHub Pages
 

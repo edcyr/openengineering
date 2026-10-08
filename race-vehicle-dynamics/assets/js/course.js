@@ -98,7 +98,7 @@
     const wrap = h("div", "content" + (page === "home" || page === "guide" ? " content--wide" : page === "reference" ? " content--ref" : ""), main);
     content.forEach((n) => wrap.appendChild(n));
     // openengineering.ca: license line under the content of every page
-    const lic = h("p", wrap.className + " site-license", main, "\u00a9 2026 Open Engineering \u00b7 ");
+    const lic = h("p", wrap.className + " site-license", main, "\u00a9 2026 Open Engineering \u00b7 \u00a9 ProfCyr \u00b7 ");
     const cc = h("a", null, lic, "CC BY-NC-SA 4.0");
     cc.href = "https://creativecommons.org/licenses/by-nc-sa/4.0/";
     cc.rel = "license";

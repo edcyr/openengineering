@@ -27,7 +27,7 @@ foot = "el('a', { href: CYL.url(sheet.href), text: 'Formula Sheet' }),"
 foot_new = "el('a', { href: CYL.url('../index.html'), text: '" + site + "' }),\n        ' \\u00b7 ',\n        " + foot
 offline = "el('span', { class: 'cyl-offline', text: 'Works offline' })\n      ])"
 lic = (offline + ",\n      el('p', { class: 'cyl-license' }, [\n"
-       "        '\\u00a9 2026 Open Engineering \\u00b7 ',\n"
+       "        '\\u00a9 2026 Open Engineering \\u00b7 \\u00a9 ProfCyr \\u00b7 ',\n"
        "        el('a', { href: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', rel: 'license', text: 'CC BY-NC-SA 4.0' })\n"
        "      ])")
 assert s.count(head) == 1 and s.count(foot) == 1 and s.count(offline) == 1, core
@@ -114,7 +114,7 @@ link = ('// openengineering.ca: link back to the site\'s course list (the site i
         '    site.appendChild(document.createTextNode("All courses \\u00b7 Open Engineering"));\n    ')
 fill = 'content.forEach((n) => wrap.appendChild(n));'
 lic = ('\n    // openengineering.ca: license line under the content of every page\n'
-       '    const lic = h("p", wrap.className + " site-license", main, "\\u00a9 2026 Open Engineering \\u00b7 ");\n'
+       '    const lic = h("p", wrap.className + " site-license", main, "\\u00a9 2026 Open Engineering \\u00b7 \\u00a9 ProfCyr \\u00b7 ");\n'
        '    const cc = h("a", null, lic, "CC BY-NC-SA 4.0");\n'
        '    cc.href = "https://creativecommons.org/licenses/by-nc-sa/4.0/";\n'
        '    cc.rel = "license";')

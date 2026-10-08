@@ -1,6 +1,6 @@
 # License
 
-© 2026 Open Engineering
+© 2026 Open Engineering · © ProfCyr
 
 The learning modules and the content of this website (lessons, figures, examples, questions, worksheets, formula sheets and glossaries) are licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)**.
 
@@ -14,11 +14,11 @@ You are free to:
 
 Under these terms:
 
-- **Attribution**: give appropriate credit ("Open Engineering, openengineering.ca"), link to the license, and indicate if changes were made.
+- **Attribution**: give appropriate credit ("Open Engineering, openengineering.ca, © ProfCyr"), link to the license, and indicate if changes were made.
 - **NonCommercial**: you may not use the material for commercial purposes.
 - **ShareAlike**: if you remix, transform or build upon the material, you must distribute your contributions under the same license.
 
-Suggested attribution: *"[Module name]" by Open Engineering (https://openengineering.ca), licensed under CC BY-NC-SA 4.0.*
+Suggested attribution: *"[Module name]" by Open Engineering (https://openengineering.ca), © ProfCyr, licensed under CC BY-NC-SA 4.0.*
 
 ## Third-party software
 

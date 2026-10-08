@@ -1241,7 +1241,7 @@
         el('span', { class: 'cyl-offline', text: 'Works offline' })
       ]),
       el('p', { class: 'cyl-license' }, [
-        '\u00a9 2026 Open Engineering \u00b7 ',
+        '\u00a9 2026 Open Engineering \u00b7 \u00a9 ProfCyr \u00b7 ',
         el('a', { href: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', rel: 'license', text: 'CC BY-NC-SA 4.0' })
       ])
     ]);
