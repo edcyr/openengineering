@@ -389,7 +389,7 @@ def course_page(c):
     <p>Notation follows %(notation)s. SI units.</p>
     <p class="license">
       %(cc)s
-      © 2026 Open Engineering. The modules and site content are licensed under
+      © 2026 Open Engineering · © ProfCyr. The modules and site content are licensed under
       <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0</a>:
       share and adapt them for non-commercial use with credit, under the same license.
       Bundled libraries (KaTeX, three.js) keep their own MIT licenses.
