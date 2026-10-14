@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Power, drag and top speed — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="../../assets/vendor/katex/katex.inline-fonts.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="../../assets/vendor/katex/katex.min.js"></script>
+  <script defer src="../../assets/vendor/katex/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/aero.js"></script>
+  <script defer src="../../assets/js/widgets/aero.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m04-l3">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>Twice the power, not twice the speed</h2>
+    <p>
+      Give a car twice the engine power and its top speed rises by only about a quarter. Give it a bigger wing and it
+      laps one circuit faster and another slower. Both facts come from the same place: drag, and the power it takes to
+      push the car through the air. This lesson puts power, traction and drag together, and uses them to choose a wing
+      setting for a circuit.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="power">
+    <h2>Power is force times speed</h2>
+    <p>
+      An engine delivers power \(P\), not a fixed force. At speed \(V\) the driving force it can put through the wheels is
+    </p>
+    <div class="equation">\[ F_{x,P} = \frac{P}{V} \]</div>
+    <p>
+      where \(P\) is the power reaching the driven wheels (the engine's output less drivetrain losses, typically 10–15%).
+      This curve falls as speed rises, and at low speed it rises without limit. The tires cannot pass on unlimited force,
+      though: the drive force is also capped by the <strong>traction limit</strong> of the driven axle. For a rear-wheel-drive
+      car, accelerating moves load onto the rear tires (Lesson 3.1), which raises their limit:
+    </p>
+    <div class="equation">\[ F_{x,\text{trac}} = \frac{\mu\left(W\,a/L + F_{Lr}\right)}{1 - \mu\,h/L} \]</div>
+    <p>
+      The drive force available is the smaller of the two. Below the <strong>crossover speed</strong> where they cross,
+      acceleration is <strong>traction-limited</strong>, and more power would only spin the wheels. Above it,
+      acceleration is <strong>power-limited</strong>, and more grip would not help.
+    </p>
+    <details class="derivation">
+      <summary>Derivation: the rear-wheel-drive traction limit <span class="derivation__hint">Show</span></summary>
+      <div class="derivation__body">
+        <p class="derivation__step">1. Moments about the front contact patch</p>
+        <p>Take drag to act at CG height, and add the inertial load \(m a_x\) at the CG as in Lesson 0.1. Moments about the front contact patch give the rear axle load:</p>
+        <div class="equation">\[ N_r = W\,\frac{a}{L} + F_{Lr} + \left(F_D + m\,a_x\right)\frac{h}{L} \]</div>
+        <p class="derivation__step">2. Use Newton's second law</p>
+        <p>The net forward force is \(m a_x = F_x - F_D\), so the drag terms cancel and the rear load depends only on the drive force:</p>
+        <div class="equation">\[ N_r = W\,\frac{a}{L} + F_{Lr} + F_x\,\frac{h}{L} \]</div>
+        <p class="derivation__step">3. Set the drive force to the tires' limit</p>
+        <div class="equation">\[ F_x = \mu\left(W\,\frac{a}{L} + F_{Lr} + F_x\,\frac{h}{L}\right) \]</div>
+        <p>Collect the \(F_x\) terms:</p>
+        <div class="equation">\[ F_x\left(1 - \mu\,\frac{h}{L}\right) = \mu\left(W\,\frac{a}{L} + F_{Lr}\right) \]</div>
+        <p>The \(1 - \mu h/L\) in the denominator is load transfer helping: the harder the car accelerates, the more load the driven tires carry. It is the mirror image of the rear axle's lock-up limit under braking in Lesson 3.3.</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="lesson-section" id="top">
+    <h2>Drag and top speed</h2>
+    <p>
+      What accelerates the car is the drive force <em>minus</em> the drag, \(m a_x = F_x - F_D\). Drag grows with
+      \(V^2\) while the power-limited drive force shrinks with \(1/V\), so they must meet. Where they do, the car can go no
+      faster. Setting \(P/V = \tfrac{1}{2}\rho V^2 C_D A\):
+    </p>
+    <div class="equation">\[ \begin{aligned} P &= \tfrac{1}{2}\rho\,C_D A\,V_{\text{top}}^3 \\[4pt] V_{\text{top}} &= \left(\frac{2P}{\rho\,C_D A}\right)^{1/3} \end{aligned} \]</div>
+    <p>
+      The power needed to overcome drag grows with the <em>cube</em> of speed, so top speed grows only with the
+      <em>cube root</em> of power:
+    </p>
+    <ul>
+      <li>10% more power gives 3.2% more top speed.</li>
+      <li>10% less drag (\(C_D A\)) gives 3.6% more top speed: a slightly better deal.</li>
+      <li>Twice the power gives 26% more top speed.</li>
+    </ul>
+    <p class="muted" style="font-size:15px">This lesson ignores rolling resistance, a force of roughly 1–2% of the tire load. It matters at low speed but is small next to drag at top speed.</p>
+
+    <div class="widget" data-widget="accel-speed">
+      <div class="widget__title">Traction, power and drag</div>
+      <p class="widget__desc">The left plot shows the drive force the car can use (the smaller of the traction limit and \(P/V\)) and the drag, all as fractions of the car's weight. The shaded gap between them is what accelerates the car; it closes at top speed. The right plot integrates that force to give a full-throttle run from a standstill. Rear-wheel drive, constant \(\mu\), no rolling resistance.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the GT car, at what speed does acceleration switch from traction-limited to power-limited?</li>
+        <li>Double the power. How much does the top speed rise? Why does the time to 100 km/h barely change?</li>
+        <li>Raise the tire friction instead. Which part of the drive-force curve moves?</li>
+        <li>Compare 10% more power with 10% less drag. Which gives the higher top speed?</li>
+        <li>Add downforce. What happens to the traction limit, and to the top speed?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>The GT car has 370 kW at the wheels and \(C_D A = 1.0\) m². Find its top speed, the power it would need for 320 km/h, and roughly where it stops being traction-limited.</p>
+      <p><strong>Top speed:</strong> \(V_{\text{top}} = \left(\dfrac{2 \times 370\,000}{1.225 \times 1.0}\right)^{1/3} = 84.5\) m/s \(= 304\) km/h.</p>
+      <p><strong>Power for 320 km/h</strong> (88.9 m/s): \(P = 0.5 \times 1.225 \times 1.0 \times 88.9^3 = 430\) kW. That is 16% more power for 5% more speed.</p>
+      <p><strong>Crossover:</strong> ignoring downforce, the traction limit is \(\dfrac{1.5 \times 0.52 \times 12\,753}{1 - 1.5 \times 0.45/2.70} = \dfrac{9947}{0.75} = 13\,263\) N, about 1.04 g. Power takes over when \(P/V\) falls to that: \(V = 370\,000/13\,263 = 27.9\) m/s \(\approx 100\) km/h. (With downforce the traction limit is a little higher, so the widget shows 93 km/h.)</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="tradeoff">
+    <h2>Downforce or drag? Choosing a wing for the circuit</h2>
+    <p>
+      A wing that makes more downforce also makes more drag. Its lift-to-drag ratio \(C_L/C_D\) says how much downforce
+      each newton of drag buys; for a rear wing it is typically around 3 to 5. More wing means:
+    </p>
+    <ul>
+      <li><strong>Faster corners</strong> (Lesson 4.1), and later braking, because downforce adds grip.</li>
+      <li><strong>Slower straights</strong>: lower top speed and weaker acceleration once the car is power-limited.</li>
+    </ul>
+    <p>
+      Which effect wins depends on the circuit. On a tight circuit, most of the lap is spent in or near corners, so
+      teams run the most downforce the car can carry; Monaco is the classic example. On a fast circuit with long
+      straights, such as Monza, they trim the wings back to an optimum somewhere in between.
+    </p>
+    <div class="callout callout--key">
+      <p>There is no “best” wing setting, only a best setting for a circuit. It balances the time downforce gains in the
+      corners against the time its drag costs on the straights.</p>
+    </div>
+
+    <div class="widget" data-widget="wing-tradeoff">
+      <div class="widget__title">Wing level and lap time</div>
+      <p class="widget__desc">A point-mass lap of four straights and four corners. Each corner is taken at its grip-limited speed (Lesson 4.1); each straight is driven flat out, then braked in a straight line for the next corner. The wing level scales the car's downforce; the extra drag is the extra downforce divided by the wing's L/D. The left plot shows lap time against wing level; the right plot shows the speed around the lap. With load sensitivity on, extra tire load buys less grip, as in Lesson 2.1.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the GT car, find the fastest wing level on each of the three circuits. How do they compare?</li>
+        <li>On the Fast circuit, compare the speed traces at the fastest wing level and at ×2.5. Where does the extra wing gain time, and where does it lose it?</li>
+        <li>On the Mixed circuit, note the lap times at ×0 and ×1 with load sensitivity on, then off. By how much does the constant-\(\mu\) model overstate what the wing is worth, and why (Lesson 2.1)?</li>
+        <li>Raise the wing efficiency L/D. How does the fastest wing level on the Fast circuit move?</li>
+        <li>Try the Formula SAE car on its own circuits. Why do Formula SAE teams usually run large wings?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“The car with the highest top speed will set the fastest lap.” Top speed is reached for a moment at the end of
+      the longest straight. On most circuits far more time is spent braking, cornering and accelerating out of corners,
+      where downforce pays. A car trimmed for top speed is often slower over a lap.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="real">
+    <h2>Real-world complications</h2>
+    <ul>
+      <li><strong>Gearing and rev limits</strong> can cap top speed before drag does. Formula SAE cars are usually geared
+      for acceleration, not for their theoretical top speed.</li>
+      <li><strong>Slipstreaming:</strong> a car close behind another sits in its low-pressure wake and has less drag, so
+      it can pass on the straights, at the cost of downforce in the corners (Lesson 4.1).</li>
+      <li><strong>Adjustable aero:</strong> some series let drivers open a slot in the rear wing on the straights to cut
+      drag, partly escaping the trade-off.</li>
+      <li><strong>Cooling:</strong> radiators and brake ducts add drag of their own, and hot races need bigger openings.</li>
+    </ul>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m04-l3-n1" data-answer="156.2" data-tol="0.01" data-units="km/h">
+        <p>A Formula SAE car has 60 kW at the wheels and \(C_D A = 1.2\) m². What is its drag-limited top speed at sea level?</p>
+        <div class="hint"><p>\(V_{\text{top}} = (2P/(\rho C_D A))^{1/3}\) in m/s, then multiply by 3.6.</p></div>
+        <div class="solution"><p>\(V_{\text{top}} = (2 \times 60\,000/(1.225 \times 1.2))^{1/3} = 81\,633^{1/3} = 43.4\) m/s \(= 156\) km/h. In practice gearing usually limits it below that.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m04-l3-n2" data-answer="78.8" data-tol="0.01" data-units="kW">
+        <p>The club racer has \(C_D A = 0.75\) m². How much power does it take just to overcome drag at 200 km/h?</p>
+        <div class="hint"><p>\(P = F_D V = \tfrac{1}{2}\rho C_D A V^3\).</p></div>
+        <div class="solution"><p>\(V = 55.56\) m/s. \(P = 0.5 \times 1.225 \times 0.75 \times 55.56^3 = 78\,800\) W \(= 78.8\) kW.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m04-l3-n3" data-answer="0.871" data-tol="0.01" data-units="g">
+        <p>The club racer (no downforce, \(\mu = 1.4\), 52% static front weight, \(h = 0.40\) m, \(L = 2.45\) m) is rear-wheel drive. What is its traction-limited acceleration from a standstill?</p>
+        <div class="hint"><p>At a standstill there is no drag or downforce, so \(a_x = F_{x,\text{trac}}/W = \mu(a/L)/(1 - \mu h/L)\), with \(a/L\) the rear weight fraction.</p></div>
+        <div class="solution"><p>\(a/L = 0.48\) and \(\mu h/L = 1.4 \times 0.40/2.45 = 0.229\). \(a_x = 1.4 \times 0.48/(1 - 0.229) = 0.672/0.771 = 0.871\) g.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m04-l3-q1">
+        <p class="mcq__prompt">An engine upgrade adds 10% more power. Roughly how much does the drag-limited top speed rise?</p>
+        <ul>
+          <li>10%.<span class="why">The power needed to overcome drag grows with \(V^3\), not \(V\).</span></li>
+          <li>5%.<span class="why">That would follow from a \(V^2\) law. Power is force times speed, so it goes as \(V^3\).</span></li>
+          <li data-correct>About 3%.<span class="why">\(V_{\text{top}} \propto P^{1/3}\), and \(1.1^{1/3} = 1.032\).</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m04-l3-q2">
+        <p class="mcq__prompt">A team races at a tight street circuit one weekend and a fast circuit with long straights the next. How should their rear-wing setting change?</p>
+        <ul>
+          <li>Keep it the same; the best wing setting is a property of the car.<span class="why">The best setting depends on how the lap time splits between corners and straights.</span></li>
+          <li data-correct>Run more wing at the street circuit and trim it back for the fast circuit.<span class="why">Tight circuits reward corner speed; long straights punish drag.</span></li>
+          <li>Run less wing at the street circuit, because the speeds are low there.<span class="why">Low speeds make the wing's drag cheap, and the corners are where the lap time is.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m04-l3-q3">
+        <p class="mcq__prompt">Why does adding downforce do almost nothing for a car's 0–100 km/h time?</p>
+        <ul>
+          <li>Because downforce adds mass.<span class="why">It adds load, never mass.</span></li>
+          <li data-correct>Because at low speed there is very little downforce, and that is where the car is traction-limited.<span class="why">Downforce raises the traction limit only once speed, and dynamic pressure, have built up, by which time power is usually the limit.</span></li>
+          <li>Because downforce only acts on the front axle.<span class="why">It acts on both, split by the aero balance.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 15, <em>Applied Aerodynamics</em>, on drag, downforce and how they are traded off, with Chapter 3 for the fundamentals.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>Where does a race car's drag come from: which parts of the car make most of it?</li>
+        <li>How does the book weigh the value of downforce against the cost of drag?</li>
+        <li>How does running in another car's wake change both drag and downforce?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Power-limited drive force</td><td>\(F_x = P/V\), with \(P\) at the driven wheels</td></tr>
+          <tr><td>Traction limit (rear-wheel drive)</td><td>\(F_{x,\text{trac}} = \mu(W a/L + F_{Lr})/(1 - \mu h/L)\)</td></tr>
+          <tr><td>Net acceleration</td><td>\(m a_x = \min(F_{x,\text{trac}},\,P/V) - F_D\)</td></tr>
+          <tr><td>Top speed</td><td>\(V_{\text{top}} = (2P/(\rho C_D A))^{1/3}\); power to overcome drag \(\propto V^3\)</td></tr>
+          <tr><td>Wing choice</td><td>More wing on tight circuits, less on fast ones; the optimum depends on the circuit</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>That completes aerodynamics. Module 5 turns to the car's steady-state cornering behavior with the bicycle model, where the understeer gradient of Lesson 1.2 is finally derived.</p>
+  </section>
+
+</article>
+</body>
+</html>

@@ -270,42 +270,51 @@ window.RVD_COURSE = {
         {
           id: "m04-l1",
           title: "Drag, downforce and dynamic pressure",
-          status: "planned",
-          minutes: 35,
+          file: "modules/m04-aerodynamics/l1-drag-downforce.html",
+          status: "ready",
+          minutes: 40,
+          rcvd: [3, 15],
           objectives: [
-            "Calculate drag and downforce from coefficients, area and speed.",
-            "Explain why downforce raises cornering speed more in fast corners."
+            "Calculate dynamic pressure, drag and downforce from coefficients, area and speed.",
+            "Calculate the grip-limited corner speed of a car with downforce.",
+            "Explain why downforce raises cornering speed more in fast corners than in slow ones."
           ],
           outline: [
-            "Dynamic pressure ½ρv²",
+            "Dynamic pressure ½ρV²",
             "C_D, C_L and the 'CLA' shorthand",
-            "Corner speed with downforce: solving v²/R = μ(g + downforce/m)"
+            "Corner speed with downforce: solving V²/R = μ(g + downforce/m)"
           ],
-          interactives: ["Corner-speed vs radius plot with and without wings"]
+          interactives: ["Corner-speed vs radius plot with and without downforce; downforce and drag vs speed"]
         },
         {
           id: "m04-l2",
           title: "Aero balance and the speed-dependent car",
-          status: "planned",
-          minutes: 30,
-          rcvd: [3, 15],
+          file: "modules/m04-aerodynamics/l2-aero-balance.html",
+          status: "ready",
+          minutes: 40,
+          rcvd: [3, 9, 15],
           objectives: [
-            "Locate the center of pressure and compute front/rear downforce split.",
-            "Predict how aero balance changes handling between slow and fast corners."
+            "Locate the center of pressure and compute the front/rear downforce split.",
+            "Predict how aero balance changes handling between slow and fast corners.",
+            "Read a g-g-V diagram and explain how each edge of the envelope changes with speed."
           ],
           outline: [
             "Center of pressure vs center of gravity",
+            "Axle grip limits and balance vs speed",
             "Pitch sensitivity and ride height",
             "The g-g-V diagram"
           ],
-          interactives: ["g-g-V envelope that grows with speed"]
+          interactives: ["Front and rear axle limits vs speed", "g-g-V envelope that grows with speed"]
         },
         {
           id: "m04-l3",
           title: "Power, drag and top speed",
-          status: "planned",
-          minutes: 25,
+          file: "modules/m04-aerodynamics/l3-power-drag-top-speed.html",
+          status: "ready",
+          minutes: 35,
+          rcvd: [3, 15],
           objectives: [
+            "Distinguish traction-limited from power-limited acceleration and find the crossover speed.",
             "Compute power-limited top speed from drag and available power.",
             "Explain the downforce-vs-drag trade-off for a given circuit."
           ],
@@ -314,7 +323,7 @@ window.RVD_COURSE = {
             "Traction-limited vs power-limited acceleration",
             "Low-drag vs high-downforce set-ups"
           ],
-          interactives: ["Acceleration-vs-speed chart with traction and power limits"]
+          interactives: ["Acceleration-vs-speed chart with traction and power limits", "Lap time vs wing level on a simple circuit"]
         }
       ]
     },

@@ -266,6 +266,7 @@
       i.style.color = it.color;
       if (it.dash) i.className = "dash";
       if (it.area) i.className = "area";
+      if (it.dot) i.className = "dot";
       s.appendChild(i);
       s.appendChild(document.createTextNode(it.label));
       div.appendChild(s);

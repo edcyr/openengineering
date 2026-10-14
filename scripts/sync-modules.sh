@@ -152,7 +152,8 @@ PY
 echo "$STANDALONE" | while IFS='|' read -r course from; do
   dir="$SRC/$from"
   if [ ! -d "$dir" ]; then echo "missing: $dir" >&2; exit 1; fi
-  rsync -a --delete --exclude '.DS_Store' --exclude 'README.md' --exclude 'templates/' --exclude 'instructor-guide.html' --exclude 'downloads/' "$dir/" "$SITE/$course/"
+  # '.*' keeps the course's own .git, .gitignore and .nojekyll (and .DS_Store) out of this site
+  rsync -a --delete --exclude '.*' --exclude 'README.md' --exclude 'templates/' --exclude 'instructor-guide.html' --exclude 'downloads/' "$dir/" "$SITE/$course/"
   rm -rf "$SITE/$course/README.md" "$SITE/$course/templates" "$SITE/$course/instructor-guide.html"   # rsync keeps excluded files
   rsync -a --delete "$KATEX/" "$SITE/$course/assets/vendor/katex/"
   cp "$SITE/scripts/LICENSE-module.txt" "$SITE/$course/LICENSE.txt"
