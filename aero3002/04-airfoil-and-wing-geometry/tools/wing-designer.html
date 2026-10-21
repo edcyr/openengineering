@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wing Planform Designer · Airfoil and Wing Geometry</title>
+<meta name="description" content="A wing planform designer: set the area, aspect ratio, taper, sweep, dihedral, airfoil and cruise condition, and see the wing and tail drawn to scale with the mean aerodynamic chord, lift-curve slope, cruise lift coefficient, drag-divergence Mach number, span loading and first tail sizes.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table td:nth-child(2) { white-space: nowrap; }
+  .sc-warn { color: var(--c-bad); font-weight: 700; }
+</style>
+</head>
+<body data-page="designer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Wing and tail geometry</p>
+    <h1>Wing Planform Designer</h1>
+    <p class="lede">The whole module on one page: describe the wing's planform, its airfoil and its cruise condition, and see it drawn to scale with its tails, its mean aerodynamic chord, its lift-curve slope, its cruise lift coefficient, the drag-divergence Mach number its thickness allows, where it stalls first, and the dihedral the guidelines suggest. Every number is shown, so you can check each one by hand.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="wd-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="wd-presets" role="group" aria-labelledby="wd-presets-label"></div>
+    <div class="sc-grid" id="wd-grid"></div>
+    <p class="small muted" id="wd-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="wd-totals"></div>
+    <figure class="figure wide" aria-labelledby="wd-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="wd-stage"></div>
+      </div>
+      <figcaption id="wd-fig1-cap"><strong>Figure T.1</strong> The wing (blue) and horizontal tail (violet) to scale, nose up, on a grid of 1 m (or 5 m for large aircraft). The dashed lines are the quarter chords; the thick lines are the mean aerodynamic chords, with the aerodynamic centers marked. The horizontal tail is placed at the tail arm behind the wing's aerodynamic center.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="wd-fig2-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="wd-stage2"></div>
+      </div>
+      <figcaption id="wd-fig2-cap"><strong>Figure T.2</strong> Span loading from Schrenk's approximation (blue) against the elliptic ideal (gray dashed), and the local lift coefficient as a fraction of the wing's (orange), for the planform without its sweep and twist. The dot marks where the stall starts.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="wd-geo">
+        <caption>Geometry</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col">Formula</th><th scope="col">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="wd-aero">
+        <caption>Airfoil and cruise</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col">Formula</th><th scope="col">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="wd-tail">
+        <caption>Dihedral and tails</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col">Formula</th><th scope="col">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="wd-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Planform (Lesson 6): \(b = \sqrt{AS}\), \(c_r = 2S/[b(1 + \lambda)]\), \(\bar c = \tfrac23c_r(1 + \lambda + \lambda^2)/(1 + \lambda)\), \(\bar y = (b/6)(1 + 2\lambda)/(1 + \lambda)\), and sweep at any chord line from the quarter-chord sweep.</li>
+      <li>Lift-curve slope (Lesson 4): Helmbold's formula with \(\eta = 0.95\), the sweep of the 30% chord line, at low speed and at the cruise Mach number.</li>
+      <li>Cruise (Lesson 3): \(C_L = W/(\tfrac12\gamma pM^2S)\) in the standard atmosphere; the Reynolds number on the MAC (Lesson 2); \(\MDD\) from the Korn equation with the mid-chord sweep and the thickness at the MAC, interpolated between root and tip.</li>
+      <li>Airfoil (Lessons 1 and 2): thin-airfoil theory for the NACA four-digit camber line gives \(\alpha_{L0}\) and the ideal \(c_l\); the incidence is \(\alpha_{L0} + C_L/\CLa\) (Lesson 7).</li>
+      <li>Span loading (Lesson 6): Schrenk's approximation for the untwisted, unswept planform. Dihedral (Lesson 7) and tail volume coefficients (Lesson 8) from the guideline tables; the tails use the middle of the tail aspect-ratio range for the class.</li>
+    </ul>
+    <p>Your inputs are saved in this browser.</p>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var BASE = { S: 28, A: 8, lam: 0.35, L: 25, G: 3, wash: 2, m: 2, p: 4, tr: 12, tt: 12, kappa: 'supercritical',
+    W: 6634, M: 0.80, h: 12000, pos: 'low', cls: 'trainer', arm: 6.58 };
+  var PRESETS = {
+    biz: { label: 'Business jet (this module)', v: {} },
+    light: { label: 'Light single (illustrative)', v: { S: 16.2, A: 7.5, lam: 0.6, L: 0, G: 1.7, wash: 3, m: 2, p: 4, tr: 15, tt: 12, kappa: 'conventional', W: 1100, M: 0.18, h: 2500, pos: 'high', cls: 'ga1', arm: 4.5 } },
+    tprop: { label: 'Regional turboprop (illustrative)', v: { S: 61, A: 12, lam: 0.5, L: 3, G: 1, wash: 2, m: 3, p: 4, tr: 18, tt: 13, kappa: 'conventional', W: 21000, M: 0.45, h: 7000, pos: 'high', cls: 'tprop', arm: 12 } },
+    airliner: { label: 'Narrow-body airliner (illustrative)', v: { S: 125, A: 9.5, lam: 0.25, L: 25, G: 6, wash: 3, m: 2, p: 4, tr: 15, tt: 11, kappa: 'supercritical', W: 70000, M: 0.78, h: 11000, pos: 'low', cls: 'jt', arm: 17 } },
+    fighter: { label: 'Fighter (illustrative)', v: { S: 28, A: 3.2, lam: 0.25, L: 32, G: 0, wash: 0, m: 0, p: 4, tr: 5, tt: 4, kappa: 'conventional', W: 13000, M: 0.85, h: 9000, pos: 'mid', cls: 'fighter', arm: 5 } },
+    sail: { label: 'Sailplane (illustrative)', v: { S: 10.5, A: 22, lam: 0.4, L: 0, G: 3, wash: 2, m: 4, p: 4, tr: 14, tt: 12, kappa: 'conventional', W: 450, M: 0.08, h: 1500, pos: 'mid', cls: 'sail', arm: 4.2 } }
+  };
+  var KEY = 'designer:inputs';
+  var st = Object.assign({}, BASE, CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+  var D2R = Math.PI / 180, G = 9.81;
+
+  /* ---------- model ---------- */
+  function compute() {
+    var pf = WING.planform(st.S, st.A, st.lam, st.L), s = WING.isa(st.h), V = st.M * s.a;
+    var etaMac = 2 * pf.ymac / pf.b, tcMac = (st.tr + (st.tt - st.tr) * etaMac) / 100;
+    var q = 0.7 * s.p * st.M * st.M, CL = st.W * G / (q * st.S);
+    var cla0 = WING.cla(st.A, 0, pf.sweep(0.3)), claM = st.M < 0.95 ? WING.cla(st.A, st.M, pf.sweep(0.3)) : NaN;
+    var th = WING.thin(st.m / 100, st.p / 10);
+    var kap = WING.KORN[st.kappa], mdd = WING.korn(kap, tcMac, CL, pf.sweepHalf);
+    var Re = s.rho * V * pf.mac / s.mu;
+    var peak = 0, at = 0; for (var i = 0; i <= 95; i++) { var v = WING.schrenk(pf, i / 100).cl; if (v > peak + 1e-9) { peak = v; at = i / 100; } }
+    var type = Math.abs(st.L) < 5 ? 'unswept' : st.M < 1 ? 'subsonic' : 'supersonic';
+    var dg = WING.DIHEDRAL.filter(function (d) { return d.id === type; })[0], rg = dg[st.pos];
+    var tv = WING.tailVol(st.cls), shT = tv.h * pf.mac * st.S / st.arm, svT = tv.v * pf.b * st.S / st.arm;
+    var tg = WING.TAILGEOM.filter(function (t) { return t.id === (st.cls === 'fighter' ? 'fighter' : st.cls === 'sail' ? 'sail' : 'other'); })[0];
+    var aH = (tg.hA[0] + tg.hA[1]) / 2, aV = (tg.vA[0] + tg.vA[1]) / 2;
+    var inc = th.alphaL0 + (isFinite(claM) ? CL / claM : CL / cla0) / D2R;
+    return { pf: pf, s: s, V: V, tcMac: tcMac, q: q, CL: CL, cla0: cla0, claM: claM, th: th, kap: kap, mdd: mdd, Re: Re, peak: peak, at: at, type: type, dg: dg, rg: rg,
+      tv: tv, shT: shT, svT: svT, aH: aH, aV: aV, bH: Math.sqrt(aH * shT), hV: Math.sqrt(aV * svT), inc: inc, Mn: st.M * Math.cos(pf.sweepHalf * D2R) };
+  }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('wd-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options) { return { k: k, label: label, type: 'sel', options: options }; }
+  var BOXES = [
+    { t: 'Planform', f: [num('S', 'Area \\(S\\) (m²)'), num('A', 'Aspect ratio \\(A\\)'), num('lam', 'Taper ratio \\(\\lambda\\)'), num('L', 'Quarter-chord sweep (°)'), num('G', 'Dihedral \\(\\Gamma\\) (°)'), num('wash', 'Washout (°)')] },
+    { t: 'Airfoil', f: [num('m', 'NACA camber \\(m\\) (%)', 1), num('p', 'Its position \\(p\\) (tenths)', 1), num('tr', 'Root \\(t/c\\) (%)'), num('tt', 'Tip \\(t/c\\) (%)'), opt('kappa', 'Airfoil type', [['supercritical', 'Supercritical (0.95)'], ['conventional', 'Conventional (0.87)']])] },
+    { t: 'Cruise', f: [num('W', 'Weight in cruise (kg)'), num('M', 'Mach number'), num('h', 'Altitude (m)')] },
+    { t: 'Position and tails', f: [opt('pos', 'Wing position', [['low', 'Low'], ['mid', 'Mid'], ['high', 'High']]), opt('cls', 'Tail volume class', WING.TAILVOL.map(function (t) { return [t.id, t.label]; })), num('arm', 'Tail arm \\(L\\) (m)')] }
+  ];
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' });
+    bx.f.forEach(function (q) {
+      var id = 'wd-' + q.k, el;
+      if (q.type === 'sel') { el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); }); el.addEventListener('change', function () { st[q.k] = el.value; save(); update(); }); }
+      else { el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' }); el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); } }); }
+      inputs[q.k] = el;
+      f.appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, text: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t }), f]));
+  });
+  CYL.renderMath(grid);
+  function ok(k, v) {   // keep the inputs where the formulas make sense
+    if (k === 'L' || k === 'G' || k === 'wash') return Math.abs(v) <= 70;
+    if (k === 'lam') return v > 0 && v <= 1;
+    if (k === 'm') return v >= 0 && v <= 9;
+    if (k === 'p') return v >= 1 && v <= 9;
+    if (k === 'M') return v > 0 && v < 3;
+    if (k === 'h') return v >= 0 && v <= 20000;
+    return v > 0;
+  }
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = String(st[k]); }); }
+  var pr = document.getElementById('wd-presets');
+  Object.keys(PRESETS).forEach(function (k) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', text: PRESETS[k].label });
+    b.addEventListener('click', function () { st = Object.assign({}, BASE, PRESETS[k].v); save(); fill(); update(); document.getElementById('wd-msg').textContent = 'Loaded: ' + PRESETS[k].label + '.'; });
+    pr.appendChild(b);
+  });
+
+  /* ---------- outputs ---------- */
+  var plane = CYL2D.plane(document.getElementById('wd-stage'), { xRange: [-8, 8], yRange: [-12, 1], grid: 'cartesian', gridStep: 1, axes: false, ticks: false, maxHeight: 520, ariaLabel: 'The wing and horizontal tail drawn to scale.' });
+  var gW = plane.group();
+  var chart = AERO.chart(document.getElementById('wd-stage2'), {
+    x: { label: 'Span position \\(2y/b\\)', min: 0, max: 1 }, y: { label: 'Loading, and local \\(c_l/C_L\\)', min: 0, max: 1.6 }, height: 300,
+    ariaLabel: 'Span loading of the wing.', legend: [{ label: 'Span loading', color: 'z', line: true }, { label: 'Elliptic', color: 'muted', line: true, dashed: true }, { label: 'Local \\(c_l/C_L\\)', color: 'r', line: true }]
+  });
+  chart.fn(function (e) { return 4 / Math.PI * Math.sqrt(Math.max(0, 1 - e * e)); }, { color: 'muted', width: 1.6, dashed: true, samples: 200 });
+  var cur = null;
+  var fLoad = chart.fn(function (e) { return cur ? WING.schrenk(cur.pf, e).load : NaN; }, { color: 'z', width: 2.6, samples: 200 });
+  var fCl = chart.fn(function (e) { return cur ? WING.schrenk(cur.pf, e).cl : NaN; }, { color: 'r', width: 2.2, domain: [0, 0.98], samples: 200 });
+  var pk = chart.marker([0, 1], { color: 'r', r: 6 });
+  function f(x, n) { return CYL.fmt(x, n || 4); }
+  function row(tb, a, b, c, warn) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: a }), CYL.el('td', { html: b }), CYL.el('td', { text: c, class: warn ? 'sc-warn' : null })])); }
+  function trap(pf, x0) {   // planform outline, root leading edge at (0, -x0), nose up
+    var h = pf.b / 2, xt = h * Math.tan(pf.sweepLE * D2R);
+    return [[0, -x0], [h, -x0 - xt], [h, -x0 - xt - pf.ct], [0, -x0 - pf.cr], [-h, -x0 - xt - pf.ct], [-h, -x0 - xt]];
+  }
+  function drawPlan(pf, x0, color) {
+    gW.polyline(trap(pf, x0), { color: color, width: 2, closed: true, fill: color, fillOpacity: 0.12 });
+    var h = pf.b / 2, t4 = Math.tan(pf.sweepC4 * D2R);
+    gW.polyline([[-h, -x0 - 0.25 * pf.cr - h * t4], [0, -x0 - 0.25 * pf.cr], [h, -x0 - 0.25 * pf.cr - h * t4]], { color: 'muted', width: 1.2, dashed: true });
+    [-1, 1].forEach(function (sd) { gW.line([sd * pf.ymac, -x0 - pf.xmac], [sd * pf.ymac, -x0 - pf.xmac - pf.mac], { color: color, width: 3.5 }); });
+    gW.point([pf.ymac, -x0 - pf.xmac - 0.25 * pf.mac], { color: color, r: 4.5 });
+  }
+  var last = null;
+  function update() {
+    var r = compute(); last = r; cur = r;
+    var pf = r.pf;
+    // tiles
+    var tot = document.getElementById('wd-totals'); tot.innerHTML = '';
+    [['Span', f(pf.b) + ' m'], ['Root, tip chords', f(pf.cr, 3) + ', ' + f(pf.ct, 3) + ' m'], ['Mean aerodynamic chord', f(pf.mac) + ' m'], ['Leading-edge sweep', f(pf.sweepLE, 3) + '°'],
+     ['Cruise lift coefficient', f(r.CL, 3)], ['Drag-divergence Mach', f(r.mdd, 3)]].forEach(function (t, i) {
+      var warn = i === 5 && r.mdd < st.M;
+      tot.appendChild(CYL.el('div', { class: 'sc-tile' }, [CYL.el('p', { class: 'lab', text: t[0] }), CYL.el('p', { class: 'val' + (warn ? ' sc-warn' : ''), text: t[1] })]));
+    });
+    // drawing: wing, then the horizontal tail at the tail arm behind the wing's aerodynamic center
+    var acW = pf.xmac + 0.25 * pf.mac;
+    var ht = WING.planform(r.shT, r.aH, 0.5, pf.sweepC4 + 5), x0h = acW + st.arm - (ht.xmac + 0.25 * ht.mac);
+    gW.clear();
+    var ext = Math.max(pf.b / 2, ht.b / 2), yBot = x0h + Math.max(ht.cr, ht.b / 2 * Math.tan(ht.sweepLE * D2R) + ht.ct);
+    var stp = ext > 16 ? 5 : 1;
+    plane.setOptions({ gridStep: stp });
+    plane.setRange([-ext - stp, ext + stp], [-yBot - stp, stp]);
+    gW.line([0, stp * 0.8], [0, -yBot - stp * 0.8], { color: 'faint', width: 1, dashed: true });
+    drawPlan(pf, 0, 'z'); drawPlan(ht, x0h, 't');
+    plane.svg.setAttribute('aria-label', 'Wing of span ' + f(pf.b) + ' m and horizontal tail of span ' + f(ht.b) + ' m, drawn to scale, ' + f(st.arm, 3) + ' m apart between aerodynamic centers.');
+    // span loading
+    fLoad.draw(); fCl.draw(); pk.set([r.at, r.peak]);
+    chart.setAriaLabel('Schrenk span loading: the local lift coefficient peaks at ' + f(r.peak, 3) + ' times the wing value at ' + (r.at === 0 ? 'the root' : Math.round(r.at * 100) + '% of the semispan') + '.');
+    // tables
+    var tg = document.querySelector('#wd-geo tbody'); tg.innerHTML = '';
+    row(tg, 'Span', '\\(b = \\sqrt{AS}\\)', f(pf.b) + ' m');
+    row(tg, 'Root chord', '\\(c_r = 2S/[b(1 + \\lambda)]\\)', f(pf.cr) + ' m');
+    row(tg, 'Tip chord', '\\(c_t = \\lambda c_r\\)', f(pf.ct) + ' m');
+    row(tg, 'Mean geometric chord', '\\(S/b\\)', f(st.S / pf.b) + ' m');
+    row(tg, 'Mean aerodynamic chord', '\\(\\tfrac23c_r(1 + \\lambda + \\lambda^2)/(1 + \\lambda)\\)', f(pf.mac) + ' m');
+    row(tg, 'MAC position', '\\(\\bar y = (b/6)(1 + 2\\lambda)/(1 + \\lambda)\\)', f(pf.ymac) + ' m');
+    row(tg, 'MAC leading edge behind the root', '\\(\\bar y\\tan\\Lambda_{LE}\\)', f(pf.xmac) + ' m');
+    row(tg, 'Aerodynamic center behind the root LE', '\\(\\bar y\\tan\\Lambda_{LE} + \\bar c/4\\)', f(acW) + ' m');
+    row(tg, 'Sweep: leading edge, half chord, trailing edge', '\\(\\tan\\Lambda_n = \\tan\\Lambda_{c/4} - (4/A)(n - \\tfrac14)(1 - \\lambda)/(1 + \\lambda)\\)', f(pf.sweepLE, 3) + '°, ' + f(pf.sweepHalf, 3) + '°, ' + f(pf.sweepTE, 3) + '°');
+    var ta = document.querySelector('#wd-aero tbody'); ta.innerHTML = '';
+    row(ta, 'Airfoil', 'NACA four-digit', 'NACA ' + (st.m ? WING.code4(st.m / 100, st.p / 10, st.tr / 100) : '00' + ('0' + Math.round(st.tr)).slice(-2)) + ' at the root');
+    row(ta, 'Zero-lift angle, ideal \\(c_l\\)', 'thin-airfoil theory', f(r.th.alphaL0, 3) + '°, ' + f(r.th.clIdeal, 3));
+    row(ta, 'Speed, dynamic pressure', '\\(V = Ma\\), \\(q = \\tfrac12\\gamma pM^2\\)', f(r.V * 3.6, 4) + ' km/h, ' + f(r.q, 4) + ' Pa');
+    row(ta, 'Cruise lift coefficient', '\\(C_L = W/(qS)\\)', f(r.CL, 3), r.CL > 1.2);
+    row(ta, 'Reynolds number on the MAC', '\\(\\rho V\\bar c/\\mu\\)', f(r.Re / 1e6, 3) + ' million');
+    row(ta, 'Lift-curve slope: low speed, cruise', 'Helmbold, \\(\\Lambda\\) at 30% chord', f(r.cla0, 3) + ', ' + (isFinite(r.claM) ? f(r.claM, 3) : '\u2014') + ' per rad');
+    row(ta, 'Incidence for a level fuselage', '\\(\\alpha_{L0} + C_L/\\CLa\\)', f(r.inc, 3) + '°');
+    row(ta, 'Thickness at the MAC', 'root to tip, linear', f(r.tcMac * 100, 3) + '%');
+    row(ta, 'Normal Mach number', '\\(M\\cos\\Lambda_{c/2}\\)', f(r.Mn, 3));
+    row(ta, 'Drag-divergence Mach number', '\\(\\kappa_A/\\cos\\Lambda - (t/c)/\\cos^2\\Lambda - C_L/(10\\cos^3\\Lambda)\\)', f(r.mdd, 3) + (r.mdd < st.M ? ' (below the cruise Mach number)' : ''), r.mdd < st.M);
+    row(ta, 'Stall starts (Schrenk)', 'peak of \\(c_l/C_L\\)', f(r.peak, 3) + ' at ' + (r.at === 0 ? 'the root' : Math.round(r.at * 100) + '% of the semispan'), r.at > 0.7);
+    var tt = document.querySelector('#wd-tail tbody'); tt.innerHTML = '';
+    var inside = st.G >= r.rg[0] && st.G <= r.rg[1];
+    row(tt, 'Dihedral guideline', r.dg.label.toLowerCase() + ', ' + st.pos + ' wing', (r.rg[0] + '° to ' + r.rg[1] + '°').replace(/-/g, '\u2212') + (inside ? '' : ' (chosen ' + st.G + '° is outside)'), !inside);
+    row(tt, 'Volume coefficients', r.tv.label, f(r.tv.h, 2) + ', ' + f(r.tv.v, 2));
+    row(tt, 'Horizontal tail area', '\\(c_{HT}\\bar c_WS_W/L\\)', f(r.shT) + ' m² (' + Math.round(r.shT / st.S * 100) + '% of the wing)');
+    row(tt, 'Vertical tail area', '\\(c_{VT}b_WS_W/L\\)', f(r.svT) + ' m² (' + Math.round(r.svT / st.S * 100) + '% of the wing)');
+    row(tt, 'Horizontal tail span', '\\(\\sqrt{A_{HT}S_{HT}}\\), \\(A_{HT} = ' + r.aH + '\\)', f(r.bH) + ' m');
+    row(tt, 'Vertical tail height', '\\(\\sqrt{A_{VT}S_{VT}}\\), \\(A_{VT} = ' + r.aV + '\\)', f(r.hV) + ' m');
+    CYL.renderMath(document.getElementById('result'));
+  }
+  document.getElementById('wd-csv').addEventListener('click', function () {
+    var r = last || compute(), lines = ['quantity,value'];
+    Object.keys(st).forEach(function (k) { lines.push(k + ',' + st[k]); });
+    [['span_m', r.pf.b], ['root_chord_m', r.pf.cr], ['tip_chord_m', r.pf.ct], ['MAC_m', r.pf.mac], ['MAC_y_m', r.pf.ymac], ['MAC_LE_x_m', r.pf.xmac], ['sweep_LE_deg', r.pf.sweepLE], ['sweep_half_deg', r.pf.sweepHalf], ['sweep_TE_deg', r.pf.sweepTE],
+     ['CL_cruise', r.CL], ['Re_MAC', r.Re], ['CLalpha_low_per_rad', r.cla0], ['CLalpha_cruise_per_rad', r.claM], ['alphaL0_deg', r.th.alphaL0], ['cl_ideal', r.th.clIdeal], ['incidence_deg', r.inc], ['tc_MAC', r.tcMac], ['M_DD', r.mdd],
+     ['S_HT_m2', r.shT], ['S_VT_m2', r.svT]].forEach(function (q) { lines.push(q[0] + ',' + (isFinite(q[1]) ? (+q[1]).toPrecision(6) : '')); });
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob), a = CYL.el('a', { href: url, download: 'wing.csv' });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    document.getElementById('wd-msg').textContent = 'Downloaded wing.csv.';
+  });
+  window.__designer = { compute: compute, state: function () { return st; }, load: function (k) { st = Object.assign({}, BASE, PRESETS[k].v); fill(); update(); return compute(); } };   // for QA scripts
+  fill(); update();
+});
+</script>
+</body>
+</html>

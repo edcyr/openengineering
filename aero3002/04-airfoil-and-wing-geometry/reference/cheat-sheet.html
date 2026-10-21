@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formula Sheet · Airfoil and Wing Geometry</title>
+<meta name="description" content="Every formula of the Airfoil and Wing Geometry module on one printable page: NACA airfoils, thin-airfoil theory, Reynolds number, the design lift coefficient, the Korn equation, aspect ratio, sweep, the planform and MAC, incidence, dihedral and tail volume coefficients.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ==========================================================================
+   Formula sheet: page-specific styles (screen: multi-column cards; print: 2 pages)
+   ========================================================================== */
+.cs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 18px 0 0; }
+.cs-actions .small { margin: 0; max-width: 46ch; line-height: 1.45; }
+
+.cs-sheet { counter-reset: cs; margin-top: 0; margin-bottom: 0; font-size: 0.94rem; }
+@container cylmain (min-width: 820px) {
+  .cs-sheet { column-count: 2; column-gap: 18px; }
+}
+/* From 1360px the shell shows the TOC rail. Its scroll-spy marks the last card whose top has
+   scrolled past, which only tracks reading order when the cards are stacked, so keep one column
+   (at text width) whenever the rail is on screen. Print keeps its own two columns below. */
+@media screen and (min-width: 1360px) {
+  .has-rail .cs-sheet { column-count: auto; --wide-max: var(--content-max); }
+}
+.cs-card {
+  counter-increment: cs;
+  margin: 0 0 18px;
+  padding: 14px 18px 16px;
+  box-shadow: var(--shadow-sm);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.cs-card > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.06rem;
+  line-height: 1.3;
+}
+.cs-card > h2::before {
+  content: counter(cs);
+  flex: none;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cs-card.cs-warn { border-top: 3px solid var(--c-warn); }
+.cs-card.cs-warn > h2::before { background: var(--c-warn); color: var(--bg-elev); }
+
+.cs-card p { margin: 0 0 0.55em; color: var(--ink); font-size: 1em; }
+.cs-card ul { margin: 0 0 0.6em; padding-left: 1.15em; }
+.cs-card li { margin: 0.25em 0; }
+.cs-card li::marker { color: var(--ink-faint); }
+.cs-card h3 {
+  margin: 0.95em 0 0.3em;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-card > h2 + h3 { margin-top: 0; }
+.cs-card .katex-display { margin: 0.45em 0; }
+.cs-card .key-formula { margin: 0.65em 0; padding: 6px 14px 7px; box-shadow: none; }
+.cs-card .key-formula .katex-display { margin: 0.3em 0; }
+.cs-card .key-formula-title { margin-top: 2px; }
+.cs-card .table-wrap { margin: 0.6em 0 0.7em; border-radius: var(--radius-sm); }
+.cs-card table.data { font-size: 0.9em; }
+.cs-card table.data th, .cs-card table.data td { padding: 5px 9px; vertical-align: middle; }
+.cs-card table.data thead th { font-size: 0.85em; white-space: normal; }
+.cs-card table.data tbody th { font-weight: 600; }
+.cs-card table.data caption { padding: 6px 9px; }
+.cs-card table.data .katex { font-size: 1.04em; white-space: nowrap; }
+.cs-card table.cs-eqs td { white-space: nowrap; }
+/* never split an inline formula across lines: on a reference sheet a broken result is easy to misread */
+.cs-sheet .katex { white-space: nowrap; }
+.cs-card .muted { color: var(--ink-muted); }
+.cs-card p.cs-note { color: var(--ink-muted); font-size: 0.9em; }
+.cs-card p.cs-more { margin: 0.75em 0 0; color: var(--ink-muted); font-size: 0.8rem; }
+.cs-card > :last-child { margin-bottom: 0; }
+
+/* two formula boxes side by side, wrapping on narrow cards */
+.cs-pair { display: flex; flex-wrap: wrap; gap: 10px; margin: 0.65em 0; }
+.cs-pair > * { flex: 1 1 250px; min-width: 0; }   /* on screen, a pair stacks before its formulas overflow; print sets its own basis */
+.cs-card .cs-pair > .key-formula { margin: 0; }
+.cs-pair > div:not(.key-formula) .katex-display { margin: 0.2em 0; }
+
+/* symbol / meaning list */
+.cs-dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0 0 0.6em; }
+.cs-dl dt { font-weight: 700; text-align: center; }
+.cs-dl dd { margin: 0; }
+
+/* static figures */
+.cs-card .cs-figure { max-width: 250px; margin: 0.3em auto 0.7em; }
+.cs-card .cs-figure.small { max-width: 200px; }
+.cs-figure figcaption { margin-top: 2px; font-size: 0.78rem; line-height: 1.4; text-align: center; }
+.cs-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cs-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.cs-svg .ax { stroke: var(--c-axis); stroke-width: 1.4; }
+.cs-svg .ax-back { stroke-dasharray: 3 3; opacity: 0.55; }
+.cs-svg .ax-fill { fill: var(--c-axis); }
+.cs-svg .leg, .cs-svg .guide { stroke: var(--ink-faint); stroke-width: 1.1; stroke-dasharray: 3 3; }
+.cs-svg .hidden { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2.5 2.5; opacity: 0.8; }
+.cs-svg .r { stroke: var(--c-r); }
+.cs-svg .t { stroke: var(--c-t); }
+.cs-svg .z { stroke: var(--c-z); }
+.cs-svg .thick { stroke-width: 3; }
+.cs-svg .mid { stroke-width: 2.2; }
+.cs-svg .thin { stroke-width: 1.4; }
+.cs-svg .dash { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.cs-svg .t-fill { fill: var(--c-t); }
+.cs-svg .pt { fill: var(--c-point); }
+.cs-svg .pt-open { fill: var(--bg-elev); stroke: var(--c-point); stroke-width: 1.5; }
+.cs-svg .face { fill: var(--accent); }
+.cs-svg .f-top { fill-opacity: 0.1; }
+.cs-svg .f-out { fill-opacity: 0.24; }
+.cs-svg .f-side { fill-opacity: 0.17; }
+.cs-svg .edge { stroke: var(--ink-muted); stroke-width: 1.2; }
+.cs-svg text {
+  font-family: KaTeX_Math, "Times New Roman", serif;
+  font-size: 15px;
+  font-style: italic;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--bg-elev);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.cs-svg .lbl-ax { fill: var(--c-axis); font-size: 14px; }
+.cs-svg .lbl-mute { fill: var(--ink-muted); font-size: 13px; }
+.cs-svg .lbl-r { fill: var(--c-r); }
+.cs-svg .lbl-t { fill: var(--c-t); }
+.cs-svg .lbl-z { fill: var(--c-z); }
+.cs-svg .sm { font-size: 12.5px; }
+
+/* software notes */
+.cs-tools { display: grid; gap: 7px; margin: 0.5em 0 0; }
+.cs-tool { padding: 7px 11px 8px; border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.cs-tool-name {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--ink-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-tool-name strong { color: var(--c-warn); font-weight: 700; white-space: nowrap; }
+.cs-card .cs-tool p { margin: 0; line-height: 1.55; }
+.cs-tool :not(pre) > code { background: var(--bg-elev); white-space: nowrap; }
+.cs-tool .cs-code > code { white-space: normal; } /* long lines break only between their .nowrap parts */
+.cs-tools { container-type: inline-size; }
+.cs-code { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 3px 12px; margin: 2px 0 0; }
+.cs-code > code { justify-self: start; }
+.cs-code > span { color: var(--ink-muted); font-size: 0.86em; line-height: 1.35; }
+.cs-card .cs-tool p.cs-tool-note { margin-top: 4px; color: var(--ink-muted); font-size: 0.9em; }
+@container (max-width: 25em) {
+  .cs-code { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .cs-code > span { margin: 0 0 4px 2px; }
+}
+
+.cs-mistakes li { margin: 0.4em 0; }
+.cs-timeline { padding-left: 1.1em; }
+.cs-timeline li { margin: 0.35em 0; line-height: 1.5; }
+.cs-timeline strong { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+.cs-after { margin: 0.4rem 0 0; color: var(--ink-muted); font-size: 0.92em; }
+
+@media (max-width: 559.98px) {
+  .cs-card { padding: 12px 14px 14px; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px 6px; }
+  .cs-card table.cs-eqs, .cs-card table.cs-quad { font-size: 0.82em; }
+}
+@media (max-width: 379.98px) {
+  /* small phones (320-379px): a little more room so formulas and the surfaces table fit without scrolling */
+  .cs-card { padding: 12px 12px 14px; }
+  .cs-card .key-formula { padding-left: 10px; padding-right: 10px; }
+  .cs-card .katex-display > .katex { font-size: 0.96em; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px; }
+}
+
+/* ---------- Print: two pages on US Letter or A4 ---------- */
+@media print {
+  @page { margin: 9mm; }
+  html { font-size: 7.8pt; }
+  .page { font-size: 1rem; line-height: 1.3; }
+  .katex { font-size: 1.04em; }
+  .lesson-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0 6mm;
+    margin: 0 0 2.4mm;
+    padding: 0 0 1.8mm;
+    border-bottom: 0.8pt solid var(--line-strong);
+  }
+  .lesson-header .eyebrow { grid-column: 1 / -1; margin: 0 0 0.4mm; font-size: 6.6pt; }
+  .lesson-header h1 { margin: 0; font-size: 16pt; line-height: 1.1; }
+  .lesson-header .lede { max-width: none; font-size: 8pt; line-height: 1.35; text-align: right; }
+  /* floats: blocks next to a floated figure shrink beside it instead of running underneath */
+  .cs-card > :is(p, ul, .table-wrap, .key-formula) { display: flow-root; }
+  .cs-card > .katex-display, .cs-card .key-formula > .katex-display { display: flow-root; }
+  .cs-card .cs-figure.cs-float { float: right; width: 40%; max-width: none; margin: 0 0 1mm 2.5mm; }
+  .cs-card .cs-figure.small.cs-float { width: 33%; }
+  .cs-sheet {
+    column-count: 2;
+    column-gap: 4mm;
+    font-size: 1rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-card { margin: 0 0 2.6mm; padding: 1.9mm 2.8mm 2.2mm; border-color: var(--line-strong); border-radius: 2mm; box-shadow: none; }
+  .cs-card > h2 { gap: 1.8mm; margin: 0 0 1.4mm; padding: 0 0 1.1mm; font-size: 9.6pt; }
+  .cs-card > h2::before { width: 12.5pt; height: 12.5pt; font-size: 6.8pt; }
+  .cs-card p { margin: 0 0 0.9mm; }
+  .cs-card ul { margin: 0 0 1mm; padding-left: 3.4mm; }
+  .cs-card li { margin: 0.35mm 0; }
+  .cs-card h3 { margin: 1.6mm 0 0.5mm; font-size: 6.6pt; }
+  .cs-card .katex-display { margin: 0.9mm 0; padding: 0; }
+  .cs-card .key-formula { margin: 1.2mm 0; padding: 0.6mm 2.4mm 0.8mm; border-width: 0.8pt; border-radius: 1.6mm; }
+  .cs-card .key-formula .katex-display { margin: 0.5mm 0; }
+  .cs-pair { gap: 1.8mm; margin: 1.2mm 0; }
+  .cs-pair > * { flex-basis: 30mm; }
+  .cs-card .table-wrap { margin: 1.1mm 0 1.3mm; border-radius: 1.4mm; border-color: var(--line-strong); }
+  .cs-card table.data th, .cs-card table.data td { padding: 0.55mm 1.8mm; }
+  .cs-card table.data thead th { font-size: 6.4pt; }
+  .cs-card table.data caption { padding: 0.6mm 1.8mm; font-size: 7pt; }
+  .cs-card .cs-figure { max-width: 43mm; margin: 0.4mm auto 1.2mm; }
+  .cs-card .cs-figure.small { max-width: 36mm; }
+  .cs-figure figcaption { margin-top: 0.3mm; font-size: 6.8pt; }
+  .cs-svg text { font-size: 17.5px; }
+  .cs-svg .lbl-ax { font-size: 16px; }
+  .cs-svg .lbl-mute { font-size: 15px; }
+  .cs-svg .sm { font-size: 14.5px; }
+  .cs-tools { gap: 1.1mm; margin-top: 0.8mm; }
+  .cs-tool { padding: 0.9mm 2mm 1mm; border-radius: 1.4mm; }
+  .cs-tool-name { margin-bottom: 0.3mm; font-size: 6.4pt; }
+  .cs-card .cs-tool p { line-height: 1.45; }
+  .cs-tool :not(pre) > code { font-size: 0.86em; }
+  .cs-mistakes li { margin: 0.5mm 0; }
+  .cs-timeline li { margin: 0.5mm 0; line-height: 1.35; }
+}
+.cs-svg .acc-path { stroke: var(--accent); stroke-width: 3; }
+.cs-svg .r-fill { fill: var(--c-n); }
+.cs-svg .r { stroke: var(--c-n); }
+.cs-svg .sub { font-size: 11px; }
+.cs-svg .bold { font-family: KaTeX_Main, "Times New Roman", serif; font-style: normal; font-weight: 700; }
+</style>
+</head>
+<body data-page="cheatsheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow"><span class="no-print">Reference</span><span class="print-only">Airfoil and Wing Geometry</span></p>
+    <h1>Formula Sheet</h1>
+    <p class="lede">Every key result from the module in one place. Statistics are from Raymer, Chapters 4 and 6; check the values against your edition.</p>
+    <div class="cs-actions no-print">
+      <button type="button" class="btn primary" id="cs-print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Print this sheet</button>
+      <p class="small muted">Fits on one page of Letter or A4. For a digital copy, choose “Save as PDF” as the printer.</p>
+    </div>
+  </header>
+
+  <div class="cs-sheet wide">
+
+    <section class="card cs-card" id="airfoil">
+      <h2><span>Airfoils</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">NACA \(mptt\) (fractions of the chord)</p>
+        \[ y_c = \frac{m}{p^2}(2px - x^2)\ \ (x \le p) \]
+        \[ y_c = \frac{m}{(1 - p)^2}\left[1 - 2p + 2px - x^2\right]\ \ (x > p) \]
+        \[ \begin{aligned} y_t = 5t\,\big(&0.2969\sqrt x - 0.1260x - 0.3516x^2 \\ &+ 0.2843x^3 - 0.1015x^4\big) \end{aligned} \]
+      </div>
+      <ul>
+        <li>Thickest at \(x = 0.30\); leading-edge radius \(r = 1.1019\,t^2c\).</li>
+        <li>Five-digit: first digit \(\times 0.15\) = design \(c_l\). Six-series \(64_2\)-215: design \(c_l\) 0.2, 15%. SC(2)-0410: design \(c_l\) 0.4, 10%.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/01-airfoil-geometry.html">Lesson 1</a></p>
+    </section>
+
+    <section class="card cs-card" id="thin">
+      <h2><span>Lift, moment, Reynolds number</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Thin-airfoil theory and \(Re\)</p>
+        \[ c_l = 2\pi(\alpha - \alpha_{L0}), \qquad M' = q\,c^2c_{m,c/4} \]
+        \[ Re = \frac{\rho Vc}{\mu} \]
+      </div>
+      <ul>
+        <li>NACA four-digit with \(p = 0.4\): \(\alpha_{L0} \approx -1.04^\circ\) and \(c_{m,c/4} \approx -0.027\) per 1% camber. Aerodynamic center at \(c/4\); center of pressure \(x_{cp}/c = 0.25 - c_{m,c/4}/c_l\).</li>
+        <li>Stall: thick (\(\gtrsim 14\%\)) trailing-edge, gentle; moderate (9 to 13%) leading-edge, abrupt; thin, long bubble, low \(c_{l,\max}\).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/02-airfoil-aerodynamics.html">Lesson 2</a></p>
+    </section>
+
+    <section class="card cs-card" id="design">
+      <h2><span>Design lift coefficient and thickness</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Cruise \(C_L\) and the Korn equation</p>
+        \[ C_L = \frac{W/S}{q}, \qquad q = \tfrac12\gamma pM^2, \qquad C_L^{*} = \sqrt{\CDz/K} \]
+        \[ \MDD = \frac{\kappa_A}{\cos\Lambda} - \frac{t/c}{\cos^2\Lambda} - \frac{c_l}{10\cos^3\Lambda} \]
+        \[ \frac tc = \kappa_A\cos\Lambda - \frac{c_l}{10\cos\Lambda} - \MDD\cos^2\Lambda \]
+      </div>
+      <ul>
+        <li>Jet best range at \(C_L^{*}/\sqrt3\); propeller at \(C_L^{*}\). Airfoil design \(c_l\) near the cruise \(C_L\).</li>
+        <li>\(\kappa_A = 0.87\) conventional, 0.95 supercritical.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/03-choosing-the-airfoil.html">Lesson 3</a></p>
+    </section>
+
+    <section class="card cs-card" id="aspect">
+      <h2><span>Aspect ratio</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Span, induced drag, lift-curve slope</p>
+        \[ A = \frac{b^2}{S}, \qquad \bar c_g = \frac Sb, \qquad K = \frac{1}{\pi Ae} \]
+        \[ \CLa = \frac{2\pi A}{2 + \sqrt{4 + \dfrac{A^2\beta^2}{\eta^2}\left(1 + \dfrac{\tan^2\Lambda}{\beta^2}\right)}} \]
+      </div>
+      <ul>
+        <li>\(\beta^2 = 1 - M^2\), \(\eta \approx 0.95\). Prandtl (elliptic, low speed): \(\CLa = a_0/[1 + a_0/(\pi A)]\), too high below \(A \approx 6\). Statistics: propeller 6 to 9.2; jets \(A = aM_{\max}^C\) (transport 7.5, trainer \(4.737M^{-0.979}\), fighter \(5.416M^{-0.622}\)); sailplanes \(0.19\LDmax^{1.3}\).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/04-aspect-ratio.html">Lesson 4</a></p>
+    </section>
+
+    <section class="card cs-card" id="sweep">
+      <h2><span>Sweep</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Normal Mach number, Mach cone, chord lines</p>
+        \[ M_n = M\cos\Lambda, \qquad \Lambda_{LE} > 90^\circ - \arcsin\frac1M \]
+        \[ \tan\Lambda_n = \tan\Lambda_m - \frac4A\left[(n - m)\frac{1 - \lambda}{1 + \lambda}\right] \]
+      </div>
+      <ul>
+        <li>Costs: lower \(\CLa\) and \(C_{L,\max}\), tip stall and pitch-up, weight, aileron reversal. About \(1^\circ\) of effective dihedral per \(10^\circ\) of sweep.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/05-sweep.html">Lesson 5</a></p>
+    </section>
+
+    <section class="card cs-card" id="planform">
+      <h2><span>Planform</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Trapezoidal wing and Schrenk loading</p>
+        \[ b = \sqrt{AS}, \qquad c_r = \frac{2S}{b(1 + \lambda)}, \qquad c_t = \lambda c_r \]
+        \[ \bar c = \frac23c_r\frac{1 + \lambda + \lambda^2}{1 + \lambda}, \qquad \bar y = \frac b6\,\frac{1 + 2\lambda}{1 + \lambda} \]
+        \[ \bar x_{LE} = \bar y\tan\Lambda_{LE}, \qquad \frac{c_l}{C_L} = \frac{c + c_e}{2c},\ \ c_e = \frac{4S}{\pi b}\sqrt{1 - \eta^2} \]
+      </div>
+      <ul>
+        <li>\(\lambda \approx 0.45\) unswept, 0.2 to 0.35 swept. Aerodynamic center at \(\bar c/4\).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/06-taper-and-planform.html">Lesson 6</a></p>
+    </section>
+
+    <section class="card cs-card" id="details">
+      <h2><span>Twist, incidence, dihedral</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Incidence for a level fuselage</p>
+        \[ i_w = \alpha_{L0} + C_L/\CLa \]
+      </div>
+      <ul>
+        <li>Washout 0 to \(5^\circ\). Incidence about \(2^\circ\) light aircraft, \(1^\circ\) transports.</li>
+        <li>Dihedral (low/mid/high): unswept 5 to 7 / 2 to 4 / 0 to 2; subsonic swept 3 to 7 / \(-2\) to 2 / \(-5\) to \(-2\); supersonic 0 to 5 / \(-5\) to 0 / \(-5\) to 0.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/07-wing-details.html">Lesson 7</a></p>
+    </section>
+
+    <section class="card cs-card" id="tail">
+      <h2><span>Tails</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Tail volume coefficients</p>
+        \[ S_{HT} = \frac{c_{HT}\bar c_WS_W}{L_{HT}}, \qquad S_{VT} = \frac{c_{VT}b_WS_W}{L_{VT}} \]
+      </div>
+      <ul>
+        <li>\(c_{HT},\ c_{VT}\): GA single 0.70, 0.04; GA twin 0.80, 0.07; twin turboprop 0.90, 0.08; jet trainer 0.70, 0.06; fighter 0.40, 0.07; jet transport 1.00, 0.09.</li>
+        <li>Arm: 60% of the fuselage (nose engine), 50 to 55% (wing engines), 45 to 50% (rear engines).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/08-tail.html">Lesson 8</a></p>
+    </section>
+
+    <section class="card cs-card cs-warn" id="common-mistakes">
+      <h2><span>Common mistakes</span></h2>
+      <ul class="cs-mistakes">
+        <li><strong>Degrees in \(2\pi(\alpha - \alpha_{L0})\).</strong> Convert to radians.</li>
+        <li><strong>The sign of \(\alpha_{L0}\).</strong> It is negative for positive camber: \(\alpha - \alpha_{L0}\) adds.</li>
+        <li><strong>kg/m² for \(W/S\).</strong> Multiply by \(g\) for \(C_L\).</li>
+        <li><strong>Forgetting \(\gamma\).</strong> \(q = 0.7pM^2\), not \(0.5pM^2\).</li>
+        <li><strong>MAC for the fin.</strong> The vertical tail uses the span \(b_W\).</li>
+        <li><strong>Mean geometric chord for the MAC.</strong> \(S/b \ne \bar c\) unless \(\lambda = 1\).</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+/* Formula sheet: the only control is the print button (the page itself is static reference content). */
+CYL.ready(function () {
+  'use strict';
+  var btn = document.getElementById('cs-print');
+  btn.addEventListener('click', function () { window.print(); });
+});
+</script>
+</body>
+</html>

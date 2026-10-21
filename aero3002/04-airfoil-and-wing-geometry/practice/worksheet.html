@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Airfoil and Wing Geometry</title>
+<meta name="description" content="Twelve printable problems on airfoils and wing geometry: NACA airfoils, thin-airfoil theory, Reynolds number, the cruise lift coefficient, the Korn equation, aspect ratio, sweep, the planform and MAC, span loading, incidence, dihedral and tail sizing, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from building a NACA airfoil and its lift curve, through the cruise lift coefficient, thickness and sweep of a regional jet and an airliner, to where a wing stalls first, its tails, and a trainer's wing designed from scratch. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Airfoil and Wing Geometry · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Use \(g = 9.81\ \text{m/s}^2\), \(\gamma = 1.4\), \(1\ \text{rad} = 57.30^\circ\), and give answers to 4 significant figures. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A covers airfoils and the design lift coefficient, Part B thickness, aspect ratio, sweep and the planform, and Part C span loading, the wing's details, the tails and a whole wing. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units unless a problem asks otherwise, \(g = 9.81\ \text{m/s}^2\), \(\gamma = 1.4\), answers to 4 significant figures. Angles in thin-airfoil theory and in \(C_L/\CLa\) are in radians; convert with \(1\ \text{rad} = 57.30^\circ\). The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Airfoils and the design lift coefficient</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 1–3</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Thickness, aspect ratio, sweep and the planform</h2>
+    <p class="ws-part-sub">Problems 5–8 · Basic to intermediate · Lessons 3–6</p>
+    <div class="ws-list" data-from="5" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Span loading, the wing's details and the tails</h2>
+    <p class="ws-part-sub">Problems 9–12 · Intermediate to challenge · Lessons 3–8</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Building a NACA four-digit airfoil', level: 1, lessons: ['l01'], units: 'm',
+      statementHTML: T`<p>A wing uses the NACA 2415 with a chord of \(2.4\ \text{m}\).</p>`,
+      parts: [
+        part('a', T`How thick is it, and where along the chord is it thickest?`, T`\(t = 0.15(2.4) = 0.360\ \text{m}\), at 30% of the chord`, { t: 0.36 }),
+        part('b', T`Find the height of the mean camber line at \(x = 0.25c\) and at \(x = 0.70c\), in metres.`, T`\(0.04125\ \text{m}\) (forward parabola) and \(0.0360\ \text{m}\) (aft parabola)`, { y1: 0.04125, y2: 0.036 }),
+        part('c', T`Find the half-thickness at \(x = 0.25c\), and the height of the upper surface above the chord there (the camber slope is small enough to add them).`, T`\(y_t = 0.07427c = 0.1782\ \text{m}\); upper surface \(0.2195\ \text{m}\)`, { yt: 0.17824, yu: 0.21949 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 2, title: 'Thin-airfoil theory', level: 1, lessons: ['l02'], units: 'N m/m',
+      statementHTML: T`<p>Thin-airfoil theory gives the NACA 4412 a zero-lift angle of \(-4.15^\circ\) and \(c_{m,c/4} = -0.106\).</p>`,
+      parts: [
+        part('a', T`Find its lift coefficient at \(\alpha = 2^\circ\) and \(6^\circ\).`, T`\(0.674\) and \(1.113\)`, { cl2: 0.67442, cl6: 1.11307 }),
+        part('b', T`At what angle does it reach \(c_l = 1.0\)?`, T`\(\alpha = -4.15^\circ + 9.12^\circ = 4.97^\circ\)`, { a: 4.9689 }),
+        part('c', T`Find its pitching moment per metre of span about the quarter chord for a \(1.6\ \text{m}\) chord at \(55\ \text{m/s}\) at sea level. Does it depend on \(\alpha\)?`, T`\(q = 1853\ \text{Pa}\); \(M' = 1853(1.6^2)(-0.106) = -503\ \text{N m/m}\); no, not below the stall`, { Mp: -502.78 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 3, title: 'Reynolds numbers', level: 2, lessons: ['l02'], units: 'millions',
+      statementHTML: T`<p>A regional jet has a mean chord of \(3.2\ \text{m}\). It cruises at Mach 0.78 at \(11\ \text{km}\) (\(\rho = 0.3639\ \text{kg/m}^3\), \(a = 295.1\ \text{m/s}\), \(\mu = 1.422 \times 10^{-5}\ \text{Pa s}\)) and approaches at \(250\ \text{km/h}\) at sea level.</p>`,
+      parts: [
+        part('a', T`Find the Reynolds number in cruise.`, T`\(V = 230.2\ \text{m/s}\); \(Re = 18.9 \times 10^6\)`, { Re1: 18.853 }),
+        part('b', T`Find the Reynolds number on approach.`, T`\(Re = 15.2 \times 10^6\)`, { Re2: 15.216 }),
+        part('c', T`A 1:20 wind-tunnel model is tested at \(60\ \text{m/s}\) at sea level. Find its Reynolds number, and say why its airfoil data cannot be used directly for the full-size wing.`, T`\(Re = 0.66 \times 10^6\), 23 to 29 times lower than the full-size wing's: a thicker boundary layer, higher friction and a different stall`, { Re3: 0.65735 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 4, title: 'The cruise lift coefficient', level: 2, lessons: ['l03'], units: 'Pa',
+      statementHTML: T`<p>The regional jet of Problem 3 cruises with a wing loading of \(520\ \text{kg/m}^2\) at Mach 0.78 and \(11\ \text{km}\) (\(p = 22\,700\ \text{Pa}\)). Its drag polar has \(\CDz = 0.022\), \(A = 9\) and \(e = 0.8\).</p>`,
+      parts: [
+        part('a', T`Find the dynamic pressure and the cruise lift coefficient.`, T`\(q = 9667\ \text{Pa}\), \(C_L = 0.528\)`, { q: 9667.5, CL: 0.52767 }),
+        part('b', T`Find its best-range lift coefficient.`, T`\(K = 0.04421\), \(C_L^{*} = 0.705\), \(C_{L,\text{range}} = 0.407\)`, { CLr: 0.40728 }),
+        part('c', T`At what static pressure would it cruise at Mach 0.78 at its best-range \(C_L\)? Above or below 11 km? What should its airfoil's design lift coefficient be?`, T`\(p = 29\,410\ \text{Pa}\): below 11 km (about 9.3 km); design \(c_l\) about 0.4 to 0.5`, { p: 29410 })
+      ],
+      figure: null, space: 45 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'Thickness and Mach number', level: 2, lessons: ['l03', 'l05'], units: '—',
+      statementHTML: T`<p>A wing is swept \(30^\circ\) and cruises at \(c_l = 0.5\).</p>`,
+      parts: [
+        part('a', T`Find \(\MDD\) with a 12% conventional airfoil (\(\kappa_A = 0.87\)) and a 12% supercritical one (\(\kappa_A = 0.95\)).`, T`\(0.768\) and \(0.860\)`, { m1: 0.76761, m2: 0.85999 }),
+        part('b', T`How thick can the supercritical airfoil be for \(\MDD = 0.82\)?`, T`\(t/c = 0.8227 - 0.0577 - 0.6150 = 0.150\)`, { tc: 0.14999 }),
+        part('c', T`Repeat (b) with \(20^\circ\) of sweep. What does the extra \(10^\circ\) of sweep buy?`, T`\(t/c = 0.115\); the extra sweep allows 3.5 points more thickness (a lighter wing with more fuel)`, { tc2: 0.11542 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 6, title: 'A turboprop wing', level: 1, lessons: ['l04'], units: 'm',
+      statementHTML: T`<p>A twin turboprop has \(S = 40\ \text{m}^2\) and the statistical aspect ratio for its class, 9.2, with \(e = 0.8\).</p>`,
+      parts: [
+        part('a', T`Find its span and mean geometric chord.`, T`\(b = 19.18\ \text{m}\), \(\bar c_g = 2.085\ \text{m}\)`, { b: 19.183, cg: 2.0851 }),
+        part('b', T`Find its induced-drag factor \(K\).`, T`\(K = 0.0432\)`, { K: 0.043249 }),
+        part('c', T`Find its low-speed lift-curve slope (Helmbold, \(\eta = 0.95\), no sweep), and compare it with \(2\pi\).`, T`\(\CLa = 4.86\) per rad, 77% of \(2\pi\)`, { cla: 4.8623 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 7, title: 'Choosing sweep', level: 2, lessons: ['l05'], units: '°',
+      statementHTML: T`<p>An airliner cruises at Mach 0.84; a fighter must reach Mach 1.8 with a subsonic leading edge.</p>`,
+      parts: [
+        part('a', T`With \(30^\circ\) of sweep, what normal Mach number does the airliner's airfoil feel?`, T`\(M_n = 0.727\)`, { mn: 0.72746 }),
+        part('b', T`If its airfoil can take \(M_n = 0.70\), how much sweep does it need?`, T`\(\Lambda = \arccos(0.70/0.84) = 33.6^\circ\)`, { L: 33.557 }),
+        part('c', T`What leading-edge sweep does the fighter need?`, T`\(\mu = 33.75^\circ\), \(\Lambda_{LE} = 56.3^\circ\)`, { Lle: 56.251 })
+      ],
+      figure: null, space: 35 }),
+
+    prob({ n: 8, title: 'An airliner planform', level: 2, lessons: ['l06'], units: 'm',
+      statementHTML: T`<p>An airliner wing has \(S = 120\ \text{m}^2\), \(A = 9\), \(\lambda = 0.25\) and \(27^\circ\) of sweep at the quarter chord.</p>`,
+      parts: [
+        part('a', T`Find its span, root chord and tip chord.`, T`\(b = 32.86\ \text{m}\), \(c_r = 5.842\ \text{m}\), \(c_t = 1.461\ \text{m}\)`, { b: 32.863, cr: 5.8424, ct: 1.4606 }),
+        part('b', T`Find its mean aerodynamic chord and its distance from the centerline.`, T`\(\bar c = 4.090\ \text{m}\), \(\bar y = 6.573\ \text{m}\)`, { mac: 4.0897, ym: 6.5727 }),
+        part('c', T`Find the leading-edge sweep, and how far behind the root leading edge the MAC's leading edge lies.`, T`\(\Lambda_{LE} = 29.95^\circ\); \(\bar x_{LE} = 3.787\ \text{m}\)`, { le: 29.950, x: 3.7871 })
+      ],
+      figure: null, space: 45 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'Where does the wing stall first?', level: 3, lessons: ['l06'], units: '—',
+      statementHTML: T`<p>Two unswept, untwisted wings have \(S = 30\ \text{m}^2\) and \(A = 8\) (\(b = 15.49\ \text{m}\)): one rectangular, one with \(\lambda = 0.3\). Use Schrenk's approximation, with the elliptic chord \(c_e = (4S/\pi b)\sqrt{1 - \eta^2}\).</p>`,
+      parts: [
+        part('a', T`For the rectangular wing (\(c = 1.936\ \text{m}\)), find \(c_l/C_L = (c + c_e)/(2c)\) at the root and at \(\eta = 0.8\).`, T`\(1.137\) at the root, \(0.882\) at \(\eta = 0.8\)`, { r0: 1.1366, r8: 0.882 }),
+        part('b', T`Repeat for the tapered wing (\(c_r = 2.979\ \text{m}\)).`, T`\(0.914\) at the root, \(1.064\) at \(\eta = 0.8\)`, { t0: 0.9138, t8: 1.0643 }),
+        part('c', T`Where does each wing stall first, and which is safer near the stall?`, T`Rectangular: at the root (safe, the ailerons keep working); tapered: outboard, near the ailerons, so it needs washout`, { ok: 1 })
+      ],
+      figure: null, space: 50 }),
+
+    prob({ n: 10, title: 'Incidence and dihedral', level: 2, lessons: ['l07'], units: '°',
+      statementHTML: T`<p>The airliner of Problem 8 cruises at \(C_L = 0.5\), with a cruise lift-curve slope of \(5.6\) per radian and \(\alpha_{L0} = -2.5^\circ\). Its wing is low and swept.</p>`,
+      parts: [
+        part('a', T`Find the incidence that levels the fuselage in cruise.`, T`\(i_w = -2.5^\circ + 5.12^\circ = 2.62^\circ\)`, { iw: 2.6157 }),
+        part('b', T`What dihedral do the guidelines suggest? Why less than for an unswept low wing?`, T`\(3^\circ\) to \(7^\circ\); the sweep already adds about \(1^\circ\) of effective dihedral per \(10^\circ\)`, { ok: 1 }),
+        part('c', T`If the same wing were mounted high on the fuselage, what would change?`, T`High swept wing: \(-5^\circ\) to \(-2^\circ\), anhedral`, { ok: 1 })
+      ],
+      figure: null, space: 35 }),
+
+    prob({ n: 11, title: 'Sizing the tails', level: 2, lessons: ['l08'], units: 'm²',
+      statementHTML: T`<p>The airliner of Problem 8 has a \(38\ \text{m}\) fuselage with the engines on the wing. Use the jet-transport coefficients, \(c_{HT} = 1.00\) and \(c_{VT} = 0.09\).</p>`,
+      parts: [
+        part('a', T`Estimate the tail arm.`, T`About 52% of 38 m: \(L = 19.76\ \text{m}\)`, { L: 19.76 }),
+        part('b', T`Find the horizontal and vertical tail areas.`, T`\(S_{HT} = 24.8\ \text{m}^2\), \(S_{VT} = 18.0\ \text{m}^2\)`, { Sh: 24.836, Sv: 17.962 }),
+        part('c', T`With \(A_{HT} = 4.5\) and \(A_{VT} = 1.6\), find the horizontal tail span and the fin height.`, T`\(b_{HT} = 10.57\ \text{m}\), \(h_{VT} = 5.36\ \text{m}\)`, { bH: 10.572, hV: 5.3609 })
+      ],
+      figure: null, space: 40 }),
+
+    prob({ n: 12, title: 'A trainer\'s wing from scratch', level: 3, lessons: ['l03', 'l04', 'l06'], units: 'm',
+      statementHTML: T`<p>A jet trainer weighs \(5000\ \text{kg}\), has a wing loading of \(300\ \text{kg/m}^2\) and a maximum Mach number of 0.80. It cruises at Mach 0.60 at \(8\ \text{km}\) (\(p = 35\,600\ \text{Pa}\)) at 95% of its takeoff weight. The wing is unswept, with \(\lambda = 0.4\).</p>`,
+      parts: [
+        part('a', T`Find the wing area, and the aspect ratio from the jet-trainer statistic \(A = 4.737\,M_{\max}^{-0.979}\).`, T`\(S = 16.67\ \text{m}^2\), \(A = 5.89\)`, { S: 16.667, A: 5.8936 }),
+        part('b', T`Find the span, root chord and mean aerodynamic chord.`, T`\(b = 9.91\ \text{m}\), \(c_r = 2.402\ \text{m}\), \(\bar c = 1.785\ \text{m}\)`, { b: 9.9109, cr: 2.4024, mac: 1.7846 }),
+        part('c', T`Find the cruise lift coefficient.`, T`\(q = 8971\ \text{Pa}\), \(C_L = 0.312\)`, { CL: 0.31165 }),
+        part('d', T`How thick can an unswept supercritical airfoil be at that lift coefficient for \(\MDD = 0.82\)? A conventional one?`, T`Supercritical: \(0.95 - 0.031 - 0.82 = 0.099\); conventional: only 1.9%, impractical`, { tc: 0.0988 })
+      ],
+      figure: null, space: 50 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; g = 9.81 m/s^2; gamma = 1.4; 1 rad = 57.30 deg; 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

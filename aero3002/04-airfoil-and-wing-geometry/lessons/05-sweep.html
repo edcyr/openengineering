@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wing Sweep · Airfoil and Wing Geometry</title>
+<meta name="description" content="Why jets sweep their wings: simple sweep theory and the normal Mach number, choosing sweep and thickness together, the Mach cone and subsonic leading edges, and what sweep costs in lift, stall behavior, weight and aeroelasticity.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 30 min</p>
+    <h1>Wing Sweep</h1>
+    <p class="lede">Module 1 told the story: the swept wing, studied in Germany during the war, gave the F-86 and the Boeing B-47 their speed and became the shape of every jet transport since. This lesson puts numbers on it. Sweep is chosen for the cruise Mach number, together with the airfoil's thickness, and it has costs that the rest of the planform has to manage.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Explain simple sweep theory and compute the normal Mach number.</li>
+      <li>Choose sweep and thickness together for a cruise Mach number.</li>
+      <li>Find the leading-edge sweep that keeps a supersonic wing's leading edge inside the Mach cone.</li>
+      <li>List what sweep costs: lift-curve slope, maximum lift, tip stall and pitch-up, weight, aeroelastic effects.</li>
+    </ul>
+  </section>
+
+  <section id="theory">
+    <h2>Simple sweep theory</h2>
+    <p>Split the flow over an infinitely long swept wing into a component normal to the leading edge and one along it. The flow along the edge sees a wing that does not change in that direction, so it does nothing to the pressures: the airfoil only feels the normal component. Its Mach number is lower than the flight Mach number:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Normal Mach number</p>
+      \[ M_n = M\cos\Lambda \]
+      <p>The shock, and the drag rise, are delayed until \(M_n\) reaches what the airfoil can take unswept. In simple theory the critical Mach number rises by \(1/\cos\Lambda\). Real wings gain less: the root and the tip do not behave like an infinite swept wing.</p>
+    </div>
+    <p>Sweep also makes the airfoil effectively thinner and less loaded: measured normal to the sweep, the chord is shorter and the lift coefficient higher. That is where the \(\cos^2\Lambda\) and \(\cos^3\Lambda\) of the Korn equation (Lesson 3) come from.</p>
+    <div class="example">
+      <p class="example-title">Example 5.1 — Sweep for the business jet</p>
+      <p>(a) Find the normal Mach number of the business jet's wing, swept \(25^\circ\), at Mach 0.80. (b) With the Korn equation (\(c_l = 0.30\)), compare \(\MDD\) for a 12% supercritical airfoil and a 12% conventional one at \(0^\circ\), \(25^\circ\) and \(35^\circ\) of sweep.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{(a)}\ M_n = 0.80\cos 25^\circ = 0.80(0.9063) = 0.725 \]
+          <p>(b) With \(\MDD = \kappa_A/\cos\Lambda - 0.12/\cos^2\Lambda - 0.30/(10\cos^3\Lambda)\):</p>
+          <div class="table-wrap">
+            <table class="data">
+              <caption>Drag-divergence Mach number of a 12% airfoil at \(c_l = 0.30\)</caption>
+              <thead><tr><th scope="col">Sweep</th><th scope="col">Supercritical (\(\kappa_A = 0.95\))</th><th scope="col">Conventional (\(\kappa_A = 0.87\))</th></tr></thead>
+              <tbody>
+                <tr><td>\(0^\circ\)</td><td>0.800</td><td>0.720</td></tr>
+                <tr><td>\(25^\circ\)</td><td>0.862</td><td>0.774</td></tr>
+                <tr><td>\(35^\circ\)</td><td>0.926</td><td>0.829</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>A conventional 12% wing needs about \(35^\circ\) of sweep to cruise at Mach 0.80 with a margin, as the jet transports of the 1960s had. A supercritical airfoil needs only about \(15^\circ\); the business jet's \(25^\circ\) leaves room to cruise faster, or to make the root thicker. The \(35^\circ\) supercritical value shows the limit of the simple theory: it overestimates what large sweeps buy.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="data">
+    <h2>Sweep and Mach number in practice</h2>
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> Wing sweep against Mach number for the jets in Module 1's data (points, from Loftin's NASA survey; transports at their cruise Mach number, fighters at their maximum). The blue curve is the sweep that holds the normal Mach number at the chosen value; the dashed curve is the sweep that puts a supersonic leading edge inside the Mach cone. Hover over a point to name the aircraft.</figcaption>
+    </figure>
+    <p>The subsonic transports follow the normal-Mach curve closely: they cruise with \(M_n\) between 0.65 and 0.76, 0.72 on average. The supersonic fighters sit well below the Mach-cone curve, because they spend most of their time subsonic and use thin airfoils, not sweep alone, for their top speed. The unswept F-104 is the extreme: a wing only 3.4% thick.</p>
+  </section>
+
+  <section id="supersonic">
+    <h2>Supersonic leading edges</h2>
+    <p>Above Mach 1 a disturbance spreads within a cone of half-angle \(\mu = \arcsin(1/M)\), the Mach angle. A leading edge swept behind the Mach cone is a <strong>subsonic leading edge</strong>: the flow normal to it is subsonic, so it can be round and generate suction like a subsonic airfoil. Swept ahead of the cone, it is a supersonic leading edge and must be sharp, with higher wave drag.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Leading-edge sweep for a subsonic leading edge</p>
+      \[ \Lambda_{LE} > 90^\circ - \arcsin\frac{1}{M} \]
+      <p>Mach 1.6: \(\Lambda_{LE} > 51.3^\circ\). Mach 2: \(\Lambda_{LE} > 60^\circ\), the sweep of the delta wings of the 1960s.</p>
+    </div>
+    <p>This is simple sweep theory again. Since \(90^\circ - \arcsin(1/M) = \arccos(1/M)\), the condition is the same as \(M\cos\Lambda_{LE} < 1\): the Mach number normal to the leading edge is subsonic exactly when the edge lies inside the Mach cone from its apex (Figure 5.2).</p>
+    <figure class="figure wide" aria-labelledby="fig52-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig52-stage"></div>
+        <div class="viz-controls" id="fig52-controls"></div>
+      </div>
+      <figcaption id="fig52-cap"><strong>Figure 5.2</strong> A wing in supersonic flight, seen from above with the nose up, and the Mach cone from its apex (violet), half-angle \(\mu = \arcsin(1/M)\). The oncoming flow \(M\) at the leading edge splits into a component along the edge, \(M_t = M\sin\Lambda_{LE}\), which the wing does not feel, and one normal to it, \(M_n = M\cos\Lambda_{LE}\). Raise the sweep until the leading edge passes inside the cone: \(M_n\) drops below 1 and the edge becomes subsonic (green). Raise the Mach number and the cone narrows, so the same edge turns supersonic (red).</figcaption>
+    </figure>
+  </section>
+
+  <section id="costs">
+    <h2>What sweep costs</h2>
+    <ul>
+      <li><strong>Lift.</strong> The lift-curve slope falls (the \(\tan^2\Lambda\) term of Lesson 4), and so does the maximum lift, roughly in proportion to \(\cos\Lambda\). A swept wing needs larger flaps and slats, and lands at a higher angle of attack.</li>
+      <li><strong>Tip stall and pitch-up.</strong> On an aft-swept wing the boundary layer drifts outboard and thickens near the tips, which also carry more load (Lesson 6). The tips stall first. They are aft of the center of gravity, so losing their lift pitches the nose up, deeper into the stall. Twist, taper, fences, notches and vortex generators are the remedies (Lesson 7).</li>
+      <li><strong>Weight.</strong> The structural span is \(b/\cos\Lambda\), and the swept box must also carry torsion. Swept wings are heavier for the same span and area.</li>
+      <li><strong>Aeroelasticity.</strong> When an aft-swept wing bends up, its tips twist nose-down, which unloads them: good for the loads, bad for aileron effectiveness. A forward-swept wing twists the other way and can diverge, which is why only a few, built with tailored composites, have flown.</li>
+      <li><strong>Lateral stability.</strong> Sweep adds a dihedral effect: a swept wing in a sideslip rolls away from the slip, as if it had dihedral (Lesson 7).</li>
+    </ul>
+    <p>Forward sweep has the opposite stall pattern, root first, and keeps the ailerons working. It is used where a structural layout needs the wing box behind the cabin, as on some business jets, more often than for aerodynamics.</p>
+    <p>A propeller aircraft below about Mach 0.6 gains nothing from sweep and pays all its costs: it uses none, or a few degrees only to place the aerodynamic center or improve visibility.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>The airfoil of a swept wing feels \(M_n = M\cos\Lambda\); choose sweep and thickness together for the cruise Mach number.</li>
+      <li>Supercritical airfoils need much less sweep than conventional ones for the same speed.</li>
+      <li>Supersonic: a subsonic leading edge needs \(\Lambda_{LE} > 90^\circ - \arcsin(1/M)\), the same as \(M\cos\Lambda_{LE} < 1\): the edge inside the Mach cone.</li>
+      <li>Sweep costs lift-curve slope, maximum lift, structure, aileron effectiveness, and brings tip stall and pitch-up.</li>
+      <li>Next, <a href="06-taper-and-planform.html">Lesson 6</a> tapers the wing and works out its geometry.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: sweep against Mach number ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = AERO.DATA.filter(function (d) { return (d.era === 'jettransport' && d.Mc) || (d.era === 'jetfighter' && d.Mmax); });
+  function Mof(d) { return d.era === 'jettransport' ? d.Mc : d.Mmax; }
+  var st = { mn: 0.72 };
+  var chart = AERO.chart(document.getElementById('fig51-stage'), {
+    x: { label: 'Mach number', min: 0.5, max: 2.6 }, y: { label: 'Wing sweep \\(\\Lambda\\) (degrees)', min: 0, max: 70 }, height: 330,
+    ariaLabel: 'Wing sweep against Mach number for jet transports and fighters, with the normal-Mach and Mach-cone curves.',
+    legend: [{ label: 'Constant \\(M_n\\)', color: 'z', line: true }, { label: 'Mach cone', color: 'r', line: true, dashed: true }, { label: 'Transports', color: 'warn' }, { label: 'Fighters', color: 't', shape: 'tri' }]
+  });
+  var curve = chart.fn(function (M) { return M > st.mn ? Math.acos(st.mn / M) * 180 / Math.PI : 0; }, { color: 'z', width: 2.6, domain: [0.5, 1.4], samples: 240 });
+  chart.fn(function (M) { return 90 - Math.asin(1 / M) * 180 / Math.PI; }, { color: 'r', width: 2, dashed: true, domain: [1.0, 2.6] });
+  chart.points(D, { x: Mof, y: function (d) { return d.sweep; }, color: function (d) { return d.era === 'jettransport' ? 'warn' : 't'; }, shape: function (d) { return d.era === 'jettransport' ? 'circle' : 'tri'; }, r: 4.5,
+    title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + '</span><br>' + d.sweep + '° at Mach ' + Mof(d) + ': \\(M_n\\) = ' + CYL.fmt(Mof(d) * Math.cos(d.sweep * Math.PI / 180), 3); } });
+  var panel = document.getElementById('fig51-controls');
+  var s = CYL.slider({ label: 'Normal Mach number \\(M_n\\)', min: 0.55, max: 0.85, step: 0.01, value: st.mn, color: 'z', onInput: function (v) { st.mn = v; draw(); } });
+  var tr = D.filter(function (d) { return d.era === 'jettransport'; });
+  var mn = tr.map(function (d) { return d.Mc * Math.cos(d.sweep * Math.PI / 180); }), mean = mn.reduce(function (a, b) { return a + b; }, 0) / mn.length;
+  var ro = { a: CYL.readout('Sweep at Mach 0.80'), b: CYL.readout('Sweep at Mach 0.85'), t: CYL.readout('Transports: average \\(M_n\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Airfoil limit' }));
+  panel.appendChild(s.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.b.el, ro.t.el]));
+  CYL.renderMath(panel);
+  function sw(M) { return M > st.mn ? Math.acos(st.mn / M) * 180 / Math.PI : 0; }
+  function draw() {
+    curve.draw();
+    ro.a.set(CYL.fmt(sw(0.8), 3) + '°'); ro.b.set(CYL.fmt(sw(0.85), 3) + '°'); ro.t.set(CYL.fmt(mean, 3) + ' (' + tr.length + ' aircraft)');
+    chart.setAriaLabel('Wing sweep against Mach number: for a normal Mach number of ' + st.mn + ', ' + CYL.fmt(sw(0.8), 3) + ' degrees at Mach 0.80; the transports average a normal Mach number of ' + CYL.fmt(mean, 3) + '.');
+  }
+  draw();
+});
+
+/* ---------- Figure 5.2: the Mach cone and the leading edge ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180, st = { M: 1.6, L: 45 }, LR = 2.0, XB = 2.15, YB = -2.45;
+  var plane = CYL2D.plane(document.getElementById('fig52-stage'), {
+    xRange: [-2.2, 2.2], yRange: [-2.5, 0.75], grid: 'none', axes: false, ticks: false, maxHeight: 440,
+    ariaLabel: 'Top view of a wing in supersonic flight with the Mach cone from its apex.'
+  });
+  // where a ray from the apex at angle th (radians, from +x) leaves the drawing
+  function toEdge(th) {
+    var c = Math.cos(th), s = Math.sin(th), t = Infinity;
+    if (Math.abs(c) > 1e-9) t = Math.min(t, XB / Math.abs(c));
+    if (s < -1e-9) t = Math.min(t, YB / s);
+    return [t * c, t * s];
+  }
+  var cone = plane.polyline([], { color: 't', width: 0, closed: true, fill: 't', fillOpacity: 0.1 });
+  plane.line([0, 0.55], [0, YB], { color: 'muted', width: 1, dashed: true });
+  plane.line([0, 0], [1.35, 0], { color: 'muted', width: 1, dashed: true });
+  var wing = plane.polyline([], { color: 'surface', width: 1.8, closed: true, fill: 'surface', fillOpacity: 0.2 });
+  var leR = plane.line([0, 0], [0, 0], { color: 'good', width: 3.2 }), leL = plane.line([0, 0], [0, 0], { color: 'good', width: 3.2 });
+  var machR = plane.line([0, 0], [0, 0], { color: 't', width: 2 }), machL = plane.line([0, 0], [0, 0], { color: 't', width: 2 });
+  var arcMu = plane.arc({ center: [0, 0], r: 0.95, theta0: 0, theta1: 0, color: 't', width: 1.5, arrow: false });
+  var labMu = plane.label([0, 0], '\\mu', { color: 't', anchor: 'e', offset: [3, 0] });
+  var arcL = plane.arc({ center: [0, 0], r: 0.55, theta0: 0, theta1: 0, color: 'ink', width: 1.5, arrow: false });
+  var labL = plane.label([0, 0], '\\Lambda_{LE}', { anchor: 'e', offset: [3, 0] });
+  var vInf = plane.line([0, 0], [0, 0], { color: 'ink', width: 2.2, arrow: 'end' });
+  var vN = plane.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: 'end' });
+  var vT = plane.line([0, 0], [0, 0], { color: 'muted', width: 2, arrow: 'end' });
+  var vC = plane.line([0, 0], [0, 0], { color: 'muted', width: 1, dashed: true });
+  var labT = plane.label([0, 0], 'M_t', { color: 'muted', anchor: 'nw', offset: [-2, -2], background: true });
+  var labV = plane.label([0, 0], 'M', { anchor: 'n', offset: [0, -3] });
+  var labN = plane.label([0, 0], 'M_n', { color: 'good', anchor: 'ne', offset: [2, -2], background: true });
+  var state = plane.label([0, -LR], '', { color: 'good', anchor: 's', tex: false, className: 'small', offset: [0, 4] });
+  plane.line([1.95, -0.25], [1.95, 0.45], { color: 'muted', width: 1.6, arrow: 'end' });
+  plane.label([1.95, -0.25], 'flight', { color: 'muted', anchor: 's', tex: false, className: 'small', offset: [0, 2] });
+  var panel = document.getElementById('fig52-controls');
+  var sM = CYL.slider({ label: 'Mach number \\(M\\)', min: 1.05, max: 3, step: 0.05, value: st.M, color: 't', onInput: function (v) { st.M = v; draw(); } });
+  var sL = CYL.slider({ label: 'Leading-edge sweep \\(\\Lambda_{LE}\\)', min: 0, max: 80, step: 1, value: st.L, unit: '°', color: 'accent', onInput: function (v) { st.L = v; draw(); } });
+  var ro = { mu: CYL.readout('Mach angle \\(\\mu\\)'), need: CYL.readout('Subsonic edge needs \\(\\Lambda_{LE} >\\)'), mn: CYL.readout('\\(M_n = M\\cos\\Lambda_{LE}\\)'), le: CYL.readout('Leading edge') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Flight and wing' }));
+  [sM.el, sL.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.mu.el, ro.need.el, ro.mn.el, ro.le.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var M = st.M, L = st.L * D, mu = Math.asin(1 / M), need = 90 - mu / D, mn = M * Math.cos(L), sonic = Math.abs(mn - 1) < 0.005, sub = !sonic && mn < 1;
+    var col = sonic ? 'warn' : sub ? 'good' : 'bad';
+    // the Mach cone from the apex, clipped to the drawing
+    var eR = toEdge(-Math.PI / 2 + mu), eL = toEdge(-Math.PI / 2 - mu), poly = [[0, 0], eR];
+    if (eR[1] > YB + 1e-6) poly.push([XB, YB]);
+    if (eL[1] > YB + 1e-6) poly.push([-XB, YB]);
+    poly.push(eL);
+    cone.set(poly); machR.set([0, 0], eR); machL.set([0, 0], eL);
+    // the wing: root chord LR, leading edge swept L, unswept trailing edge, tip chord at least 0.3
+    var s = Math.min(1.5, (LR - 0.3) / Math.max(Math.tan(L), 1e-6)), yt = -s * Math.tan(L);
+    wing.set([[0, 0], [s, yt], [s, -LR], [-s, -LR], [-s, yt]]);
+    leR.set([0, 0], [s, yt]); leL.set([0, 0], [-s, yt]); leR.setColor(col); leL.setColor(col);
+    // the angles at the apex, both on the right: mu from the flight axis, the sweep from the lateral axis
+    arcMu.set({ center: [0, 0], r: 0.95, theta0: -Math.PI / 2, theta1: -Math.PI / 2 + mu });
+    labMu.set([0.97 * Math.cos(-Math.PI / 2 + mu / 2), 0.97 * Math.sin(-Math.PI / 2 + mu / 2)], '\\mu');
+    arcL.set({ center: [0, 0], r: 0.55, theta0: -L, theta1: 0 });
+    labL.set([0.57 * Math.cos(-L / 2), 0.57 * Math.sin(-L / 2)], '\\Lambda_{LE}');
+    labL.setVisible(st.L >= 8);
+    // the flow at a point on the left leading edge, split along and normal to the edge
+    var P = [-0.75 * s, 0.75 * yt], len = Math.min(0.7, 0.4 - P[1]), n = [Math.sin(L), -Math.cos(L)], S = [P[0], P[1] + len];
+    // both components drawn from the tail of M (a parallelogram): the normal one reaches the edge at Q
+    var Q = [S[0] + len * Math.cos(L) * n[0], S[1] + len * Math.cos(L) * n[1]], T = [S[0] + P[0] - Q[0], S[1] + P[1] - Q[1]];
+    vInf.set(S, P); vN.set(S, Q); vT.set(S, T); vC.set(T, P); vN.setColor(col); labN.setColor(col);
+    labV.set(S, 'M'); labN.set([(S[0] + Q[0]) / 2, (S[1] + Q[1]) / 2], 'M_n'); labT.set([(S[0] + T[0]) / 2, (S[1] + T[1]) / 2], 'M_t');
+    [vN, vT, vC, labT, labN].forEach(function (h) { h.setVisible(st.L >= 10); });   // below 10 degrees the components all but coincide with M
+    state.set([0, -LR], sonic ? 'sonic leading edge, on the Mach cone' : sub ? 'subsonic leading edge' : 'supersonic leading edge'); state.setColor(col);
+    ro.mu.set(CYL.fmt(mu / D, 3) + '°'); ro.need.set(CYL.fmt(need, 3) + '°'); ro.mn.set(CYL.fmt(mn, 3));
+    ro.le.set(sonic ? 'sonic: on the cone' : sub ? 'subsonic: inside the cone' : 'supersonic: ahead of the cone');
+    plane.svg.setAttribute('aria-label', 'Top view at Mach ' + M + ': the Mach cone has a half-angle of ' + CYL.fmt(mu / D, 3) + ' degrees. The leading edge, swept ' + st.L + ' degrees, has a normal Mach number of ' + CYL.fmt(mn, 3) + ', so it is ' + (sonic ? 'sonic, on the cone.' : sub ? 'subsonic, inside the cone.' : 'supersonic, ahead of the cone.') + ' A subsonic leading edge needs more than ' + CYL.fmt(need, 3) + ' degrees of sweep.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1',
+    type: 'numeric',
+    prompt: 'An airliner cruises at Mach 0.85 with \\(30^\\circ\\) of sweep. What is the normal Mach number its airfoils feel?',
+    label: '\\(M_n =\\)', answer: 0.85 * Math.cos(Math.PI / 6),
+    hints: ['\\(M_n = M\\cos\\Lambda\\).', '\\(\\cos 30^\\circ = 0.8660\\).'],
+    explain: 'About 0.74: within reach of a supercritical airfoil of moderate thickness.',
+    solution: '\\[ M_n = 0.85\\cos 30^\\circ = 0.85(0.8660) = 0.736 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2',
+    type: 'numeric',
+    prompt: 'A fighter should have a subsonic leading edge up to Mach 1.6. What is the least leading-edge sweep, in degrees?',
+    label: '\\(\\Lambda_{LE} =\\)', answer: 90 - Math.asin(1 / 1.6) * 180 / Math.PI, unit: '°',
+    hints: ['The Mach angle is \\(\\mu = \\arcsin(1/M)\\).', '\\(\\Lambda_{LE} = 90^\\circ - \\mu\\).'],
+    explain: 'The leading edge must lie behind the Mach cone.',
+    solution: '\\[ \\mu = \\arcsin\\frac{1}{1.6} = 38.68^\\circ, \\qquad \\Lambda_{LE} = 90^\\circ - 38.68^\\circ = 51.3^\\circ \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3',
+    type: 'mc',
+    prompt: 'Why does an aft-swept wing tend to pitch up at the stall?',
+    choices: [
+      { html: 'Its root stalls first, and the root is ahead of the center of gravity.', feedback: 'On an aft-swept wing it is the tips, not the root, that stall first.' },
+      { html: 'Its tips stall first; they are aft of the center of gravity, so losing their lift pitches the nose up.', correct: true, feedback: 'Yes: the outboard drift of the boundary layer and the high tip loading stall the tips first.' },
+      { html: 'Sweep moves the aerodynamic center forward.', feedback: 'Sweep moves the wing\'s aerodynamic center aft, not forward.' },
+      { html: 'The normal Mach number rises at the stall.', feedback: 'The stall here is a low-speed phenomenon; the Mach number is not the cause.' }
+    ],
+    explain: 'Lesson 7 covers the remedies: washout, fences, notches and vortex generators.'
+  });
+});
+</script>
+</body>
+</html>

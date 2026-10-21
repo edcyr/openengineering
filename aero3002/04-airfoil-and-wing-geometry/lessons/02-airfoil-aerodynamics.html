@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Airfoil Lift, Drag and Moment · Airfoil and Wing Geometry</title>
+<meta name="description" content="What camber and thickness do: the thin-airfoil lift curve and zero-lift angle, the aerodynamic center and pitching moment, the Reynolds number, the airfoil drag polar and drag bucket, and the three kinds of stall.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<style>
+  .tt td, .tt th { text-align: right; font-variant-numeric: tabular-nums; }
+  .tt td:first-child, .tt th:first-child { text-align: left; }
+  .sub-title { margin: 10px 14px 0; color: var(--ink-muted); font-size: 0.82rem; font-weight: 700; }
+  .stall-panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+  .stall-panel { min-width: 0; padding: 10px 6px 4px; }
+  .stall-panel + .stall-panel { border-left: 1px solid var(--line); }
+  .stall-panel .sp-title { margin: 0 6px; font-size: 0.82rem; font-weight: 700; line-height: 1.3; }
+  .stall-panel .sp-kind { font-weight: 600; }
+  .stall-panel .sp-state { margin: 2px 6px 0; min-height: 2.6em; color: var(--ink-muted); font-size: 0.8rem; line-height: 1.3; }
+  @container cylmain (max-width: 560px) {
+    .stall-panels { grid-template-columns: minmax(0, 1fr); }
+    .stall-panel + .stall-panel { border-left: 0; border-top: 1px solid var(--line); }
+    .stall-panel .sp-state { min-height: 0; }
+  }
+</style>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 35 min</p>
+    <h1>Airfoil Lift, Drag and Moment</h1>
+    <p class="lede">An airfoil is chosen for what it does, not how it looks. Most of what it does can be estimated before any wind tunnel: thin-airfoil theory gives the lift and pitching moment from the camber line alone. What theory cannot give, the drag and the stall, depends on the boundary layer, and so on the Reynolds number at which the airfoil works.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Use thin-airfoil theory: the lift-curve slope \(2\pi\) per radian, the zero-lift angle, and the moment about the quarter chord.</li>
+      <li>Explain the aerodynamic center, and why a cambered airfoil pitches nose down.</li>
+      <li>Compute the Reynolds number and explain why airfoil data must match it.</li>
+      <li>Describe the airfoil drag polar, the laminar drag bucket, and the three kinds of stall.</li>
+    </ul>
+  </section>
+
+  <section id="lift">
+    <h2>The lift curve</h2>
+    <p>Below the stall, an airfoil's lift coefficient grows in a straight line with the angle of attack \(\alpha\). Thin-airfoil theory, which treats the airfoil as its camber line in inviscid flow, gives the slope and the intercept:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Thin-airfoil lift curve</p>
+      \[ c_l = a_0\,(\alpha - \alpha_{L0}), \qquad a_0 = 2\pi\ \text{per radian} = 0.110\ \text{per degree} \]
+      \[ \alpha_{L0} = -\frac{1}{\pi}\int_0^{\pi}\frac{\dd y_c}{\dd x}\,(\cos\theta - 1)\,\dd\theta, \qquad x = \tfrac12(1 - \cos\theta) \]
+      <p>The slope does not depend on the shape at all. Camber only moves the line: a positively cambered airfoil already lifts at zero angle, so its zero-lift angle \(\alpha_{L0}\) is negative. Real airfoils reach about 90 to 100% of \(2\pi\), because the boundary layer slightly reduces the effective camber.</p>
+    </div>
+    <p>The angle of attack is measured from the chord line, but a cambered airfoil does not feel the flow along its chord. It has its own <strong>zero-lift line</strong>, tilted nose-up from the chord by \(|\alpha_{L0}|\): when the flow runs along that line, the airfoil makes no lift. What the airfoil feels is the angle from its zero-lift line, \(\alpha - \alpha_{L0}\) (Figure 2.1). Lift is the force component perpendicular to the oncoming flow and drag the component along it, whatever the attitude of the airfoil.</p>
+    <figure class="figure wide" aria-labelledby="fig21-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig21-stage"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> A NACA 4412 at \(\alpha = 8^\circ\), to scale. The angle of attack is measured from the direction of the oncoming flow \(V_\infty\) to the chord line. The zero-lift line (dashed teal) passes through the trailing edge, \(|\alpha_{L0}| = 4.15^\circ\) above the chord line (dashed gray) at the nose, so this airfoil meets the flow at \(\alpha - \alpha_{L0} = 12.15^\circ\) from its zero-lift line. Lift \(L\) is perpendicular to \(V_\infty\) and drag \(D\) parallel to it, drawn with the nose-down moment \(M_{c/4}\) at the quarter chord. The drag is exaggerated: at this angle it is less than 1% of the lift.</figcaption>
+    </figure>
+    <p>For the NACA four-digit camber line the integral can be done once and for all. The results scale with the camber: with the maximum camber at 40% of the chord, each 1% of camber lowers \(\alpha_{L0}\) by about \(1.04^\circ\). Moving the camber aft lowers it further (Figure 2.2).</p>
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> Thin-airfoil lift curves of a NACA four-digit camber line (blue) and a symmetric airfoil (gray). The zero-lift angle, the ideal lift coefficient (ring) and the lift at the chosen angle (dot) are marked. Camber shifts the line to the left without changing its slope; moving the camber aft shifts it farther and makes the moment more nose-down. The straight line ends at stall, which theory does not predict.</figcaption>
+    </figure>
+  </section>
+
+  <section id="moment">
+    <h2>The aerodynamic center and the pitching moment</h2>
+    <p>The lift on an airfoil acts at a point that moves with the angle of attack, the <strong>center of pressure</strong>, which is awkward for analysis. It is easier to describe the airfoil by a force and a moment at a fixed point: the <strong>aerodynamic center</strong>, the point about which the moment does not change with \(\alpha\). Thin-airfoil theory places it at the quarter chord, and real subsonic airfoils have it within a percent or two of there.</p>
+    <p>The two descriptions are the same load (Figure 2.3). Moving the lift from the center of pressure to the quarter chord adds the moment it made about that point, so \(c_{m,c/4} = -c_l\,(x_{cp}/c - 0.25)\), or</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Center of pressure</p>
+      \[ \frac{x_{cp}}{c} = 0.25 - \frac{c_{m,c/4}}{c_l} \]
+      <p>With a nose-down \(c_{m,c/4}\), the center of pressure lies behind the quarter chord and runs aft, even off the airfoil, as the lift falls toward zero. For a symmetric airfoil it stays at the quarter chord.</p>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig23-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig23-stage"></div>
+        <div class="viz-controls" id="fig23-controls"></div>
+      </div>
+      <figcaption id="fig23-cap"><strong>Figure 2.3</strong> Two ways to describe the same load on an airfoil, from thin-airfoil theory. Top: the lift alone, at the center of pressure, which moves with the angle of attack. Bottom: the lift at the quarter chord (the aerodynamic center) with a moment \(M_{c/4}\) that stays the same at every angle. Lower the angle of attack: on a cambered airfoil the center of pressure runs aft while the moment does not change. Arrow lengths are proportional to \(c_l\).</figcaption>
+    </figure>
+    <div class="key-formula">
+      <p class="key-formula-title">Moment about the quarter chord (thin-airfoil theory)</p>
+      \[ c_{m,c/4} = \frac{\pi}{4}\left(A_2 - A_1\right), \qquad A_n = \frac{2}{\pi}\int_0^{\pi}\frac{\dd y_c}{\dd x}\cos n\theta\,\dd\theta \]
+      <p>Zero for a symmetric airfoil; negative (nose down) for positive camber, and more negative the farther aft the camber. Every cambered wing therefore needs a tail, or a canard, to balance it: Lesson 8 and Module 11.</p>
+    </div>
+    <p>One more number comes out of the same integrals: the <strong>ideal lift coefficient</strong>, \(c_{l,i} = \pi A_1\), at which the flow meets the leading edge smoothly with no suction peak there. Near it the airfoil has its lowest drag and its gentlest pressure distribution, and it is the natural design point (Lesson 3).</p>
+    <div class="example">
+      <p class="example-title">Example 2.1 — The NACA 2412</p>
+      <p>Thin-airfoil theory gives the NACA 2412 a zero-lift angle of \(-2.08^\circ\), a quarter-chord moment of \(-0.053\) and an ideal lift coefficient of 0.256. Find its lift coefficient at \(\alpha = 4^\circ\), and its pitching moment per metre of span about the quarter chord at that angle, for a chord of \(1.5\ \text{m}\) at \(50\ \text{m/s}\) at sea level.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ c_l = 2\pi\,\frac{4 - (-2.08)}{57.30} = 2\pi(0.1061) = 0.667 \]
+          \[ q = \tfrac12(1.225)(50^2) = 1531\ \text{Pa} \]
+          \[ M' = q\,c^2\,c_{m,c/4} = 1531(1.5^2)(-0.053) = -183\ \text{N m per metre} \]
+          <p>The moment is the same at every angle below the stall: that is what makes the quarter chord the aerodynamic center. Measured lift curves of the NACA 2412 give a zero-lift angle close to \(-2^\circ\) and a slightly lower slope than \(2\pi\), as expected.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="reynolds">
+    <h2>Reynolds number</h2>
+    <p>Lift below the stall depends little on viscosity. Drag and the stall depend on it entirely, through the boundary layer, and its behavior is set by the <strong>Reynolds number</strong>, the ratio of inertial to viscous forces based on the chord:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Reynolds number</p>
+      \[ Re = \frac{\rho V c}{\mu} \]
+      <p>Sea level: \(\rho = 1.225\ \text{kg/m}^3\), \(\mu = 1.789 \times 10^{-5}\ \text{Pa s}\). Above 11 km: \(T = 216.65\ \text{K}\), \(\mu = 1.422 \times 10^{-5}\ \text{Pa s}\). Viscosity depends on temperature only.</p>
+    </div>
+    <p>The boundary layer starts <strong>laminar</strong> at the nose: thin and smooth, with little friction, but easily pushed off the surface by a rising pressure. Somewhere along the chord it turns <strong>turbulent</strong>: thicker and with more friction, but its fuller velocity profile carries more momentum close to the wall, so it follows the surface much farther against a rising pressure. Where even the turbulent layer runs out of momentum, it <strong>separates</strong>: the flow near the wall reverses, and the outer flow leaves the surface (Figure 2.4).</p>
+    <figure class="figure wide" aria-labelledby="fig24-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig24-stage"></div>
+      </div>
+      <figcaption id="fig24-cap"><strong>Figure 2.4</strong> The boundary layer on the upper surface of an airfoil at a high angle of attack, schematically, with its thickness greatly exaggerated: laminar from the nose (violet), turbulent after transition (blue), and separated near the trailing edge (orange), with a velocity profile from each region below. The laminar profile is thin; the turbulent one is fuller near the wall, which makes more friction but resists separation; in the separated region the flow near the wall runs backward.</figcaption>
+    </figure>
+    <p>Wind-tunnel models fly at a few hundred thousand, light aircraft at 3 to 10 million, airliners at 20 to 50 million. A higher Reynolds number gives a boundary layer that is thinner relative to the chord and turns turbulent sooner: a lower friction coefficient once the flow is mostly turbulent and, up to a point, a higher maximum lift. Airfoil data measured at the wrong Reynolds number can mislead by more than the difference between two airfoils, so always compare airfoils at the Reynolds number of the design.</p>
+    <div class="example">
+      <p class="example-title">Example 2.2 — The business jet's Reynolds numbers</p>
+      <p>The business jet's mean chord is about \(2.0\ \text{m}\) (Lesson 6). Find the Reynolds number in cruise at Mach 0.80 and \(12\ \text{km}\), and on approach at \(220\ \text{km/h}\) at sea level.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>At 12 km, \(\rho = 0.3108\ \text{kg/m}^3\), \(a = 295.1\ \text{m/s}\), so \(V = 0.80(295.1) = 236.1\ \text{m/s}\):</p>
+          \[ Re = \frac{0.3108(236.1)(2.0)}{1.422 \times 10^{-5}} = 10.3 \times 10^6 \]
+          \[ Re = \frac{1.225(61.11)(2.0)}{1.789 \times 10^{-5}} = 8.37 \times 10^6 \quad \text{(approach)} \]
+          <p>The cruise speed is nearly four times the approach speed, but the air at 12 km is a quarter as dense: the two Reynolds numbers are close. Airfoil data near 10 million suit both.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="drag">
+    <h2>Drag and the drag polar of an airfoil</h2>
+    <p>Airfoil drag is skin friction plus pressure (form) drag from the thickening boundary layer. Plotted against \(c_l\), it is nearly flat over a range of lift coefficients and rises at both ends as the flow begins to separate. For a smooth airfoil at a Reynolds number near 10 million the minimum is about 0.005 to 0.006: about a third of the business jet's whole-aircraft \(\CDz\) of 0.0165 (Module 3), which also counts the fuselage, tails and nacelles.</p>
+    <p>A laminar-flow (six-series) airfoil adds a <strong>drag bucket</strong>: within its design range of \(c_l\) the boundary layer stays laminar farther aft, and the drag drops by a third or more. The bucket is narrow, needs a smooth surface, and shrinks as the Reynolds number rises. A designer who picks a six-series airfoil should check that the cruise lift coefficient sits in the bucket, and that the bucket survives the real surface (Figure 2.5).</p>
+    <figure class="figure wide" aria-labelledby="fig25-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig25-stage"></div>
+        <div class="viz-controls" id="fig25-controls"></div>
+      </div>
+      <figcaption id="fig25-cap"><strong>Figure 2.5</strong> Drag polars of a four-digit airfoil (blue) and a six-series laminar-flow airfoil with a design lift coefficient of 0.2 (violet), schematically, with values typical of airfoils 12 to 15% thick near \(Re = 9 \times 10^6\). The six-series airfoil has a drag bucket from \(c_l \approx 0\) to 0.4 and slightly more drag outside it. Switch to a rough surface: the laminar flow is lost, the bucket disappears, and both airfoils have about the same, higher drag.</figcaption>
+    </figure>
+  </section>
+
+  <section id="stall">
+    <h2>Stall</h2>
+    <p>At high angle of attack the boundary layer cannot follow the upper surface to the trailing edge, and the lift stops rising. How it stops depends mostly on the thickness and the leading-edge radius:</p>
+    <ul>
+      <li><strong>Trailing-edge stall</strong> (thick airfoils, about 14% and more): separation starts at the trailing edge and creeps forward as \(\alpha\) increases. The lift curve rounds over gently. Pilots get warning, and recovery is easy.</li>
+      <li><strong>Leading-edge stall</strong> (moderate thickness, about 9 to 13%): a small separation bubble near the nose suddenly bursts and the flow leaves the whole upper surface at once. The lift drops abruptly from a high maximum.</li>
+      <li><strong>Thin-airfoil stall</strong> (thin airfoils with a sharp nose, below about 9%): a long bubble forms at the leading edge and grows aft with \(\alpha\). The stall is gentle but the maximum lift is low.</li>
+    </ul>
+    <figure class="figure wide" aria-labelledby="fig26-cap">
+      <div class="viz stacked">
+        <div class="viz-stage">
+          <div class="stall-panels" id="fig26-panels"></div>
+          <div id="fig26-stage"></div>
+        </div>
+        <div class="viz-controls" id="fig26-controls"></div>
+      </div>
+      <figcaption id="fig26-cap"><strong>Figure 2.6</strong> The three kinds of stall, schematically: the flow over a thick, a moderate and a thin airfoil (separated flow orange), and their lift curves. Raise the angle of attack. On the thick airfoil the separation creeps forward from the trailing edge; on the moderate one a small bubble near the nose bursts all at once; on the thin one a long bubble grows aft until it reaches the trailing edge. The highest maximum lift comes from airfoils of about 12 to 15%, where trailing-edge and leading-edge stall meet; thinner airfoils lose maximum lift, thicker ones gain drag. Flaps, slats and the planform (Lesson 6) change the picture for the whole wing.</figcaption>
+    </figure>
+    <p>For a first choice this is enough: a gentle trailing-edge stall suits a trainer or a light aircraft, a high maximum lift suits a short-field design, and a thin airfoil suits a fast one that will rely on flaps and slats for its low-speed lift.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(c_l = 2\pi(\alpha - \alpha_{L0})\) per radian; camber makes \(\alpha_{L0}\) negative, about \(-1^\circ\) per 1% of camber at 40% of the chord.</li>
+      <li>The aerodynamic center is at the quarter chord; cambered airfoils have a nose-down \(c_{m,c/4}\) that the tail must balance.</li>
+      <li>\(Re = \rho Vc/\mu\): compare airfoils only at the design's Reynolds number.</li>
+      <li>Drag is nearly flat in \(c_l\) near the design point; laminar airfoils add a narrow bucket.</li>
+      <li>Thick airfoils stall from the trailing edge (gently), moderate ones from the leading edge (abruptly), thin ones with a long bubble (gently, at low \(c_{l,\max}\)).</li>
+      <li>Next, <a href="03-choosing-the-airfoil.html">Lesson 3</a> chooses the business jet's design lift coefficient and thickness.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Shared helpers for the airfoil drawings (Figures 2.1, 2.3, 2.4 and 2.6) ---------- */
+var AF = (function () {
+  'use strict';
+  var D = Math.PI / 180;
+  // p rotated about piv by deg degrees nose-up (clockwise, with the nose on the left)
+  function rot(p, piv, deg) {
+    var c = Math.cos(deg * D), s = Math.sin(deg * D), x = p[0] - piv[0], y = p[1] - piv[1];
+    return [piv[0] + x * c + y * s, piv[1] - x * s + y * c];
+  }
+  function outline(af) { return af.upper.concat(af.lower.slice().reverse()); }
+  // upper-surface point at chordwise x, with its unit tangent (downstream) and unit outward normal
+  function up(af, x) {
+    x = Math.max(0, Math.min(1, x));
+    var yc = af.camber(x), th = Math.atan(af.slope(x)), yt = af.thick(x);
+    return [x - yt * Math.sin(th), yc + yt * Math.cos(th)];
+  }
+  function frame(af, x) {
+    var h = 2e-4, a = up(af, Math.max(0, x - h)), b = up(af, Math.min(1, x + h)), dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+    return { p: up(af, x), t: [dx / L, dy / L], n: [-dy / L, dx / L] };
+  }
+  function offset(f, d) { return [f.p[0] + f.n[0] * d, f.p[1] + f.n[1] * d]; }
+  function range(a, b, n) { var out = []; for (var i = 0; i <= n; i++) out.push(a + (b - a) * i / n); return out; }
+  // Separated flow and wake behind the separation point xs, drawn in the page frame (R maps airfoil to page):
+  // the free shear layer leaves from `top` (the separation point, or the edge of the boundary layer there),
+  // bulges over the dead air and closes into a wake that runs on downstream to x = xEnd.
+  function separated(af, xs, R, top, xEnd) {
+    var TE = R([1, 0]), ext = 1 - xs, yEnd = TE[1] + 0.02 + 0.14 * ext, bump = 0.01 + 0.06 * ext;
+    var shear = range(top[0], xEnd, 40).map(function (x) {
+      var u = (x - top[0]) / (xEnd - top[0]);
+      return [x, top[1] + (yEnd - top[1]) * Math.pow(u, 1.5) + bump * Math.sin(Math.PI * u)];
+    });
+    var poly = range(xs, 1, 40).map(function (x) { return R(up(af, x)); }).concat([TE, [xEnd, TE[1] + 0.005]]);
+    return { fill: poly.concat(shear.slice().reverse()), shear: shear };
+  }
+  return { rot: rot, outline: outline, up: up, frame: frame, offset: offset, range: range, separated: separated };
+})();
+
+/* ---------- Figure 2.1: angles, forces and moment ---------- */
+CYL.ready(function () {
+  'use strict';
+  var A = 8, piv = [0.25, 0], af = WING.naca4('4412', 161), aL0 = WING.thin(0.04, 0.4).alphaL0, D = Math.PI / 180;
+  function R(p) { return AF.rot(p, piv, A); }
+  var plane = CYL2D.plane(document.getElementById('fig21-stage'), {
+    xRange: [-0.62, 1.62], yRange: [-0.33, 0.56], grid: 'none', axes: false, ticks: false, maxHeight: 420,
+    ariaLabel: 'A NACA 4412 at 8 degrees angle of attack in a horizontal oncoming flow. Behind the trailing edge, the angle of attack is marked between the flow direction and the chord line, and the larger angle alpha minus alpha L0 between the flow direction and the zero-lift line. Lift acts upward and drag downstream at the quarter chord, with a nose-down pitching moment.'
+  });
+  // oncoming flow
+  [0.42, -0.07, -0.21].forEach(function (y) { plane.line([-0.6, y], [-0.36, y], { color: 'muted', width: 1.6, arrow: 'end' }); });
+  plane.label([-0.48, 0.42], 'V_\\infty', { color: 'muted', anchor: 'n', offset: [0, -2] });
+  // the airfoil, its chord line and its zero-lift line, extended ahead of the nose and behind the trailing edge
+  plane.polyline(AF.outline(af).map(R), { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.16 });
+  var k = Math.tan(-aL0 * D), TE = R([1, 0]), L = 0.46;
+  plane.line(R([-0.3, 0]), R([1 + L, 0]), { color: 'muted', width: 1.3, dashed: true });
+  plane.line(R([-0.3, 1.3 * k]), R([1 + L, -L * k]), { color: 'accent', width: 1.6, dashed: true });
+  var names = [plane.label(R([-0.3, 0]), 'chord line', { color: 'muted', anchor: 's', tex: false, className: 'small', offset: [0, 2] }),
+    plane.label(R([-0.3, 1.3 * k]), 'zero-lift line', { color: 'accent', anchor: 'n', tex: false, className: 'small', offset: [0, -2] })];
+  // on a narrow screen the line names would crowd the drawing: the caption names the lines by color instead
+  function fit() { var wide = plane.el.clientWidth >= 520; names.forEach(function (n) { n.setVisible(wide); }); }
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(plane.el);
+  fit();
+  // the angles, measured from the flow direction behind the trailing edge
+  var tc = -A * D, tz = -(A - aL0) * D;
+  plane.line(TE, [TE[0] + L, TE[1]], { color: 'muted', width: 1.2 });
+  plane.arc({ center: TE, r: 0.3, theta0: tc, theta1: 0, color: 'ink', width: 1.4, arrow: false });
+  plane.label([TE[0] + 0.31 * Math.cos(tc / 2), TE[1] + 0.31 * Math.sin(tc / 2)], '\\alpha', { anchor: 'e', offset: [1, 0] });
+  plane.arc({ center: TE, r: 0.42, theta0: tz, theta1: 0, color: 'accent', width: 1.4, arrow: false });
+  plane.label([TE[0] + 0.43 * Math.cos(tz), TE[1] + 0.43 * Math.sin(tz)], '\\alpha - \\alpha_{L0}', { color: 'accent', anchor: 'sw', offset: [4, 3] });
+  // lift, drag and moment at the quarter chord (the drag exaggerated)
+  plane.line(piv, [piv[0], piv[1] + 0.44], { color: 'z', width: 2.8, arrow: 'end' });
+  plane.label([piv[0], piv[1] + 0.44], 'L', { color: 'z', anchor: 'e', offset: [4, 6] });
+  plane.line(piv, [piv[0] + 0.3, piv[1]], { color: 'r', width: 2.8, arrow: 'end' });
+  plane.label([piv[0] + 0.3, piv[1]], 'D', { color: 'r', anchor: 's', offset: [-4, 3] });
+  plane.arc({ center: piv, rPx: 30, theta0: 0.62 * Math.PI, theta1: 1.22 * Math.PI, color: 't', width: 2.2, arrow: true });
+  plane.label([piv[0] - 0.1, piv[1] + 0.1], 'M_{c/4}', { color: 't', anchor: 'nw', offset: [0, 0] });
+  plane.point(piv, { color: 'ink', r: 3.5 });
+  plane.label([piv[0], -0.075], 'c/4', { color: 'muted', anchor: 's', offset: [0, 2] });
+});
+
+/* ---------- Figure 2.2: thin-airfoil lift curves ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { m: 2, p: 4, a: 4 };
+  var chart = AERO.chart(document.getElementById('fig22-stage'), {
+    x: { label: 'Angle of attack \\(\\alpha\\) (degrees)', min: -10, max: 14 }, y: { label: 'Lift coefficient \\(c_l\\)', min: -0.8, max: 2.0 }, height: 330,
+    ariaLabel: 'Thin-airfoil lift curves: a cambered airfoil and a symmetric one.',
+    legend: [{ label: 'Cambered', color: 'z', line: true }, { label: 'Symmetric', color: 'muted', line: true, dashed: true }]
+  });
+  chart.hline(0, { color: 'faint', dashed: false });
+  var sym = chart.fn(function (a) { return 2 * Math.PI * a * Math.PI / 180; }, { color: 'muted', width: 1.6, dashed: true });
+  var cam = chart.fn(function (a) { return 2 * Math.PI * (a - th.alphaL0) * Math.PI / 180; }, { color: 'z', width: 2.6 });
+  var zl = chart.marker([0, 0], { color: 'r', r: 5, ring: false });
+  var zlLab = chart.text([0, 0], '', { color: 'r', anchor: 'end', dx: -8, dy: -8 });
+  var ideal = chart.marker([0, 0], { color: 't', r: 5 });
+  var now = chart.marker([0, 0], { color: 'accent', r: 6, ring: false });
+  var th = WING.thin(0.02, 0.4);
+  var panel = document.getElementById('fig22-controls');
+  var sM = CYL.slider({ label: 'Maximum camber \\(m\\)', min: 0, max: 6, step: 1, value: st.m, unit: '%', color: 't', onInput: function (v) { st.m = v; draw(); } });
+  var sP = CYL.slider({ label: 'Its position \\(p\\)', min: 2, max: 6, step: 1, value: st.p, unit: 'tenths', color: 't', onInput: function (v) { st.p = v; draw(); } });
+  var sA = CYL.slider({ label: 'Angle of attack \\(\\alpha\\)', min: -8, max: 12, step: 0.5, value: st.a, unit: '°', color: 'accent', onInput: function (v) { st.a = v; draw(); } });
+  var ro = { z: CYL.readout('Zero-lift angle \\(\\alpha_{L0}\\)'), cl: CYL.readout('\\(c_l\\) at \\(\\alpha\\)'), cm: CYL.readout('\\(c_{m,c/4}\\)'), ci: CYL.readout('Ideal \\(c_{l,i}\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Camber line' }));
+  [sM.el, sP.el, sA.el].forEach(function (e) { panel.appendChild(e); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.z.el, ro.cl.el, ro.cm.el, ro.ci.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    th = WING.thin(st.m / 100, st.p / 10);
+    cam.draw();
+    var cl = 2 * Math.PI * (st.a - th.alphaL0) * Math.PI / 180;
+    zl.set([th.alphaL0, 0]); zlLab.set([th.alphaL0, 0], 'α = ' + CYL.fmt(th.alphaL0, 3) + '°');
+    ideal.set([th.alphaIdeal, th.clIdeal]); ideal.setVisible(st.m > 0);
+    now.set([st.a, cl]);
+    ro.z.set(CYL.fmt(th.alphaL0, 3) + '°'); ro.cl.set(CYL.fmt(cl, 3)); ro.cm.set(CYL.fmt(th.cm, 3)); ro.ci.set(st.m ? CYL.fmt(th.clIdeal, 3) + ' at ' + CYL.fmt(th.alphaIdeal, 2) + '°' : '0');
+    chart.setAriaLabel('Thin-airfoil lift curve for maximum camber ' + st.m + '% at ' + st.p * 10 + '% of the chord: zero-lift angle ' + CYL.fmt(th.alphaL0, 3) + ' degrees; lift coefficient ' + CYL.fmt(cl, 3) + ' at ' + st.a + ' degrees.');
+  }
+  draw();
+});
+
+/* ---------- Figure 2.3: center of pressure and aerodynamic center ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { code: '2412', a: 2 }, K = 0.2, XMAX = 1.27, D = Math.PI / 180;
+  var stage = document.getElementById('fig23-stage');
+  function sub(title) {
+    stage.appendChild(CYL.el('p', { class: 'sub-title', text: title }));
+    var d = CYL.el('div'); stage.appendChild(d);
+    return CYL2D.plane(d, { xRange: [-0.06, 1.36], yRange: [-0.13, 0.35], grid: 'none', axes: false, ticks: false, maxHeight: 210, ariaLabel: title });
+  }
+  var top = sub('Lift alone, at the center of pressure'), bot = sub('Lift at the aerodynamic center, with a moment');
+  function parts(plane) {
+    return {
+      body: plane.polyline([], { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.16 }),
+      chord: plane.line([0, 0], [1, 0], { color: 'muted', width: 1.1, dashed: true }),
+      qc: plane.point([0.25, 0], { color: 'ink', r: 3 }),
+      lift: plane.line([0, 0], [0, 0], { color: 'z', width: 2.8, arrow: 'end' }),
+      L: plane.label([0, 0], 'L', { color: 'z', anchor: 'e', offset: [4, 0] })
+    };
+  }
+  var T = parts(top), B = parts(bot);
+  var cp = top.point([0, 0], { color: 'r', r: 4.5 });
+  var cpLab = top.label([0, -0.07], '', { color: 'r', anchor: 's', tex: false, className: 'small', offset: [0, 2] });
+  var far = top.label([XMAX, 0.05], 'far behind the airfoil', { color: 'r', anchor: 'nw', tex: false, className: 'small', offset: [0, -2] });
+  bot.label([0.25, -0.07], 'quarter chord', { color: 'muted', anchor: 's', tex: false, className: 'small', offset: [0, 2] });
+  var mom = bot.arc({ center: [0.25, 0], rPx: 26, theta0: 0.62 * Math.PI, theta1: 1.22 * Math.PI, color: 't', width: 2.2, arrow: true });
+  var momLab = bot.label([0.13, 0.09], 'M_{c/4}', { color: 't', anchor: 'nw', offset: [0, 0] });
+  var panel = document.getElementById('fig23-controls');
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Airfoil' }), chips = {};
+  ['0012', '2412', '4412'].forEach(function (c) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: 'NACA ' + c });
+    b.addEventListener('click', function () { st.code = c; draw(); });
+    chips[c] = b; row.appendChild(b);
+  });
+  var sA = CYL.slider({ label: 'Angle of attack \\(\\alpha\\)', min: -1.5, max: 10, step: 0.5, value: st.a, unit: '°', color: 'accent', onInput: function (v) { st.a = v; draw(); } });
+  var ro = { cl: CYL.readout('\\(c_l\\)'), cp: CYL.readout('Center of pressure'), cm: CYL.readout('\\(c_{m,c/4}\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Airfoil' }));
+  [row, sA.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.cl.el, ro.cp.el, ro.cm.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var m = +st.code[0] / 100, pp = +st.code[1] / 10, af = WING.naca4(st.code, 121), th = WING.thin(m, pp || 0.4);
+    var cl = 2 * Math.PI * (st.a - th.alphaL0) * D, cm = m ? th.cm : 0, out = AF.outline(af);
+    T.body.set(out); B.body.set(out);
+    var hasL = Math.abs(cl) > 0.005, xcp = hasL ? 0.25 - cm / cl : 0.25, xd = Math.min(xcp, XMAX);
+    T.lift.set([xd, 0], [xd, K * cl]); T.L.set([xd, K * cl], 'L'); T.lift.setVisible(hasL); T.L.setVisible(hasL);
+    B.lift.set([0.25, 0], [0.25, K * cl]); B.L.set([0.25, K * cl], 'L'); B.lift.setVisible(hasL); B.L.setVisible(hasL);
+    cp.set([xd, 0]); cp.setVisible(hasL);
+    cpLab.set([xd, -0.07], hasL ? (xcp > XMAX ? '' : 'center of pressure') : ''); far.setVisible(hasL && xcp > XMAX);
+    mom.setVisible(m > 0); momLab.setVisible(m > 0);
+    ro.cl.set(CYL.fmt(cl, 3));
+    ro.cp.set(hasL ? (xcp > 1 ? CYL.fmt(xcp * 100, 3) + '% (behind the airfoil)' : CYL.fmt(xcp * 100, 3) + '% of the chord') : 'none (no lift)');
+    ro.cm.set(CYL.fmt(cm, 3) + (m ? ' at every angle' : ''));
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === st.code)); });
+    top.svg.setAttribute('aria-label', 'NACA ' + st.code + ' at ' + st.a + ' degrees: lift coefficient ' + CYL.fmt(cl, 3) + (hasL ? ', acting at the center of pressure, ' + CYL.fmt(xcp * 100, 3) + '% of the chord behind the leading edge.' : ', no lift.'));
+    bot.svg.setAttribute('aria-label', 'The same load as lift at the quarter chord' + (m ? ' with a nose-down moment coefficient of ' + CYL.fmt(cm, 3) + ', the same at every angle.' : ' and no moment: a symmetric airfoil.'));
+  }
+  draw();
+});
+
+/* ---------- Figure 2.4: the boundary layer (schematic) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var A = 10, piv = [0.25, 0], af = WING.naca4('2412', 161), XT = 0.22, XS = 0.72;
+  function R(p) { return AF.rot(p, piv, A); }
+  function delta(x) {                     // exaggerated thickness, in chords
+    if (x <= XT) return 0.028 * Math.sqrt(Math.max(x, 0.004) / XT);
+    var s = Math.min(1, (x - XT) / 0.05), sm = s * s * (3 - 2 * s);
+    return 0.028 + 0.016 * sm + 0.05 * Math.pow((x - XT) / (XS - XT), 0.9);
+  }
+  var plane = CYL2D.plane(document.getElementById('fig24-stage'), {
+    xRange: [-0.08, 1.44], yRange: [-0.8, 0.3], grid: 'none', axes: false, ticks: false, maxHeight: 520,
+    ariaLabel: 'Schematic boundary layer on the upper surface of an airfoil at a high angle of attack: laminar from the nose to transition, turbulent and thickening after it, separated near the trailing edge with a wake. Below, three velocity profiles: a thin laminar one, a fuller turbulent one, and a separated one with reversed flow near the wall.'
+  });
+  // boundary-layer bands (airfoil frame, then rotated)
+  function band(x0, x1) {
+    var xs = AF.range(x0, x1, 40), inner = xs.map(function (x) { return R(AF.up(af, x)); }), outer = xs.map(function (x) { return R(AF.offset(AF.frame(af, x), delta(x))); });
+    return inner.concat(outer.reverse());
+  }
+  plane.polyline(band(0.004, XT + 0.025), { color: 't', width: 0, closed: true, fill: 't', fillOpacity: 0.32 });
+  plane.polyline(band(XT + 0.025, XS), { color: 'z', width: 0, closed: true, fill: 'z', fillOpacity: 0.26 });
+  // separated region and wake
+  var S = R(AF.up(af, XS)), E = R(AF.offset(AF.frame(af, XS), delta(XS))), xEnd = 1.42, sep = AF.separated(af, XS, R, E, xEnd);
+  function shear(x) { for (var i = 1; i < sep.shear.length; i++) if (sep.shear[i][0] >= x) { var p = sep.shear[i - 1], q = sep.shear[i]; return p[1] + (q[1] - p[1]) * (x - p[0]) / (q[0] - p[0]); } return sep.shear[sep.shear.length - 1][1]; }
+  plane.polyline(sep.fill, { color: 'r', width: 0, closed: true, fill: 'r', fillOpacity: 0.24 });
+  plane.polyline(sep.shear, { color: 'r', width: 1.3, dashed: true });
+  plane.polyline(AF.range(0.004, XS, 60).map(function (x) { return R(AF.offset(AF.frame(af, x), delta(x))); }), { color: 'ink', width: 1.1, dashed: true });
+  // the airfoil on top of the bands
+  plane.polyline(AF.outline(af).map(R), { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.22 });
+  // recirculation in the separated region (clockwise)
+  var mid = R(AF.offset(AF.frame(af, 0.93), 0.05));
+  plane.arc({ center: mid, rPx: 11, theta0: 0.9 * Math.PI, theta1: -0.75 * Math.PI, color: 'r', width: 1.6, arrow: true });
+  // transition and separation points
+  var Tr = R(AF.up(af, XT + 0.025));
+  plane.point(Tr, { color: 'z', r: 3.5 });
+  plane.point(S, { color: 'r', r: 4 });
+  plane.label(R(AF.offset(AF.frame(af, 0.05), 0.1)), 'laminar', { color: 't', anchor: 'n', tex: false, className: 'small', offset: [0, -2] });
+  plane.label(Tr, 'transition', { color: 'z', anchor: 's', tex: false, className: 'small', offset: [0, 6] });
+  plane.label(R(AF.offset(AF.frame(af, 0.36), 0.07)), 'turbulent', { color: 'z', anchor: 'n', tex: false, className: 'small', offset: [0, -2] });
+  plane.label(S, 'separation', { color: 'r', anchor: 'sw', tex: false, className: 'small', offset: [-2, 6] });
+  plane.label([1.34, shear(1.34)], 'wake', { color: 'r', anchor: 'n', tex: false, className: 'small', offset: [0, -2] });
+  // stations A, B, C on the airfoil
+  [[0.17, 'A'], [0.56, 'B'], [0.9, 'C']].forEach(function (q) {
+    var f = AF.frame(af, q[0]), P = R(f.p), h = q[0] < XS ? delta(q[0]) : (shear(R(f.p)[0]) - R(f.p)[1]) / Math.cos(A * Math.PI / 180), Q = R(AF.offset(f, h));
+    plane.line(P, Q, { color: 'ink', width: 1.2 });
+    plane.label(Q, q[1], { color: 'ink', anchor: 'n', tex: false, offset: [0, -1] });
+  });
+  // velocity profiles A (laminar), B (turbulent), C (separated)
+  var YW = -0.66, H = 0.30;
+  function profile(x0, name, d, f, base, U, color) {
+    var bx = x0 + base;
+    plane.line([x0, YW], [x0 + 0.36, YW], { color: 'ink', width: 1.8 });
+    AF.range(x0 + 0.02, x0 + 0.34, 8).forEach(function (x) { plane.line([x, YW], [x - 0.025, YW - 0.03], { color: 'muted', width: 1 }); });
+    plane.line([bx, YW], [bx, YW + H], { color: 'muted', width: 1 });
+    var pts = AF.range(0, H, 60).map(function (y) { var e = y / d; return [bx + U * (e < 1 ? f(e) : 1), YW + y]; });
+    plane.polyline(pts, { color: color, width: 2.2 });
+    [0.035, 0.08, 0.14, 0.2, 0.26].forEach(function (y) {
+      var e = y / d, u = U * (e < 1 ? f(e) : 1);
+      if (Math.abs(u) > 0.02) plane.line([bx, YW + y], [bx + u, YW + y], { color: color, width: 1.2, arrow: 'end' });
+    });
+    plane.line([x0 + 0.01, YW + d], [x0 + 0.36, YW + d], { color: 'muted', width: 1, dashed: true });
+    plane.label([x0 + 0.36, YW + d], '\\delta', { color: 'muted', anchor: 'n', offset: [-6, -1] });
+    plane.label([x0 + 0.18, YW - 0.035], name, { color: color, anchor: 's', tex: false, className: 'small', offset: [0, 2] });
+  }
+  profile(0.0, 'A laminar', 0.11, function (e) { return 2 * e - e * e; }, 0.04, 0.27, 't');
+  profile(0.52, 'B turbulent', 0.22, function (e) { return Math.pow(e, 1 / 7); }, 0.04, 0.27, 'z');
+  profile(1.04, 'C separated', 0.25, function (e) { return -2 * e + 7 * e * e - 4 * e * e * e; }, 0.1, 0.22, 'r');
+});
+
+/* ---------- Figure 2.5: airfoil drag polars and the drag bucket (schematic) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { rough: false };
+  function sig(z) { return 1 / (1 + Math.exp(-z)); }
+  function sq(v) { return v > 0 ? v * v : 0; }
+  function four(cl) { return st.rough ? 0.0088 + 0.0045 * Math.pow(cl - 0.1, 2) + 0.045 * sq(cl - 0.9) : 0.0058 + 0.0035 * Math.pow(cl - 0.15, 2) + 0.035 * sq(cl - 1.05); }
+  function six(cl) { return st.rough ? 0.0090 + 0.0045 * Math.pow(cl - 0.15, 2) + 0.045 * sq(cl - 0.85) : 0.0062 + 0.0040 * Math.pow(cl - 0.2, 2) + 0.035 * sq(cl - 0.95) - 0.0022 * sig(cl / 0.02) * sig((0.4 - cl) / 0.02); }
+  var chart = AERO.chart(document.getElementById('fig25-stage'), {
+    x: { label: 'Lift coefficient \\(c_l\\)', min: -0.4, max: 1.5 }, y: { label: 'Drag coefficient \\(c_d\\)', min: 0, max: 0.016, ticks: [0, 0.004, 0.008, 0.012, 0.016] }, height: 320,
+    ariaLabel: 'Schematic drag polars of a four-digit and a six-series airfoil.',
+    legend: [{ label: 'Four-digit', color: 'z', line: true }, { label: 'Six-series (laminar)', color: 't', line: true }]
+  });
+  var c4 = chart.fn(four, { color: 'z', width: 2.6, samples: 400 });
+  var c6 = chart.fn(six, { color: 't', width: 2.6, samples: 400 });
+  var lab = chart.text([0.2, 0.0040], 'drag bucket', { color: 't', anchor: 'middle', dy: 20 });
+  var panel = document.getElementById('fig25-controls');
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Surface' }), chips = {};
+  [['smooth', 'Smooth'], ['rough', 'Rough leading edge']].forEach(function (q) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q[1] });
+    b.addEventListener('click', function () { st.rough = q[0] === 'rough'; draw(); });
+    chips[q[0]] = b; row.appendChild(b);
+  });
+  var ro = { f: CYL.readout('Four-digit \\(c_d\\) at \\(c_l = 0.2\\)'), s: CYL.readout('Six-series \\(c_d\\) at \\(c_l = 0.2\\)'), d: CYL.readout('Six-series against four-digit') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Surface' }));
+  [row, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.f.el, ro.s.el, ro.d.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    c4.draw(); c6.draw(); lab.setVisible(!st.rough);
+    var f = four(0.2), s = six(0.2), d = (s / f - 1) * 100;
+    ro.f.set(CYL.fmt(f, 3)); ro.s.set(CYL.fmt(s, 3)); ro.d.set((d < 0 ? CYL.fmt(-d, 2) + '% less drag' : CYL.fmt(d, 2) + '% more drag'));
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String((k === 'rough') === st.rough)); });
+    chart.setAriaLabel('Schematic drag polars, ' + (st.rough ? 'rough leading edge: both airfoils have about the same drag, near 0.009 at their minimum, with no bucket.' : 'smooth: the four-digit airfoil has a minimum drag coefficient near 0.006; the six-series airfoil has a bucket near 0.004 between lift coefficients of 0 and 0.4.'));
+  }
+  draw();
+});
+
+/* ---------- Figure 2.6: three kinds of stall (schematic) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var R = Math.PI / 180, a0 = 2 * Math.PI * 0.95, st = { a: 12 };
+  function lin(a, al0) { return a0 * (a - al0) * R; }
+  function te(a) { var l = lin(a, -2); return a < 10 ? l : lin(10, -2) + (a - 10) * a0 * R * Math.exp(-(a - 10) / 3.2) - Math.max(0, a - 16) * 0.04; }
+  function le(a) { return a <= 14 ? lin(a, -2) : 0.95 + 0.5 * Math.exp(-(a - 14) * 1.6); }
+  function th(a) { var l = lin(a, -1); return a < 6 ? l : lin(6, -1) + (a - 6) * a0 * R * 0.45 * Math.exp(-(a - 6) / 6); }
+  // the flow on each airfoil: {sep: separation point x/c or null, bubble: [x1, x2] or null, text}
+  var KINDS = [
+    { code: '0018', color: 'z', title: 'Thick (18%)', kind: 'trailing-edge stall', lift: te, flow: function (a) {
+      var xs = a < 9 ? 1 : Math.max(0.3, 1 - 0.058 * (a - 9));
+      return xs >= 1 ? { text: 'Attached to the trailing edge.' } : { sep: xs, text: 'Separated from ' + Math.round(xs * 100) + '% of the chord; the separation creeps forward.' };
+    } },
+    { code: '0012', color: 'good', title: 'Moderate (12%)', kind: 'leading-edge stall', lift: le, flow: function (a) {
+      if (a >= 14) return { sep: 0.012, text: 'The bubble has burst: the whole upper surface is separated.' };
+      return a < 4 ? { text: 'Attached.' } : { bubble: [0.006, 0.02 + 0.0015 * a], text: 'Attached, with a tiny bubble near the nose.' };
+    } },
+    { code: '0006', color: 't', title: 'Thin (6%)', kind: 'thin-airfoil stall', lift: th, flow: function (a) {
+      if (a < 4) return { text: 'Attached.' };
+      var xr = 0.04 + 0.08 * (a - 4);
+      return xr >= 1 ? { sep: 0.008, text: 'The bubble has reached the trailing edge: fully separated.' } : { bubble: [0.005, xr], text: 'A long bubble reaching ' + Math.round(xr * 100) + '% of the chord.' };
+    } }
+  ];
+  var host = document.getElementById('fig26-panels');
+  KINDS.forEach(function (k) {
+    var box = CYL.el('div', { class: 'stall-panel' });
+    var t = CYL.el('p', { class: 'sp-title' }, [CYL.el('span', { text: k.title }), CYL.el('br'), CYL.el('span', { class: 'sp-kind', text: k.kind })]); t.style.color = 'var(--c-' + k.color + ')';
+    k.title += ', ' + k.kind;
+    var d = CYL.el('div');
+    k.state = CYL.el('p', { class: 'sp-state' });
+    box.appendChild(t); box.appendChild(d); box.appendChild(k.state); host.appendChild(box);
+    k.af = WING.naca4(k.code, 121);
+    k.plane = CYL2D.plane(d, { xRange: [-0.08, 1.36], yRange: [-0.36, 0.42], grid: 'none', axes: false, ticks: false, maxHeight: 200, ariaLabel: k.title });
+    k.sepFill = k.plane.polyline([], { color: 'r', width: 0, closed: true, fill: 'r', fillOpacity: 0.26 });
+    k.shear = k.plane.polyline([], { color: 'r', width: 1.3, dashed: true });
+    k.bub = k.plane.polyline([], { color: 'r', width: 1.2, closed: true, fill: 'r', fillOpacity: 0.32 });
+    k.body = k.plane.polyline([], { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.2 });
+    k.flowArrow = k.plane.line([-0.06, 0.33], [0.14, 0.33], { color: 'muted', width: 1.4, arrow: 'end' });
+  });
+  var chart = AERO.chart(document.getElementById('fig26-stage'), {
+    x: { label: 'Angle of attack \\(\\alpha\\)', min: -2, max: 22, ticks: [] }, y: { label: 'Lift coefficient \\(c_l\\)', min: 0, max: 1.9, ticks: [] }, height: 300,
+    ariaLabel: 'Schematic lift curves for the three kinds of stall: trailing-edge stall rounds over gently at high lift; leading-edge stall reaches a high peak and drops abruptly; thin-airfoil stall flattens early at low lift.',
+    legend: [{ label: 'Trailing-edge stall (thick)', color: 'z', line: true }, { label: 'Leading-edge stall (moderate)', color: 'good', line: true }, { label: 'Thin-airfoil stall (thin)', color: 't', line: true }]
+  });
+  var vl = chart.vline(st.a, { color: 'muted', dashed: true });
+  KINDS.forEach(function (k) { chart.fn(k.lift, { color: k.color, width: 2.6, domain: [-2, 22], samples: 300 }); });
+  chart.text([15.5, 1.42], 'abrupt', { color: 'good', anchor: 'start', dx: 6, dy: 0 });
+  chart.text([19, te(19)], 'gentle', { color: 'z', anchor: 'middle', dy: -10 });
+  chart.text([19, th(19)], 'low maximum', { color: 't', anchor: 'middle', dy: -10 });
+  KINDS.forEach(function (k) { k.mark = chart.marker([0, 0], { color: k.color, r: 5, ring: false }); });
+  var panel = document.getElementById('fig26-controls');
+  var sA = CYL.slider({ label: 'Angle of attack \\(\\alpha\\)', min: 0, max: 22, step: 0.5, value: st.a, unit: '°', color: 'accent', onInput: function (v) { st.a = v; draw(); } });
+  panel.appendChild(sA.el);
+  CYL.renderMath(panel);
+  function draw() {
+    var a = st.a;
+    vl.set(a);
+    KINDS.forEach(function (k) {
+      var piv = [0.25, 0], af = k.af;
+      function Rt(p) { return AF.rot(p, piv, a); }
+      k.body.set(AF.outline(af).map(Rt));
+      var f = k.flow(a);
+      if (f.sep != null) {
+        var sp = AF.separated(af, f.sep, Rt, Rt(AF.up(af, f.sep)), 1.34);
+        k.sepFill.set(sp.fill); k.shear.set(sp.shear);
+      } else { k.sepFill.set([]); k.shear.set([]); }
+      if (f.bubble) {
+        var x1 = f.bubble[0], x2 = f.bubble[1], h = 0.008 + 0.035 * (x2 - x1);
+        var outer = AF.range(x1, x2, 30).map(function (x) { return Rt(AF.offset(AF.frame(af, x), h * Math.sin(Math.PI * (x - x1) / (x2 - x1)))); });
+        var inner = AF.range(x2, x1, 30).map(function (x) { return Rt(AF.up(af, x)); });
+        k.bub.set(outer.concat(inner));
+      } else k.bub.set([]);
+      k.state.textContent = f.text;
+      k.plane.svg.setAttribute('aria-label', k.title + ', at ' + a + ' degrees: ' + f.text);
+      k.mark.set([a, k.lift(a)]);
+    });
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var t44 = WING.thin(0.04, 0.4);
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1',
+    type: 'numeric',
+    prompt: 'Thin-airfoil theory gives the NACA 4412 a zero-lift angle of \\(-4.15^\\circ\\). What lift coefficient does it predict at \\(\\alpha = 2^\\circ\\)?',
+    label: '\\(c_l =\\)', answer: 2 * Math.PI * (2 - t44.alphaL0) * Math.PI / 180,
+    hints: ['\\(c_l = 2\\pi(\\alpha - \\alpha_{L0})\\) with the angles in radians.', '\\(\\alpha - \\alpha_{L0} = 2 + 4.15 = 6.15^\\circ = 0.1073\\ \\text{rad}\\).'],
+    explain: 'Forgetting the minus sign of \\(\\alpha_{L0}\\) gives \\(-0.236\\) instead: a cambered airfoil lifts more, not less, than a symmetric one at the same angle.',
+    solution: '\\[ c_l = 2\\pi\\,\\frac{2 + 4.15}{57.30} = 2\\pi(0.1074) = 0.675 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2',
+    type: 'numeric',
+    prompt: 'A light aircraft wing with a \\(1.5\\ \\text{m}\\) chord flies at \\(60\\ \\text{m/s}\\) at sea level (\\(\\rho = 1.225\\ \\text{kg/m}^3\\), \\(\\mu = 1.789 \\times 10^{-5}\\ \\text{Pa s}\\)). What is its Reynolds number, in millions?',
+    label: '\\(Re =\\)', answer: 1.225 * 60 * 1.5 / 1.789e-5 / 1e6, unit: 'million',
+    hints: ['\\(Re = \\rho V c/\\mu\\).', 'Divide the result by \\(10^6\\) and type the number of millions.'],
+    explain: 'Six million: inside the range of light aircraft, ten to twenty times a typical wind-tunnel model.',
+    solution: '\\[ Re = \\frac{1.225(60)(1.5)}{1.789 \\times 10^{-5}} = 6.16 \\times 10^6 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3',
+    type: 'mc',
+    prompt: 'A flying school wants its trainer to stall gently, with plenty of warning. Which airfoil suits it best?',
+    choices: [
+      { html: 'A 6% thick airfoil with a sharp leading edge', feedback: 'Thin-airfoil stall is gentle, but the maximum lift is low: a trainer would land fast.' },
+      { html: 'A 10% thick airfoil with a small leading-edge radius', feedback: 'That is the range of leading-edge stall: high maximum lift, but abrupt.' },
+      { html: 'A 15% thick airfoil with a generous leading-edge radius', correct: true, feedback: 'Yes: trailing-edge stall rounds over gently, and the maximum lift is still high.' },
+      { html: 'Any airfoil: stall depends only on the planform', feedback: 'The planform matters too (Lesson 6), but the airfoil sets how each section stalls.' }
+    ],
+    explain: 'Thickness and leading-edge radius set the type of stall.'
+  });
+});
+</script>
+</body>
+</html>

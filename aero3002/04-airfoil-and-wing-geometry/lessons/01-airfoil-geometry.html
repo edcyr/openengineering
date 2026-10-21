@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Airfoil Geometry and Families · Airfoil and Wing Geometry</title>
+<meta name="description" content="The geometry of an airfoil: chord, mean camber line, thickness and leading-edge radius; building a NACA four-digit airfoil from its designation; and what the five-digit, six-series and supercritical designations mean.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/wing.js"></script>
+<style>
+  .fam td, .fam th { vertical-align: top; }
+  .fam td:nth-child(2) { white-space: nowrap; }
+</style>
+</head>
+<body data-page="l01" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 1 · 35 min</p>
+    <h1>Airfoil Geometry and Families</h1>
+    <p class="lede">Module 3 sized the business jet from a sketch, a few statistics and the Breguet equations. Before the sketch can become a drawing, the wing needs a shape: first its cross-section, the airfoil, and then its planform. This lesson describes airfoils the way designers do, by a few numbers that fix their shape, and introduces the families those numbers come from.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Name the parts of an airfoil: chord, mean camber line, thickness and leading-edge radius.</li>
+      <li>Build a NACA four-digit airfoil from its designation, and find its coordinates at any point.</li>
+      <li>Read five-digit, six-series and supercritical designations.</li>
+      <li>Explain what laminar-flow and supercritical airfoils were designed to do.</li>
+    </ul>
+  </section>
+
+  <section id="parts">
+    <h2>The parts of an airfoil</h2>
+    <p>An airfoil is the shape of a wing cut by a plane parallel to the flight direction. Four numbers describe most of it:</p>
+    <ul>
+      <li>The <strong>chord</strong> \(c\): the straight line from the leading edge to the trailing edge, and its length. Everything else is measured as a fraction of it.</li>
+      <li>The <strong>mean camber line</strong>: the curve halfway between the upper and lower surfaces. Its greatest height above the chord is the <strong>camber</strong>; a symmetric airfoil has none.</li>
+      <li>The <strong>thickness</strong>: the distance between the surfaces, measured perpendicular to the camber line. Its greatest value, as a fraction of the chord, is the <strong>thickness ratio</strong> \(t/c\).</li>
+      <li>The <strong>leading-edge radius</strong>: the radius of the circle that fits the rounded nose. A sharp nose stalls abruptly; a blunt one gently (Lesson 2).</li>
+    </ul>
+    <p>Camber mostly sets how much lift the airfoil gives at a given angle, and its pitching moment. Thickness mostly sets the structure and fuel the wing can hold, the maximum lift, and how early the flow becomes supersonic. The two are designed separately and then added: the upper and lower surfaces are the thickness distribution laid on either side of the camber line.</p>
+  </section>
+
+  <section id="naca4">
+    <h2>The NACA four-digit family</h2>
+    <p>In the 1930s the National Advisory Committee for Aeronautics (NACA) built families of airfoils from simple formulas, so that one shape could be compared with another by changing one number at a time. The four-digit family is the simplest. In <strong>NACA 2412</strong>:</p>
+    <ul>
+      <li>the first digit is the maximum camber \(m\) in percent of the chord: 2%;</li>
+      <li>the second digit is its position \(p\) in tenths of the chord: 40%;</li>
+      <li>the last two digits are the thickness ratio in percent: 12%.</li>
+    </ul>
+    <p>A symmetric airfoil has zeros for the first two digits: NACA 0012 is 12% thick with no camber.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">NACA four-digit airfoil (\(x\) and \(y\) as fractions of the chord)</p>
+      \[ y_c = \frac{m}{p^2}\left(2px - x^2\right) \quad (x \le p) \]
+      \[ y_c = \frac{m}{(1-p)^2}\left[(1 - 2p) + 2px - x^2\right] \quad (x > p) \]
+      \[ y_t = 5t\left(0.2969\sqrt{x} - 0.1260x - 0.3516x^2 + 0.2843x^3 - 0.1015x^4\right) \]
+      <p>The camber line \(y_c\) is two parabolas that meet at \(x = p\). The half-thickness \(y_t\) is the same for every four-digit airfoil, scaled by \(t\); it is greatest at \(x = 0.30\), where it equals \(t/2\). The leading-edge radius is \(r = 1.1019\,t^2c\).</p>
+    </div>
+    <p>The surfaces are found by stepping \(y_t\) out on either side of the camber line, perpendicular to it. With \(\theta = \arctan(\dd y_c/\dd x)\), the slope angle of the camber line:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Upper and lower surfaces</p>
+      \[ x_u = x - y_t\sin\theta, \qquad y_u = y_c + y_t\cos\theta \]
+      \[ x_l = x + y_t\sin\theta, \qquad y_l = y_c - y_t\cos\theta \]
+      <p>For thin, lightly cambered airfoils \(\theta\) is small, so \(y_u \approx y_c + y_t\) and \(y_l \approx y_c - y_t\).</p>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig11-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig11-stage"></div>
+        <div class="viz-controls" id="fig11-controls"></div>
+      </div>
+      <figcaption id="fig11-cap"><strong>Figure 1.1</strong> A NACA four-digit airfoil drawn from its three numbers, to scale. The dashed line is the chord, the violet curve the mean camber line, with the maximum camber and the maximum thickness marked. Move the sliders, or pick a classic section: thickness changes the shape without changing the camber line, and camber bends the whole airfoil without changing its thickness.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 1.1 — A point on the NACA 2412</p>
+      <p>For the NACA 2412, find the camber, the half-thickness and the upper-surface point at \(x = 0.30\), and the leading-edge radius for a chord of \(2.0\ \text{m}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Here \(m = 0.02\), \(p = 0.4\), \(t = 0.12\), and \(x = 0.30 < p\), so the forward parabola applies:</p>
+          \[ y_c = \frac{0.02}{0.16}\left[2(0.4)(0.30) - 0.30^2\right] = 0.125(0.15) = 0.01875 \]
+          \[ \frac{\dd y_c}{\dd x} = \frac{2m}{p^2}(p - x) = 0.25(0.10) = 0.025, \qquad \theta = 1.432^\circ \]
+          \[ y_t = 5(0.12)(0.16262 - 0.03780 - 0.03164 + 0.00768 - 0.00082) = 0.06002 \]
+          \[ x_u = 0.30 - 0.06002\sin 1.432^\circ = 0.2985 \]
+          \[ y_u = 0.01875 + 0.06002\cos 1.432^\circ = 0.07875 \]
+          \[ r = 1.1019(0.12)^2(2.0) = 0.0317\ \text{m} \]
+          <p>The half-thickness at 30% of the chord is 6%: half of the 12% thickness, as it must be at the thickest point. On the 2.0 m chord the upper surface is 0.158 m above the chord line there.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="families">
+    <h2>Other families</h2>
+    <p>Later families kept the idea of a designation that encodes the shape, but tuned the shape for a purpose:</p>
+    <div class="table-wrap">
+      <table class="data fam">
+        <caption>How to read the main airfoil designations</caption>
+        <thead><tr><th scope="col">Family</th><th scope="col">Example</th><th scope="col">What the digits mean</th><th scope="col">Designed for</th></tr></thead>
+        <tbody>
+          <tr><td>NACA four-digit (1930s)</td><td>NACA 2412</td><td>camber 2%, at 40% of the chord, 12% thick</td><td>simple, gentle stall; light aircraft, tails</td></tr>
+          <tr><td>NACA five-digit (1930s)</td><td>NACA 23012</td><td>design lift coefficient \(0.15 \times 2 = 0.3\); maximum camber at \(30/2 = 15\%\) of the chord; 12% thick</td><td>more lift, less pitching moment; maximum camber far forward</td></tr>
+          <tr><td>NACA six-series (1940s)</td><td>NACA \(64_2\)-215</td><td>six-series, minimum pressure at 40% of the chord; low drag for \(c_l\) within \(\pm 0.2\) of the design value; design \(c_l = 0.2\); 15% thick</td><td>laminar flow: a "drag bucket" of low drag around the design lift coefficient</td></tr>
+          <tr><td>Supercritical (1970s)</td><td>NASA SC(2)-0410</td><td>second-generation supercritical; design \(c_l = 0.4\); 10% thick</td><td>high subsonic speed: a flat top delays and weakens the shock</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Laminar-flow</strong> airfoils move the point of minimum pressure, and with it the start of turbulent flow, well aft. A boundary layer that stays laminar has much less skin friction, so within a narrow range of lift coefficients the drag drops sharply. Outside that range, or on a surface spoiled by rivets, insects or rain, the bucket disappears.</p>
+    <p><strong>Supercritical</strong> airfoils address the problem of the jet age. At high subsonic speeds the flow over the upper surface becomes supersonic and ends in a shock wave, which adds drag. A supercritical airfoil has a flatter upper surface, so the supersonic region is weaker and the shock forms later, and its camber is concentrated near the trailing edge to recover the lift lost by the flat top. For the same speed it can be thicker, which saves weight and holds more fuel (Lesson 3).</p>
+    <p>Today most new aircraft use airfoils designed by computer for their own wing: the numbers are no longer standard, but the ideas are the same. The four-digit family remains the best way to learn what each feature does, which is why this module uses it.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>An airfoil is a mean camber line with a thickness distribution laid on either side of it.</li>
+      <li>NACA \(mptt\): maximum camber \(m\)% at \(p\) tenths of the chord, thickness \(tt\)% (greatest at 30% of the chord).</li>
+      <li>Five-digit: first digit \(\times 0.15\) is the design \(c_l\). Six-series and supercritical designations also give the design \(c_l\) and \(t/c\).</li>
+      <li>Laminar-flow airfoils cut friction near their design \(c_l\); supercritical airfoils delay the transonic drag rise.</li>
+      <li>Next, <a href="02-airfoil-aerodynamics.html">Lesson 2</a> shows what camber and thickness do to the lift, drag and pitching moment.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 1.1: a NACA four-digit airfoil ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { m: 2, p: 4, t: 12 };
+  var plane = CYL2D.plane(document.getElementById('fig11-stage'), {
+    xRange: [-0.03, 1.13], yRange: [-0.16, 0.19], grid: 'none', axes: false, ticks: false, maxHeight: 320,
+    ariaLabel: 'A NACA four-digit airfoil drawn to scale, with its chord line, mean camber line, maximum camber and maximum thickness.'
+  });
+  var chord = plane.line([0, 0], [1, 0], { color: 'muted', width: 1.2, dashed: true });
+  var body = plane.polyline([], { color: 'z', width: 2, closed: true, fill: 'z', fillOpacity: 0.12 });
+  var mean = plane.polyline([], { color: 't', width: 2 });
+  var camTick = plane.line([0, 0], [0, 0], { color: 't', width: 1.2 });
+  var thTick = plane.line([0, 0], [0, 0], { color: 'r', width: 1.6, arrow: 'both' });
+  var camLab = plane.label([0, 0], '', { color: 't', anchor: 'n', tex: false, className: 'small', offset: [0, -4] });
+  var thLab = plane.label([0, 0], '', { color: 'r', anchor: 's', tex: false, className: 'small', offset: [0, 4] });
+  plane.label([1, 0], 'chord', { color: 'muted', anchor: 'e', tex: false, className: 'small', offset: [4, 0] });
+  var panel = document.getElementById('fig11-controls');
+  var sM = CYL.slider({ label: 'Maximum camber \\(m\\)', min: 0, max: 9, step: 1, value: st.m, unit: '%', color: 't', onInput: function (v) { st.m = v; draw(); } });
+  var sP = CYL.slider({ label: 'Its position \\(p\\)', min: 1, max: 9, step: 1, value: st.p, unit: 'tenths', color: 't', onInput: function (v) { st.p = v; draw(); } });
+  var sT = CYL.slider({ label: 'Thickness \\(t/c\\)', min: 4, max: 24, step: 1, value: st.t, unit: '%', color: 'r', onInput: function (v) { st.t = v; draw(); } });
+  var ro = { code: CYL.readout('Designation'), cam: CYL.readout('Maximum camber'), th: CYL.readout('Maximum thickness'), r: CYL.readout('Leading-edge radius') };
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Classic sections' }), chips = {};
+  [['0012', 'NACA 0012'], ['2412', 'NACA 2412'], ['4415', 'NACA 4415'], ['6409', 'NACA 6409']].forEach(function (q) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q[1] });
+    b.addEventListener('click', function () { st.m = +q[0][0]; st.p = Math.max(1, +q[0][1]); st.t = +q[0].slice(2); sM.set(st.m, true); sP.set(st.p, true); sT.set(st.t, true); draw(); });
+    chips[q[0]] = b; row.appendChild(b);
+  });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Airfoil' }));
+  [sM.el, sP.el, sT.el].forEach(function (e) { panel.appendChild(e); });
+  panel.appendChild(row);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.code.el, ro.cam.el, ro.th.el, ro.r.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var a = WING.naca4({ m: st.m / 100, p: st.p / 10, t: st.t / 100 }, 121);
+    var code = st.m === 0 ? '00' + ('0' + st.t).slice(-2) : a.code;
+    body.set(a.upper.concat(a.lower.slice().reverse()));
+    mean.set(a.mean);
+    var p = st.m === 0 ? 0 : st.p / 10, yc = a.camber(p);
+    camTick.set([p, 0], [p, yc]); camTick.setVisible(st.m > 0);
+    var thp = Math.atan(a.slope(p));
+    camLab.set([p, yc + a.thick(p) * Math.cos(thp)], st.m > 0 ? 'max camber' : '');
+    var yc3 = a.camber(0.3), th = Math.atan(a.slope(0.3)), yt = a.thick(0.3);
+    thTick.set([0.3 - yt * Math.sin(th), yc3 + yt * Math.cos(th)], [0.3 + yt * Math.sin(th), yc3 - yt * Math.cos(th)]);
+    thLab.set([0.3 + yt * Math.sin(th), yc3 - yt * Math.cos(th)], 'max thickness');
+    ro.code.set('NACA ' + code);
+    ro.cam.set(st.m === 0 ? 'none (symmetric)' : st.m + '% at ' + st.p * 10 + '% of the chord');
+    ro.th.set(st.t + '% at 30% of the chord');
+    ro.r.set(CYL.fmt(1.1019 * Math.pow(st.t / 100, 2) * 100, 3) + '% of the chord');
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === code || (k[0] === '0' && code === k))); });
+    plane.svg.setAttribute('aria-label', 'NACA ' + code + ' drawn to scale: maximum camber ' + st.m + '%' + (st.m ? ' at ' + st.p * 10 + '% of the chord' : '') + ', thickness ' + st.t + '%.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l01-q1',
+    type: 'numeric',
+    prompt: 'A wing uses the NACA 4415 with a chord of \\(1.6\\ \\text{m}\\). How thick is it at its thickest point?',
+    label: '\\(t =\\)', answer: 0.15 * 1.6, unit: 'm',
+    hints: ['The last two digits are the thickness ratio in percent.', '\\(t/c = 0.15\\); multiply by the chord.'],
+    explain: 'The 4 and the 4 are the camber (4%) and its position (40% of the chord); the thickness is the last two digits.',
+    solution: '\\[ t = 0.15(1.6) = 0.240\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l01-q2',
+    type: 'numeric',
+    prompt: 'For the NACA 4412, find the height of the mean camber line at \\(x = 0.20\\) of the chord, as a fraction of the chord.',
+    label: '\\(y_c/c =\\)', answer: 0.04 / 0.16 * (2 * 0.4 * 0.2 - 0.04),
+    hints: ['\\(m = 0.04\\), \\(p = 0.4\\), and \\(x = 0.20 < p\\): use the forward parabola.', '\\(y_c = (m/p^2)(2px - x^2)\\).'],
+    explain: 'The camber line peaks at \\(x = p\\) with \\(y_c = m\\); at \\(x = 0.2\\) it has reached three quarters of that.',
+    solution: '\\[ y_c = \\frac{0.04}{0.16}\\left[2(0.4)(0.2) - 0.2^2\\right] = 0.25(0.12) = 0.0300 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l01-q3',
+    type: 'mc',
+    prompt: 'A new airliner wing must be as thick as possible for its weight and fuel volume, yet cruise at Mach 0.82 without a large drag rise. Which kind of airfoil suits it best?',
+    choices: [
+      { html: 'A NACA four-digit airfoil', feedback: 'Simple and gentle in stall, but its shock forms early at high subsonic speed.' },
+      { html: 'A six-series laminar-flow airfoil', feedback: 'Laminar flow reduces friction near the design lift coefficient, but does not delay the shock.' },
+      { html: 'A supercritical airfoil', correct: true, feedback: 'Yes: its flat top weakens and delays the shock, so it can be thicker at the same Mach number.' },
+      { html: 'A symmetric airfoil', feedback: 'Symmetric sections suit tails and aerobatic aircraft; they do nothing for the shock.' }
+    ],
+    explain: 'Lesson 3 puts numbers on this with the drag-divergence Mach number.'
+  });
+});
+</script>
+</body>
+</html>

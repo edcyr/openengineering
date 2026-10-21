@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twist, Dihedral and Wing Position · Airfoil and Wing Geometry</title>
+<meta name="description" content="The last details of the wing: twist and washout against tip stall, the incidence that levels the fuselage in cruise, dihedral and the dihedral effects of sweep and wing position, high, mid and low wings, and wingtips and winglets.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<style>
+  .t42 td, .t42 th { text-align: center; font-variant-numeric: tabular-nums; }
+  .t42 td:first-child, .t42 th:first-child { text-align: left; }
+  .sub-title { margin: 10px 14px 0; color: var(--ink-muted); font-size: 0.82rem; font-weight: 700; }
+  .dual-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+  .dual-charts > div + div { border-left: 1px solid var(--line); }
+  @container cylmain (max-width: 640px) {
+    .dual-charts { grid-template-columns: minmax(0, 1fr); }
+    .dual-charts > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 30 min</p>
+    <h1>Twist, Dihedral and Wing Position</h1>
+    <p class="lede">The planform is drawn. Four smaller choices finish the wing: how much to twist it, at what angle to set it on the fuselage, how far to tilt it up from the root, and where to attach it, high, low or in the middle. Each is a few degrees or a few lines on a drawing, and each affects how the aircraft flies near the stall and in a sideslip.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Explain geometric and aerodynamic twist, and why most wings have washout.</li>
+      <li>Find the wing incidence that levels the fuselage in cruise.</li>
+      <li>Explain the dihedral effect and choose dihedral for a wing position and sweep.</li>
+      <li>Compare high, mid and low wings, and describe what wingtips and winglets do.</li>
+    </ul>
+  </section>
+
+  <section id="twist">
+    <h2>Twist</h2>
+    <p>A wing is <strong>twisted</strong> when its sections are not all set at the same angle. <strong>Geometric twist</strong> changes the angle of the chord along the span; <strong>aerodynamic twist</strong> changes the airfoil, so that the zero-lift angle varies. Most wings have <strong>washout</strong>: the tip is set at a lower angle than the root.</p>
+    <p>Washout reduces the load near the tips. That moves the start of the stall inboard, away from the ailerons, which keep working, and away from the swept tips that would pitch the nose up (Lesson 5). On a wing with little taper, or a swept one, whose tips carry too much load, it also brings the loading closer to elliptic. A strongly tapered wing is the opposite case: its tips already carry less than the elliptic share, even though their small chords make their lift coefficients high, so washout fixes its stall at a small cost in induced drag. Washout is also right for one lift coefficient only. The twist adds a load of its own, the same at every lift coefficient, so at low lift coefficients the loading departs further from elliptic, and the induced drag is higher than it need be (though small anyway). Typical washout is 0 to 5 degrees, with about 3 degrees common on light aircraft.</p>
+    <p>Figure 7.1 shows these effects for an unswept wing of aspect ratio 8, computed with Prandtl's lifting-line theory (Lesson 4). Every section is given the same maximum lift coefficient, so the first section to reach it marks where the stall begins.</p>
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz stacked">
+        <div class="viz-stage">
+          <p class="sub-title">Root and tip sections, seen along the span (washout drawn twice its size)</p>
+          <div id="fig71-sections"></div>
+          <div class="dual-charts"><div id="fig71-load"></div><div id="fig71-cl"></div></div>
+        </div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> Washout on an unswept wing of aspect ratio 8, from Prandtl's lifting-line theory, with linear twist from root to tip. Top: the tip section (blue) is set nose-down from the root section (gray) by the washout. Left: the span loading with washout (blue), without twist (gray, dashed) and the elliptic ideal (green, dashed). Right: the local lift coefficient at the chosen wing \(C_L\), against an airfoil \(c_{l,\max}\) of 1.6 (orange, dashed). The highest point stalls first. Add washout to a tapered wing: the peak moves inboard. Then lower \(C_L\): the twisted wing's loading departs further from elliptic, and its span efficiency \(e\) falls. Compare a rectangular wing, where washout also improves \(e\).</figcaption>
+    </figure>
+  </section>
+
+  <section id="incidence">
+    <h2>Incidence</h2>
+    <p>The <strong>wing incidence</strong> is the angle between the root chord and the fuselage axis. It is chosen so that the fuselage, which has its least drag when it meets the air head-on, is level in cruise: the wing must then reach the cruise lift coefficient by itself.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Incidence for a level fuselage in cruise</p>
+      \[ i_w = \alpha_{L0} + \frac{C_{L,\text{cruise}}}{\CLa} \]
+      <p>with \(\CLa\) in per radian (Lesson 4) and the angle converted to degrees. Typical values are about \(2^\circ\) for light aircraft, \(1^\circ\) for transports and nearly \(0^\circ\) for fighters, which must work over a wide range of lift coefficients.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 7.1 — The business jet's incidence</p>
+      <p>The business jet cruises at \(C_L = 0.30\) with \(\CLa = 5.98\) per radian (Lesson 4), and its airfoil has a zero-lift angle of about \(-2.1^\circ\) (a 2% camber, Lesson 2). Find the wing incidence.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \frac{C_L}{\CLa} = \frac{0.30}{5.98} = 0.0502\ \text{rad} = 2.87^\circ \]
+          \[ i_w = -2.1^\circ + 2.87^\circ = 0.8^\circ \]
+          <p>About one degree, typical of a transport. At the start of a long cruise the aircraft is heavier and flies slightly nose-up; at the end, slightly nose-down. Lesson 3's cruise-climb keeps \(C_L\), and so the attitude, nearly constant.</p>
+        </div>
+      </details>
+    </div>
+    <p>The incidence is fixed when the wing is built, but the lift coefficient is not. At any other \(C_L\), the wing still needs the angle of attack \(\alpha_{L0} + C_L/\CLa\), so the whole aircraft pitches until the wing gets it, and the fuselage meets the air at an angle (Figure 7.2).</p>
+    <figure class="figure wide" aria-labelledby="fig72-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig72-stage"></div>
+        <div class="viz-controls" id="fig72-controls"></div>
+      </div>
+      <figcaption id="fig72-cap"><strong>Figure 7.2</strong> The business jet in level flight, seen from the side, with its angles drawn three times their size. The wing root chord (blue) is set at the incidence \(i_w\) to the fuselage axis (gray, dashed). The wing must meet the oncoming flow at \(\alpha_{L0} + C_L/\CLa\), with \(\CLa = 5.98\) per radian and \(\alpha_{L0} = -2.1^\circ\) (Example 7.1), so the fuselage flies at whatever angle is left over, \(\alpha_f\). Raise \(C_L\), as at the heavy start of a cruise: the nose comes up. Then set the incidence that levels the fuselage again.</figcaption>
+    </figure>
+  </section>
+
+  <section id="dihedral">
+    <h2>Dihedral</h2>
+    <p><strong>Dihedral</strong> \(\Gamma\) is the upward angle of the wing from the root, seen from the front; a downward angle is <strong>anhedral</strong>. In a sideslip, the wing toward the slip meets the air at a higher angle of attack and the other at a lower one, so the aircraft rolls away from the slip, back toward level flight. This <strong>dihedral effect</strong> gives lateral stability. Too little and the aircraft slowly diverges into a spiral; too much and it wallows from side to side in the Dutch roll, and rolls sluggishly.</p>
+    <p>Geometric dihedral is not the only source. Aft sweep adds a dihedral effect, roughly \(1^\circ\) for every \(10^\circ\) of sweep, and a high wing adds one through the flow around the fuselage, roughly \(1^\circ\) to \(2^\circ\), while a low wing subtracts it. So a high, swept wing may need anhedral, and a low, straight wing several degrees of dihedral:</p>
+    <div class="table-wrap">
+      <table class="data t42">
+        <caption>Dihedral guidelines in degrees (source: Raymer, Table 4.2; check the values against the edition you use)</caption>
+        <thead><tr><th scope="col">Wing</th><th scope="col">Low wing</th><th scope="col">Mid wing</th><th scope="col">High wing</th></tr></thead>
+        <tbody id="t42-rows"></tbody>
+      </table>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig73-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig73-stage"></div>
+        <div class="viz-controls" id="fig73-controls"></div>
+      </div>
+      <figcaption id="fig73-cap"><strong>Figure 7.3</strong> The front view of a wing on a fuselage, with its dihedral (exaggerated scale on the angle). Choose the wing position and type: the shaded band is the guideline range, and the readout says whether the chosen dihedral falls inside it. High swept wings droop; low straight ones tilt up.</figcaption>
+    </figure>
+  </section>
+
+  <section id="position">
+    <h2>High, mid or low wing</h2>
+    <ul>
+      <li><strong>High wing.</strong> The fuselage hangs low, close to the ground, so cargo aircraft load through a rear ramp without a high step. Engines and propellers clear the ground easily, and the view downward is clear. The wing box passes over the cabin without cutting it. The landing gear usually goes into pods on the fuselage. Military transports and many turboprops are high-winged.</li>
+      <li><strong>Low wing.</strong> The wing box passes under the cabin floor, the main gear retracts into the wing, and the wing gives a floor to stand on and absorbs energy in a ditching or belly landing. Nearly all airliners are low-winged.</li>
+      <li><strong>Mid wing.</strong> The least interference drag where wing meets fuselage, preferred on fighters and aerobatic aircraft; but the wing box must pass through the middle of the fuselage, where the cabin, the engine or the weapons would be.</li>
+    </ul>
+    <p>The business jet has a low wing, like nearly all business jets: the spar passes under the cabin floor and the gear retracts into the wing. With \(25^\circ\) of sweep the guideline is \(3^\circ\) to \(7^\circ\) of dihedral; about \(3^\circ\) is a reasonable start, to be checked against the lateral stability analysis of Module 11.</p>
+  </section>
+
+  <section id="tips">
+    <h2>Wingtips and winglets</h2>
+    <p>The tip vortex begins where the wing ends, so the shape of the tip affects the induced drag a little. A rounded tip lets the pressure leak around early and acts slightly shorter than its span; a sharp-edged, cut-off tip holds the flow and acts slightly longer. Raked tips, swept back more than the wing, give a little more effective span for their weight.</p>
+    <p><strong>Winglets</strong>, small near-vertical surfaces at the tips, reduce the induced drag by spreading the tip vortex, much as more span would. Airliners use them to cut cruise fuel burn by a few percent where the airport gates limit the span. They add weight and bending at the root, so for a new wing without a span limit, a little more span usually does the same job more cheaply.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Washout (tip set lower) moves the stall inboard and keeps the ailerons working; 0 to 5 degrees is typical. It suits one lift coefficient best, and on a strongly tapered wing it costs a little induced drag.</li>
+      <li>Incidence \(i_w = \alpha_{L0} + C_{L,\text{cruise}}/\CLa\) levels the fuselage in cruise: about \(1^\circ\) to \(2^\circ\).</li>
+      <li>Dihedral gives the dihedral effect; aft sweep and a high wing add to it, so swept high wings may need anhedral.</li>
+      <li>High wings suit cargo and ground clearance, low wings airliners, mid wings fighters.</li>
+      <li>Next, <a href="08-tail.html">Lesson 8</a> chooses the tail's arrangement and its first size.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+var AF7 = { outline: function (af) { return af.upper.concat(af.lower.slice().reverse()); } };   // closed airfoil outline (Figures 7.1, 7.2)
+
+/* ---------- Table 4.2 (from WING.DIHEDRAL) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('t42-rows');
+  function r(a) { return (a[0] + ' to ' + a[1]).replace(/-/g, '\u2212'); }
+  WING.DIHEDRAL.forEach(function (d) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: d.label }), CYL.el('td', { text: r(d.low) }), CYL.el('td', { text: r(d.mid) }), CYL.el('td', { text: r(d.high) })])); });
+});
+
+/* ---------- Figure 7.1: twist and washout (Prandtl's lifting line) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180, AR = 8, N = 20, A0 = 2 * Math.PI * 0.95, CLMAX = 1.6;
+  var st = { w: 3, lam: 0.35, CL: 1.0 };
+  function gauss(M, r) {
+    var n = r.length, a = M.map(function (row, i) { return row.concat([r[i]]); });
+    for (var k = 0; k < n; k++) {
+      var p = k;
+      for (var i = k + 1; i < n; i++) if (Math.abs(a[i][k]) > Math.abs(a[p][k])) p = i;
+      var tmp = a[k]; a[k] = a[p]; a[p] = tmp;
+      for (i = k + 1; i < n; i++) { var f = a[i][k] / a[k][k]; for (var j = k; j <= n; j++) a[i][j] -= f * a[k][j]; }
+    }
+    var x = new Array(n);
+    for (i = n - 1; i >= 0; i--) { var sum = a[i][n]; for (j = i + 1; j < n; j++) sum -= a[i][j] * x[j]; x[i] = sum / a[i][i]; }
+    return x;
+  }
+  // Glauert's solution of the lifting line for a straight-tapered, linearly twisted wing (span 2, symmetric terms only):
+  // Aa for a unit angle of attack without twist, Ab for the twist alone at zero angle of attack
+  function solve(lam, wash) {
+    var b = 2, S = b * b / AR, cr = 2 * S / (b * (1 + lam)), n = [], M = [], ra = [], rb = [];
+    function chord(e) { return cr * (1 - (1 - lam) * e); }
+    for (var k = 0; k < N; k++) n.push(2 * k + 1);
+    for (var i = 0; i < N; i++) {
+      var t = (i + 1) * Math.PI / (2 * N), e = Math.cos(t), mu = chord(e) * A0 / (4 * b);
+      M.push(n.map(function (m) { return Math.sin(m * t) * (Math.sin(t) + m * mu); }));
+      ra.push(mu * Math.sin(t)); rb.push(-mu * wash * D * e * Math.sin(t));
+    }
+    return { n: n, Aa: gauss(M, ra), Ab: gauss(M, rb), chord: chord, cbar: S / b, b: b };
+  }
+  function G(w, An, e) { var t = Math.acos(Math.min(e, 1)), s = 0; w.n.forEach(function (m, k) { s += An[k] * Math.sin(m * t); }); return 4 * w.b * s; }
+  // the wing at a given C_L: its Fourier coefficients, span efficiency, loading and local c_l, and where it stalls first
+  function state(w, CL) {
+    var al = (CL / (Math.PI * AR) - w.Ab[0]) / w.Aa[0], An = w.Aa.map(function (a, k) { return al * a + w.Ab[k]; });
+    var d = 0; w.n.forEach(function (m, k) { if (k) d += m * Math.pow(An[k] / An[0], 2); });
+    var Bb = w.Ab.map(function (a, k) { return a - w.Aa[k] * w.Ab[0] / w.Aa[0]; }), best = { e: 0, cl: -9 }, CLs = Infinity;
+    for (var i = 0; i <= 199; i++) {
+      var e = i / 200, c = w.chord(e), cl = G(w, An, e) / c;
+      if (cl > best.cl) best = { e: e, cl: cl };
+      var u = G(w, w.Aa, e) / c / (Math.PI * AR * w.Aa[0]), v = G(w, Bb, e) / c;
+      if (u > 0) CLs = Math.min(CLs, (CLMAX - v) / u);
+    }
+    return { An: An, e: 1 / (1 + d), peak: best, CLs: CLs,
+      load: function (e) { return G(w, An, e) / (CL * w.cbar); }, cl: function (e) { return G(w, An, e) / w.chord(e); } };
+  }
+  // sections
+  var sec = CYL2D.plane(document.getElementById('fig71-sections'), {
+    xRange: [-0.18, 1.62], yRange: [-0.1, 0.17], grid: 'none', axes: false, ticks: false, maxHeight: 190,
+    ariaLabel: 'Root and tip sections overlaid at their quarter chords, the tip set nose-down by the washout.'
+  });
+  var af = WING.naca4('2412', 121), piv = [0.25, 0];
+  sec.line([-0.15, 0], [1.45, 0], { color: 'muted', width: 1.1, dashed: true });
+  sec.polyline(AF7.outline(af), { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.16 });
+  var tipBody = sec.polyline([], { color: 'z', width: 2, closed: true, fill: 'z', fillOpacity: 0.14 });
+  var tipChord = sec.line([0, 0], [0, 0], { color: 'z', width: 1.3, dashed: true });
+  var arc = sec.arc({ center: piv, r: 1.1, theta0: 0, theta1: 0, color: 'z', width: 1.5, arrow: false });
+  var arcLab = sec.label([0, 0], '', { color: 'z', anchor: 'e', offset: [4, 0] });
+  sec.label([0, 0.07], 'root', { color: 'muted', anchor: 'n', tex: false, className: 'small', offset: [0, -2] });
+  var tipLab = sec.label([0, 0], 'tip', { color: 'z', anchor: 'e', tex: false, className: 'small', offset: [4, 0] });
+  // charts
+  var lc = AERO.chart(document.getElementById('fig71-load'), {
+    x: { label: 'Spanwise position \\(\\eta = 2y/b\\)', min: 0, max: 1 }, y: { label: 'Span loading \\(c\\,c_l/(C_L\\bar c)\\)', min: -0.2, max: 2 }, height: 300,
+    ariaLabel: 'Span loading with and without washout, and the elliptic loading.',
+    legend: [{ label: 'Washout', color: 'z', line: true }, { label: 'No twist', color: 'muted', line: true, dashed: true }, { label: 'Elliptic', color: 'good', line: true, dashed: true }]
+  });
+  var cc = AERO.chart(document.getElementById('fig71-cl'), {
+    x: { label: 'Spanwise position \\(\\eta = 2y/b\\)', min: 0, max: 1 }, y: { label: 'Local lift coefficient \\(c_l\\)', min: -0.2, max: 2 }, height: 300,
+    ariaLabel: 'Local lift coefficient along the span with and without washout.',
+    legend: [{ label: 'Washout', color: 'z', line: true }, { label: 'No twist', color: 'muted', line: true, dashed: true }, { label: 'Airfoil \\(c_{l,\\max}\\)', color: 'r', line: true, dashed: true }]
+  });
+  [lc, cc].forEach(function (c) { c.hline(0, { color: 'faint', dashed: false }); });
+  lc.fn(function (e) { return 4 / Math.PI * Math.sqrt(1 - e * e); }, { color: 'good', width: 1.8, dashed: true, domain: [0, 1], samples: 200 });
+  cc.hline(CLMAX, { color: 'r' });
+  var zero = function () { return 0; }, S0 = null, S1 = null, W0 = null, W1 = null;
+  var l0 = lc.fn(zero, { color: 'muted', width: 2, dashed: true, domain: [0, 0.995], samples: 200 }), l1 = lc.fn(zero, { color: 'z', width: 2.8, domain: [0, 0.995], samples: 200 });
+  var c0 = cc.fn(zero, { color: 'muted', width: 2, dashed: true, domain: [0, 0.995], samples: 200 }), c1 = cc.fn(zero, { color: 'z', width: 2.8, domain: [0, 0.995], samples: 200 });
+  var p0 = cc.marker([0, 0], { color: 'muted', r: 4.5, ring: false }), p1 = cc.marker([0, 0], { color: 'z', r: 5.5, ring: false, label: 'stalls first' });
+  // controls
+  var panel = document.getElementById('fig71-controls');
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Planforms' }), chips = [];
+  [['Business jet, λ = 0.35', 0.35], ['Strongly tapered, λ = 0.2', 0.2], ['Rectangular, λ = 1', 1]].forEach(function (q) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q[0] });
+    b.addEventListener('click', function () { st.lam = q[1]; sL.set(st.lam, true); resolve(); draw(); });
+    chips.push([b, q[1]]); row.appendChild(b);
+  });
+  var sW = CYL.slider({ label: 'Washout \\(\\varepsilon\\) (tip nose-down)', min: 0, max: 5, step: 0.5, value: st.w, unit: '°', color: 'z', onInput: function (v) { st.w = v; resolve(); draw(); } });
+  var sL = CYL.slider({ label: 'Taper ratio \\(\\lambda\\)', min: 0.2, max: 1, step: 0.05, value: st.lam, color: 'accent', onInput: function (v) { st.lam = v; resolve(); draw(); } });
+  var sC = CYL.slider({ label: 'Wing lift coefficient \\(C_L\\)', min: 0.2, max: 1.6, step: 0.05, value: st.CL, color: 'accent', onInput: function (v) { st.CL = v; draw(); } });
+  var ro = { pk: CYL.readout('Stall begins at \\(\\eta\\) ='), cs: CYL.readout('Wing \\(C_L\\) when it begins'), e: CYL.readout('Span efficiency \\(e\\) at this \\(C_L\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Wing' }));
+  [row, sW.el, sL.el, sC.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.pk.el, ro.cs.el, ro.e.el])].forEach(function (e) { panel.appendChild(e); });
+  panel.appendChild(CYL.el('p', { class: 'small muted', text: 'Values in brackets are for the same wing without twist.' }));
+  CYL.renderMath(panel);
+  function resolve() { W0 = solve(st.lam, 0); W1 = solve(st.lam, st.w); }
+  function draw() {
+    S0 = state(W0, st.CL); S1 = state(W1, st.CL);
+    l0.setFn(S0.load); l1.setFn(S1.load); c0.setFn(S0.cl); c1.setFn(S1.cl);
+    p0.set([S0.peak.e, S0.peak.cl]); p1.set([S1.peak.e, S1.peak.cl]);
+    // sections: the tip, chord lam, at the root's quarter chord, rotated nose-down (counterclockwise) by twice the washout
+    var a = 2 * st.w * D;
+    function R(p) { var x = p[0] - piv[0], y = p[1]; return [piv[0] + x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)]; }
+    tipBody.set(AF7.outline(af).map(function (p) { return R([piv[0] + (p[0] - piv[0]) * st.lam, p[1] * st.lam]); }));
+    tipChord.set(R([-0.15, 0]), R([1.45, 0]));
+    arc.set({ center: piv, r: 1.1, theta0: 0, theta1: a }); arc.setVisible(st.w > 0);
+    arcLab.set([piv[0] + 1.12 * Math.cos(a / 2), 1.12 * Math.sin(a / 2)], st.w > 0 ? '\\varepsilon = ' + st.w + '^\\circ' : '');
+    tipLab.set(R([piv[0] + 0.75 * st.lam, 0]), 'tip');
+    ro.pk.set(CYL.fmt(S1.peak.e, 2) + ' (' + CYL.fmt(S0.peak.e, 2) + ')');
+    ro.cs.set(CYL.fmt(S1.CLs, 3) + ' (' + CYL.fmt(S0.CLs, 3) + ')');
+    ro.e.set(CYL.fmt(S1.e, 3) + ' (' + CYL.fmt(S0.e, 3) + ')');
+    chips.forEach(function (c) { c[0].setAttribute('aria-pressed', String(Math.abs(c[1] - st.lam) < 1e-9)); });
+    lc.setAriaLabel('Span loading of a wing with taper ratio ' + st.lam + ' and ' + st.w + ' degrees of washout at a lift coefficient of ' + st.CL + ': span efficiency ' + CYL.fmt(S1.e, 3) + ', against ' + CYL.fmt(S0.e, 3) + ' without twist.');
+    cc.setAriaLabel('Local lift coefficient along the span: with washout the highest value is at ' + CYL.fmt(S1.peak.e, 2) + ' of the semispan, without twist at ' + CYL.fmt(S0.peak.e, 2) + '. The first section reaches the airfoil maximum of 1.6 at a wing lift coefficient of ' + CYL.fmt(S1.CLs, 3) + ' with washout and ' + CYL.fmt(S0.CLs, 3) + ' without.');
+  }
+  resolve(); draw();
+});
+
+/* ---------- Figure 7.2: incidence and fuselage attitude ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180, CLA = 5.98, AL0 = -2.1, EX = 3, st = { CL: 0.30, iw: 0.8 };
+  var P = [0.75, -0.09];                                      // the wing's quarter chord, about which everything pitches
+  function rotAbout(p, c, deg) { var a = deg * D, x = p[0] - c[0], y = p[1] - c[1]; return [c[0] + x * Math.cos(a) - y * Math.sin(a), c[1] + x * Math.sin(a) + y * Math.cos(a)]; }
+  // fuselage side view (length 1.6, radius 0.1, upswept tail cone) and fin, in the fuselage frame
+  function zc(x) { return x > 1.05 ? 0.06 * (x - 1.05) / 0.55 : 0; }
+  function rad(x) { return x < 0.3 ? 0.1 * Math.sqrt(Math.max(0, 1 - Math.pow((0.3 - x) / 0.3, 2))) : x <= 1.05 ? 0.1 : 0.1 * (1 - 0.75 * (x - 1.05) / 0.55); }
+  var fus = [], fin = [];
+  for (var i = 0; i <= 80; i++) { var x = 1.6 * i / 80; fus.push([x, zc(x) + rad(x)]); }
+  for (i = 80; i >= 0; i--) { x = 1.6 * i / 80; fus.push([x, zc(x) - rad(x)]); }
+  fin = [[1.28, zc(1.28) + rad(1.28)], [1.46, 0.3], [1.58, 0.3], [1.6, zc(1.6) + rad(1.6)]];
+  var af = WING.naca4('2412', 81), CH = 0.42;
+  var root = AF7.outline(af).map(function (p) { return [P[0] + (p[0] - 0.25) * CH, P[1] + p[1] * CH]; });
+  var plane = CYL2D.plane(document.getElementById('fig72-stage'), {
+    xRange: [-0.5, 1.85], yRange: [-0.45, 0.5], grid: 'none', axes: false, ticks: false, maxHeight: 380,
+    ariaLabel: 'Side view of the business jet in level flight, with the wing root set at the incidence angle to the fuselage axis.'
+  });
+  [0.45, -0.42].forEach(function (y) { plane.line([0.15, y], [0.45, y], { color: 'muted', width: 1.6, arrow: 'end' }); });
+  plane.label([0.45, 0.45], 'V_\\infty', { color: 'muted', anchor: 'e', offset: [4, 0] });
+  var hor = plane.line([0, 0], [0, 0], { color: 'muted', width: 1 });
+  var axis = plane.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true });
+  var body = plane.polyline([], { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.16 });
+  var finP = plane.polyline([], { color: 'surface', width: 2, closed: true, fill: 'surface', fillOpacity: 0.16 });
+  var wing = plane.polyline([], { color: 'z', width: 2, closed: true, fill: 'z', fillOpacity: 0.18 });
+  var chord = plane.line([0, 0], [0, 0], { color: 'z', width: 1.3, dashed: true });
+  var par = plane.line([0, 0], [0, 0], { color: 'muted', width: 1, dashed: true });
+  var arcI = plane.arc({ center: [0, 0], r: 0.5, theta0: 0, theta1: 0, color: 'z', width: 1.5, arrow: false });
+  var labI = plane.label([0, 0], 'i_w', { color: 'z', anchor: 'e', offset: [3, 0] });
+  var arcF = plane.arc({ center: [0, 0], r: 0.3, theta0: 0, theta1: 0, color: 'ink', width: 1.5, arrow: false });
+  var labF = plane.label([0, 0], '\\alpha_f', { anchor: 'w', offset: [-3, 0] });
+  var stLab = plane.label([1.15, -0.38], '', { color: 'good', anchor: 'c', tex: false, className: 'small' });
+  var panel = document.getElementById('fig72-controls');
+  var ex = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: 'Example 7.1' });
+  ex.addEventListener('click', function () { st.CL = 0.30; st.iw = 0.8; sC.set(st.CL, true); sI.set(st.iw, true); draw(); });
+  var sC = CYL.slider({ label: 'Lift coefficient \\(C_L\\)', min: 0.15, max: 0.7, step: 0.01, value: st.CL, color: 'accent', onInput: function (v) { st.CL = v; draw(); } });
+  var sI = CYL.slider({ label: 'Incidence \\(i_w\\)', min: -1, max: 4, step: 0.1, value: st.iw, unit: '°', color: 'z', onInput: function (v) { st.iw = v; draw(); } });
+  var lvl = CYL.button('Level the fuselage', function () { st.iw = Math.round(wingAlpha() * 10) / 10; sI.set(st.iw, true); draw(); }, { small: true });
+  var ro = { a: CYL.readout('Wing angle of attack needed'), f: CYL.readout('Fuselage angle \\(\\alpha_f\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Cruise' }));
+  [CYL.el('div', { class: 'chip-row' }, [ex]), sC.el, sI.el, CYL.el('div', { class: 'btn-row' }, [lvl]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.f.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function wingAlpha() { return AL0 + st.CL / CLA / D; }
+  function draw() {
+    var aw = wingAlpha(), af_ = aw - st.iw, th = af_ * EX, ti = st.iw * EX;
+    function F(p) { return rotAbout(p, P, -th); }                       // fuselage frame to the page (nose-up is clockwise)
+    function W(p) { return F(rotAbout(p, P, -ti)); }                    // wing frame to the page
+    body.set(fus.map(F)); finP.set(fin.map(F)); wing.set(root.map(W));
+    chord.set(W([P[0] - 0.25 * CH - 0.1, P[1]]), W([P[0] + 0.75 * CH + 0.6, P[1]]));
+    // i_w between a line parallel to the fuselage axis and the wing chord, behind the wing's trailing edge
+    var tp = W([P[0] + 0.75 * CH, P[1]]), aF = -th * D, aW = -(th + ti) * D;
+    par.set(tp, [tp[0] + 0.6 * Math.cos(aF), tp[1] + 0.6 * Math.sin(aF)]);
+    arcI.set({ center: tp, r: 0.52, theta0: Math.min(aF, aW), theta1: Math.max(aF, aW) }); arcI.setVisible(Math.abs(st.iw) > 0.05);
+    labI.set([tp[0] + 0.53 * Math.cos((aF + aW) / 2), tp[1] + 0.53 * Math.sin((aF + aW) / 2)], 'i_w'); labI.setVisible(Math.abs(st.iw) > 0.05);
+    // alpha_f between the flow (horizontal) and the fuselage axis, ahead of the nose
+    var nose = F([-0.05, 0]);
+    axis.set(F([-0.38, 0]), F([1.72, 0])); hor.set(nose, [nose[0] - 0.36, nose[1]]);
+    var aN = Math.PI - th * D;
+    arcF.set({ center: nose, r: 0.3, theta0: Math.min(aN, Math.PI), theta1: Math.max(aN, Math.PI) }); arcF.setVisible(Math.abs(af_) > 0.05);
+    labF.set([nose[0] + 0.32 * Math.cos((aN + Math.PI) / 2), nose[1] + 0.32 * Math.sin((aN + Math.PI) / 2)], '\\alpha_f'); labF.setVisible(Math.abs(af_) > 0.05);
+    var level = Math.abs(af_) < 0.05;
+    stLab.set([1.15, -0.38], level ? 'fuselage level' : 'fuselage ' + CYL.fmt(Math.abs(af_), 2) + '° nose ' + (af_ > 0 ? 'up' : 'down'));
+    stLab.setColor(level ? 'good' : 'r');
+    ro.a.set(CYL.fmt(aw, 3) + '°'); ro.f.set(level ? '0° (level)' : CYL.fmt(af_, 2) + '° (nose ' + (af_ > 0 ? 'up)' : 'down)'));
+    ex.setAttribute('aria-pressed', String(Math.abs(st.CL - 0.3) < 1e-9 && Math.abs(st.iw - 0.8) < 1e-9));
+    plane.svg.setAttribute('aria-label', 'Side view at a lift coefficient of ' + st.CL + ' with ' + st.iw + ' degrees of incidence: the wing needs ' + CYL.fmt(aw, 3) + ' degrees, so the fuselage flies ' + (level ? 'level.' : CYL.fmt(Math.abs(af_), 2) + ' degrees nose ' + (af_ > 0 ? 'up.' : 'down.')));
+  }
+  draw();
+});
+
+/* ---------- Figure 7.3: front view and dihedral ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { pos: 'low', type: 'subsonic', G: 3 };
+  var Y = { high: 0.8, mid: 0, low: -0.8 }, SEMI = 7, EXAG = 2;
+  var plane = CYL2D.plane(document.getElementById('fig73-stage'), {
+    xRange: [-7.6, 7.6], yRange: [-2.6, 2.8], grid: 'none', axes: false, ticks: false, maxHeight: 280,
+    ariaLabel: 'Front view of a wing on a fuselage, showing its dihedral.'
+  });
+  plane.line([-7.6, -2.3], [7.6, -2.3], { color: 'faint', width: 1 });
+  var bandR = plane.polyline([], { color: 'good', width: 0, closed: true, fill: 'good', fillOpacity: 0.16 });
+  var bandL = plane.polyline([], { color: 'good', width: 0, closed: true, fill: 'good', fillOpacity: 0.16 });
+  var ref = plane.line([0, 0], [0, 0], { color: 'muted', width: 1, dashed: true });
+  var wR = plane.line([0, 0], [0, 0], { color: 'z', width: 4 }), wL = plane.line([0, 0], [0, 0], { color: 'z', width: 4 });
+  plane.circle({ center: [0, 0], r: 1, color: 'ink', width: 2, fill: 'bg', fillOpacity: 1 });
+  var lab = plane.label([0, 0], '', { color: 'z', anchor: 'n', tex: true, offset: [0, -6] });
+  var panel = document.getElementById('fig73-controls');
+  var sPos = CYL.select({ label: 'Wing position', value: st.pos, options: [{ value: 'low', label: 'Low wing' }, { value: 'mid', label: 'Mid wing' }, { value: 'high', label: 'High wing' }], onChange: function (v) { st.pos = v; draw(); } });
+  var sType = CYL.select({ label: 'Wing type', value: st.type, options: WING.DIHEDRAL.map(function (d) { return { value: d.id, label: d.label }; }), onChange: function (v) { st.type = v; draw(); } });
+  var sG = CYL.slider({ label: 'Dihedral \\(\\Gamma\\)', min: -7, max: 9, step: 0.5, value: st.G, unit: '°', color: 'z', onInput: function (v) { st.G = v; draw(); } });
+  var ro = { g: CYL.readout('Guideline'), v: CYL.readout('Chosen dihedral') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Wing' }));
+  [sPos.el, sType.el, sG.el].forEach(function (e) { panel.appendChild(e); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'polite' }, [ro.g.el, ro.v.el]));
+  CYL.renderMath(panel);
+  function tip(side, g) { var a = g * EXAG * Math.PI / 180, y0 = Y[st.pos]; return [side * (0.6 + SEMI * Math.cos(a)), y0 + SEMI * Math.sin(a)]; }
+  function draw() {
+    var d = WING.DIHEDRAL.filter(function (q) { return q.id === st.type; })[0], rg = d[st.pos], y0 = Y[st.pos];
+    var root = function (s) { return [s * 0.6, y0]; };
+    bandR.set([root(1), tip(1, rg[0]), tip(1, rg[1])]); bandL.set([root(-1), tip(-1, rg[0]), tip(-1, rg[1])]);
+    ref.set([-SEMI - 0.6, y0], [SEMI + 0.6, y0]);
+    wR.set(root(1), tip(1, st.G)); wL.set(root(-1), tip(-1, st.G));
+    var a = st.G * EXAG * Math.PI / 180, y0w = Y[st.pos];
+    lab.set([0.6 + 0.7 * SEMI * Math.cos(a), y0w + 0.7 * SEMI * Math.sin(a)], '\\Gamma = ' + st.G + '^\\circ');
+    var inside = st.G >= rg[0] - 1e-9 && st.G <= rg[1] + 1e-9;
+    ro.g.set((rg[0] + '° to ' + rg[1] + '°').replace(/-/g, '\u2212'));
+    ro.v.set((st.G > 0 ? st.G + '° dihedral' : st.G < 0 ? (-st.G) + '° anhedral' : 'none') + (inside ? ', inside the range' : ', outside the range'));
+    plane.svg.setAttribute('aria-label', 'Front view of a ' + st.pos + ' ' + d.label.toLowerCase() + ' with ' + st.G + ' degrees of dihedral; the guideline range is ' + rg[0] + ' to ' + rg[1] + ' degrees.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var cla = WING.cla(7.5, 0.2, 0);
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'numeric',
+    prompt: 'A light aircraft cruises at \\(C_L = 0.35\\) with a wing lift-curve slope of \\(4.72\\) per radian. Its airfoil has \\(\\alpha_{L0} = -2.1^\\circ\\). What wing incidence levels the fuselage in cruise, in degrees?',
+    label: '\\(i_w =\\)', answer: -2.1 + 0.35 / 4.72 * 180 / Math.PI, unit: '°',
+    hints: ['\\(i_w = \\alpha_{L0} + C_L/\\CLa\\), with the second term converted to degrees.', '\\(0.35/4.72 = 0.0742\\ \\text{rad} = 4.25^\\circ\\).'],
+    explain: 'About two degrees: the typical incidence of a light aircraft.',
+    solution: '\\[ i_w = -2.1^\\circ + \\frac{0.35}{4.72}(57.30^\\circ) = -2.1^\\circ + 4.25^\\circ = 2.15^\\circ \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'mc',
+    prompt: 'A military transport has a high wing swept \\(25^\\circ\\). Which dihedral is most likely right for it?',
+    choices: [
+      { html: 'About \\(6^\\circ\\) of dihedral, like a low-wing light aircraft', feedback: 'Both the high position and the sweep already add dihedral effect: this would make it wallow in Dutch roll.' },
+      { html: 'A few degrees of anhedral', correct: true, feedback: 'Yes: the high wing and the sweep give too much dihedral effect, so the wing droops.' },
+      { html: 'Exactly zero, since the wing is swept', feedback: 'Sweep adds dihedral effect; it does not cancel the need to choose \\(\\Gamma\\).' },
+      { html: 'It does not matter for a transport', feedback: 'Lateral stability matters for every aircraft.' }
+    ],
+    explain: 'High, swept wings droop: the C-5 and C-17 have anhedral.'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'mc',
+    prompt: 'Why do most wings have washout?',
+    choices: [
+      { html: 'To make the tips stall first, so the pilot gets a warning', feedback: 'The opposite: washout makes the tips stall last.' },
+      { html: 'To unload the tips, so the stall starts inboard and the ailerons keep working', correct: true, feedback: 'Yes, and on a swept wing it also prevents pitch-up.' },
+      { html: 'To increase the induced drag', feedback: 'Washout is set to keep the loading near elliptic at its design lift coefficient.' },
+      { html: 'To level the fuselage in cruise', feedback: 'That is the job of the incidence, not the twist.' }
+    ],
+    explain: 'Washout is the first remedy for tip stall.'
+  });
+});
+</script>
+</body>
+</html>

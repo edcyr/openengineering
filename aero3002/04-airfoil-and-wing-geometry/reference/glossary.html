@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary · Airfoil and Wing Geometry</title>
+<meta name="description" content="Short definitions of the terms and symbols of the Airfoil and Wing Geometry module, from the aerodynamic center to the zero-lift angle, each linked to its lesson.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Glossary page (page-specific styles; colors come from module.css tokens) ---------- */
+.gl-tools {
+  --gl-i-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+  margin: 0 0 32px;
+  padding: 16px 16px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.gl-controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+.gl-controls > .field { flex: 1 1 250px; }
+.gl-controls > .gl-lesson-field { flex: 1 1 220px; }
+@container cylmain (min-width: 700px) { .gl-controls > .gl-lesson-field { flex: 0 1 260px; } }
+.gl-search { position: relative; }
+.gl-search::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  pointer-events: none;
+  background-color: var(--ink-faint);
+  -webkit-mask: var(--gl-i-search) center / contain no-repeat;
+  mask: var(--gl-i-search) center / contain no-repeat;
+}
+.gl-search input { width: 100%; min-height: 44px; padding-left: 38px; font-size: 1rem; }
+.gl-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.gl-lesson-field select { width: 100%; min-height: 44px; }
+.gl-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  min-height: 34px;
+  margin-top: 10px;
+}
+.gl-count { margin: 0; color: var(--ink-muted); font-size: 0.9rem; }
+.gl-az {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+@container cylmain (min-width: 700px) { .gl-az { grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 3px; } }
+.gl-az > a, .gl-az > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+.gl-az > a { color: var(--accent); background: var(--accent-soft); }
+.gl-az > a:hover { color: var(--accent-ink); background: var(--accent); }
+.gl-az > a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gl-az > span, .gl-az > a.is-off, .gl-az > a.is-off:hover {
+  color: var(--ink-faint);
+  background: transparent;
+  opacity: 0.55;
+  cursor: default;
+}
+.gl-empty { margin: 0 0 32px; }
+.gl-empty .btn { margin-top: 2px; }
+
+.gl-group { margin: 0 0 28px; }
+.gl-letter-row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.gl-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.gl-rule { flex: 1 1 auto; height: 1px; background: var(--line); }
+.gl-top { flex: none; font-size: 0.84rem; font-weight: 600; text-decoration: none; }
+.gl-top:hover { text-decoration: underline; }
+.gl-terms {
+  margin: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.gl-entry { padding: 14px 18px 15px; border-top: 1px solid var(--line); }
+.gl-entry.is-first { border-top: 0; border-top-left-radius: calc(var(--radius) - 1px); border-top-right-radius: calc(var(--radius) - 1px); }
+.gl-entry.is-last { border-bottom-left-radius: calc(var(--radius) - 1px); border-bottom-right-radius: calc(var(--radius) - 1px); }
+.gl-entry:target { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); }
+.gl-entry > dt { margin: 0; color: var(--ink); font-size: 1.06rem; font-weight: 700; line-height: 1.35; }
+.gl-entry dfn { font-style: normal; }
+.gl-qual { color: var(--ink-muted); font-size: 0.92em; font-weight: 500; }
+.gl-entry > dd { margin: 4px 0 0; }
+.gl-entry > dd.gl-see {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+}
+.gl-lesson-link {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.gl-lesson-link:hover { background: var(--accent); color: var(--accent-ink); }
+/* the highlighted (:target) entry has the pills' own tint, so the pills switch to the card color there */
+.gl-entry:target .gl-lesson-link { background: var(--bg-elev); }
+.gl-entry:target .gl-lesson-link:hover { background: var(--accent); }
+/* rendered math is inline-block, which a text underline skips: underline links that contain math with a border */
+a.gl-mlink { text-decoration: none; border-bottom: 1px solid currentColor; }
+a.gl-mlink:hover { border-bottom-width: 2px; }
+mark.gl-hit {
+  padding: 0 1px;
+  margin: 0 -1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--c-warn) 24%, transparent);
+  color: inherit;
+}
+.gl-symbols { margin-top: 3rem; }
+.gl-symbols tbody th[scope="row"] { white-space: nowrap; }
+
+@media print {
+  .gl-tools, .gl-top, .gl-empty { display: none !important; }
+  .gl-list [hidden] { display: block !important; }
+  .gl-terms { box-shadow: none; }
+  .gl-entry, .gl-entry.is-first, .gl-entry.is-last { border-top: 1px solid var(--line); border-radius: 0; break-inside: avoid; page-break-inside: avoid; }
+  .gl-entry:first-child { border-top: 0; }
+  .gl-letter-row { break-after: avoid; page-break-after: avoid; }
+  .gl-letter { background: none; color: inherit; border: 1px solid var(--line-strong); }
+  mark.gl-hit { background: none; }
+  .gl-lesson-link { padding: 0; background: none; }
+  .gl-lesson-link:not(:last-of-type)::after { content: ","; }
+}
+</style>
+</head>
+<body data-page="glossary" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Reference · 46 terms</p>
+    <h1>Glossary</h1>
+    <p class="lede">Short, precise definitions of the words and symbols used in this module, each linked to the lesson where it is taught. Filter the list as you type, jump to a letter, or look a symbol up in <a href="#symbols">Symbols at a glance</a>.</p>
+  </header>
+
+  <div class="gl-tools" id="gl-tools">
+    <div class="gl-controls" role="search" aria-label="Glossary filter">
+      <div class="field gl-filter-field">
+        <label for="gl-filter">Filter terms</label>
+        <div class="gl-search">
+          <input type="search" id="gl-filter" placeholder="Try sweep, MAC or stall" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="gl-count" aria-controls="gl-list">
+        </div>
+      </div>
+      <div class="field gl-lesson-field">
+        <label for="gl-lesson">Taught in</label>
+        <select id="gl-lesson" aria-controls="gl-list">
+          <option value="">All lessons</option>
+        </select>
+      </div>
+    </div>
+    <div class="gl-status">
+      <p class="gl-count" id="gl-count">Showing all 46 terms</p>
+      <button type="button" class="btn small" id="gl-clear" hidden>Clear filter</button>
+    </div>
+    <p class="visually-hidden" id="gl-live" aria-live="polite" aria-atomic="true"></p>
+    <nav class="gl-az" id="gl-az" aria-label="Jump to a letter">
+      <a href="#letter-a" data-letter="A">A</a>
+      <a href="#letter-b" data-letter="B">B</a>
+      <a href="#letter-c" data-letter="C">C</a>
+      <a href="#letter-d" data-letter="D">D</a>
+      <a href="#letter-e" data-letter="E">E</a>
+      <span class="is-empty" aria-hidden="true">F</span>
+      <span class="is-empty" aria-hidden="true">G</span>
+      <span class="is-empty" aria-hidden="true">H</span>
+      <a href="#letter-i" data-letter="I">I</a>
+      <span class="is-empty" aria-hidden="true">J</span>
+      <a href="#letter-k" data-letter="K">K</a>
+      <a href="#letter-l" data-letter="L">L</a>
+      <a href="#letter-m" data-letter="M">M</a>
+      <a href="#letter-n" data-letter="N">N</a>
+      <span class="is-empty" aria-hidden="true">O</span>
+      <a href="#letter-p" data-letter="P">P</a>
+      <span class="is-empty" aria-hidden="true">Q</span>
+      <a href="#letter-r" data-letter="R">R</a>
+      <a href="#letter-s" data-letter="S">S</a>
+      <a href="#letter-t" data-letter="T">T</a>
+      <span class="is-empty" aria-hidden="true">U</span>
+      <span class="is-empty" aria-hidden="true">V</span>
+      <a href="#letter-w" data-letter="W">W</a>
+      <span class="is-empty" aria-hidden="true">X</span>
+      <span class="is-empty" aria-hidden="true">Y</span>
+      <a href="#letter-z" data-letter="Z">Z</a>
+    </nav>
+  </div>
+
+  <div class="callout note gl-empty" id="gl-empty" hidden>
+    <p class="callout-title">No matches</p>
+    <p><span id="gl-empty-msg">No terms match this filter.</span> Check the spelling, or type just the first few letters of a word.</p>
+    <p><button type="button" class="btn small" id="gl-empty-clear">Clear filter</button></p>
+  </div>
+
+  <div class="gl-list" id="gl-list">
+  <div class="gl-group" id="letter-a" data-letter="A">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">A</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-aerodynamic-center" data-lessons="2 6" data-keys="aerodynamic center ac quarter chord moment">
+        <dt><dfn class="gl-name">Aerodynamic center</dfn></dt>
+        <dd>The point about which the pitching moment does not change with angle of attack: the quarter chord of an airfoil, and the quarter point of the mean aerodynamic chord of a subsonic wing.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#moment">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/06-taper-and-planform.html#geometry">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-mac">Mean aerodynamic chord \(\bar c\)</a>, <a class="gl-mlink" href="#term-cm">Pitching moment coefficient \(c_{m,c/4}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-airfoil" data-lessons="1" data-keys="airfoil section profile">
+        <dt><dfn class="gl-name">Airfoil</dfn></dt>
+        <dd>The cross-section of a wing in a plane parallel to the flight direction: a mean camber line with a thickness distribution laid on either side of it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#parts">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-camber-line">Mean camber line</a>, <a class="gl-mlink" href="#term-thickness-ratio">Thickness ratio \(t/c\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-anhedral" data-lessons="7" data-keys="anhedral negative dihedral droop">
+        <dt><dfn class="gl-name">Anhedral</dfn></dt>
+        <dd>Negative dihedral: the wing droops from the root. Used on high, swept wings, which have too much dihedral effect already.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#dihedral">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-dihedral">Dihedral \(\Gamma\)</a>, <a href="#term-dihedral-effect">Dihedral effect</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-aspect-ratio" data-lessons="4" data-keys="aspect ratio span slender induced drag">
+        <dt><dfn class="gl-name">Aspect ratio \(A\)</dfn></dt>
+        <dd>\(A = b^2/S\): how slender the wing is. Higher \(A\) cuts induced drag (\(K = 1/(\pi Ae)\)) and steepens the lift curve, but makes the wing heavier.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-aspect-ratio.html#reference">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-reference-wing">Reference wing</a>, <a class="gl-mlink" href="#term-lift-slope">Lift-curve slope \(\CLa\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-b" data-letter="B">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">B</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-boundary-layer" data-lessons="2" data-keys="boundary layer laminar turbulent transition viscous friction">
+        <dt><dfn class="gl-name">Boundary layer</dfn></dt>
+        <dd>The thin layer next to the surface in which viscosity slows the flow to rest at the wall. It starts laminar (thin, little friction, easily separated) and turns turbulent at transition (thicker, more friction, but it resists separation).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#reynolds">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-reynolds">Reynolds number \(Re\)</a>, <a href="#term-separation">Separation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-c" data-letter="C">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">C</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-camber" data-lessons="1" data-keys="camber maximum camber curvature">
+        <dt><dfn class="gl-name">Camber</dfn></dt>
+        <dd>The greatest height of the mean camber line above the chord, as a fraction of the chord. It sets the zero-lift angle and the pitching moment.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#parts">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-camber-line">Mean camber line</a>, <a class="gl-mlink" href="#term-zero-lift-angle">Zero-lift angle \(\alpha_{L0}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-center-of-pressure" data-lessons="2" data-keys="center of pressure cp lift position">
+        <dt><dfn class="gl-name">Center of pressure</dfn></dt>
+        <dd>The point where the lift alone would act, \(x_{cp}/c = 0.25 - c_{m,c/4}/c_l\). On a cambered airfoil it moves aft as the lift falls, so the fixed aerodynamic center is used instead.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#moment">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-aerodynamic-center">Aerodynamic center</a>, <a class="gl-mlink" href="#term-cm">Pitching moment coefficient \(c_{m,c/4}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-chord" data-lessons="1" data-keys="chord line length leading trailing edge">
+        <dt><dfn class="gl-name">Chord \(c\)</dfn></dt>
+        <dd>The straight line from the leading edge to the trailing edge of an airfoil, and its length. Airfoil coordinates are fractions of it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#parts">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-airfoil">Airfoil</a>, <a class="gl-mlink" href="#term-mgc">Mean geometric chord \(\bar c_g\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-critical-mach" data-lessons="3" data-keys="critical mach number sonic local flow shock">
+        <dt><dfn class="gl-name">Critical Mach number</dfn></dt>
+        <dd>The flight Mach number at which the local flow over the airfoil first reaches Mach 1. The drag starts to rise a little above it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-choosing-the-airfoil.html#mdd">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-mdd">Drag-divergence Mach number \(\MDD\)</a>, <a href="#term-supercritical">Supercritical airfoil</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-d" data-letter="D">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">D</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-design-cl" data-lessons="3" data-keys="design lift coefficient cruise CL best range">
+        <dt><dfn class="gl-name">Design lift coefficient</dfn></dt>
+        <dd>The lift coefficient an airfoil is designed to work best at; chosen near the wing's cruise \(C_L = (W/S)/q\), which for a jet's best range is \(\sqrt{\CDz/K}/\sqrt3\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-choosing-the-airfoil.html#design-cl">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-ideal-cl">Ideal lift coefficient \(c_{l,i}\)</a>, <a href="#term-korn">Korn equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-dihedral" data-lessons="7" data-keys="dihedral angle front view lateral stability">
+        <dt><dfn class="gl-name">Dihedral \(\Gamma\)</dfn></dt>
+        <dd>The upward angle of the wing from the root, seen from the front. Chosen from guidelines by wing position and sweep: about 5 to 7 degrees for a low unswept wing, anhedral for a high swept one.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#dihedral">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-dihedral-effect">Dihedral effect</a>, <a href="#term-anhedral">Anhedral</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-dihedral-effect" data-lessons="7" data-keys="dihedral effect sideslip roll lateral stability dutch roll spiral">
+        <dt><dfn class="gl-name">Dihedral effect</dfn></dt>
+        <dd>The roll away from a sideslip that gives lateral stability. Geometric dihedral, aft sweep (about \(1^\circ\) per \(10^\circ\)) and a high wing all add to it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#dihedral">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-dihedral">Dihedral \(\Gamma\)</a>, <a href="#term-wing-position">Wing position</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-drag-bucket" data-lessons="2" data-keys="drag bucket laminar six series low drag range">
+        <dt><dfn class="gl-name">Drag bucket</dfn></dt>
+        <dd>The narrow range of lift coefficients over which a laminar-flow airfoil keeps laminar flow and has much lower drag.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#drag">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-laminar">Laminar-flow airfoil</a>, <a href="#term-design-cl">Design lift coefficient</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-mdd" data-lessons="3" data-keys="drag divergence mach number MDD transonic drag rise">
+        <dt><dfn class="gl-name">Drag-divergence Mach number \(\MDD\)</dfn></dt>
+        <dd>The Mach number at which the transonic drag rise becomes steep (\(\dd\CD/\dd M = 0.1\)). A subsonic jet cruises just below it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-choosing-the-airfoil.html#mdd">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-korn">Korn equation</a>, <a href="#term-critical-mach">Critical Mach number</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-e" data-letter="E">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">E</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-elliptic" data-lessons="6" data-keys="elliptic loading lift distribution minimum induced drag">
+        <dt><dfn class="gl-name">Elliptic span loading</dfn></dt>
+        <dd>A lift per unit span that varies as \(\sqrt{1 - (2y/b)^2}\): the loading with the least induced drag for a given span. A taper ratio near 0.45 comes close.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-taper-and-planform.html#taper">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-taper">Taper ratio \(\lambda\)</a>, <a href="#term-schrenk">Schrenk's approximation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-i" data-letter="I">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">I</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-ideal-cl" data-lessons="2" data-keys="ideal lift coefficient design smooth leading edge">
+        <dt><dfn class="gl-name">Ideal lift coefficient \(c_{l,i}\)</dfn></dt>
+        <dd>The lift coefficient at which the flow meets the leading edge smoothly; \(\pi A_1\) in thin-airfoil theory. About 0.26 for the NACA 2412.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#moment">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-design-cl">Design lift coefficient</a>, <a href="#term-thin-airfoil">Thin-airfoil theory</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-incidence" data-lessons="7" data-keys="incidence wing setting angle fuselage level">
+        <dt><dfn class="gl-name">Incidence \(i_w\)</dfn></dt>
+        <dd>The angle between the root chord and the fuselage axis, set so the fuselage is level in cruise: \(i_w = \alpha_{L0} + C_L/\CLa\). About \(2^\circ\) for light aircraft, \(1^\circ\) for transports.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#incidence">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-lift-slope">Lift-curve slope \(\CLa\)</a>, <a class="gl-mlink" href="#term-zero-lift-angle">Zero-lift angle \(\alpha_{L0}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-k" data-letter="K">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">K</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-korn" data-lessons="3" data-keys="korn equation drag divergence thickness sweep kappa">
+        <dt><dfn class="gl-name">Korn equation</dfn></dt>
+        <dd>\(\MDD = \kappa_A/\cos\Lambda - (t/c)/\cos^2\Lambda - c_l/(10\cos^3\Lambda)\), with \(\kappa_A = 0.87\) for conventional and 0.95 for supercritical airfoils.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-choosing-the-airfoil.html#mdd">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-mdd">Drag-divergence Mach number \(\MDD\)</a>, <a href="#term-supercritical">Supercritical airfoil</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-l" data-letter="L">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">L</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-laminar" data-lessons="1" data-keys="laminar flow airfoil six series NACA 64">
+        <dt><dfn class="gl-name">Laminar-flow airfoil</dfn></dt>
+        <dd>An airfoil (such as the NACA six-series) shaped to keep the boundary layer laminar farther aft, giving a drag bucket near its design lift coefficient.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#families">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-drag-bucket">Drag bucket</a>, <a href="#term-naca4">NACA four-digit airfoil</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-le-radius" data-lessons="1" data-keys="leading edge radius nose bluntness stall">
+        <dt><dfn class="gl-name">Leading-edge radius</dfn></dt>
+        <dd>The radius of the circle that fits the nose of an airfoil; \(1.1019\,t^2c\) for the NACA four-digit family. A sharp nose stalls abruptly.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#parts">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-airfoil">Airfoil</a>, <a href="#term-stall">Stall</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-lift-slope" data-lessons="4" data-keys="lift curve slope helmbold prandtl lifting line CLalpha">
+        <dt><dfn class="gl-name">Lift-curve slope \(\CLa\)</dfn></dt>
+        <dd>The rise of lift coefficient per radian of angle of attack: \(2\pi\) for a thin airfoil, less for a finite wing (Helmbold's formula; Prandtl's lifting line, \(2\pi A/(A + 2)\), agrees only for slender wings), more at high subsonic Mach number, less with sweep.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-aspect-ratio.html#effects">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-aspect-ratio">Aspect ratio \(A\)</a>, <a href="#term-thin-airfoil">Thin-airfoil theory</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-m" data-letter="M">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">M</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-mac" data-lessons="6" data-keys="mean aerodynamic chord MAC reference CG percent">
+        <dt><dfn class="gl-name">Mean aerodynamic chord \(\bar c\)</dfn></dt>
+        <dd>\(\bar c = \tfrac23c_r(1 + \lambda + \lambda^2)/(1 + \lambda)\), at \(\bar y = (b/6)(1 + 2\lambda)/(1 + \lambda)\) from the centerline. The reference length for pitching moments; CG positions are quoted in % MAC.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-taper-and-planform.html#geometry">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-aerodynamic-center">Aerodynamic center</a>, <a class="gl-mlink" href="#term-mgc">Mean geometric chord \(\bar c_g\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-camber-line" data-lessons="1" data-keys="mean camber line midway surfaces">
+        <dt><dfn class="gl-name">Mean camber line</dfn></dt>
+        <dd>The curve halfway between the upper and lower surfaces of an airfoil. Thin-airfoil theory computes lift and moment from it alone.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#parts">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-camber">Camber</a>, <a href="#term-thin-airfoil">Thin-airfoil theory</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-mgc" data-lessons="4" data-keys="mean geometric chord average S/b">
+        <dt><dfn class="gl-name">Mean geometric chord \(\bar c_g\)</dfn></dt>
+        <dd>\(S/b\): the chord of a rectangular wing of the same span and area. Not the same as the mean aerodynamic chord unless the wing is rectangular.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-aspect-ratio.html#reference">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-mac">Mean aerodynamic chord \(\bar c\)</a>, <a class="gl-mlink" href="#term-aspect-ratio">Aspect ratio \(A\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-n" data-letter="N">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">N</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-naca4" data-lessons="1" data-keys="naca four digit 2412 0012 designation">
+        <dt><dfn class="gl-name">NACA four-digit airfoil</dfn></dt>
+        <dd>NACA \(mptt\): maximum camber \(m\)% of the chord at \(p\) tenths of the chord, thickness \(tt\)%, from two camber parabolas and a standard thickness distribution.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#naca4">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-camber">Camber</a>, <a class="gl-mlink" href="#term-thickness-ratio">Thickness ratio \(t/c\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-normal-mach" data-lessons="5" data-keys="normal mach number simple sweep theory cos">
+        <dt><dfn class="gl-name">Normal Mach number \(M_n\)</dfn></dt>
+        <dd>\(M\cos\Lambda\): the Mach number of the flow normal to the sweep, the only part the airfoil of a swept wing feels (simple sweep theory).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-sweep.html#theory">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-sweep">Sweep \(\Lambda\)</a>, <a class="gl-mlink" href="#term-mdd">Drag-divergence Mach number \(\MDD\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-p" data-letter="P">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">P</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-pitch-up" data-lessons="5" data-keys="pitch up tip stall swept wing">
+        <dt><dfn class="gl-name">Pitch-up</dfn></dt>
+        <dd>The nose-up pitch of an aft-swept wing whose tips stall first: they are aft of the center of gravity, so losing their lift raises the nose further.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-sweep.html#costs">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-sweep">Sweep \(\Lambda\)</a>, <a href="#term-twist">Twist and washout</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cm" data-lessons="2" data-keys="pitching moment coefficient cm quarter chord nose down">
+        <dt><dfn class="gl-name">Pitching moment coefficient \(c_{m,c/4}\)</dfn></dt>
+        <dd>The moment about the quarter chord, per \(qc^2\) per unit span. Zero for a symmetric airfoil, negative (nose down) for positive camber; thin-airfoil theory gives \((\pi/4)(A_2 - A_1)\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#moment">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-aerodynamic-center">Aerodynamic center</a>, <a href="#term-thin-airfoil">Thin-airfoil theory</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-r" data-letter="R">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">R</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-reference-wing" data-lessons="4" data-keys="reference wing area trapezoid centerline Sref">
+        <dt><dfn class="gl-name">Reference wing</dfn></dt>
+        <dd>The trapezoid that matches the real wing outboard, extended through the fuselage to the centerline. Its area \(S\) is the one used in every coefficient.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-aspect-ratio.html#reference">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-aspect-ratio">Aspect ratio \(A\)</a>, <a class="gl-mlink" href="#term-mac">Mean aerodynamic chord \(\bar c\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-reynolds" data-lessons="2" data-keys="reynolds number viscosity boundary layer">
+        <dt><dfn class="gl-name">Reynolds number \(Re\)</dfn></dt>
+        <dd>\(\rho Vc/\mu\), the ratio of inertial to viscous forces. It sets the boundary layer, and so the drag and the stall: compare airfoils only at the design's Reynolds number.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#reynolds">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-stall">Stall</a>, <a href="#term-drag-bucket">Drag bucket</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-s" data-letter="S">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">S</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-schrenk" data-lessons="6" data-keys="schrenk approximation span loading tapered wing">
+        <dt><dfn class="gl-name">Schrenk's approximation</dfn></dt>
+        <dd>The span loading of an unswept, untwisted wing taken as the average of its chord distribution and an elliptic one of the same area; \(c_l/C_L = (c + c_e)/(2c)\) shows where it stalls first.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-taper-and-planform.html#taper">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-elliptic">Elliptic span loading</a>, <a class="gl-mlink" href="#term-taper">Taper ratio \(\lambda\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-separation" data-lessons="2" data-keys="separation separated flow reversed flow wake">
+        <dt><dfn class="gl-name">Separation</dfn></dt>
+        <dd>Where the boundary layer runs out of momentum against a rising pressure and leaves the surface; behind it the flow near the wall runs backward. Separation causes the stall, and much of the drag at high lift.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#reynolds">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#stall">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-boundary-layer">Boundary layer</a>, <a href="#term-stall">Stall</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stall" data-lessons="2" data-keys="stall trailing edge leading edge thin airfoil separation">
+        <dt><dfn class="gl-name">Stall</dfn></dt>
+        <dd>The loss of lift when the flow separates at high angle of attack. Thick airfoils stall from the trailing edge (gently), moderate ones from the leading edge (abruptly), thin ones with a long bubble.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#stall">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-le-radius">Leading-edge radius</a>, <a class="gl-mlink" href="#term-thickness-ratio">Thickness ratio \(t/c\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-subsonic-le" data-lessons="5" data-keys="subsonic leading edge mach cone supersonic sweep">
+        <dt><dfn class="gl-name">Subsonic leading edge</dfn></dt>
+        <dd>A leading edge swept behind the Mach cone, \(\Lambda_{LE} > 90^\circ - \arcsin(1/M)\), or \(M\cos\Lambda_{LE} < 1\): the flow normal to it is subsonic, so it can be round.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-sweep.html#supersonic">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-sweep">Sweep \(\Lambda\)</a>, <a class="gl-mlink" href="#term-normal-mach">Normal Mach number \(M_n\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-supercritical" data-lessons="1 3" data-keys="supercritical airfoil flat top aft camber transonic">
+        <dt><dfn class="gl-name">Supercritical airfoil</dfn></dt>
+        <dd>An airfoil with a flat top and aft camber that weakens and delays the shock, so it can be thicker at the same Mach number (\(\kappa_A = 0.95\) in the Korn equation).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#families">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/03-choosing-the-airfoil.html#mdd">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-korn">Korn equation</a>, <a class="gl-mlink" href="#term-mdd">Drag-divergence Mach number \(\MDD\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-sweep" data-lessons="5 6" data-keys="sweep angle swept wing quarter chord leading edge">
+        <dt><dfn class="gl-name">Sweep \(\Lambda\)</dfn></dt>
+        <dd>The angle of a chord line (leading edge, quarter chord, …) behind the spanwise direction. It lowers the normal Mach number, at a cost in lift, stall behavior and weight.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-sweep.html#theory">Lesson 5</a>, <a class="gl-lesson-link" href="../lessons/06-taper-and-planform.html#geometry">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-normal-mach">Normal Mach number \(M_n\)</a>, <a href="#term-pitch-up">Pitch-up</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-t" data-letter="T">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">T</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-t-tail" data-lessons="8" data-keys="T tail arrangement fin rear engines deep stall">
+        <dt><dfn class="gl-name">T-tail</dfn></dt>
+        <dd>A horizontal tail on top of the fin, clear of the wing wake and rear-mounted engines; the fin is heavier, and a deep stall can blanket the tail.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-tail.html#arrangements">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-tail-volume">Tail volume coefficient</a>, <a class="gl-mlink" href="#term-tail-arm">Tail arm \(L\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tail-arm" data-lessons="8" data-keys="tail arm moment arm quarter MAC fuselage length">
+        <dt><dfn class="gl-name">Tail arm \(L\)</dfn></dt>
+        <dd>The distance from the wing's quarter-MAC to the tail's: about 60% of the fuselage length with a nose engine, 50 to 55% with wing engines, 45 to 50% with rear engines.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-tail.html#sizing">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-tail-volume">Tail volume coefficient</a>, <a class="gl-mlink" href="#term-mac">Mean aerodynamic chord \(\bar c\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tail-volume" data-lessons="8" data-keys="tail volume coefficient cHT cVT tail sizing">
+        <dt><dfn class="gl-name">Tail volume coefficient</dfn></dt>
+        <dd>\(c_{HT} = L_{HT}S_{HT}/(\bar c_WS_W)\) and \(c_{VT} = L_{VT}S_{VT}/(b_WS_W)\): the tail's area times its arm, compared with the wing's. Statistics give a first tail size.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-tail.html#sizing">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tail-arm">Tail arm \(L\)</a>, <a href="#term-t-tail">T-tail</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-taper" data-lessons="6" data-keys="taper ratio tip root chord">
+        <dt><dfn class="gl-name">Taper ratio \(\lambda\)</dfn></dt>
+        <dd>\(c_t/c_r\). About 0.45 brings an unswept wing close to elliptic loading; swept wings use 0.2 to 0.35. Too much taper overloads the tips.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-taper-and-planform.html#taper">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-elliptic">Elliptic span loading</a>, <a href="#term-schrenk">Schrenk's approximation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-thickness-ratio" data-lessons="1 3" data-keys="thickness ratio t/c thick thin">
+        <dt><dfn class="gl-name">Thickness ratio \(t/c\)</dfn></dt>
+        <dd>The greatest thickness of an airfoil as a fraction of its chord. Thicker saves structure and holds fuel, but lowers the drag-divergence Mach number.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-airfoil-geometry.html#parts">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/03-choosing-the-airfoil.html#thickness">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-korn">Korn equation</a>, <a href="#term-stall">Stall</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-thin-airfoil" data-lessons="2" data-keys="thin airfoil theory glauert lift slope 2 pi">
+        <dt><dfn class="gl-name">Thin-airfoil theory</dfn></dt>
+        <dd>An inviscid theory of the camber line: \(c_l = 2\pi(\alpha - \alpha_{L0})\), with \(\alpha_{L0}\), \(c_{m,c/4}\) and \(c_{l,i}\) from integrals of the camber slope.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#lift">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-zero-lift-angle">Zero-lift angle \(\alpha_{L0}\)</a>, <a class="gl-mlink" href="#term-cm">Pitching moment coefficient \(c_{m,c/4}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-twist" data-lessons="7" data-keys="twist washout geometric aerodynamic tip">
+        <dt><dfn class="gl-name">Twist and washout</dfn></dt>
+        <dd>Twist sets the sections at different angles along the span; washout (tip lower than root) unloads the tips so the stall starts inboard. Typically 0 to 5 degrees; it suits one lift coefficient best, and costs a little induced drag on a strongly tapered wing.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#twist">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-pitch-up">Pitch-up</a>, <a class="gl-mlink" href="#term-incidence">Incidence \(i_w\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-w" data-letter="W">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">W</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-wing-position" data-lessons="7" data-keys="high wing low wing mid wing position">
+        <dt><dfn class="gl-name">Wing position</dfn></dt>
+        <dd>High wings suit cargo aircraft and ground clearance, low wings airliners (gear and spar under the cabin), mid wings fighters (least interference drag).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#position">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-dihedral-effect">Dihedral effect</a>, <a class="gl-mlink" href="#term-dihedral">Dihedral \(\Gamma\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-winglet" data-lessons="7" data-keys="winglet wingtip induced drag span limit">
+        <dt><dfn class="gl-name">Winglet</dfn></dt>
+        <dd>A near-vertical surface at the wingtip that reduces induced drag much as more span would; used where the span is limited.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-wing-details.html#tips">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-aspect-ratio">Aspect ratio \(A\)</a>, <a href="#term-elliptic">Elliptic span loading</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-z" data-letter="Z">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">Z</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-zero-lift-angle" data-lessons="2" data-keys="zero lift angle alpha L0 camber">
+        <dt><dfn class="gl-name">Zero-lift angle \(\alpha_{L0}\)</dfn></dt>
+        <dd>The angle of attack at which an airfoil gives no lift: negative for positive camber, about \(-1^\circ\) per 1% of camber at 40% of the chord. The airfoil's zero-lift line, through the trailing edge, lies \(|\alpha_{L0}|\) above the chord at the nose.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-airfoil-aerodynamics.html#lift">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-thin-airfoil">Thin-airfoil theory</a>, <a href="#term-camber">Camber</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  </div>
+
+  <section id="symbols" class="gl-symbols">
+    <h2>Symbols at a glance</h2>
+    <p>Met a symbol in a lesson or in another textbook and not sure what it stands for? Find it here, then follow the link to its entry.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Symbols used in this module</caption>
+        <thead>
+          <tr><th scope="col">Symbol</th><th scope="col">Meaning</th><th scope="col">Entry</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">\(c,\ t/c,\ m,\ p\)</th><td>Chord, thickness ratio, camber and its position</td><td><a class="gl-mlink" href="#term-naca4">NACA four-digit airfoil</a></td></tr>
+          <tr><th scope="row">\(\alpha_{L0},\ c_{m,c/4},\ c_{l,i}\)</th><td>Zero-lift angle, moment about the quarter chord, ideal lift coefficient</td><td><a class="gl-mlink" href="#term-thin-airfoil">Thin-airfoil theory</a></td></tr>
+          <tr><th scope="row">\(Re,\ \MDD,\ \kappa_A\)</th><td>Reynolds number, drag-divergence Mach number, Korn airfoil factor</td><td><a class="gl-mlink" href="#term-mdd">Drag-divergence Mach number \(\MDD\)</a></td></tr>
+          <tr><th scope="row">\(S,\ b,\ A,\ \bar c_g\)</th><td>Reference area, span, aspect ratio, mean geometric chord</td><td><a class="gl-mlink" href="#term-aspect-ratio">Aspect ratio \(A\)</a></td></tr>
+          <tr><th scope="row">\(\CLa,\ K,\ e\)</th><td>Lift-curve slope, induced-drag factor, Oswald factor</td><td><a class="gl-mlink" href="#term-lift-slope">Lift-curve slope \(\CLa\)</a></td></tr>
+          <tr><th scope="row">\(\Lambda,\ M_n\)</th><td>Sweep, normal Mach number</td><td><a class="gl-mlink" href="#term-sweep">Sweep \(\Lambda\)</a></td></tr>
+          <tr><th scope="row">\(\lambda,\ c_r,\ c_t\)</th><td>Taper ratio, root and tip chords</td><td><a class="gl-mlink" href="#term-taper">Taper ratio \(\lambda\)</a></td></tr>
+          <tr><th scope="row">\(\bar c,\ \bar y\)</th><td>Mean aerodynamic chord and its distance from the centerline</td><td><a class="gl-mlink" href="#term-mac">Mean aerodynamic chord \(\bar c\)</a></td></tr>
+          <tr><th scope="row">\(i_w,\ \Gamma\)</th><td>Incidence, dihedral</td><td><a class="gl-mlink" href="#term-incidence">Incidence \(i_w\)</a></td></tr>
+          <tr><th scope="row">\(c_{HT},\ c_{VT},\ L\)</th><td>Tail volume coefficients, tail arm</td><td><a class="gl-mlink" href="#term-tail-volume">Tail volume coefficient</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Statistical values are from D. P. Raymer, <em>Aircraft Design: A Conceptual Approach</em>, Chapters 4 and 6; check them against your edition.</p>
+  </section>
+</main>
+
+<script>
+/* Glossary filter: filters as you type (term names and synonyms first; definitions when no name matches),
+   optional "Taught in" lesson filter, A–Z index that greys out empty letters, and links to hidden terms
+   clear the filter first. URL options: ?q=helix and ?lesson=8 pre-fill the filter. */
+CYL.ready(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+  function each(nodes, fn) { Array.prototype.forEach.call(nodes, fn); }
+  var list = $('gl-list'), input = $('gl-filter'), lessonSel = $('gl-lesson'), clearBtn = $('gl-clear'),
+      countEl = $('gl-count'), liveEl = $('gl-live'), emptyEl = $('gl-empty'), emptyMsg = $('gl-empty-msg'),
+      az = $('gl-az'), main = $('main');
+
+  // ---- Text normalization: lower case, Greek letters spelled out, subscripts joined (e_r → er,
+  //      I_z → iz, u_θ → utheta), accents dropped (ê → e), other punctuation → spaces
+  var GREEK = { 'θ': 'theta', 'ϑ': 'theta', 'ρ': 'rho', 'φ': 'phi', 'ϕ': 'phi', 'π': 'pi',
+                'ω': 'omega', 'τ': 'tau', 'δ': 'delta', 'α': 'alpha' };
+  var GREEK_WORDS = ' theta rho phi pi omega tau delta alpha ';
+  var GR = '\u0001', SUB = '\u0002';        // tag query words typed as a Greek letter / with a subscript
+  function fold(s, tag) {
+    s = String(s || '').toLowerCase().replace(/[θϑρφϕπωτδα]/g,
+      function (c) { return ' ' + (tag ? GR : '') + GREEK[c] + ' '; });
+    s = s.replace(/\s*_\s*\{?\s*/g, tag ? SUB : '');
+    if (s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return s;
+  }
+  function norm(s) { return ' ' + fold(s).replace(/[^a-z0-9]+/g, ' ').trim() + ' '; }
+
+  // A query word matches when one of its forms starts a word of the haystack. Forms: the word plus
+  // simple singulars (vectors → vector, axes → axis). A word typed as a Greek letter (π → "pi") or
+  // as a subscripted symbol (a_r → "ar") must match a whole word, so π does not find "pipe" and
+  // a_r does not find "arc".
+  var IRREGULAR = { axes: 'axis', radii: 'radius', tori: 'torus', helices: 'helix', vertices: 'vertex' };
+  function tokensOf(q) {
+    var s = fold(String(q || '').replace(/[\u0001\u0002]/g, ''), true)
+      .replace(/[^a-z0-9\u0001\u0002]+/g, ' ').trim();
+    if (!s) return [];
+    return s.split(' ').map(function (w) {
+      var greek = w.charAt(0) === GR && GREEK_WORDS.indexOf(' ' + w.slice(1) + ' ') >= 0;
+      var sub = /\u0002\u0001?[a-z0-9]/.test(w);      // e_r, u_θ (not a bare "e_" while typing)
+      w = w.replace(/[\u0001\u0002]/g, '');
+      var forms = [w];
+      if (!greek && !sub) {
+        if (IRREGULAR[w]) forms.push(IRREGULAR[w]);
+        if (w.length > 4 && /ies$/.test(w)) forms.push(w.slice(0, -3) + 'y');
+        if (w.length > 4 && /(s|x|z|ch|sh)es$/.test(w)) forms.push(w.slice(0, -2));
+        if (w.length > 3 && /[^isu]s$/.test(w)) forms.push(w.slice(0, -1));
+      }
+      return { forms: forms, whole: greek || sub, greek: greek };
+    }).filter(function (t) { return t.forms[0]; });
+  }
+  function hasToken(hay, t, whole) {
+    for (var i = 0; i < t.forms.length; i++) {
+      if (hay.indexOf(' ' + t.forms[i] + (whole ? ' ' : '')) >= 0) return true;
+    }
+    return false;
+  }
+  // every query word must match. In definitions, one-letter words must be whole words ("I z" must
+  // not match every word that starts with i)
+  function hasAll(hay, tokens, inText) {
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (!hasToken(hay, t, t.whole || (inText && t.forms[0].length === 1))) return false;
+    }
+    return true;
+  }
+  // visible text of rendered math = its MathML text (drop KaTeX's visual HTML and TeX source)
+  function plainText(el) {
+    var c = el.cloneNode(true);
+    each(c.querySelectorAll('.katex-html, annotation'), function (n) { n.parentNode.removeChild(n); });
+    return c.textContent;
+  }
+
+  // ---- Index the entries
+  var groups = [], entries = [];
+  each(list.querySelectorAll('.gl-group'), function (gEl) {
+    var g = { el: gEl, link: az.querySelector('a[data-letter="' + gEl.getAttribute('data-letter') + '"]'), entries: [] };
+    each(gEl.querySelectorAll('.gl-entry'), function (eEl) {
+      var name = eEl.querySelector('.gl-name'), def = eEl.querySelector('dd:not(.gl-see)');
+      var it = {
+        el: eEl, name: name, def: def, nameHTML: name.innerHTML, defHTML: def.innerHTML, marked: null,
+        nameHay: norm(plainText(eEl.querySelector('dt')) + ' ' + (eEl.getAttribute('data-keys') || '')),
+        defHay: norm(plainText(def)),
+        lessons: ' ' + (eEl.getAttribute('data-lessons') || '') + ' '
+      };
+      g.entries.push(it);
+      entries.push(it);
+    });
+    groups.push(g);
+  });
+  var TOTAL = entries.length;
+  function taughtIn(it, n) { return !n || it.lessons.indexOf(' ' + n + ' ') >= 0; }
+
+  // "Taught in" options come from the page registry, so titles always match the lessons
+  CYL.PAGES.forEach(function (p) {
+    if (p.group !== 'lessons' || p.num == null) return;
+    var n = String(p.num);
+    if (!entries.some(function (it) { return taughtIn(it, n); })) return;
+    lessonSel.appendChild(CYL.el('option', { value: n, text: 'Lesson ' + n + ' · ' + p.title }));
+  });
+
+  // ---- Highlight word-start matches in plain text (never inside rendered math; Greek letters are
+  //      only ever in math, so their words are not highlighted)
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function mark(el, tokens, inText) {
+    var alts = [];
+    tokens.forEach(function (t) {
+      if (t.greek) return;
+      var whole = t.whole || (inText && t.forms[0].length === 1);
+      t.forms.forEach(function (f) { alts.push({ f: f, re: escRe(f) + (whole ? '(?![a-z0-9])' : '') }); });
+    });
+    if (!alts.length) return false;
+    alts.sort(function (a, b) { return b.f.length - a.f.length; });
+    var re = new RegExp('(^|[^a-z0-9])(' + alts.map(function (a) { return a.re; }).join('|') + ')', 'gi');
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n, hit = false;
+    while ((n = walker.nextNode())) if (!n.parentNode.closest('.katex')) nodes.push(n);
+    nodes.forEach(function (node) {
+      var text = node.data, m, last = 0, frag = null;
+      re.lastIndex = 0;
+      while ((m = re.exec(text))) {
+        var start = m.index + m[1].length, end = start + m[2].length;
+        frag = frag || document.createDocumentFragment();
+        if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+        frag.appendChild(CYL.el('mark', { class: 'gl-hit', text: text.slice(start, end) }));
+        last = end;
+      }
+      if (frag) {
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+        hit = true;
+      }
+    });
+    return hit;
+  }
+  function unmark(it) {
+    if (it.marked === 'name') it.name.innerHTML = it.nameHTML;
+    else if (it.marked === 'def') it.def.innerHTML = it.defHTML;
+    it.marked = null;
+  }
+
+  // ---- Apply the filter
+  var lastStatus = '';
+  var announce = CYL.debounce(function () { liveEl.textContent = lastStatus; }, 600);
+  function plural(k, word) { return k + ' ' + word + (k === 1 ? '' : 's'); }
+
+  function apply(quiet) {
+    var raw = input.value, tokens = tokensOf(raw), lesson = lessonSel.value;
+    var mode = 'name';
+    var shown = entries.filter(function (it) {
+      return taughtIn(it, lesson) && (!tokens.length || hasAll(it.nameHay, tokens));
+    });
+    if (tokens.length && !shown.length) {           // no term name matches: fall back to the definitions
+      mode = 'def';
+      shown = entries.filter(function (it) { return taughtIn(it, lesson) && hasAll(it.defHay, tokens, true); });
+    }
+    entries.forEach(function (it) {
+      var on = shown.indexOf(it) >= 0;
+      it.el.hidden = !on;
+      unmark(it);
+      if (on && tokens.length) {
+        if (mode === 'name' && mark(it.name, tokens, false)) it.marked = 'name';
+        else if (mode === 'def' && mark(it.def, tokens, true)) it.marked = 'def';
+      }
+    });
+    groups.forEach(function (g) {
+      var vis = g.entries.filter(function (it) { return !it.el.hidden; });
+      g.el.hidden = !vis.length;
+      g.entries.forEach(function (it) { it.el.classList.remove('is-first', 'is-last'); });
+      if (vis.length) {
+        vis[0].el.classList.add('is-first');
+        vis[vis.length - 1].el.classList.add('is-last');
+      }
+      if (g.link) {
+        g.link.classList.toggle('is-off', !vis.length);
+        if (vis.length) { g.link.removeAttribute('aria-disabled'); g.link.removeAttribute('tabindex'); }
+        else { g.link.setAttribute('aria-disabled', 'true'); g.link.setAttribute('tabindex', '-1'); }
+      }
+    });
+
+    var n = shown.length, inL = lesson ? ' in Lesson ' + lesson : '';
+    var quoted = '“' + raw.trim() + '”';
+    var status;
+    if (!tokens.length && !lesson) status = 'Showing all ' + plural(TOTAL, 'term');
+    else if (!n) status = 'No matches';
+    else if (mode === 'def') {
+      status = 'No term names match ' + quoted + inL + ', so showing ' + plural(n, 'term') +
+        (n === 1 ? ' whose definition mentions it' : ' whose definitions mention it');
+    } else if (tokens.length) status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' matching ' + quoted + inL;
+    else status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' taught in Lesson ' + lesson;
+    countEl.textContent = status;
+    emptyEl.hidden = n > 0;
+    if (!n) emptyMsg.textContent = 'No terms match ' + (tokens.length ? quoted : 'this filter') + inL + '.';
+    clearBtn.hidden = !(raw.length || lesson);
+    if (!quiet) { lastStatus = n ? status + '.' : emptyMsg.textContent; announce(); }
+  }
+
+  function reset() { input.value = ''; lessonSel.value = ''; apply(); }
+  function clearAndFocus() { reset(); input.focus(); }
+
+  input.addEventListener('input', function () { apply(); });
+  input.addEventListener('keydown', function (e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') && input.value) {
+      e.preventDefault();
+      e.stopPropagation();
+      input.value = '';
+      apply();
+    }
+  });
+  lessonSel.addEventListener('change', function () { apply(); });
+  clearBtn.addEventListener('click', clearAndFocus);
+  $('gl-empty-clear').addEventListener('click', clearAndFocus);
+
+  // Greyed-out letters do nothing
+  az.addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (a && a.getAttribute('aria-disabled') === 'true') e.preventDefault();
+  });
+
+  // A link to a term the filter is hiding (Related, Symbols) clears the filter before the jump
+  function targetOf(hash) {
+    if (!hash || hash.length < 2) return null;
+    var id = hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+    return document.getElementById(id);
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || az.contains(a)) return;
+    var t = targetOf(a.getAttribute('href'));
+    if (t && list.contains(t) && t.closest('[hidden]')) reset();
+  });
+  window.addEventListener('hashchange', function () {
+    var t = targetOf(location.hash);
+    if (t && list.contains(t) && t.closest('[hidden]')) { reset(); t.scrollIntoView({ block: 'start' }); }
+  });
+
+  // Optional pre-fill from the URL: glossary.html?q=helix or ?lesson=8
+  try {
+    var params = new URLSearchParams(location.search);
+    if (params.get('q')) input.value = params.get('q');
+    var pl = params.get('lesson');
+    if (pl && lessonSel.querySelector('option[value="' + pl.replace(/[^0-9]/g, '') + '"]')) lessonSel.value = pl.replace(/[^0-9]/g, '');
+  } catch (e) { /* old browser: no pre-fill */ }
+  apply(true);
+
+  // Deep link (#term-helix): the shell and the math change the layout after the browser's first jump,
+  // so jump again, instantly (the page otherwise scrolls smoothly)
+  var t0 = targetOf(location.hash);
+  if (t0 && main.contains(t0)) {
+    if (t0.closest('[hidden]')) reset();
+    requestAnimationFrame(function () {
+      var rootStyle = document.documentElement.style, prev = rootStyle.scrollBehavior;
+      rootStyle.scrollBehavior = 'auto';
+      t0.scrollIntoView({ block: 'start' });
+      rootStyle.scrollBehavior = prev;
+    });
+  }
+});
+</script>
+</body>
+</html>

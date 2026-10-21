@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wing Area and Aspect Ratio · Airfoil and Wing Geometry</title>
+<meta name="description" content="The reference wing, span and mean chord; what aspect ratio does to induced drag, L/D, the lift-curve slope and wing weight; and statistical aspect ratios for propeller aircraft, jets and sailplanes, checked against real aircraft.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<style>
+  .t41 td, .t41 th { text-align: right; font-variant-numeric: tabular-nums; }
+  .t41 td:first-child, .t41 th:first-child { text-align: left; }
+  .dual-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dual-charts > div + div { border-left: 1px solid var(--line); }
+  .ctl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 28px; }
+  .ctl-grid > div { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  @container cylmain (max-width: 640px) {
+    .dual-charts, .ctl-grid { grid-template-columns: minmax(0, 1fr); }
+    .dual-charts > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 30 min</p>
+    <h1>Wing Area and Aspect Ratio</h1>
+    <p class="lede">The planform starts with two numbers: how much wing, and how slender. The area is set by the wing loading, which Module 5 chooses from the takeoff, landing and maneuvering requirements. The aspect ratio is chosen here, and it is a trade between aerodynamics, which wants a long slender wing, and structure, which does not.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Define the reference wing, its span, mean chord and aspect ratio.</li>
+      <li>Explain what aspect ratio does to induced drag, \(\LDmax\), the lift-curve slope and the wing weight, and compare Helmbold's and Prandtl's lift-curve slopes.</li>
+      <li>Estimate a first aspect ratio from statistics for propeller aircraft, jets and sailplanes.</li>
+      <li>Judge the statistics against real aircraft, and recognize when a design falls outside them.</li>
+    </ul>
+  </section>
+
+  <section id="reference">
+    <h2>The reference wing</h2>
+    <p>The wing that appears in the equations is not the wing you can see. The <strong>reference wing</strong> is the straight-tapered trapezoid that matches the real wing outboard, extended through the fuselage to the centerline. Its area \(S\) (the \(\Sref\) of Module 3) includes the part hidden inside the fuselage, and its span \(b\) is measured tip to tip. Every coefficient (\(C_L\), \(\CDz\)) and every wing loading uses this area.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Span, mean chord and aspect ratio</p>
+      \[ A = \frac{b^2}{S} = \frac{b}{\bar c_g}, \qquad \bar c_g = \frac{S}{b} \]
+      <p>\(\bar c_g\) is the mean geometric chord: the chord of a rectangular wing with the same span and area. A high aspect ratio wing is long and slender; a low one is short and broad.</p>
+    </div>
+  </section>
+
+  <section id="effects">
+    <h2>What aspect ratio buys and costs</h2>
+    <p>The induced drag of Module 1, \(C_{D_i} = KC_L^2\) with \(K = 1/(\pi Ae)\), falls in inverse proportion to the aspect ratio: a longer span moves the same lift with a weaker downwash. That is the main reason to choose a high aspect ratio, and it shows in \(\LDmax\), which grows as \(\sqrt A\) (Module 3, Lesson 3).</p>
+    <p>The lift-curve slope grows with aspect ratio too, because the tip vortices of a short wing reduce the angle of attack its sections feel:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Wing lift-curve slope (Helmbold, with compressibility and sweep)</p>
+      \[ \CLa = \frac{2\pi A}{2 + \sqrt{4 + \dfrac{A^2\beta^2}{\eta^2}\left(1 + \dfrac{\tan^2\Lambda}{\beta^2}\right)}} \]
+      <p>per radian, with \(\beta^2 = 1 - M^2\), \(\eta \approx 0.95\) (the airfoil's slope as a fraction of \(2\pi/\beta\)) and \(\Lambda\) the sweep of the line of maximum thickness. As \(A \to \infty\) it tends to the airfoil's \(2\pi\); a low aspect ratio wing needs a much higher angle of attack for the same lift.</p>
+    </div>
+    <p>At low speed and without sweep, Helmbold's formula reduces to \(\CLa = 2\pi A/\big(2 + \sqrt{4 + A^2/\eta^2}\big)\). The classical result it improves on is Prandtl's lifting-line theory, which models the wing as a single line of vortices along its span. For an elliptic wing it gives:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Wing lift-curve slope (Prandtl's lifting line, elliptic wing)</p>
+      \[ \CLa = \frac{a_0}{1 + \dfrac{a_0}{\pi A}}, \qquad \CLa = \frac{2\pi A}{A + 2}\ \ \text{for}\ a_0 = 2\pi \]
+      <p>per radian, where \(a_0\) is the airfoil's lift-curve slope. Other planforms lose a little more, which lifting-line theory accounts for with a factor \(1 + \tau\) on the \(a_0/(\pi A)\) term, with \(\tau\) a few percent.</p>
+    </div>
+    <p>A single line of vortices is a good model of a long, slender wing and a poor one of a short, broad wing. With the same airfoil slope \(a_0 = 2\pi\eta\), the two formulas agree within about 4% above \(A = 6\), but at low aspect ratio Prandtl's is too high: about 40% at \(A = 1\), where it tends to \(\pi A\). Helmbold's formula tends instead to \(\pi A/2\), the value from slender-wing theory for very short wings, so it covers the whole range.</p>
+    <p>Figure 4.1 puts these effects on the two curves a designer uses most. On the lift curve, a higher aspect ratio and a higher Mach number steepen the slope, and sweep flattens it. Sweep also lowers the maximum lift, roughly as \(C_{L,\max} \approx 0.9\,c_{l,\max}\cos\Lambda\) for a wing of moderate to high aspect ratio, and a wing with a shallower slope reaches its stall at a higher angle of attack. On the drag polar \(C_D = \CDz + KC_L^2\), a higher aspect ratio or Oswald factor shrinks \(K\) and narrows the parabola, which raises \(\LDmax = 1/(2\sqrt{\CDz K})\) and the lift coefficient \(C_L^{*} = \sqrt{\CDz/K}\) at which it occurs.</p>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz stacked">
+        <div class="viz-stage">
+          <div class="dual-charts"><div id="fig41-lift"></div><div id="fig41-polar"></div></div>
+        </div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> The lift curve (left) and drag polar (right) of a wing (blue), starting from the business jet of Module 3. The gray dashed curves are a reference wing that you can pin to compare against, and the violet dashed line is the airfoil's own lift curve. The straight part of the lift curve comes from Helmbold's formula with \(\alpha_{L0} = -2^\circ\). Its rounded top is schematic: \(C_{L,\max} = 0.9\,c_{l,\max}\cos\Lambda\) with \(c_{l,\max} = 1.6\), lowered further at high subsonic Mach numbers, where shocks separate the flow sooner. Prandtl's slope (orange, with its button) is for low speed and no sweep, so compare it with the wing at \(M = 0\) and \(\Lambda = 0\). The polar runs up to that maximum lift, with the tangent from the origin marking \(\LDmax\) (green). Sweep is taken to be the same along every chord line, as on an untapered wing. The polar does not include the wave drag and loss of Oswald factor that high Mach numbers and sweep add, which a later module estimates.</figcaption>
+    </figure>
+    <p>Against these gains:</p>
+    <ul>
+      <li><strong>Weight.</strong> A longer span carries the same lift farther out, so the root bending moment and the wing weight rise. For the same area and \(t/c\), the chords are also shallower.</li>
+      <li><strong>Fuel volume.</strong> Slender chords hold less fuel for the same area.</li>
+      <li><strong>Handling.</strong> A long span damps roll: fighters and aerobatic aircraft prefer short spans.</li>
+      <li><strong>Span limits.</strong> Airport gates and taxiways (the ICAO codes of Module 2) cap the span of airliners.</li>
+      <li><strong>Supersonic flight.</strong> Above Mach 1 the wing's wave drag, not its induced drag, dominates, and a short, thin, highly swept wing is better.</li>
+    </ul>
+    <div class="example">
+      <p class="example-title">Example 4.1 — The business jet's wing</p>
+      <p>The business jet has \(S = 28\ \text{m}^2\) and \(A = 8\) (Module 3), with \(e = 0.75\). Find its span, mean geometric chord and induced-drag factor, and its lift-curve slope at low speed (unswept, \(\eta = 0.95\)) and in cruise at Mach 0.80 with \(22^\circ\) of sweep at mid-chord.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ b = \sqrt{AS} = \sqrt{8(28)} = 14.97\ \text{m}, \qquad \bar c_g = \frac{28}{14.97} = 1.871\ \text{m} \]
+          \[ K = \frac{1}{\pi(8)(0.75)} = 0.0531 \]
+          \[ \CLa = \frac{2\pi(8)}{2 + \sqrt{4 + 64/0.9025}} = \frac{50.27}{2 + 8.656} = 4.72\ \text{per rad} \]
+          <p>In cruise, \(\beta^2 = 0.36\) and \(\tan^2 22^\circ = 0.1632\):</p>
+          \[ \CLa = \frac{50.27}{2 + \sqrt{4 + \dfrac{64(0.36)}{0.9025}(1.453)}} = \frac{50.27}{2 + 6.41} = 5.98\ \text{per rad} \]
+          <p>At low speed the wing reaches 75% of the airfoil's \(2\pi\). Compressibility raises the slope in cruise, and sweep takes some of it back.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="statistics">
+    <h2>Statistics for a first choice</h2>
+    <p>As with the empty weight, history gives a starting point. For propeller aircraft the aspect ratio depends mostly on the class; for jets it falls with the maximum Mach number, because faster aircraft need shorter, thinner, more swept wings:</p>
+    <div class="table-wrap">
+      <table class="data t41">
+        <caption>Statistical aspect ratios (source: Raymer, Table 4.1; check the values against the edition you use)</caption>
+        <thead><tr><th scope="col">Propeller aircraft</th><th scope="col">\(A\)</th></tr></thead>
+        <tbody id="t41-prop"></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data t41">
+        <caption>Jets: \(A = a\,M_{\max}^{\,C}\)</caption>
+        <thead><tr><th scope="col">Jet aircraft</th><th scope="col">\(a\)</th><th scope="col">\(C\)</th><th scope="col">\(A\) at \(M_{\max} = 0.9\)</th><th scope="col">at 2.0</th></tr></thead>
+        <tbody id="t41-jet"></tbody>
+      </table>
+    </div>
+    <p>Sailplanes are a class of their own: their whole design is a search for \(L/D\), and their aspect ratio follows from the \(L/D\) they aim for, \(A \approx 0.19\,\LDmax^{1.3}\). A 40:1 sailplane needs an aspect ratio of about 23.</p>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> Aspect ratio against Mach number for the jets in Module 1's data (points, from Loftin's NASA survey) and the statistical trends (lines). Hover over a point to name the aircraft. The transports cluster tightly around 7.5; the fighters scatter widely, and the two variable-sweep fighters, listed at their unswept span, sit far above every trend.</figcaption>
+    </figure>
+    <p>The statistics describe what has been built, not what must be. A new design should start near them and depart only for a reason: today's airliners, with composite wings and folding tips, have aspect ratios of 9 to 11, well above the 7.5 of the 1960s to 1980s transports in the data.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>The reference wing extends through the fuselage to the centerline; \(A = b^2/S\), \(\bar c_g = S/b\).</li>
+      <li>Higher \(A\): less induced drag, \(\LDmax \propto \sqrt A\), a steeper lift curve; but a heavier wing, less fuel volume and slower roll.</li>
+      <li>Helmbold's \(\CLa\) covers every aspect ratio; Prandtl's lifting line, \(2\pi A/(A + 2)\), agrees above \(A \approx 6\) but is too high for short wings.</li>
+      <li>Statistics: propeller aircraft 6 to 9; jets \(A = aM_{\max}^C\) (transports about 7.5); sailplanes \(0.19\,\LDmax^{1.3}\).</li>
+      <li>Next, <a href="05-sweep.html">Lesson 5</a> adds sweep, the jet's answer to the speed of sound.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Table 4.1 (from WING.ARP and WING.ARJ) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tp = document.getElementById('t41-prop'), tj = document.getElementById('t41-jet');
+  WING.ARP.forEach(function (c) { tp.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { text: c.A.toFixed(1) })])); });
+  WING.ARJ.forEach(function (c) {
+    tj.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { text: c.a.toFixed(3) }), CYL.el('td', { text: c.C.toFixed(3).replace('-', '\u2212') }),
+      CYL.el('td', { text: CYL.fmt(WING.arJet(c.id, 0.9), 3) }), CYL.el('td', { text: CYL.fmt(WING.arJet(c.id, 2.0), 3) })]));
+  });
+});
+
+/* ---------- Figure 4.1: lift curve and drag polar ---------- */
+CYL.ready(function () {
+  'use strict';
+  var D = Math.PI / 180, ETA = 0.95, AL0 = -2, CLMAX2D = 1.6;
+  var BASE = { A: 8, L: 0, M: 0, e: 0.75, cd0: 0.0165 };            // the business jet of Module 3, at low speed
+  var st = Object.assign({}, BASE), ref = Object.assign({}, BASE), showP = false;
+  // a lift curve: straight at slope r (per degree) from aL0, rounding over to clmax over the top fraction w, then falling
+  function curve(r, aL0, clmax, w) {
+    var a1 = aL0 + (1 - w) * clmax / r, k = r * r / (4 * w * clmax), ap = a1 + r / (2 * k);
+    var f = function (a) {
+      if (a <= a1) return r * (a - aL0);
+      if (a <= ap) return (1 - w) * clmax + r * (a - a1) - k * (a - a1) * (a - a1);
+      var d = a - ap, lo = 0.62 * clmax; return lo + (clmax - lo) * Math.exp(-0.6 * k * d * d / (clmax - lo));   // eases down to lo
+    };
+    f.astall = ap; f.clmax = clmax;
+    return f;
+  }
+  function wing(p) {
+    var cla = WING.cla(p.A, p.M, p.L, ETA), kM = p.M <= 0.2 ? 1 : 1 - 1.3 * (p.M - 0.2) * (p.M - 0.2);
+    var clmax = 0.9 * CLMAX2D * Math.cos(p.L * D) * kM, K = 1 / (Math.PI * p.A * p.e);
+    return { cla: cla, K: K, lift: curve(cla * D, AL0, clmax, 0.15 + 0.15 * Math.sin(p.L * D)), clmax: clmax,
+      ld: 1 / (2 * Math.sqrt(p.cd0 * K)), cls: Math.sqrt(p.cd0 / K), cd0: p.cd0 };
+  }
+  function polarPts(w) { var out = []; for (var i = 0; i <= 80; i++) { var cl = -0.4 + (w.clmax + 0.4) * i / 80; out.push([w.cd0 + w.K * cl * cl, cl]); } return out; }
+  var air = curve(2 * Math.PI * ETA * D, AL0, CLMAX2D, 0.12);
+  var lift = AERO.chart(document.getElementById('fig41-lift'), {
+    x: { label: 'Angle of attack \\(\\alpha\\) (degrees)', min: -6, max: 36 }, y: { label: 'Lift coefficient \\(C_L\\)', min: -0.4, max: 1.8 }, height: 320,
+    ariaLabel: 'Lift curves of a wing, a reference wing and the airfoil.'
+  });
+  var polar = AERO.chart(document.getElementById('fig41-polar'), {
+    x: { label: 'Drag coefficient \\(C_D\\)', min: 0, max: 0.15, ticks: [0, 0.05, 0.1, 0.15] }, y: { label: 'Lift coefficient \\(C_L\\)', min: -0.4, max: 1.8 }, height: 320,
+    ariaLabel: 'Drag polars of a wing and a reference wing.',
+    legend: [{ label: 'Wing', color: 'z', line: true }, { label: 'Reference', color: 'muted', line: true, dashed: true }, { label: '\\(\\LDmax\\)', color: 'good', line: true }]
+  });
+  lift.hline(0, { color: 'faint', dashed: false });
+  lift.fn(air, { color: 't', width: 1.6, dashed: true, samples: 300 });
+  var refL = lift.fn(function (a) { return 0; }, { color: 'muted', width: 1.8, dashed: true, samples: 300 });
+  var pr = lift.fn(function (a) { return 0; }, { color: 'r', width: 1.8, dashed: true });
+  var curL = lift.fn(function (a) { return 0; }, { color: 'z', width: 2.8, samples: 300 });
+  var peak = lift.marker([0, 0], { color: 'z', r: 5, ring: false });
+  var refP = polar.polyline([], { color: 'muted', width: 1.8, dashed: true });
+  var tan = polar.polyline([], { color: 'good', width: 1.6 });
+  var curP = polar.polyline([], { color: 'z', width: 2.8 });
+  var best = polar.marker([0, 0], { color: 'good', r: 5, ring: false });
+  function legend() {
+    lift.setLegend([{ label: 'Wing', color: 'z', line: true }, { label: 'Reference', color: 'muted', line: true, dashed: true }, { label: 'Airfoil', color: 't', line: true, dashed: true }]
+      .concat(showP ? [{ label: 'Prandtl slope', color: 'r', line: true, dashed: true }] : []));
+  }
+  // controls
+  var panel = document.getElementById('fig41-controls');
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Wings to try' }), chips = [];
+  [['Example 4.1, low speed', { A: 8, L: 0, M: 0 }], ['Example 4.1, cruise', { A: 8, L: 22, M: 0.8 }]].forEach(function (q) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q[0] });
+    b.addEventListener('click', function () { Object.assign(st, q[1]); sync(); draw(); });
+    chips.push([b, q[1]]); row.appendChild(b);
+  });
+  var tP = CYL.toggle({ label: 'Prandtl\'s slope', onChange: function (v) { showP = v; legend(); draw(); } });
+  row.appendChild(tP.el);
+  var pin = CYL.button('Pin as the reference', function () { ref = Object.assign({}, st); draw(); }, { small: true });
+  var sA = CYL.slider({ label: 'Aspect ratio \\(A\\)', min: 3, max: 20, step: 0.5, value: st.A, color: 'accent', onInput: function (v) { st.A = v; draw(); } });
+  var sL = CYL.slider({ label: 'Sweep \\(\\Lambda\\)', min: 0, max: 45, step: 1, value: st.L, unit: '°', color: 'z', onInput: function (v) { st.L = v; draw(); } });
+  var sM = CYL.slider({ label: 'Mach number \\(M\\)', min: 0, max: 0.8, step: 0.05, value: st.M, color: 'z', onInput: function (v) { st.M = v; draw(); } });
+  var sE = CYL.slider({ label: 'Oswald factor \\(e\\)', min: 0.6, max: 1, step: 0.01, value: st.e, color: 'good', onInput: function (v) { st.e = v; draw(); } });
+  var sC = CYL.slider({ label: 'Zero-lift drag \\(\\CDz\\)', min: 0.01, max: 0.04, step: 0.0005, value: st.cd0, color: 'good', onInput: function (v) { st.cd0 = v; draw(); } });
+  function sync() { sA.set(st.A, true); sL.set(st.L, true); sM.set(st.M, true); sE.set(st.e, true); sC.set(st.cd0, true); }
+  var ro = { cla: CYL.readout('\\(\\CLa\\)'), cm: CYL.readout('\\(C_{L,\\max}\\) and stall angle'), K: CYL.readout('\\(K = 1/(\\pi Ae)\\)'), ld: CYL.readout('\\(\\LDmax\\) at \\(C_L^{*}\\)') };
+  var colL = CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Lift curve' }), sA.el, sL.el, sM.el]);
+  var colR = CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Drag polar' }), sE.el, sC.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.cla.el, ro.cm.el, ro.K.el, ro.ld.el])]);
+  panel.appendChild(row);
+  panel.appendChild(CYL.el('div', { class: 'ctl-grid' }, [colL, colR]));
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [pin]));
+  CYL.renderMath(panel);
+  function draw() {
+    var w = wing(st), r = wing(ref), rp = 2 * Math.PI * ETA / (1 + 2 * Math.PI * ETA / (Math.PI * st.A)) * D;
+    curL.setFn(w.lift); refL.setFn(r.lift);
+    pr.setFn(function (a) { return rp * (a - AL0); }); pr.setVisible(showP);
+    peak.set([w.lift.astall, w.clmax]);
+    curP.set(polarPts(w)); refP.set(polarPts(r));
+    var cdS = 2 * w.cd0, show = w.cls <= w.clmax;
+    tan.set([[0, 0], [1.35 * cdS, 1.35 * w.cls]]); best.set([cdS, w.cls]); tan.setVisible(show); best.setVisible(show);
+    ro.cla.set(CYL.fmt(w.cla, 3) + ' per rad');
+    ro.cm.set(CYL.fmt(w.clmax, 3) + ' at ' + CYL.fmt(w.lift.astall, 3) + '°');
+    ro.K.set(CYL.fmt(w.K, 3));
+    ro.ld.set(CYL.fmt(w.ld, 3) + ' at ' + CYL.fmt(w.cls, 3));
+    chips.forEach(function (c) { c[0].setAttribute('aria-pressed', String(c[1].A === st.A && c[1].L === st.L && c[1].M === st.M)); });
+    lift.setAriaLabel('Lift curve of a wing with aspect ratio ' + st.A + ', ' + st.L + ' degrees of sweep, at Mach ' + st.M + ': slope ' + CYL.fmt(w.cla, 3) + ' per radian, maximum lift coefficient ' + CYL.fmt(w.clmax, 3) + ' at ' + CYL.fmt(w.lift.astall, 3) + ' degrees.');
+    polar.setAriaLabel('Drag polar with zero-lift drag ' + st.cd0 + ' and K ' + CYL.fmt(w.K, 3) + ': maximum lift-to-drag ratio ' + CYL.fmt(w.ld, 3) + ' at a lift coefficient of ' + CYL.fmt(w.cls, 3) + '.');
+  }
+  legend();
+  draw();
+});
+
+/* ---------- Figure 4.2: aspect ratio against Mach number ---------- */
+CYL.ready(function () {
+  'use strict';
+  var SETS = {
+    fighter: { label: 'Jet fighters (maximum Mach)', pts: AERO.DATA.filter(function (d) { return d.era === 'jetfighter' && d.Mmax && d.A; }), x: function (d) { return d.Mmax; }, xr: [0.4, 2.8], xl: 'Maximum Mach number \\(M_{\\max}\\)' },
+    jt: { label: 'Jet transports (cruise Mach)', pts: AERO.DATA.filter(function (d) { return d.era === 'jettransport' && d.Mc && d.A; }), x: function (d) { return d.Mc; }, xr: [0.6, 1.0], xl: 'Cruise Mach number' }
+  };
+  var st = { k: 'fighter' };
+  var chart = AERO.chart(document.getElementById('fig42-stage'), {
+    x: { label: SETS.fighter.xl, min: 0.4, max: 2.8 }, y: { label: 'Aspect ratio \\(A\\)', min: 0, max: 10 }, height: 330,
+    ariaLabel: 'Aspect ratio against Mach number for jets, with statistical trends.',
+    legend: [{ label: 'Fighter (dogfighter)', color: 'z', line: true }, { label: 'Fighter (other)', color: 'z', line: true, dashed: true }, { label: 'Jet trainer', color: 'good', line: true }, { label: 'Jet transport', color: 'warn', line: true }, { label: 'Real aircraft', color: 't' }]
+  });
+  chart.fn(function (M) { return WING.arJet('dogfighter', M); }, { color: 'z', width: 2.4 });
+  chart.fn(function (M) { return WING.arJet('fighter', M); }, { color: 'z', width: 1.8, dashed: true });
+  chart.fn(function (M) { return WING.arJet('trainer', M); }, { color: 'good', width: 2, domain: [0.4, 1.0] });
+  chart.fn(function (M) { return WING.arJet('jt', M); }, { color: 'warn', width: 2.4, domain: [0.6, 1.0] });
+  var pts = chart.points([], { x: function (d) { return SETS[st.k].x(d); }, y: function (d) { return d.A; }, color: 't', r: 4.5,
+    title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + '</span><br>\\(A\\) = ' + d.A + ', Mach ' + SETS[st.k].x(d) + (d.sweep ? ', ' + d.sweep + '° sweep' : ''); } });
+  var panel = document.getElementById('fig42-controls');
+  var sel = CYL.select({ label: 'Aircraft', value: st.k, options: Object.keys(SETS).map(function (k) { return { value: k, label: SETS[k].label }; }), onChange: function (v) { st.k = v; draw(); } });
+  var ro = { n: CYL.readout('Aircraft'), m: CYL.readout('Average \\(A\\)'), r: CYL.readout('Range') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Data' }));
+  panel.appendChild(sel.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.n.el, ro.m.el, ro.r.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var s = SETS[st.k];
+    chart.setAxes({ x: { label: s.xl, min: s.xr[0], max: s.xr[1] } });
+    pts.set(s.pts);
+    var a = s.pts.map(function (d) { return d.A; }), mean = a.reduce(function (p, q) { return p + q; }, 0) / a.length;
+    ro.n.set(String(a.length)); ro.m.set(CYL.fmt(mean, 3)); ro.r.set(Math.min.apply(null, a) + ' to ' + Math.max.apply(null, a));
+    chart.setAriaLabel(s.label + ': ' + a.length + ' aircraft with an average aspect ratio of ' + CYL.fmt(mean, 3) + ', against the statistical trends.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'A twin turboprop has a reference area of \\(54\\ \\text{m}^2\\) and the statistical aspect ratio for its class, 9.2. What is its span?',
+    label: '\\(b =\\)', answer: Math.sqrt(9.2 * 54), unit: 'm',
+    hints: ['\\(A = b^2/S\\), so \\(b = \\sqrt{AS}\\).', '\\(\\sqrt{9.2(54)} = \\sqrt{496.8}\\).'],
+    explain: 'About 22 m: the span of a 40 to 50 seat regional turboprop.',
+    solution: '\\[ b = \\sqrt{9.2(54)} = 22.29\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'Use the jet-trainer statistic, \\(A = 4.737\\,M_{\\max}^{-0.979}\\), for a trainer with a maximum Mach number of 0.80.',
+    label: '\\(A =\\)', answer: WING.arJet('trainer', 0.8),
+    hints: ['\\(0.8^{-0.979} = 1/0.8^{0.979}\\).', 'Type 4.737*0.8^(-0.979).'],
+    explain: 'About 5.9: slower trainers get the longer, more efficient wing.',
+    solution: '\\[ A = 4.737(0.80)^{-0.979} = 4.737(1.244) = 5.89 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'mc',
+    prompt: 'A designer raises the aspect ratio of a transport wing from 8 to 10 at the same area and thickness ratio. Which pair of effects should they expect?',
+    choices: [
+      { html: 'Lower induced drag and a lighter wing', feedback: 'The longer span carries the lift farther out: the wing gets heavier, not lighter.' },
+      { html: 'Lower induced drag and a heavier wing that holds less fuel', correct: true, feedback: 'Yes: the aerodynamic gain is paid for in structure and volume.' },
+      { html: 'Higher induced drag and a lighter wing', feedback: 'Induced drag falls with aspect ratio.' },
+      { html: 'No change in drag, since the area is the same', feedback: 'Induced drag depends on the span, through \\(A\\), not on the area alone.' }
+    ],
+    explain: 'The best aspect ratio balances \\(L/D\\) against wing weight; Module 12 does it with a trade study.'
+  });
+});
+</script>
+</body>
+</html>
