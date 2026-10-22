@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Force, Mass and Acceleration</title>
+<meta name="description" content="Twelve problems on force, mass and acceleration to print and work by hand, from an elevator cable and a crate on a truck bed to pulleys, a skydiver, banked curves and a car and trailer on a grade, with space for your working and final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg .t-warn { fill: var(--c-warn); }
+.ws-svg .t-good { fill: var(--c-good); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+.ws-svg .f-warn { fill: var(--c-warn); }
+.ws-svg .s-warn { stroke: var(--c-warn); stroke-width: 2.4; fill: none; }
+.ws-svg .s-good { stroke: var(--c-good); stroke-width: 2.2; fill: none; }
+.ws-svg .f-good { fill: var(--c-good); }
+.ws-svg .s-bad { stroke: var(--c-bad); stroke-width: 2.2; fill: none; }
+.ws-svg .f-bad { fill: var(--c-bad); }
+.ws-svg .t-bad { fill: var(--c-bad); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from an elevator cable and a crate on a truck bed to a skydiver, a banked curve and a car towing a trailer up a grade. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Force, Mass and Acceleration · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Unless a problem says otherwise: \(g = 9.81\ \text{m/s}^2\), bodies are treated as particles, cords and pulleys are light, answers to 4 significant figures with units. Start each problem with a free-body diagram and a kinetic diagram. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A is Newton's second law, free-body diagrams and friction, Part B is cords, pulleys and forces that vary, and Part C is curved paths and systems of particles. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>Unless a problem says otherwise: \(g = 9.81\ \text{m/s}^2\); bodies are treated as particles; cords are light and inextensible and pulleys light and smooth; choose a positive direction for each axis, and find every normal force from its own equation. Give answers to 4 significant figures with units. The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Newton's second law, diagrams and friction</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 1–3</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Cords, pulleys and forces that vary</h2>
+    <p class="ws-part-sub">Problems 5–8 · Intermediate to challenge · Lessons 4–5</p>
+    <div class="ws-list" data-from="5" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Curved paths and systems of particles</h2>
+    <p class="ws-part-sub">Problems 9–12 · Basic to challenge · Lessons 6–8</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+<template id="ws-fig-incline"><svg class="ws-svg" viewBox="0 0 260 176" role="img" aria-label="A 4 kilogram block on a rough slope inclined at 30 degrees, sent up the slope at 8 meters per second. The coefficients of friction are 0.4 static and 0.3 kinetic.">
+<path d="M22 150 L242 150 L242 23 Z" class="s-ink f-part"/><path d="M59.2 128.5 L92.1 109.5 L80.1 88.7 L47.2 107.7 Z" class="s-ink f-face"/><text x="69.7" y="113.6" class="m" text-anchor="middle">A</text><line x1="60.2" y1="84.1" x2="93.1" y2="65.1" class="s-good"/><path d="M98.3 62.1 L93 69 L89.6 63.1 Z" class="f-good"/><text x="104.3" y="56.1" class="lbl" text-anchor="start"><tspan class="mb t-good">v</tspan><tspan class="sub">0</tspan> = 8 m/s</text><path d="M56 150 L56 148.5 L55.9 147 L55.7 145.6 L55.5 144.1 L55.2 142.6 L54.8 141.2 L54.4 139.8 L53.9 138.4 L53.4 137 L52.8 135.6 L52.2 134.3 L51.4 133" class="s-thin"/><text x="68" y="144" class="lbl" text-anchor="start">30°</text><text x="43.7" y="86.6" class="lbl" text-anchor="end">4 kg</text><text x="236" y="166" class="lbl" text-anchor="end"><tspan class="m">μ</tspan><tspan class="sub" dy="3">s</tspan><tspan dy="-3"> = 0.4, </tspan><tspan class="m">μ</tspan><tspan class="sub" dy="3">k</tspan><tspan dy="-3"> = 0.3</tspan></text>
+</svg></template>
+<template id="ws-fig-pull"><svg class="ws-svg" viewBox="0 0 260 152" role="img" aria-label="A 30 kilogram crate on a level floor with kinetic friction coefficient 0.35, pulled by a rope with a tension of 150 newtons at an angle alpha above the horizontal.">
+<line x1="14" y1="120" x2="246" y2="120" class="s-ink" style="stroke-width: 2"/><line x1="14" y1="120" x2="9.4" y2="113" class="s-faint"/><line x1="23" y1="120" x2="18.4" y2="113" class="s-faint"/><line x1="32" y1="120" x2="27.4" y2="113" class="s-faint"/><line x1="41" y1="120" x2="36.5" y2="113" class="s-faint"/><line x1="50" y1="120" x2="45.5" y2="113" class="s-faint"/><line x1="59" y1="120" x2="54.5" y2="113" class="s-faint"/><line x1="68" y1="120" x2="63.5" y2="113" class="s-faint"/><line x1="77" y1="120" x2="72.5" y2="113" class="s-faint"/><line x1="86" y1="120" x2="81.5" y2="113" class="s-faint"/><line x1="95" y1="120" x2="90.5" y2="113" class="s-faint"/><line x1="104" y1="120" x2="99.5" y2="113" class="s-faint"/><line x1="113" y1="120" x2="108.5" y2="113" class="s-faint"/><line x1="122" y1="120" x2="117.5" y2="113" class="s-faint"/><line x1="131" y1="120" x2="126.5" y2="113" class="s-faint"/><line x1="140" y1="120" x2="135.4" y2="113" class="s-faint"/><line x1="149" y1="120" x2="144.4" y2="113" class="s-faint"/><line x1="158" y1="120" x2="153.4" y2="113" class="s-faint"/><line x1="167" y1="120" x2="162.4" y2="113" class="s-faint"/><line x1="176" y1="120" x2="171.4" y2="113" class="s-faint"/><line x1="185" y1="120" x2="180.4" y2="113" class="s-faint"/><line x1="194" y1="120" x2="189.4" y2="113" class="s-faint"/><line x1="203" y1="120" x2="198.4" y2="113" class="s-faint"/><line x1="212" y1="120" x2="207.4" y2="113" class="s-faint"/><line x1="221" y1="120" x2="216.4" y2="113" class="s-faint"/><line x1="230" y1="120" x2="225.4" y2="113" class="s-faint"/><line x1="239" y1="120" x2="234.4" y2="113" class="s-faint"/><path d="M57 120 L127 120 L127 76 L57 76 Z" class="s-ink f-face"/><text x="92" y="104" class="m" text-anchor="middle">A</text><line x1="127" y1="98" x2="235.8" y2="47.3" class="s-ink"/><line x1="127" y1="98" x2="197" y2="98" class="s-faint dash"/><path d="M167 98 L167 96.5 L166.9 95.1 L166.8 93.6 L166.6 92.2 L166.3 90.8 L166.1 89.3 L165.7 87.9 L165.3 86.5 L164.9 85.1 L164.4 83.8 L163.8 82.4 L163.3 81.1" class="s-thin"/><text x="181" y="92" class="lbl" text-anchor="middle"><tspan class="m">α</tspan></text><text x="231.8" y="39.3" class="lbl" text-anchor="end"><tspan class="m">T</tspan> = 150 N</text><text x="92" y="146" class="lbl" text-anchor="middle">30 kg</text><text x="162" y="146" class="lbl" text-anchor="start"><tspan class="m">μ</tspan><tspan class="sub" dy="3">k</tspan><tspan dy="-3"> = 0.35</tspan></text>
+</svg></template>
+<template id="ws-fig-pulley"><svg class="ws-svg" viewBox="0 0 260 200" role="img" aria-label="Block A, 12 kilograms, on a level table with kinetic friction coefficient 0.15, is tied by a cord over a light pulley at the table edge, held by a bracket, to block B, 5 kilograms, which hangs below the pulley.">
+<path d="M20 60 L188 60 L188 186 L176 186 L176 70.5 L20 70.5 Z" class="s-ink f-part"/><path d="M63.5 60 L114.5 60 L114.5 27 L63.5 27 Z" class="s-ink f-face"/><text x="89" y="47.4" class="m" text-anchor="middle">A</text><path d="M188 60 L188 50 L192.5 43.5 L194 46 Z" class="s-ink f-face"/><circle cx="192.5" cy="43.5" r="12" class="s-ink f-bg"/><circle cx="192.5" cy="43.5" r="2.2" class="f-ink"/><line x1="188" y1="60" x2="192.5" y2="43.5" class="s-thin"/><line x1="114.5" y1="31.5" x2="192.5" y2="31.5" class="s-ink"/><line x1="204.5" y1="43.5" x2="204.5" y2="120" class="s-ink"/><path d="M189.5 153 L219.5 153 L219.5 120 L189.5 120 Z" class="s-ink f-face"/><text x="204.5" y="140.4" class="m" text-anchor="middle">B</text><text x="89" y="15" class="lbl" text-anchor="middle">12 kg</text><text x="225.5" y="135" class="lbl" text-anchor="start">5 kg</text><text x="41" y="88.5" class="lbl" text-anchor="start"><tspan class="m">μ</tspan><tspan class="sub" dy="3">k</tspan><tspan dy="-3"> = 0.15</tspan></text>
+</svg></template>
+<template id="ws-fig-movable"><svg class="ws-svg" viewBox="0 0 260 200" role="img" aria-label="Block A, 8 kilograms, on a smooth table, is tied to a cord that runs over a fixed pulley on a bracket at the table edge, down and around a movable pulley that carries block B, 12 kilograms, and up to a fixed support. Position coordinates s A and s B are measured from the fixed pulley.">
+<path d="M14 70 L150 70 L150 190 L138 190 L138 80 L14 80 Z" class="s-ink f-part"/><path d="M38 70 L92 70 L92 40 L38 40 Z" class="s-ink f-face"/><text x="65" y="60" class="m" text-anchor="middle">A</text><path d="M150 70 L150 60 L159 57 L156 61 Z" class="s-ink f-face"/><circle cx="158" cy="58" r="10" class="s-ink f-bg"/><circle cx="158" cy="58" r="2" class="f-ink"/><line x1="92" y1="48" x2="158" y2="48" class="s-ink"/><line x1="168" y1="58" x2="168" y2="132" class="s-ink"/><line x1="188" y1="132" x2="188" y2="22" class="s-ink"/><line x1="174" y1="22" x2="210" y2="22" class="s-ink" style="stroke-width: 2.4"/><line x1="176" y1="22" x2="180" y2="15" class="s-faint"/><line x1="182" y1="22" x2="186" y2="15" class="s-faint"/><line x1="188" y1="22" x2="192" y2="15" class="s-faint"/><line x1="194" y1="22" x2="198" y2="15" class="s-faint"/><line x1="200" y1="22" x2="204" y2="15" class="s-faint"/><circle cx="178" cy="132" r="10" class="s-ink f-bg"/><circle cx="178" cy="132" r="2" class="f-ink"/><line x1="178" y1="132" x2="178" y2="148" class="s-ink"/><path d="M163 148 L193 148 L193 176 L163 176 Z" class="s-ink f-face"/><text x="178" y="167" class="m" text-anchor="middle">B</text><text x="65" y="30" class="lbl" text-anchor="middle">8 kg</text><text x="200" y="166" class="lbl" text-anchor="start">12 kg</text><line x1="158" y1="58" x2="158" y2="96" class="s-faint dash"/><line x1="92" y1="92" x2="158" y2="92" class="s-thin"/><text x="125" y="106" class="lbl" text-anchor="middle"><tspan class="m">s</tspan><tspan class="sub" dy="3">A</tspan></text><line x1="210" y1="58" x2="210" y2="132" class="s-thin"/><line x1="204" y1="58" x2="216" y2="58" class="s-faint dash"/><text x="216" y="100" class="lbl" text-anchor="start"><tspan class="m">s</tspan><tspan class="sub" dy="3">B</tspan></text><text x="40" y="100" class="lbl" text-anchor="start">smooth</text>
+</svg></template>
+<template id="ws-fig-banked"><svg class="ws-svg" viewBox="0 0 260 172" role="img" aria-label="Rear view of a car on a curve banked at 10 degrees. The center of the curve, at radius 200 meters, is to the left. The coefficient of static friction is 0.25.">
+<path d="M24 128 L232.8 91.2 L232.8 142 L24 142 Z" class="s-ink f-part"/><line x1="24" y1="128" x2="104" y2="128" class="s-faint dash"/><path d="M80 128 L80 127.2 L80 126.4 L79.9 125.6 L79.9 124.7 L79.9 123.9 L79.8 123.1 L79.7 122.3 L79.6 121.5 L79.5 120.7 L79.4 119.9 L79.3 119.1 L79.1 118.3" class="s-thin"/><text x="96" y="126" class="lbl" text-anchor="start">10°</text><path d="M110.4 105.7 L171.5 94.9 L166.3 65.3 L105.2 76.1 Z" class="s-ink f-face"/><path d="M118 111.4 L128.9 109.5 L127.8 103.6 L117 105.5 Z" class="s-ink f-ink"/><path d="M155.5 104.8 L166.3 102.9 L165.3 97 L154.4 98.9 Z" class="s-ink f-ink"/><line x1="70" y1="40" x2="29" y2="40" class="s-axis"/><path d="M24 40 L31 37 L31 43 Z" class="f-axis"/><text x="78" y="44" class="lbl" text-anchor="start">toward the center <tspan class="m">O</tspan>, <tspan class="m">ρ</tspan> = 200 m</text><text x="236" y="164" class="lbl" text-anchor="end"><tspan class="m">μ</tspan><tspan class="sub" dy="3">s</tspan><tspan dy="-3"> = 0.25</tspan></text>
+</svg></template>
+<template id="ws-fig-tow"><svg class="ws-svg" viewBox="0 0 260 160" role="img" aria-label="A 1400 kilogram car tows a 600 kilogram trailer up a 6 degree grade, accelerating at 0.8 meters per second squared, joined by a tow bar.">
+<path d="M10 150 L252.7 124.5 L252.7 150 Z" class="s-ink f-part"/><path d="M54 150 L54 149.6 L54 149.2 L54 148.8 L54 148.5 L54 148.1 L53.9 147.7 L53.9 147.3 L53.9 146.9 L53.9 146.5 L53.8 146.2 L53.8 145.8 L53.8 145.4" class="s-thin"/><text x="60" y="147" class="lbl" text-anchor="start">6°</text><circle cx="86.9" cy="135.9" r="6" class="s-ink f-bg"/><circle cx="114.8" cy="133" r="6" class="s-ink f-bg"/><path d="M69.1 138.8 L132.8 132.1 L130.1 106.2 L66.4 112.9 Z" class="s-ink f-face"/><text x="99.5" y="121.5" class="lbl" text-anchor="middle">600 kg</text><circle cx="166.5" cy="127.5" r="6" class="s-ink f-bg"/><circle cx="214.2" cy="122.5" r="6" class="s-ink f-bg"/><path d="M152.7 130 L228.3 122 L225.1 92.2 L149.6 100.1 Z" class="s-ink f-face"/><text x="188.7" y="109.1" class="lbl" text-anchor="middle">1400 kg</text><line x1="131.6" y1="121.1" x2="151.5" y2="119" class="s-ink" style="stroke-width: 2"/><text x="97.3" y="100.6" class="lbl" text-anchor="middle">trailer</text><text x="186.4" y="87.2" class="lbl" text-anchor="middle">car</text><line x1="163.6" y1="61.5" x2="207.3" y2="56.9" class="s-bad"/><path d="M213.3 56.2 L205.7 60.5 L205 53.7 Z" class="f-bad"/><text x="219.3" y="60.2" class="lbl" text-anchor="start"><tspan class="m t-bad">a</tspan> = 0.8 m/s²</text>
+</svg></template>
+<template id="ws-tile"><svg class="ws-svg tile" viewBox="0 0 160 104" role="img" aria-label="Blank x, y, z axes for a sketch.">
+<text x="6" y="14" class="cap" text-anchor="start">(a)</text><line x1="70" y1="64" x2="70" y2="10" class="s-axis"/><path d="M70 6 L73 13 L67 13Z" class="f-axis"/><line x1="70" y1="64" x2="150" y2="64" class="s-axis"/><path d="M154 64 L147 67 L147 61Z" class="f-axis"/><line x1="70" y1="64" x2="24" y2="94" class="s-axis"/><path d="M20 96.6 L24.2 90.3 L27.5 95.3Z" class="f-axis"/><text x="77" y="14" class="m" text-anchor="start">z</text><text x="152" y="57" class="m" text-anchor="end">y</text><text x="16" y="96" class="m" text-anchor="end">x</text><line x1="70" y1="64" x2="70" y2="100" class="s-faint dash"/><line x1="70" y1="64" x2="20" y2="64" class="s-faint dash"/><line x1="70" y1="64" x2="100" y2="44" class="s-faint dash"/>
+</svg></template>
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers (or objects of named numbers); omitted for written answers
+       units, figure: {tpl, label, caption, wide} | null, sketch: n tiles | 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var G = 9.81, D = Math.PI / 180;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'An elevator, a scale and a cable', level: 1, lessons: ['l02'], units: 'N',
+      statementHTML: String.raw`<p>An elevator car of total mass \(1000\ \text{kg}\) carries a \(70\ \text{kg}\) passenger standing on a bathroom scale. (The \(1000\ \text{kg}\) includes the passenger.)</p>`,
+      parts: [
+        part('a', String.raw`The car speeds up at \(1.2\ \text{m/s}^2\) on its way up. What does the scale read?`,
+          String.raw`\(N = 70(9.81 + 1.2) = 770.7\ \text{N}\)`, 770.7),
+        part('b', String.raw`Find the tension in the cable at that moment.`,
+          String.raw`\(T = 1000(9.81 + 1.2) = 11\,010\ \text{N}\)`, 11010),
+        part('c', String.raw`Near the top floor the car slows down at \(1.2\ \text{m/s}^2\). Find the cable tension now.`,
+          String.raw`Slowing on the way up: the acceleration is down, \(T = 1000(9.81 - 1.2) = 8610\ \text{N}\)`, 8610)
+      ],
+      figure: null, sketch: 0, space: 40 }),
+
+    prob({ n: 2, title: 'A crate on a truck bed', level: 1, lessons: ['l03'], units: 'm/s², N',
+      statementHTML: String.raw`<p>A \(50\ \text{kg}\) crate sits on the flat bed of a truck. Between them, \(\mu_s = 0.35\) and \(\mu_k = 0.28\).</p>`,
+      parts: [
+        part('a', String.raw`What is the largest acceleration the truck can have without the crate slipping?`,
+          String.raw`Friction alone accelerates the crate: \(a_{\max} = \mu_s g = 3.434\ \text{m/s}^2\)`, 3.4335),
+        part('b', String.raw`The truck accelerates at \(4.5\ \text{m/s}^2\). Find the acceleration of the crate.`,
+          String.raw`It slips: \(a = \mu_k g = 2.747\ \text{m/s}^2\) forward (it slides back on the bed at \(1.753\ \text{m/s}^2\))`, 2.7468),
+        part('c', String.raw`Find the friction force on the crate in part (b), and its direction.`,
+          String.raw`\(F_f = \mu_k mg = 137.3\ \text{N}\), forward: the bed slides forward under the crate`, 137.34)
+      ],
+      figure: null, sketch: 0, space: 40 }),
+
+    prob({ n: 3, title: 'Up a rough incline and back down', level: 2, lessons: ['l03'], units: 'm, m/s',
+      statementHTML: String.raw`<p>A \(4\ \text{kg}\) block is launched at \(8\ \text{m/s}\) up a \(30^\circ\) incline (Figure W.1). The coefficients of friction are \(\mu_s = 0.4\) and \(\mu_k = 0.3\).</p>`,
+      parts: [
+        part('a', String.raw`How far up the incline does the block slide before it stops?`,
+          String.raw`Going up, friction acts down the slope: \(a = -9.81(\sin 30^\circ + 0.3\cos 30^\circ) = -7.454\ \text{m/s}^2\), so \(d = 8^2/(2 \times 7.454) = 4.293\ \text{m}\)`, 4.2932),
+        part('b', String.raw`Does it stay where it stopped? Show why.`,
+          String.raw`No: \(\tan 30^\circ = 0.577 \gt \mu_s = 0.4\), so static friction cannot hold it`, undefined),
+        part('c', String.raw`How fast is it moving when it gets back to its starting point?`,
+          String.raw`Coming down, friction acts up the slope: \(a = 9.81(\sin 30^\circ - 0.3\cos 30^\circ) = 2.356\ \text{m/s}^2\), so \(v = \sqrt{2(2.356)(4.293)} = 4.498\ \text{m/s}\)`, 4.498)
+      ],
+      figure: { tpl: 'ws-fig-incline', label: 'Figure W.1', caption: 'The block at launch.' },
+      sketch: 0, space: 50 }),
+
+    prob({ n: 4, title: 'Pulling a crate at an angle', level: 2, lessons: ['l03'], units: 'm/s², N, °',
+      statementHTML: String.raw`<p>A rope with a tension of \(150\ \text{N}\) pulls a \(30\ \text{kg}\) crate across a level floor (Figure W.2). The crate is sliding, and \(\mu_k = 0.35\).</p>`,
+      parts: [
+        part('a', String.raw`Find the crate's acceleration when the rope is horizontal, \(\alpha = 0\).`,
+          String.raw`\(a = (150 - 0.35 \times 294.3)/30 = 1.567\ \text{m/s}^2\)`, 1.5665),
+        part('b', String.raw`Find the normal force and the acceleration when \(\alpha = 25^\circ\).`,
+          String.raw`\(N = 294.3 - 150\sin 25^\circ = 230.9\ \text{N}\), \(a = (150\cos 25^\circ - 0.35 \times 230.9)/30 = 1.838\ \text{m/s}^2\)`, { N: 230.91, a: 1.8376 }),
+        part('c', String.raw`Which angle gives the largest acceleration, and what is it?`,
+          String.raw`\(\tan\alpha = \mu_k\): \(\alpha = 19.29^\circ\), \(a = 1.864\ \text{m/s}^2\)`, { alpha: 19.29, a: 1.8639 })
+      ],
+      figure: { tpl: 'ws-fig-pull', label: 'Figure W.2', caption: 'The crate and the rope.' },
+      sketch: 0, space: 46 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'A table, a pulley and a hanging block', level: 2, lessons: ['l04'], units: 'm/s², N, m/s, kg',
+      statementHTML: String.raw`<p>In Figure W.3, block \(A\) (\(12\ \text{kg}\)) rests on a table with \(\mu_k = 0.15\), and block \(B\) (\(5\ \text{kg}\)) hangs from a light cord over a light, smooth pulley. The blocks are released from rest.</p>`,
+      parts: [
+        part('a', String.raw`Find the acceleration of the blocks.`,
+          String.raw`\(a = (5 - 0.15 \times 12)(9.81)/17 = 1.847\ \text{m/s}^2\)`, 1.8466),
+        part('b', String.raw`Find the tension in the cord.`,
+          String.raw`\(T = 5(9.81 - 1.847) = 39.82\ \text{N}\)`, 39.817),
+        part('c', String.raw`How fast are the blocks moving when \(B\) has fallen \(1.5\ \text{m}\)?`,
+          String.raw`\(v = \sqrt{2(1.847)(1.5)} = 2.354\ \text{m/s}\)`, 2.3537),
+        part('d', String.raw`If \(\mu_s = 0.2\), what is the smallest mass of \(B\) that starts the blocks moving?`,
+          String.raw`\(m_B g \gt \mu_s m_A g\): \(m_B \gt 0.2(12) = 2.4\ \text{kg}\)`, 2.4)
+      ],
+      figure: { tpl: 'ws-fig-pulley', label: 'Figure W.3', caption: 'Block \\(A\\) on the table and block \\(B\\) hanging.' },
+      sketch: 0, space: 48 }),
+
+    prob({ n: 6, title: 'A movable pulley', level: 2, lessons: ['l04'], units: 'm/s², N',
+      statementHTML: String.raw`<p>In Figure W.4, block \(A\) (\(8\ \text{kg}\)) on a smooth table is tied to a cord that runs over a fixed pulley, down around a movable pulley carrying block \(B\) (\(12\ \text{kg}\)), and up to a fixed support. The pulleys are light.</p>`,
+      parts: [
+        part('a', String.raw`Write the cord's length in terms of \(s_A\) and \(s_B\), and relate the accelerations.`,
+          String.raw`\(s_A + 2s_B = \text{constant}\), so \(a_A = -2a_B\): \(A\) moves toward the pulley twice as fast as \(B\) falls`, undefined),
+        part('b', String.raw`Find the acceleration of each block.`,
+          String.raw`\(a_B = 12(9.81)/(12 + 4 \times 8) = 2.675\ \text{m/s}^2\) down, \(a_A = 5.351\ \text{m/s}^2\)`, { aB: 2.6755, aA: 5.3509 }),
+        part('c', String.raw`Find the tension in the cord.`,
+          String.raw`\(T = m_A a_A = 8(5.351) = 42.81\ \text{N}\)`, 42.807)
+      ],
+      figure: { tpl: 'ws-fig-movable', label: 'Figure W.4', caption: 'The two blocks and the pulleys, with position coordinates from the fixed pulley.' },
+      sketch: 0, space: 48 }),
+
+    prob({ n: 7, title: 'A push that grows with time', level: 2, lessons: ['l05'], units: 's, m/s², m/s',
+      statementHTML: String.raw`<p>A \(6\ \text{kg}\) crate rests on a floor with \(\mu_s = 0.4\) and \(\mu_k = 0.3\). Starting at \(t = 0\), a horizontal push \(P = 12t\ \text{N}\), with \(t\) in seconds, acts on it.</p>`,
+      parts: [
+        part('a', String.raw`At what time does the crate start to slide?`,
+          String.raw`\(12t_1 = 0.4(6)(9.81)\), so \(t_1 = 1.962\ \text{s}\)`, 1.962),
+        part('b', String.raw`Find its acceleration just after it starts to slide.`,
+          String.raw`\(a = (23.54 - 17.66)/6 = 0.981\ \text{m/s}^2\): friction drops from \(\mu_s N\) to \(\mu_k N\)`, 0.981),
+        part('c', String.raw`How fast is it moving at \(t = 4\ \text{s}\)?`,
+          String.raw`\(6v = \int_{1.962}^{4}(12t - 17.66)\,dt = 36.92\), so \(v = 6.153\ \text{m/s}\)`, 6.1527)
+      ],
+      figure: null, sketch: 0, space: 46 }),
+
+    prob({ n: 8, title: 'A skydiver and terminal velocity', level: 3, lessons: ['l05'], units: 'm/s, m/s², s',
+      statementHTML: String.raw`<p>A \(90\ \text{kg}\) skydiver falls with air drag \(F_D = kv^2\), where \(k = 0.27\ \text{kg/m}\).</p>`,
+      parts: [
+        part('a', String.raw`Find the terminal velocity.`,
+          String.raw`\(v_t = \sqrt{90(9.81)/0.27} = 57.18\ \text{m/s}\)`, 57.184),
+        part('b', String.raw`Find the acceleration when the speed is \(30\ \text{m/s}\).`,
+          String.raw`\(a = 9.81 - (0.27/90)(30)^2 = 7.11\ \text{m/s}^2\)`, 7.11),
+        part('c', String.raw`Starting from rest, how long does it take to reach \(90\%\) of \(v_t\)? (Use \(v = v_t\tanh(gt/v_t)\).)`,
+          String.raw`\(t = (v_t/g)\tanh^{-1}0.9 = 5.829(1.472) = 8.582\ \text{s}\)`, 8.5818),
+        part('d', String.raw`The parachute opens, and \(k\) becomes \(30\ \text{kg/m}\). Find the new terminal velocity.`,
+          String.raw`\(v_t = \sqrt{90(9.81)/30} = 5.425\ \text{m/s}\)`, 5.4249)
+      ],
+      figure: null, sketch: 0, space: 48 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'A flat curve', level: 1, lessons: ['l06'], units: 'm/s, N',
+      statementHTML: String.raw`<p>A flat curve has a radius of \(90\ \text{m}\), and \(\mu_s = 0.6\) between the tires and the road. A \(1300\ \text{kg}\) car takes it.</p>`,
+      parts: [
+        part('a', String.raw`What is the highest speed at which the car can take the curve?`,
+          String.raw`\(v_{\max} = \sqrt{0.6(9.81)(90)} = 23.02\ \text{m/s}\) (\(82.9\ \text{km/h}\))`, 23.016),
+        part('b', String.raw`The car takes the curve at a steady \(54\ \text{km/h}\). Find the friction force on its tires.`,
+          String.raw`\(v = 15\ \text{m/s}\): \(F_f = 1300(15^2/90) = 3250\ \text{N}\), toward the center`, 3250),
+        part('c', String.raw`At \(54\ \text{km/h}\) the driver speeds up at \(2.5\ \text{m/s}^2\). Find the friction force now, and the least \(\mu_s\) that prevents sliding.`,
+          String.raw`\(a = \sqrt{2.5^2 + 2.5^2} = 3.536\ \text{m/s}^2\): \(F_f = 4596\ \text{N}\), \(\mu_s \ge 3.536/9.81 = 0.360\)`, { F: 4596.2, mu: 0.3604 })
+      ],
+      figure: null, sketch: 0, space: 42 }),
+
+    prob({ n: 10, title: 'A banked highway curve', level: 2, lessons: ['l07'], units: 'm/s, N',
+      statementHTML: String.raw`<p>A highway curve of radius \(200\ \text{m}\) is banked at \(10^\circ\), and \(\mu_s = 0.25\) (Figure W.5).</p>`,
+      parts: [
+        part('a', String.raw`Find the design speed, at which no friction is needed.`,
+          String.raw`\(v_0 = \sqrt{9.81(200)\tan 10^\circ} = 18.60\ \text{m/s}\) (\(67.0\ \text{km/h}\))`, 18.6),
+        part('b', String.raw`Find the highest speed at which a car can take the curve.`,
+          String.raw`\(v_{\max} = \sqrt{9.81(200)\dfrac{\sin 10^\circ + 0.25\cos 10^\circ}{\cos 10^\circ - 0.25\sin 10^\circ}} = 29.58\ \text{m/s}\) (\(106.5\ \text{km/h}\))`, 29.581),
+        part('c', String.raw`A \(1500\ \text{kg}\) car takes the curve at \(90\ \text{km/h}\). Find the normal force and the friction force, with its direction.`,
+          String.raw`\(N = 1500(9.81\cos 10^\circ + 3.125\sin 10^\circ) = 15\,310\ \text{N}\); \(F_f = 1500(3.125\cos 10^\circ - 9.81\sin 10^\circ) = 2061\ \text{N}\), down the bank (within \(\mu_s N = 3826\ \text{N}\))`, { N: 15305, F: 2061.1 })
+      ],
+      figure: { tpl: 'ws-fig-banked', label: 'Figure W.5', caption: 'The car on the banked curve, seen from behind.' },
+      sketch: 0, space: 50 }),
+
+    prob({ n: 11, title: 'A crest and a loop', level: 2, lessons: ['l07'], units: 'm/s, N',
+      statementHTML: String.raw`<p>(a)–(b) A car goes over the top of a crest whose radius of curvature is \(60\ \text{m}\). (c)–(d) A roller coaster has a circular vertical loop of radius \(12\ \text{m}\).</p>`,
+      parts: [
+        part('a', String.raw`At \(72\ \text{km/h}\), find the ratio of the normal force to the car's weight at the top of the crest.`,
+          String.raw`\(N/mg = 1 - 20^2/(9.81 \times 60) = 0.320\)`, 0.3204),
+        part('b', String.raw`At what speed would the car leave the road at the top?`,
+          String.raw`\(v = \sqrt{9.81(60)} = 24.26\ \text{m/s}\) (\(87.3\ \text{km/h}\))`, 24.261),
+        part('c', String.raw`What is the least speed at the bottom of the loop that carries a car around it? (Use \(v_\text{top}^2 = v_b^2 - 4gr\).)`,
+          String.raw`\(v_b = \sqrt{5(9.81)(12)} = 24.26\ \text{m/s}\)`, 24.261),
+        part('d', String.raw`A car enters the loop at \(26\ \text{m/s}\). How hard does the seat push on a \(65\ \text{kg}\) rider at the bottom?`,
+          String.raw`\(N = 65(9.81 + 26^2/12) = 4299\ \text{N}\), about \(6.7\) times the rider's weight`, 4299.3)
+      ],
+      figure: null, sketch: 0, space: 46 }),
+
+    prob({ n: 12, title: 'A car and trailer on a grade', level: 3, lessons: ['l08'], units: 'N, m/s²',
+      statementHTML: String.raw`<p>A \(1400\ \text{kg}\) car tows a \(600\ \text{kg}\) trailer up a \(6^\circ\) grade, speeding up at \(0.8\ \text{m/s}^2\) (Figure W.6). Rolling resistance on each vehicle is \(0.02\) times the normal force on it; ignore air drag.</p>`,
+      parts: [
+        part('a', String.raw`Find the tension in the tow bar.`,
+          String.raw`Trailer alone: \(T = 600\left[0.8 + 9.81(\sin 6^\circ + 0.02\cos 6^\circ)\right] = 1212\ \text{N}\)`, 1212.3),
+        part('b', String.raw`Find the forward force of the road on the car's driven tires.`,
+          String.raw`Whole rig: \(F = 2000\left[0.8 + 9.81(\sin 6^\circ + 0.02\cos 6^\circ)\right] = 4041\ \text{N}\)`, 4041.1),
+        part('c', String.raw`The tow bar is rated for \(2000\ \text{N}\). What is the largest acceleration the rig may have on this grade?`,
+          String.raw`\(2000/600 - 9.81(\sin 6^\circ + 0.02\cos 6^\circ) = 2.113\ \text{m/s}^2\)`, 2.1128)
+      ],
+      figure: { tpl: 'ws-fig-tow', label: 'Figure W.6', caption: 'The car and trailer on the grade.' },
+      sketch: 0, space: 48 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'g = 9.81 m/s^2; particles; light, inextensible cords and light, smooth pulleys; a positive direction on each axis; N from its own equation; 4 significant figures; SI units.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {
+    l01: ['01-newtons-second-law.html', 'Lesson 1'], l02: ['02-free-body-diagrams.html', 'Lesson 2'],
+    l03: ['03-rectangular.html', 'Lesson 3'], l04: ['04-connected-particles.html', 'Lesson 4'],
+    l05: ['05-varying-forces.html', 'Lesson 5'], l06: ['06-normal-tangential.html', 'Lesson 6'],
+    l07: ['07-curves-banking-loops.html', 'Lesson 7'], l08: ['08-systems-and-choices.html', 'Lesson 8']
+  };
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

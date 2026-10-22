@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Force, Mass and Acceleration</title>
+<meta name="description" content="Unlimited randomized practice on force, mass and acceleration: Newton's second law, free-body diagrams and elevators, friction, inclines, cords and pulleys, forces that vary, curves and conical pendulums, banked curves, crests and loops, and systems of particles, each with hints, a worked solution and a force picture.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+  .pl-viewhost { min-height: 250px; padding: 16px 18px 12px; }
+  .pl-viewhost .lg { margin: 0; }
+  .pl-ghost { display: grid; gap: 14px; padding: 34px 0 10px; opacity: 0.35; }
+  .pl-ghost-row { height: 22px; border-radius: 4px; background: var(--bg-sunken); }
+  .pl-ghost-row span { display: block; height: 100%; border-radius: 4px; background: var(--line); }
+  @media (max-width: 520px) { .pl-viewhost { padding: 12px 10px 8px; } }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like: Newton's second law, free-body diagrams and elevators, friction, inclines, cords and pulleys, forces that vary, curves and pendulums, banked curves, crests and loops, and systems of particles. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it you can see its force picture: the forces, bar by bar, landing on \(ma\).</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The picture behind the current problem: usually a force ledger, in which the forces along one direction, bar by bar, land on \(ma\) (or on \(mv^2/\rho\) toward the center of a curve), or a graph whose shaded area gives the change in the motion. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>incline-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. incline-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand arithmetic, so you can type the expression you wrote on paper instead of working it out on a calculator first. Each box shows how it read your input (for example <q>= 1.962</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>(4-0.2*8)*9.81/12</code></td><td>\((4 - 0.2 \times 8)(9.81)/12 = 1.962\)</td></tr>
+          <tr><td><code>12*9.81*sin(25&deg;)</code></td><td>\(12(9.81)\sin 25^\circ = 49.75\)</td></tr>
+          <tr><td><code>sqrt(0.6*9.81*80)</code> or <code>&radic;(0.6*9.81*80)</code></td><td>\(\sqrt{470.9} = 21.70\)</td></tr>
+          <tr><td><code>1200*(9.81-20^2/50)</code></td><td>\(1200(9.81 - 400/50) = 2172\)</td></tr>
+          <tr><td><code>-2.5</code></td><td>\(-2.5\): an acceleration to the left, when right is positive</td></tr>
+          <tr><td><code>atan(25^2/(9.81*120))</code></td><td>\(\tan^{-1}(0.531)\), in radians: for an angle answer, type it in degrees, e.g. <code>27.96</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Give each answer in the unit shown next to its box: newtons or kilonewtons, meters per second, meters per second squared, kilograms, seconds, meters or degrees; a coefficient of friction has no unit. Signs matter where the problem names a positive direction: type the minus sign for a velocity or an acceleration the other way. Inside <code>cos</code>, <code>sin</code> and <code>tan</code>, mark degrees with <code>&deg;</code>; a bare number there is read as radians.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the whole expression is faster and safer than rounding at each step: <code>(4-0.2*8)*9.81/12</code> is exact, while rounding the friction force first can drift past the 1% tolerance.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  5. Registry  6. Self-test (window.__practiceSelfTest)
+   7. The shared view (a force ledger or a graph with a shaded area)  8. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints, the worked
+   solution and the force picture from the same numbers, so nothing is typed per instance.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  /* ================================================================ 1. Helpers */
+  var PI = Math.PI, G = 9.81, D2R = PI / 180;
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }       // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)) + 1e-9; }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var NU = '\\ \\text{N}', MS = '\\ \\text{m/s}', MU = '\\ \\text{m}', KG = '\\ \\text{kg}', NM = '\\ \\text{N/m}', SU = '\\ \\text{s}', DEG = '^\\circ';
+  var AU = '\\ \\text{m/s}^2', KMH = '\\ \\text{km/h}', NS = '\\ \\text{N}{\\cdot}\\text{s}', J = '\\ \\text{J}';
+  function sn(x) { return Math.sin(x * D2R); }
+  function cs(x) { return Math.cos(x * D2R); }
+  function tn(x) { return Math.tan(x * D2R); }
+  // ---- views: 'ledger' (the forces along a direction, bar by bar, land on m a) and 'area' (a graph whose shaded area means something)
+  function ledger(o) {
+    return { kind: 'ledger', title: o.title, aria: o.aria, unit: o.unit || 'N', start: { label: o.start[0], value: o.start[1] },
+      items: o.items.map(function (it) { return { label: it[0], value: it[1], color: it[2] || 'accent' }; }),
+      end: { label: o.end[0], value: o.end[1] }, readouts: o.readouts, note: o.note };
+  }
+  function fled(o) {                                       // sum of forces = m a, starting from zero
+    return ledger({ title: o.title || 'Forces along the motion', aria: o.aria || 'The forces along the motion, added bar by bar, land on the mass times the acceleration.',
+      start: ['0', 0], items: o.items, end: [o.end[0], o.end[1]], readouts: o.readouts, note: o.note });
+  }
+  function area(o) {
+    return { kind: 'area', title: o.title, aria: o.aria, x: o.x, y: o.y, pts: o.pts, from: o.from, to: o.to, color: o.color || 'warn', readouts: o.readouts, note: o.note };
+  }
+  function ro(label, tex) { return { label: label, tex: tex }; }
+  function done(spec, view, right, wrong) { return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } }; }
+  function mcDone(spec, view) {
+    var k = -1; spec.choices.forEach(function (c, i) { if (c.correct) k = i; });
+    return { spec: spec, view: view, test: { right: [k], wrong: [(k + 1) % spec.choices.length] } };
+  }
+  function shuffle(rng, a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = rng.int(0, i); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 Newton's second law (Lesson 1) ---------- */
+  function genNewton(rng) {
+    var kind = pickW(rng, [['force', 3], ['accel', 3], ['mass', 2], ['speed', 2]]), spec, view, right, wrong;
+    if (kind === 'force') {
+      var b = rng.pick([['car', range(900, 2200, 100), range(60, 120, 10), range(5, 14, 1)], ['delivery van', range(2000, 4000, 250), range(50, 100, 10), range(8, 20, 1)],
+        ['sprinter', range(55, 95, 5), range(25, 40, 1), [2, 2.5, 3, 3.5, 4]], ['motorcycle and rider', range(250, 450, 25), range(60, 120, 10), range(3, 8, 0.5)]]);
+      var mass = rng.pick(b[1]), kmh = rng.pick(b[2]), t = rng.pick(b[3]), a = kmh / 3.6 / t, F = mass * a;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' ' + b[0] + ' speeds up uniformly from rest to ' + m(nn(kmh) + KMH) + ' in ' + m(nn(t) + SU) + ' on level ground. Find the net horizontal force on it.', label: '\\(\\sum F_x =\\)', answer: F, unit: 'N' };
+      spec.hints = ['Kinematics first: convert to m/s (divide by 3.6), then \\(a = v/t\\).', 'Kinetics: \\(\\sum F_x = ma\\).'];
+      spec.solution = M('a = \\frac{' + nn(kmh) + '/3.6}{' + nn(t) + '} = ' + n4(a) + AU + '\\qquad \\textstyle\\sum F_x = ' + nn(mass) + '(' + n4(a) + ') = ' + n4(F) + NU);
+      right = F; wrong = wrongOf(F, [mass * kmh / t, mass * a * t, mass * G]);
+      view = fled({ items: [['\\textstyle\\sum F_x', F, 'warn']], end: ['ma', F], readouts: [ro('\\(v\\)', n4(kmh / 3.6) + MS), ro('\\(a\\)', n4(a) + AU), ro('\\(\\sum F_x\\)', n4(F) + NU)],
+        note: 'The net force: the road\'s push on the tires less drag and rolling resistance.' });
+      spec.explain = 'Find \\(a\\) from the motion, then \\(\\sum F = ma\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'accel') {
+      var mm = rng.pick(range(2, 60, 1)), F1 = rng.pick(range(10, 300, 5)), F2 = rng.pick(range(10, 300, 5));
+      if (F1 === F2) F2 += 15;
+      var a2 = (F1 - F2) / mm, obj = rng.pick(['puck', 'crate', 'sled', 'cart']);
+      spec = { type: 'numeric', prompt: 'Two horizontal forces act on a ' + m(nn(mm) + KG) + ' ' + obj + ' on smooth ice: ' + m(nn(F1) + NU) + ' to the right and ' + m(nn(F2) + NU) + ' to the left. Find its acceleration, positive to the right.', label: '\\(a =\\)', answer: a2, unit: 'm/s²' };
+      spec.hints = ['Add the forces with signs: right positive.', '\\(a = \\sum F_x / m\\).'];
+      spec.solution = M('\\textstyle\\sum F_x = ' + nn(F1) + ' - ' + nn(F2) + ' = ' + n4(F1 - F2) + NU + '\\qquad a = \\frac{' + n4(F1 - F2) + '}{' + nn(mm) + '} = ' + n4(a2) + AU) + (a2 < 0 ? '<p>Negative: the acceleration is to the left.</p>' : '');
+      right = a2; wrong = wrongOf(a2, [(F1 + F2) / mm, -a2, F1 / mm]);
+      view = fled({ items: [['F_1', F1, 'warn'], ['F_2', -F2, 'warn']], end: ['ma', F1 - F2], readouts: [ro('\\(\\sum F_x\\)', n4(F1 - F2) + NU), ro('\\(a\\)', n4(a2) + AU)], note: 'The ice is smooth: no friction, and the weight and normal force balance.' });
+      spec.explain = 'Forces add as vectors: one to the left counts negative.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'mass') {
+      var F3 = rng.pick(range(20, 2000, 10)), a3 = rng.pick([0.5, 0.8, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6]), m3 = F3 / a3;
+      spec = { type: 'numeric', prompt: 'A net force of ' + m(nn(F3) + NU) + ' gives a body an acceleration of ' + m(nn(a3) + AU) + ' on a smooth level surface. Find its mass.', label: '\\(m =\\)', answer: m3, unit: 'kg' };
+      spec.hints = ['\\(\\sum F = ma\\), solved for \\(m\\).', 'Mass is in kilograms; the newton is \\(1\\ \\text{kg·m/s}^2\\).'];
+      spec.solution = M('m = \\frac{\\sum F}{a} = \\frac{' + nn(F3) + '}{' + nn(a3) + '} = ' + n4(m3) + KG) + '<p>Its weight on Earth is \\(mg = ' + n4(m3 * G) + '\\ \\text{N}\\).</p>';
+      right = m3; wrong = wrongOf(m3, [F3 * a3, F3 / G, F3 / a3 / G]);
+      view = fled({ items: [['\\textstyle\\sum F', F3, 'warn']], end: ['ma', F3], readouts: [ro('\\(a\\)', nn(a3) + AU), ro('\\(m\\)', n4(m3) + KG), ro('Weight \\(mg\\)', n4(m3 * G) + NU)], note: 'Mass resists acceleration; it is the same everywhere.' });
+      spec.explain = '\\(m = \\sum F / a\\).';
+      return done(spec, view, right, wrong);
+    }
+    var m4 = rng.pick(range(1, 40, 1)), F4 = rng.pick(range(5, 200, 5)), t4 = rng.pick(range(1, 10, 0.5)), a4 = F4 / m4, v4 = a4 * t4;
+    spec = { type: 'numeric', prompt: 'A constant net force of ' + m(nn(F4) + NU) + ' acts on a ' + m(nn(m4) + KG) + ' body that starts from rest. How fast is it moving after ' + m(nn(t4) + SU) + '?', label: '\\(v =\\)', answer: v4, unit: 'm/s' };
+    spec.hints = ['\\(a = \\sum F / m\\), constant.', 'Constant acceleration from rest: \\(v = at\\).'];
+    spec.solution = M('a = \\frac{' + nn(F4) + '}{' + nn(m4) + '} = ' + n4(a4) + AU + '\\qquad v = ' + n4(a4) + '(' + nn(t4) + ') = ' + n4(v4) + MS);
+    right = v4; wrong = wrongOf(v4, [F4 * t4, F4 / m4, 0.5 * a4 * t4 * t4]);
+    view = fled({ items: [['\\textstyle\\sum F', F4, 'warn']], end: ['ma', F4], readouts: [ro('\\(a\\)', n4(a4) + AU), ro('\\(v = at\\)', n4(v4) + MS)], note: 'A constant force gives a constant acceleration, so the velocity grows linearly.' });
+    spec.explain = 'Kinetics for \\(a\\), kinematics for \\(v\\).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.2 Free-body diagrams and elevators (Lesson 2) ---------- */
+  var ELEV = [['speeding up on its way up', 1], ['slowing down on its way up', -1], ['speeding up on its way down', -1], ['slowing down on its way down', 1]];
+  function genFbd(rng) {
+    var kind = pickW(rng, [['scale', 3], ['cable', 2], ['rope', 3], ['which', 2]]), spec, view, right, wrong;
+    if (kind === 'scale' || kind === 'cable' || kind === 'which') {
+      var e = rng.pick(ELEV), a = rng.pick([0.5, 0.8, 1, 1.2, 1.5, 2, 2.5, 3]), up = e[1] * a;
+      if (kind === 'which') {
+        var mw = rng.pick(range(45, 95, 5)), N0 = mw * (G + up);
+        var ch = [
+          { key: 'more', html: 'More than the person\u2019s weight.', correct: up > 0, feedback: up > 0 ? '' : 'The acceleration here is downward, so the net force is down: \\(N \\lt mg\\).' },
+          { key: 'less', html: 'Less than the person\u2019s weight.', correct: up < 0, feedback: up < 0 ? '' : 'The acceleration here is upward, so the net force is up: \\(N \\gt mg\\).' },
+          { key: 'same', html: 'Exactly the person\u2019s weight.', correct: false, feedback: 'Only at rest or at constant velocity, when the acceleration is zero.' },
+          { key: 'zero', html: 'Zero.', correct: false, feedback: 'Only in free fall, with a downward acceleration of \\(g\\).' }
+        ];
+        ch.forEach(function (c) { if (c.correct) c.feedback = 'The acceleration is ' + (up > 0 ? 'upward' : 'downward') + ': \\(N - mg = ma\\) with \\(a = ' + n4(up) + '\\ \\text{m/s}^2\\), so \\(N = ' + n4(N0) + '\\ \\text{N}\\) against a weight of \\(' + n4(mw * G) + '\\ \\text{N}\\).'; });
+        spec = { type: 'mc', prompt: 'A ' + m(nn(mw) + KG) + ' person stands on a bathroom scale in an elevator that is ' + e[0] + ', at ' + m(nn(a) + AU) + '. The scale reads\u2026', choices: shuffle(rng, ch).map(function (c) { return { html: c.html, correct: c.correct, feedback: c.feedback }; }) };
+        spec.hints = ['Decide the direction of the acceleration: speeding up means it points along the velocity; slowing down, against it.', 'Up positive: \\(N - mg = ma\\).'];
+        spec.solution = M('N - mg = ma \\quad\\Rightarrow\\quad N = ' + nn(mw) + '(9.81 ' + (up < 0 ? '- ' : '+ ') + nn(Math.abs(up)) + ') = ' + n4(N0) + NU) + '<p>The weight is \\(' + n4(mw * G) + '\\ \\text{N}\\), so the scale reads ' + (up > 0 ? 'more' : 'less') + ' than the weight.</p>';
+        spec.explain = 'The scale reads \\(N = m(g + a)\\), with \\(a\\) positive up.';
+        view = fled({ title: 'Vertical forces, up positive', items: [['N', N0, 'ink'], ['W', -mw * G, 'z']], end: ['ma', mw * up],
+          readouts: [ro('Acceleration, up positive', n4(up) + AU), ro('\\(N\\)', n4(N0) + NU), ro('\\(W\\)', n4(mw * G) + NU)], note: 'Speeding up on the way up and slowing down on the way down both mean an upward acceleration.' });
+        return mcDone(spec, view);
+      }
+      var big = kind === 'cable', mass = big ? rng.pick(range(400, 2500, 100)) : rng.pick(range(45, 100, 5)), N = mass * (G + up);
+      var what = big ? 'An elevator car of total mass ' + m(nn(mass) + KG) + ' is ' + e[0] + ' at ' + m(nn(a) + AU) + '. Find the tension in its cable.'
+        : 'A ' + m(nn(mass) + KG) + ' passenger stands on a scale in an elevator that is ' + e[0] + ' at ' + m(nn(a) + AU) + '. What force does the scale read?';
+      spec = { type: 'numeric', prompt: what, label: big ? '\\(T =\\)' : '\\(N =\\)', answer: N, unit: 'N' };
+      spec.hints = ['Which way does the acceleration point? Speeding up: along the velocity. Slowing down: against it.', 'Up positive: \\(' + (big ? 'T' : 'N') + ' - mg = ma\\), with \\(a = ' + nn(up) + '\\ \\text{m/s}^2\\).'];
+      spec.solution = M((big ? 'T' : 'N') + ' = m(g + a) = ' + nn(mass) + '(9.81 ' + (up < 0 ? '- ' : '+ ') + nn(Math.abs(up)) + ') = ' + n4(N) + NU) + '<p>' + (up > 0 ? 'More' : 'Less') + ' than the weight, \\(' + n4(mass * G) + '\\ \\text{N}\\), because the acceleration is ' + (up > 0 ? 'upward' : 'downward') + '.</p>';
+      right = N; wrong = wrongOf(N, [mass * (G - up), mass * G, mass * up]);
+      view = fled({ title: 'Vertical forces, up positive', items: [[big ? 'T' : 'N', N, big ? 'muted' : 'ink'], ['W', -mass * G, 'z']], end: ['ma', mass * up],
+        readouts: [ro('Acceleration, up positive', n4(up) + AU), ro(big ? 'Tension \\(T\\)' : 'Scale reading \\(N\\)', n4(N) + NU), ro('Weight', n4(mass * G) + NU)], note: 'The ' + (big ? 'cable' : 'scale') + ' supplies the weight plus \\(ma\\).' });
+      spec.explain = 'Free-body diagram: the weight down, the ' + (big ? 'cable' : 'scale') + ' up; kinetic diagram: \\(ma\\) along the acceleration.';
+      return done(spec, view, right, wrong);
+    }
+    var mr = rng.pick(range(10, 60, 5)), al = rng.pick([10, 15, 20, 25, 30, 35, 40]), mu = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]);
+    var Tmin = mu * mr * G / (cs(al) + mu * sn(al)), T = Math.ceil(Tmin * rng.pick([1.3, 1.5, 1.8, 2.1]) / 5) * 5;
+    if (T * sn(al) >= 0.9 * mr * G) T = Math.floor(0.8 * mr * G / sn(al) / 5) * 5;
+    var Nr = mr * G - T * sn(al), Ff = mu * Nr, ar = (T * cs(al) - Ff) / mr;
+    var obj = rng.pick(['crate', 'sled', 'trunk', 'toboggan']);
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mr) + KG) + ' ' + obj + ' is pulled across a level floor by a rope at ' + m(nn(al) + DEG) + ' above the horizontal, with a tension of ' + m(nn(T) + NU) + '. It is sliding, and ' + m('\\mu_k = ' + nn(mu)) + '. Find its acceleration.', label: '\\(a =\\)', answer: ar, unit: 'm/s²' };
+    spec.hints = ['Vertically there is no acceleration: \\(N + T\\sin\\alpha - mg = 0\\). The rope carries part of the weight.', 'Horizontally: \\(T\\cos\\alpha - \\mu_k N = ma\\).'];
+    spec.solution = M('N = ' + nn(mr) + '(9.81) - ' + nn(T) + '\\sin ' + nn(al) + DEG + ' = ' + n4(Nr) + NU + '\\qquad F_f = ' + nn(mu) + '(' + n4(Nr) + ') = ' + n4(Ff) + NU) +
+      M('a = \\frac{' + nn(T) + '\\cos ' + nn(al) + DEG + ' - ' + n4(Ff) + '}{' + nn(mr) + '} = ' + n4(ar) + AU);
+    right = ar; wrong = wrongOf(ar, [(T * cs(al) - mu * mr * G) / mr, (T - Ff) / mr, (T * cs(al)) / mr]);
+    view = fled({ items: [['T\\cos\\alpha', T * cs(al), 'muted'], ['F_f', -Ff, 'r']], end: ['ma', mr * ar],
+      readouts: [ro('\\(N\\)', n4(Nr) + NU), ro('\\(F_f = \\mu_k N\\)', n4(Ff) + NU), ro('\\(a\\)', n4(ar) + AU)], note: 'With \\(N = mg\\) the friction would be too large: the rope lifts part of the weight.' });
+    spec.explain = 'Find \\(N\\) from its own equation before using \\(\\mu_k N\\).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.3 Friction: does it slip? (Lesson 3) ---------- */
+  function genFriction(rng) {
+    var kind = pickW(rng, [['truck', 3], ['push', 3], ['stop', 2], ['mu', 2]]), spec, view, right, wrong;
+    if (kind === 'truck') {
+      var mc = rng.pick(range(20, 200, 10)), muS = rng.pick([0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6]), muK = +(muS - rng.pick([0.05, 0.1])).toFixed(2);
+      var aT = rng.pick([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]), slips = aT > muS * G, ac = slips ? muK * G : aT;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mc) + KG) + ' crate rests on the flat bed of a truck, with ' + m('\\mu_s = ' + nn(muS)) + ' and ' + m('\\mu_k = ' + nn(muK)) + '. The truck accelerates forward at ' + m(nn(aT) + AU) + '. Find the acceleration of the crate.', label: '\\(a_{\\text{crate}} =\\)', answer: ac, unit: 'm/s²' };
+      spec.hints = ['Assume it does not slip: then friction must give it the truck\u2019s acceleration, \\(F_f = m a_T\\).', 'Compare with the most static friction can give, \\(\\mu_s mg\\). If it slips, \\(F_f = \\mu_k mg\\), forward.'];
+      spec.solution = M('F_{\\text{needed}} = ' + nn(mc) + '(' + nn(aT) + ') = ' + n4(mc * aT) + NU + '\\qquad \\mu_s mg = ' + n4(muS * mc * G) + NU) +
+        (slips ? '<p>More than static friction can give, so the crate slips:</p>' + M('a_{\\text{crate}} = \\mu_k g = ' + nn(muK) + '(9.81) = ' + n4(ac) + AU) + '<p>It still speeds up, but more slowly than the truck, and slides back on the bed.</p>'
+          : '<p>Within the limit, so the crate does not slip: it moves with the truck, at \\(' + nn(aT) + '\\ \\text{m/s}^2\\).</p>');
+      right = ac; wrong = wrongOf(ac, slips ? [aT, muS * G, aT - muK * G] : [muK * G, muS * G, 0]);
+      view = fled({ items: [['F_f', mc * ac, 'r']], end: ['ma', mc * ac], readouts: [ro('Friction needed to keep up', n4(mc * aT) + NU), ro('Most static friction', n4(muS * mc * G) + NU), ro('\\(a_{\\text{crate}}\\)', n4(ac) + AU)],
+        note: 'Friction is the only horizontal force on the crate. The truck can accelerate at up to \\(\\mu_s g = ' + n4(muS * G) + '\\ \\text{m/s}^2\\) without the crate slipping.' });
+      spec.explain = 'Assume no slip, find the friction needed, compare with \\(\\mu_s N\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'push') {
+      var mp = rng.pick(range(10, 80, 5)), mS = rng.pick([0.3, 0.35, 0.4, 0.45, 0.5, 0.6]), mK = +(mS - rng.pick([0.05, 0.1, 0.15])).toFixed(2);
+      var lim = mS * mp * G, P = Math.round(lim * rng.pick([0.6, 0.8, 0.9, 1.15, 1.3, 1.5, 1.8, 2.2]) / 5) * 5;
+      if (Math.abs(P - lim) < 3) P += 10;
+      var moves = P > lim, ap = moves ? (P - mK * mp * G) / mp : 0, Ff2 = moves ? mK * mp * G : P;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mp) + KG) + ' crate rests on a level floor, with ' + m('\\mu_s = ' + nn(mS)) + ' and ' + m('\\mu_k = ' + nn(mK)) + '. A worker pushes it horizontally with ' + m(nn(P) + NU) + '. Find its acceleration.', label: '\\(a =\\)', answer: ap, unit: 'm/s²' };
+      spec.hints = ['Does it move? Compare the push with the largest static friction, \\(\\mu_s mg\\).', moves ? 'If it slides, friction is \\(\\mu_k mg\\): \\(P - \\mu_k mg = ma\\).' : 'If the push is within the limit, static friction matches it exactly.'];
+      spec.solution = M('\\mu_s mg = ' + nn(mS) + '(' + nn(mp) + ')(9.81) = ' + n4(lim) + NU) + (moves
+        ? '<p>The push is larger, so the crate slides and friction is \\(\\mu_k mg = ' + n4(Ff2) + '\\ \\text{N}\\):</p>' + M('a = \\frac{' + nn(P) + ' - ' + n4(Ff2) + '}{' + nn(mp) + '} = ' + n4(ap) + AU)
+        : '<p>The push is smaller, so the crate does not move: static friction is \\(' + nn(P) + '\\ \\text{N}\\), and \\(a = 0\\).</p>');
+      right = ap; wrong = moves ? wrongOf(ap, [(P - lim) / mp, P / mp, 0]) : (P - mK * mp * G) / mp > 0.05 ? (P - mK * mp * G) / mp : P / mp;
+      view = fled({ items: [['P', P, 'warn'], ['F_f', -Ff2, 'r']], end: ['ma', mp * ap], readouts: [ro('Largest static friction', n4(lim) + NU), ro('Friction now', n4(Ff2) + NU), ro('\\(a\\)', n4(ap) + AU)],
+        note: moves ? 'Once it slides, friction drops to \\(\\mu_k N\\).' : 'Static friction is only as large as it needs to be.' });
+      spec.explain = 'Check for slip first: friction is \\(\\mu_k N\\) only while the surfaces slide.';
+      return done(spec, view, right, wrong);
+    }
+    var v0 = rng.pick(range(2, 15, 0.5)), mu3 = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7]), mass3 = rng.pick(range(1, 50, 1)), dec = mu3 * G;
+    if (kind === 'stop') {
+      var askT = rng.next() < 0.4, d = v0 * v0 / (2 * dec), tt = v0 / dec;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass3) + KG) + ' box slides across a level floor at ' + m(nn(v0) + MS) + ' with nothing pushing it. The coefficient of kinetic friction is ' + m(nn(mu3)) + '. ' + (askT ? 'How long does it take to stop?' : 'How far does it slide before it stops?'), label: askT ? '\\(t =\\)' : '\\(d =\\)', answer: askT ? tt : d, unit: askT ? 's' : 'm' };
+      spec.hints = ['Friction \\(\\mu_k mg\\) is the only horizontal force: \\(a = -\\mu_k g\\), whatever the mass.', askT ? 'Then \\(0 = v_0 + at\\).' : 'Then \\(0 = v_0^2 + 2ad\\).'];
+      spec.solution = M('a = -\\mu_k g = -' + nn(mu3) + '(9.81) = -' + n4(dec) + AU + '\\qquad ' + (askT ? 't = \\frac{v_0}{\\mu_k g} = \\frac{' + nn(v0) + '}{' + n4(dec) + '} = ' + n4(tt) + SU : 'd = \\frac{v_0^2}{2\\mu_k g} = \\frac{' + nn(v0) + '^2}{2(' + n4(dec) + ')} = ' + n4(d) + MU));
+      right = askT ? tt : d; wrong = askT ? wrongOf(tt, [v0 * dec, v0 / mu3, d]) : wrongOf(d, [v0 * v0 / dec, v0 / dec, v0 * v0 / (2 * mu3)]);
+      view = fled({ items: [['F_f', -mu3 * mass3 * G, 'r']], end: ['ma', -mu3 * mass3 * G], readouts: [ro('\\(F_f\\)', n4(mu3 * mass3 * G) + NU), ro('\\(a\\)', '-' + n4(dec) + AU), ro(askT ? '\\(t\\)' : '\\(d\\)', askT ? n4(tt) + SU : n4(d) + MU)],
+        note: 'The mass cancels: a heavy box and a light one stop in the same distance.' });
+      spec.explain = 'Kinetics gives \\(a = -\\mu_k g\\); kinematics does the rest.';
+      return done(spec, view, right, wrong);
+    }
+    var dd = rng.pick(range(2, 40, 1)), muf = v0 * v0 / (2 * G * dd);
+    if (muf > 1.2) { dd = Math.ceil(v0 * v0 / (2 * G * 0.8)); muf = v0 * v0 / (2 * G * dd); }
+    spec = { type: 'numeric', prompt: 'A hockey puck is sent sliding across a rink at ' + m(nn(v0) + MS) + ' and comes to rest after ' + m(nn(dd) + MU) + '. Find the coefficient of kinetic friction between the puck and the ice.', label: '\\(\\mu_k =\\)', answer: muf, unit: '' };
+    spec.hints = ['Kinematics: \\(0 = v_0^2 + 2ad\\) gives the (constant) deceleration.', 'Kinetics: friction is the only horizontal force, so \\(\\mu_k g = |a|\\).'];
+    spec.solution = M('|a| = \\frac{v_0^2}{2d} = \\frac{' + nn(v0) + '^2}{2(' + nn(dd) + ')} = ' + n4(v0 * v0 / (2 * dd)) + AU + '\\qquad \\mu_k = \\frac{|a|}{g} = ' + n4(muf));
+    right = muf; wrong = wrongOf(muf, [v0 * v0 / (G * dd), v0 / (G * dd), v0 * v0 / (2 * dd)]);
+    view = fled({ items: [['F_f', -muf * G, 'r']], end: ['ma', -muf * G], readouts: [ro('\\(|a|\\)', n4(v0 * v0 / (2 * dd)) + AU), ro('\\(\\mu_k = |a|/g\\)', n4(muf))], note: 'Shown per kilogram of puck: the mass cancels.' });
+    spec.explain = 'Motion to forces: find \\(a\\) from the motion, then the friction that causes it.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.4 Inclines (Lesson 3) ---------- */
+  function genIncline(rng) {
+    var kind = pickW(rng, [['down', 3], ['hold', 1], ['up', 2], ['pushup', 2], ['horizontal', 2]]), spec, view, right, wrong;
+    var th = rng.pick([10, 15, 20, 25, 30, 35, 40]), mass = rng.pick(range(2, 60, 1)), W = mass * G;
+    if (kind === 'hold') {
+      var mu0 = tn(th);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' box rests on a ramp inclined at ' + m(nn(th) + DEG) + '. What is the least coefficient of static friction that keeps it from sliding?', label: '\\(\\mu_s =\\)', answer: mu0, unit: '' };
+      spec.hints = ['Along the slope, at the point of slipping: \\(mg\\sin\\theta = \\mu_s N\\).', 'Across the slope: \\(N = mg\\cos\\theta\\).'];
+      spec.solution = M('\\mu_s = \\frac{mg\\sin\\theta}{mg\\cos\\theta} = \\tan ' + nn(th) + DEG + ' = ' + n4(mu0)) + '<p>The mass cancels: \\(' + nn(th) + '^\\circ\\) is the angle of repose for \\(\\mu_s = ' + n4(mu0) + '\\).</p>';
+      right = mu0; wrong = wrongOf(mu0, [sn(th), cs(th), 1 / tn(th)]);
+      view = fled({ title: 'Forces down the slope', items: [['W_\\parallel', W * sn(th), 'z'], ['F_f', -W * sn(th), 'r']], end: ['ma', 0], readouts: [ro('\\(W_\\parallel = mg\\sin\\theta\\)', n4(W * sn(th)) + NU), ro('\\(N = mg\\cos\\theta\\)', n4(W * cs(th)) + NU), ro('\\(\\mu_s = \\tan\\theta\\)', n4(mu0))],
+        note: 'At rest, static friction exactly cancels the weight\'s pull down the slope.' });
+      spec.explain = 'At the point of slipping, \\(\\mu_s = \\tan\\theta\\).';
+      return done(spec, view, right, wrong);
+    }
+    var muK = rng.pick([0, 0.1, 0.15, 0.2, 0.25, 0.3]);
+    if (kind === 'down') {
+      while (muK + 0.05 >= tn(th)) muK = Math.max(0, +(muK - 0.1).toFixed(2));
+      var a = G * (sn(th) - muK * cs(th)), askV = rng.next() < 0.5, s = rng.pick(range(1, 10, 0.5)), v = Math.sqrt(2 * a * s);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' block is released from rest on a ' + m(nn(th) + DEG) + ' slope' + (muK ? ', with ' + m('\\mu_k = ' + nn(muK)) : ' that is smooth') + ', and slides down. ' + (askV ? 'How fast is it moving after sliding ' + m(nn(s) + MU) + '?' : 'Find its acceleration.'), label: askV ? '\\(v =\\)' : '\\(a =\\)', answer: askV ? v : a, unit: askV ? 'm/s' : 'm/s²' };
+      spec.hints = ['Axes along and normal to the slope: \\(N = mg\\cos\\theta\\).', 'Along the slope: \\(mg\\sin\\theta - \\mu_k mg\\cos\\theta = ma\\)' + (askV ? ', then \\(v^2 = 2as\\).' : '.')];
+      spec.solution = M('a = g(\\sin\\theta - \\mu_k\\cos\\theta) = 9.81(\\sin ' + nn(th) + DEG + ' - ' + nn(muK) + '\\cos ' + nn(th) + DEG + ') = ' + n4(a) + AU) + (askV ? M('v = \\sqrt{2as} = \\sqrt{2(' + n4(a) + ')(' + nn(s) + ')} = ' + n4(v) + MS) : '');
+      right = askV ? v : a; wrong = askV ? wrongOf(v, [Math.sqrt(2 * G * sn(th) * s), Math.sqrt(a * s), 2 * a * s]) : wrongOf(a, [G * (sn(th) + muK * cs(th)), G * (cs(th) - muK * sn(th)), G * sn(th)]);
+      view = fled({ title: 'Forces down the slope', items: [['W_\\parallel', W * sn(th), 'z'], ['F_f', -muK * W * cs(th), 'r']], end: ['ma', mass * a], readouts: [ro('\\(N\\)', n4(W * cs(th)) + NU), ro('\\(F_f = \\mu_k N\\)', n4(muK * W * cs(th)) + NU), ro('\\(a\\)', n4(a) + AU)],
+        note: 'Every term has an \\(m\\): the acceleration does not depend on the mass.' });
+      spec.explain = '\\(a = g(\\sin\\theta - \\mu_k\\cos\\theta)\\) sliding down.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'up') {
+      var v0 = rng.pick(range(2, 12, 0.5)), au = G * (sn(th) + muK * cs(th)), d = v0 * v0 / (2 * au);
+      spec = { type: 'numeric', prompt: 'A block is launched up a ' + m(nn(th) + DEG) + ' slope at ' + m(nn(v0) + MS) + (muK ? ', with ' + m('\\mu_k = ' + nn(muK)) : ' with no friction') + '. How far up the slope does it travel before it stops?', label: '\\(d =\\)', answer: d, unit: 'm' };
+      spec.hints = ['Going up, both the weight\'s component and friction point down the slope.', '\\(a = -g(\\sin\\theta + \\mu_k\\cos\\theta)\\), then \\(0 = v_0^2 + 2ad\\).'];
+      spec.solution = M('|a| = 9.81(\\sin ' + nn(th) + DEG + ' + ' + nn(muK) + '\\cos ' + nn(th) + DEG + ') = ' + n4(au) + AU + '\\qquad d = \\frac{' + nn(v0) + '^2}{2(' + n4(au) + ')} = ' + n4(d) + MU);
+      right = d; wrong = wrongOf(d, [v0 * v0 / (2 * G * (sn(th) - muK * cs(th))), v0 * v0 / (2 * G * sn(th)) * (muK ? 1 : 1.3), v0 * v0 / au]);
+      view = fled({ title: 'Forces up the slope, on the way up', items: [['W_\\parallel', -mass * G * sn(th), 'z'], ['F_f', -muK * mass * G * cs(th), 'r']], end: ['ma', -mass * au],
+        readouts: [ro('Mass (for the bars)', nn(mass) + KG), ro('\\(|a|\\)', n4(au) + AU), ro('\\(d\\)', n4(d) + MU)], note: 'On the way up, friction and gravity both slow the block. On the way back down, friction reverses.' });
+      spec.explain = 'Friction opposes the motion, so its direction depends on which way the block slides.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'pushup') {
+      var Pmin = W * (sn(th) + muK * cs(th)), P = Math.ceil(Pmin * rng.pick([1.15, 1.3, 1.5, 1.8]) / 5) * 5, ap = (P - Pmin) / mass;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' crate is pushed up a ' + m(nn(th) + DEG) + ' ramp by a force of ' + m(nn(P) + NU) + ' parallel to the ramp' + (muK ? ', with ' + m('\\mu_k = ' + nn(muK)) : '; the ramp is smooth') + '. It is moving up. Find its acceleration.', label: '\\(a =\\)', answer: ap, unit: 'm/s²' };
+      spec.hints = ['\\(N = mg\\cos\\theta\\): the push is parallel to the ramp, so it does not change \\(N\\).', 'Up the slope: \\(P - mg\\sin\\theta - \\mu_k mg\\cos\\theta = ma\\).'];
+      spec.solution = M('a = \\frac{' + nn(P) + ' - ' + n4(W * sn(th)) + ' - ' + n4(muK * W * cs(th)) + '}{' + nn(mass) + '} = ' + n4(ap) + AU);
+      right = ap; wrong = wrongOf(ap, [(P - W * sn(th) + muK * W * cs(th)) / mass, (P - muK * W) / mass, (P - W * sn(th)) / mass * (muK ? 1 : 1.5)]);
+      view = fled({ title: 'Forces up the slope', items: [['P', P, 'warn'], ['W_\\parallel', -W * sn(th), 'z'], ['F_f', -muK * W * cs(th), 'r']], end: ['ma', mass * ap],
+        readouts: [ro('\\(mg\\sin\\theta\\)', n4(W * sn(th)) + NU), ro('\\(\\mu_k mg\\cos\\theta\\)', n4(muK * W * cs(th)) + NU), ro('\\(a\\)', n4(ap) + AU)], note: 'Moving up, friction points down the slope.' });
+      spec.explain = 'Along the slope: the push, less the weight\'s component, less friction.';
+      return done(spec, view, right, wrong);
+    }
+    var mh = mass, Wh = mh * G, mk = muK || 0.2;
+    var Pmin2 = Wh * (sn(th) + mk * cs(th)) / (cs(th) - mk * sn(th)), Ph = Math.ceil(Pmin2 * rng.pick([1.15, 1.3, 1.5]) / 5) * 5;
+    var Nh = Wh * cs(th) + Ph * sn(th), ah = (Ph * cs(th) - Wh * sn(th) - mk * Nh) / mh;
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mh) + KG) + ' crate is pushed up a ' + m(nn(th) + DEG) + ' ramp by a <em>horizontal</em> force of ' + m(nn(Ph) + NU) + '. It is moving up, and ' + m('\\mu_k = ' + nn(mk)) + '. Find its acceleration.', label: '\\(a =\\)', answer: ah, unit: 'm/s²' };
+    spec.hints = ['Resolve the horizontal push: \\(P\\cos\\theta\\) up the slope and \\(P\\sin\\theta\\) into it.', 'Across the slope: \\(N = mg\\cos\\theta + P\\sin\\theta\\). Then along it: \\(P\\cos\\theta - mg\\sin\\theta - \\mu_k N = ma\\).'];
+    spec.solution = M('N = ' + n4(Wh * cs(th)) + ' + ' + n4(Ph * sn(th)) + ' = ' + n4(Nh) + NU) + M('a = \\frac{' + n4(Ph * cs(th)) + ' - ' + n4(Wh * sn(th)) + ' - ' + nn(mk) + '(' + n4(Nh) + ')}{' + nn(mh) + '} = ' + n4(ah) + AU);
+    right = ah; wrong = wrongOf(ah, [(Ph * cs(th) - Wh * sn(th) - mk * Wh * cs(th)) / mh, (Ph - Wh * sn(th) - mk * Wh * cs(th)) / mh, (Ph * cs(th) - Wh * sn(th)) / mh]);
+    view = fled({ title: 'Forces up the slope', items: [['P\\cos\\theta', Ph * cs(th), 'warn'], ['W_\\parallel', -Wh * sn(th), 'z'], ['F_f', -mk * Nh, 'r']], end: ['ma', mh * ah],
+      readouts: [ro('\\(N\\)', n4(Nh) + NU), ro('\\(F_f = \\mu_k N\\)', n4(mk * Nh) + NU), ro('\\(a\\)', n4(ah) + AU)], note: 'The horizontal push presses the crate into the ramp, so \\(N \\gt mg\\cos\\theta\\).' });
+    spec.explain = 'A push at an angle to the surface changes the normal force.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.5 Connected particles (Lesson 4) ---------- */
+  function genPulley(rng) {
+    var kind = pickW(rng, [['table', 3], ['atwood', 3], ['movable', 2], ['slope', 2]]), spec, view, right, wrong, askT = rng.next() < 0.45;
+    var mA = rng.pick(range(1, 20, 1)), mB = rng.pick(range(1, 20, 1));
+    if (kind === 'table') {
+      var mu = rng.pick([0, 0.1, 0.15, 0.2, 0.25, 0.3]);
+      while (mB <= (mu + 0.05) * mA + 0.2) mB += 2;
+      var a = (mB - mu * mA) * G / (mA + mB), T = mB * (G - a);
+      spec = { type: 'numeric', prompt: 'Block \\(A\\) (' + m(nn(mA) + KG) + ') rests on a ' + (mu ? 'rough table, ' + m('\\mu_k = ' + nn(mu)) : 'smooth table') + '. A light cord tied to it runs over a light, smooth pulley at the edge to block \\(B\\) (' + m(nn(mB) + KG) + '), which hangs. The blocks are released. Find ' + (askT ? 'the tension in the cord.' : 'their acceleration.'), label: askT ? '\\(T =\\)' : '\\(a =\\)', answer: askT ? T : a, unit: askT ? 'N' : 'm/s²' };
+      spec.hints = ['One free-body diagram per block. \\(A\\): \\(T - \\mu_k m_A g = m_A a\\). \\(B\\): \\(m_B g - T = m_B a\\).', 'Add them to remove \\(T\\)' + (askT ? '; then \\(T = m_B(g - a)\\).' : '.')];
+      spec.solution = M('a = \\frac{m_B g - \\mu_k m_A g}{m_A + m_B} = \\frac{' + n4(mB * G) + ' - ' + n4(mu * mA * G) + '}{' + nn(mA + mB) + '} = ' + n4(a) + AU) + (askT ? M('T = m_B(g - a) = ' + nn(mB) + '(9.81 - ' + n4(a) + ') = ' + n4(T) + NU) : '');
+      right = askT ? T : a; wrong = askT ? wrongOf(T, [mB * G, mA * a, mB * (G + a)]) : wrongOf(a, [mB * G / mB, (mB - mu * mA) * G / mB, mB * G / (mA + mB) * (mu ? 1 : 1.4)]);
+      view = fled({ title: 'The system, along the cord', items: [['W_B', mB * G, 'z'], ['F_f', -mu * mA * G, 'r']], end: ['(m_A + m_B)a', (mA + mB) * a],
+        readouts: [ro('\\(a\\)', n4(a) + AU), ro('\\(T\\)', n4(T) + NU), ro('\\(m_B g\\)', n4(mB * G) + NU)], note: 'The tension is internal to the system, so it is not in the bars; \\(T \\lt m_B g\\) while \\(B\\) accelerates downward.' });
+      spec.explain = 'Same acceleration for both: the cord does not stretch.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'atwood') {
+      if (mA === mB) mB += 1;
+      var lo = Math.min(mA, mB), hi = Math.max(mA, mB), aa = (hi - lo) * G / (lo + hi), Ta = 2 * lo * hi * G / (lo + hi);
+      spec = { type: 'numeric', prompt: 'Blocks of ' + m(nn(lo) + KG) + ' and ' + m(nn(hi) + KG) + ' hang from the ends of a light cord over a light, smooth, fixed pulley, and are released. Find ' + (askT ? 'the tension in the cord.' : 'their acceleration.'), label: askT ? '\\(T =\\)' : '\\(a =\\)', answer: askT ? Ta : aa, unit: askT ? 'N' : 'm/s²' };
+      spec.hints = ['Rising block: \\(T - m_1 g = m_1 a\\). Falling block: \\(m_2 g - T = m_2 a\\).', 'Add the two equations to remove \\(T\\).'];
+      spec.solution = M('a = \\frac{m_2 - m_1}{m_1 + m_2}g = \\frac{' + nn(hi - lo) + '}{' + nn(lo + hi) + '}(9.81) = ' + n4(aa) + AU) + (askT ? M('T = m_1(g + a) = ' + nn(lo) + '(9.81 + ' + n4(aa) + ') = ' + n4(Ta) + NU) : '');
+      right = askT ? Ta : aa; wrong = askT ? wrongOf(Ta, [hi * G, lo * G, (hi - lo) * G]) : wrongOf(aa, [(hi - lo) * G / hi, (hi - lo) * G, G * lo / hi]);
+      view = fled({ title: 'The system, along the cord', items: [['m_2 g', hi * G, 'z'], ['-m_1 g', -lo * G, 'z']], end: ['(m_1 + m_2)a', (lo + hi) * aa],
+        readouts: [ro('\\(a\\)', n4(aa) + AU), ro('\\(T\\)', n4(Ta) + NU)], note: 'The tension lies between the two weights.' });
+      spec.explain = 'Atwood machine: \\(a = (m_2 - m_1)g/(m_1 + m_2)\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'movable') {
+      var aB = mB * G / (mB + 4 * mA), aA = 2 * aB, Tm = mA * aA, which = rng.pick(['aA', 'aB', 'T']);
+      spec = { type: 'numeric', prompt: 'Block \\(A\\) (' + m(nn(mA) + KG) + ') on a smooth table is tied to a cord that runs over a fixed pulley at the edge, down around a movable pulley carrying block \\(B\\) (' + m(nn(mB) + KG) + '), and up to a fixed support. The pulleys are light. Find ' + (which === 'aA' ? 'the acceleration of \\(A\\).' : which === 'aB' ? 'the acceleration of \\(B\\).' : 'the tension in the cord.'),
+        label: which === 'T' ? '\\(T =\\)' : which === 'aA' ? '\\(a_A =\\)' : '\\(a_B =\\)', answer: which === 'T' ? Tm : which === 'aA' ? aA : aB, unit: which === 'T' ? 'N' : 'm/s²' };
+      spec.hints = ['The cord\'s length: \\(s_A + 2s_B\\) is constant, so \\(A\\) moves twice as fast as \\(B\\): \\(a_A = 2a_B\\).', '\\(A\\): \\(T = m_A a_A\\). \\(B\\) and its pulley: \\(m_B g - 2T = m_B a_B\\).'];
+      spec.solution = M('m_B g - 2m_A(2a_B) = m_B a_B \\quad\\Rightarrow\\quad a_B = \\frac{m_B g}{m_B + 4m_A} = \\frac{' + n4(mB * G) + '}{' + nn(mB + 4 * mA) + '} = ' + n4(aB) + AU) + M('a_A = 2a_B = ' + n4(aA) + AU + '\\qquad T = m_A a_A = ' + n4(Tm) + NU);
+      right = which === 'T' ? Tm : which === 'aA' ? aA : aB;
+      wrong = which === 'T' ? wrongOf(Tm, [mB * G / 2, mA * aB, mB * G]) : which === 'aA' ? wrongOf(aA, [aB, mB * G / (mA + mB), 4 * aB]) : wrongOf(aB, [aA, mB * G / (mA + mB), mB * G / (mB + 2 * mA)]);
+      view = fled({ title: 'Block B and its pulley, down positive', items: [['m_B g', mB * G, 'z'], ['-2T', -2 * Tm, 'muted']], end: ['m_B a_B', mB * aB],
+        readouts: [ro('\\(a_A\\)', n4(aA) + AU), ro('\\(a_B\\)', n4(aB) + AU), ro('\\(T\\)', n4(Tm) + NU)], note: 'Two lengths of cord hold the movable pulley, so it feels \\(2T\\) while \\(A\\) feels \\(T\\).' });
+      spec.explain = 'Dependent motion: write the cord\'s length in position coordinates.';
+      return done(spec, view, right, wrong);
+    }
+    var ths = rng.pick([15, 20, 25, 30, 35, 40, 45]);
+    while (mB <= mA * sn(ths) + 0.3) mB += 2;
+    var as = (mB - mA * sn(ths)) * G / (mA + mB), Ts = mB * (G - as);
+    spec = { type: 'numeric', prompt: 'Block \\(A\\) (' + m(nn(mA) + KG) + ') sits on a smooth ' + m(nn(ths) + DEG) + ' incline. A light cord tied to it runs up the slope, over a light, smooth pulley at the top, to block \\(B\\) (' + m(nn(mB) + KG) + '), which hangs. Find ' + (askT ? 'the tension in the cord.' : 'the acceleration of the blocks.'), label: askT ? '\\(T =\\)' : '\\(a =\\)', answer: askT ? Ts : as, unit: askT ? 'N' : 'm/s²' };
+    spec.hints = ['\\(A\\), up the slope: \\(T - m_A g\\sin\\theta = m_A a\\). \\(B\\), down: \\(m_B g - T = m_B a\\).', 'Add them to remove \\(T\\).'];
+    spec.solution = M('a = \\frac{m_B - m_A\\sin\\theta}{m_A + m_B}g = \\frac{' + nn(mB) + ' - ' + nn(mA) + '\\sin ' + nn(ths) + DEG + '}{' + nn(mA + mB) + '}(9.81) = ' + n4(as) + AU) + (askT ? M('T = m_B(g - a) = ' + n4(Ts) + NU) : '');
+    right = askT ? Ts : as; wrong = askT ? wrongOf(Ts, [mB * G, mA * G * sn(ths), mB * (G + as)]) : wrongOf(as, [(mB - mA) * G / (mA + mB), (mB - mA * cs(ths)) * G / (mA + mB), mB * G / (mA + mB)]);
+    view = fled({ title: 'The system, along the cord', items: [['m_B g', mB * G, 'z'], ['-m_A g\\sin\\theta', -mA * G * sn(ths), 'z']], end: ['(m_A + m_B)a', (mA + mB) * as],
+      readouts: [ro('\\(a\\)', n4(as) + AU), ro('\\(T\\)', n4(Ts) + NU)], note: 'Only the weight\'s component along the slope resists \\(B\\)\'s pull.' });
+    spec.explain = 'Each block along its own line of motion, then add.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.6 Forces that vary (Lesson 5) ---------- */
+  function genVarying(rng) {
+    var kind = pickW(rng, [['ft', 2], ['slip', 2], ['spring', 2], ['coast', 2], ['terminal', 2]]), spec, view, right, wrong;
+    if (kind === 'ft') {
+      var mass = rng.pick(range(1, 20, 1)), c = rng.pick(range(1, 20, 1)), n = rng.pick([1, 2]), t1 = rng.pick(range(1, 6, 0.5));
+      var v = c * Math.pow(t1, n + 1) / ((n + 1) * mass), Ft = n === 1 ? nn(c) + 't' : nn(c) + 't^2';
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' block starts from rest on a smooth level surface. A horizontal force ' + m('F = ' + Ft + NU) + ' acts on it, with \\(t\\) in seconds. How fast is it moving at ' + m('t = ' + nn(t1) + SU) + '?', label: '\\(v =\\)', answer: v, unit: 'm/s' };
+      spec.hints = ['The force depends on time: write \\(a = dv/dt = F(t)/m\\).', 'Integrate from 0 to \\(t\\): \\(m v = \\int_0^{t} F\\,dt\\).'];
+      spec.solution = M(nn(mass) + '\\,v = \\int_0^{' + nn(t1) + '} ' + Ft + '\\,dt = \\frac{' + nn(c) + '}{' + (n + 1) + '}(' + nn(t1) + ')^{' + (n + 1) + '} = ' + n4(mass * v) + '\\quad\\Rightarrow\\quad v = ' + n4(v) + MS);
+      right = v; wrong = wrongOf(v, [c * Math.pow(t1, n) * t1 / mass, c * Math.pow(t1, n) / mass, c * Math.pow(t1, n + 1) / mass]);
+      var pts = []; for (var q = 0; q <= 40; q++) { var tq = t1 * q / 40; pts.push([tq, c * Math.pow(tq, n)]); }
+      pts.push([t1, 0], [t1 * 1.15, 0]);
+      view = area({ title: 'The force against time', aria: 'The force, growing with time, with the area under it shaded up to the time asked about: that area is m v.', x: { label: '\\(t\\) (s)', min: 0, max: t1 * 1.15 }, y: { label: '\\(F\\) (N)', min: 0, max: c * Math.pow(t1, n) * 1.15 },
+        pts: pts, from: 0, to: t1, readouts: [ro('Area \\(\\int F\\,dt\\)', n4(mass * v) + NS), ro('\\(v = \\text{area}/m\\)', n4(v) + MS)], note: 'The area under the force–time graph is \\(m v\\): the impulse, the subject of a later module.' });
+      spec.explain = 'A force that changes with time: integrate \\(F/m\\) over time.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'slip') {
+      var ms = rng.pick(range(2, 20, 1)), cs2 = rng.pick(range(5, 40, 5)), muS = rng.pick([0.3, 0.4, 0.5, 0.6]), muK = +(muS - rng.pick([0.1, 0.15, 0.2])).toFixed(2);
+      var tS = muS * ms * G / cs2, askTime = rng.next() < 0.4, t2 = Math.ceil(tS + rng.pick([1, 1.5, 2, 3])), vS = (cs2 / 2 * (t2 * t2 - tS * tS) - muK * ms * G * (t2 - tS)) / ms;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(ms) + KG) + ' crate rests on a floor with ' + m('\\mu_s = ' + nn(muS)) + ' and ' + m('\\mu_k = ' + nn(muK)) + '. A horizontal push ' + m('P = ' + nn(cs2) + 't' + NU) + ' (\\(t\\) in seconds) starts at \\(t = 0\\). ' + (askTime ? 'When does the crate start to slide?' : 'How fast is it moving at ' + m('t = ' + nn(t2) + SU) + '?'), label: askTime ? '\\(t_1 =\\)' : '\\(v =\\)', answer: askTime ? tS : vS, unit: askTime ? 's' : 'm/s' };
+      spec.hints = ['It slides when the push reaches \\(\\mu_s mg\\): \\(' + nn(cs2) + 't_1 = \\mu_s mg\\).', askTime ? 'Before that, static friction matches the push and nothing moves.' : 'After that, \\(m\\,dv/dt = ' + nn(cs2) + 't - \\mu_k mg\\); integrate from \\(t_1\\).'];
+      spec.solution = M('t_1 = \\frac{\\mu_s mg}{c} = \\frac{' + n4(muS * ms * G) + '}{' + nn(cs2) + '} = ' + n4(tS) + SU) + (askTime ? '' : M(nn(ms) + '\\,v = \\int_{' + n4(tS) + '}^{' + nn(t2) + '}(' + nn(cs2) + 't - ' + n4(muK * ms * G) + ')\\,dt = ' + n4(ms * vS) + '\\quad\\Rightarrow\\quad v = ' + n4(vS) + MS));
+      right = askTime ? tS : vS; wrong = askTime ? wrongOf(tS, [muK * ms * G / cs2, muS * G / cs2, cs2 / (muS * ms * G)]) : wrongOf(vS, [(cs2 / 2 * t2 * t2 - muK * ms * G * t2) / ms, (cs2 / 2 * (t2 * t2 - tS * tS) - muS * ms * G * (t2 - tS)) / ms, cs2 * t2 * t2 / (2 * ms)]);
+      var tEnd = askTime ? tS * 1.6 : t2, pts2 = [[0, 0], [tS, 0]];
+      for (var k2 = 0; k2 <= 30; k2++) { var tt2 = tS + (tEnd - tS) * k2 / 30; pts2.push([tt2, cs2 * tt2 - muK * ms * G]); }
+      pts2.push([tEnd, 0]);
+      view = area({ title: 'The net force against time', aria: 'The net force on the crate: zero until it starts to slide, then the push less kinetic friction, growing with time. The shaded area is m v.', x: { label: '\\(t\\) (s)', min: 0, max: tEnd * 1.05 }, y: { label: 'Net force (N)', min: 0, max: (cs2 * tEnd - muK * ms * G) * 1.15 + 1 },
+        pts: pts2, from: tS, to: tEnd, readouts: [ro('Starts to slide at \\(t_1\\)', n4(tS) + SU), ro('Net force just after', n4((muS - muK) * ms * G) + NU), ro(askTime ? 'Net force at the end shown' : '\\(v\\)', askTime ? n4(cs2 * tEnd - muK * ms * G) + NU : n4(vS) + MS)],
+        note: 'When it slips, friction drops from \\(\\mu_s N\\) to \\(\\mu_k N\\): the net force jumps from zero.' });
+      spec.explain = 'Find when it slips; then integrate the net force over time.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'spring') {
+      var k = rng.pick(range(100, 2000, 50)), dl = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12, 0.15, 0.2]), mm = rng.pick([0.2, 0.25, 0.4, 0.5, 0.8, 1, 1.5, 2, 2.5, 3, 4, 5]), vs = dl * Math.sqrt(k / mm);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block is held against a spring of stiffness ' + m(nn(k) + NM) + ', compressed ' + m(nn(dl) + MU) + ', on a smooth floor, and released. How fast does it leave the spring?', label: '\\(v =\\)', answer: vs, unit: 'm/s' };
+      spec.hints = ['The force depends on position: \\(F = k(\\delta - s)\\) with \\(s\\) from the released position. Use \\(a = v\\,dv/ds\\).', '\\(\\int_0^v m\\,v\\,dv = \\int_0^\\delta k(\\delta - s)\\,ds\\), which gives \\(\\tfrac12 mv^2 = \\tfrac12 k\\delta^2\\).'];
+      spec.solution = M('\\tfrac12(' + nn(mm) + ')v^2 = \\tfrac12(' + nn(k) + ')(' + nn(dl) + ')^2 \\quad\\Rightarrow\\quad v = \\delta\\sqrt{k/m} = ' + n4(vs) + MS);
+      right = vs; wrong = wrongOf(vs, [dl * k / mm, Math.sqrt(2 * k * dl / mm), dl * Math.sqrt(k / mm) * Math.SQRT2]);
+      view = area({ title: 'The spring force against position', aria: 'The spring force, falling linearly to zero as the block moves from the released position to the spring\'s free length. The shaded area is one half m v squared.', x: { label: '\\(s\\) (m)', min: 0, max: dl * 1.3 }, y: { label: '\\(F_s\\) (N)', min: 0, max: k * dl * 1.15 },
+        pts: [[0, k * dl], [dl, 0], [dl * 1.3, 0]], from: 0, to: dl, color: 't', readouts: [ro('Largest force \\(k\\delta\\)', n4(k * dl) + NU), ro('Area \\(\\tfrac12 k\\delta^2\\)', n4(0.5 * k * dl * dl) + J), ro('\\(v\\)', n4(vs) + MS)], note: 'The area under a force–position graph is \\(\\tfrac12 mv^2\\): the work of the force, the subject of the next module.' });
+      spec.explain = 'A force that changes with position: use \\(v\\,dv = a\\,ds\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'coast') {
+      var mb = rng.pick(range(100, 1500, 50)), kd = rng.pick(range(5, 60, 5)), v0 = rng.pick(range(6, 20, 1)), frac = rng.pick([0.25, 0.4, 0.5, 0.6, 0.75]), v1 = +(v0 * frac).toFixed(2);
+      var askS = rng.next() < 0.5, tc = mb / kd * (1 / v1 - 1 / v0), sc = mb / kd * Math.log(v0 / v1);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mb) + KG) + ' boat moving at ' + m(nn(v0) + MS) + ' cuts its engine. The water\'s drag is ' + m('F_D = ' + nn(kd) + 'v^2' + NU) + ', with \\(v\\) in m/s. ' + (askS ? 'How far does it travel while slowing to ' : 'How long does it take to slow to ') + m(nn(v1) + MS) + '?', label: askS ? '\\(s =\\)' : '\\(t =\\)', answer: askS ? sc : tc, unit: askS ? 'm' : 's' };
+      spec.hints = ['The force depends on velocity: \\(m\\,' + (askS ? 'v\\,dv/ds' : 'dv/dt') + ' = -kv^2\\).', askS ? 'Separate: \\(ds = -(m/k)\\,dv/v\\), so \\(s = (m/k)\\ln(v_0/v_1)\\).' : 'Separate: \\(dt = -(m/k)\\,dv/v^2\\), so \\(t = (m/k)(1/v_1 - 1/v_0)\\).'];
+      spec.solution = askS ? M('s = \\frac{m}{k}\\ln\\frac{v_0}{v_1} = \\frac{' + nn(mb) + '}{' + nn(kd) + '}\\ln\\frac{' + nn(v0) + '}{' + nn(v1) + '} = ' + n4(sc) + MU)
+        : M('t = \\frac{m}{k}\\left(\\frac{1}{v_1} - \\frac{1}{v_0}\\right) = \\frac{' + nn(mb) + '}{' + nn(kd) + '}\\left(\\frac{1}{' + nn(v1) + '} - \\frac{1}{' + nn(v0) + '}\\right) = ' + n4(tc) + SU);
+      right = askS ? sc : tc; wrong = askS ? wrongOf(sc, [mb / kd * (v0 - v1), mb / kd * (1 / v1 - 1 / v0), kd / mb * Math.log(v0 / v1)]) : wrongOf(tc, [mb / kd * Math.log(v0 / v1), mb * (v0 - v1) / (kd * v0 * v0), mb / kd * (v0 - v1)]);
+      view = fled({ title: 'The forces at the start, along the motion', items: [['F_D', -kd * v0 * v0, 'warn']], end: ['ma', -kd * v0 * v0], readouts: [ro('Drag at \\(v_0\\)', n4(kd * v0 * v0) + NU), ro('Drag at \\(v_1\\)', n4(kd * v1 * v1) + NU), ro(askS ? '\\(s\\)' : '\\(t\\)', askS ? n4(sc) + MU : n4(tc) + SU)],
+        note: 'The deceleration falls as the boat slows, so the constant-acceleration formulas do not apply.' });
+      spec.explain = 'A force that depends on velocity: separate the variables.';
+      return done(spec, view, right, wrong);
+    }
+    var linear = rng.next() < 0.35, mt, kt, vt;
+    if (linear) {                                           // small, slow bodies: drag nearly proportional to speed
+      mt = rng.pick([0.001, 0.002, 0.005, 0.01, 0.02, 0.05]); kt = rng.pick([0.0005, 0.001, 0.002, 0.005, 0.01]); vt = mt * G / kt;
+      while (vt > 40) { kt *= 2; vt = mt * G / kt; }
+      while (vt < 0.5) { kt /= 2; vt = mt * G / kt; }
+      kt = +kt.toPrecision(3); vt = mt * G / kt;
+    } else {
+      mt = rng.pick([0.05, 0.1, 0.2, 0.5, 1, 2, 60, 70, 80, 90, 100]); kt = mt > 10 ? rng.pick([0.08, 0.1, 0.15, 0.2, 0.25, 0.3]) : rng.pick([0.0005, 0.001, 0.002, 0.005, 0.01]); vt = Math.sqrt(mt * G / kt);
+      while (vt > 120) { kt *= 2; vt = Math.sqrt(mt * G / kt); }
+    }
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mt) + KG) + ' body falls through air with drag ' + m('F_D = ' + nn(kt) + (linear ? 'v' : 'v^2') + NU) + ' (\\(v\\) in m/s). What is its terminal velocity?', label: '\\(v_t =\\)', answer: vt, unit: 'm/s' };
+    spec.hints = ['At terminal velocity the acceleration is zero.', 'So the drag equals the weight: \\(' + (linear ? 'cv_t' : 'kv_t^2') + ' = mg\\).'];
+    spec.solution = M('v_t = ' + (linear ? '\\frac{mg}{c} = \\frac{' + nn(mt) + '(9.81)}{' + nn(kt) + '}' : '\\sqrt{\\frac{mg}{k}} = \\sqrt{\\frac{' + nn(mt) + '(9.81)}{' + nn(kt) + '}}') + ' = ' + n4(vt) + MS);
+    right = vt; wrong = wrongOf(vt, linear ? [Math.sqrt(mt * G / kt), mt / kt, kt * mt * G] : [mt * G / kt, Math.sqrt(mt / kt), Math.sqrt(kt * mt * G)]);
+    view = fled({ title: 'At terminal velocity, down positive', items: [['W', mt * G, 'z'], ['F_D', -mt * G, 'warn']], end: ['ma', 0], readouts: [ro('Weight', n4(mt * G) + NU), ro('\\(v_t\\)', n4(vt) + MS)], note: 'From rest, the speed creeps up on \\(v_t\\) but never quite reaches it.' });
+    spec.explain = 'Terminal velocity: drag = weight, \\(a = 0\\).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.7 Flat curves and the conical pendulum (Lesson 6) ---------- */
+  function genCurves(rng) {
+    var kind = pickW(rng, [['vmax', 3], ['friction', 2], ['mu', 2], ['accel', 1], ['conical', 2]]), spec, view, right, wrong;
+    var rho = rng.pick(range(20, 300, 10)), muS = rng.pick([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]);
+    if (kind === 'vmax') {
+      var vm = Math.sqrt(muS * G * rho);
+      spec = { type: 'numeric', prompt: 'A flat curve has a radius of ' + m(nn(rho) + MU) + ', and the coefficient of static friction between the tires and the road is ' + m(nn(muS)) + '. What is the highest speed at which a car can take the curve?', label: '\\(v_{\\max} =\\)', answer: vm, unit: 'm/s' };
+      spec.hints = ['Friction supplies the whole normal acceleration: \\(F_f = mv^2/\\rho\\).', 'It can be at most \\(\\mu_s N = \\mu_s mg\\).'];
+      spec.solution = M('m\\frac{v^2}{\\rho} = \\mu_s mg \\quad\\Rightarrow\\quad v_{\\max} = \\sqrt{\\mu_s g\\rho} = \\sqrt{' + nn(muS) + '(9.81)(' + nn(rho) + ')} = ' + n4(vm) + MS) + '<p>That is \\(' + n4(vm * 3.6) + '\\ \\text{km/h}\\), whatever the car\u2019s mass.</p>';
+      right = vm; wrong = wrongOf(vm, [muS * G * rho, Math.sqrt(G * rho), Math.sqrt(muS * G * rho) * 3.6]);
+      view = fled({ title: 'Forces toward the center, per kg', items: [['F_f/m', muS * G, 'r']], end: ['v^2/\\rho', muS * G], readouts: [ro('\\(a_n = \\mu_s g\\)', n4(muS * G) + AU), ro('\\(v_{\\max}\\)', n4(vm) + MS)], note: 'At \\(v_{\\max}\\), friction is at its limit.' });
+      spec.explain = '\\(v_{\\max} = \\sqrt{\\mu_s g\\rho}\\).';
+      return done(spec, view, right, wrong);
+    }
+    var mass = rng.pick(range(800, 2500, 100)), kmh = rng.pick(range(30, 110, 5)), v = kmh / 3.6, an = v * v / rho;
+    while (an > 0.95 * G) { rho += 40; an = v * v / rho; }
+    if (kind === 'friction') {
+      var F = mass * an;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' car takes a flat curve of radius ' + m(nn(rho) + MU) + ' at a steady ' + m(nn(kmh) + KMH) + '. How large is the friction force on its tires?', label: '\\(F_f =\\)', answer: F, unit: 'N' };
+      spec.hints = ['At constant speed there is no tangential acceleration; friction points toward the center.', '\\(F_f = mv^2/\\rho\\), with \\(v\\) in m/s.'];
+      spec.solution = M('v = ' + n4(v) + MS + '\\qquad F_f = m\\frac{v^2}{\\rho} = ' + nn(mass) + '\\,\\frac{' + n4(v) + '^2}{' + nn(rho) + '} = ' + n4(F) + NU);
+      right = F; wrong = wrongOf(F, [mass * kmh * kmh / rho, mass * v / rho, mass * G]);
+      view = fled({ title: 'Forces toward the center', items: [['F_f', F, 'r']], end: ['mv^2/\\rho', F], readouts: [ro('\\(a_n = v^2/\\rho\\)', n4(an) + AU), ro('\\(F_f\\)', n4(F) + NU)], note: 'Friction is the only horizontal force across the road.' });
+      spec.explain = 'The friction is the whole of \\(mv^2/\\rho\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'mu') {
+      var mu0 = an / G;
+      spec = { type: 'numeric', prompt: 'What is the least coefficient of static friction that lets a car take a flat curve of radius ' + m(nn(rho) + MU) + ' at ' + m(nn(kmh) + KMH) + ' without sliding?', label: '\\(\\mu_s =\\)', answer: mu0, unit: '' };
+      spec.hints = ['Friction must supply \\(mv^2/\\rho\\), and it can be at most \\(\\mu_s mg\\).', 'So \\(\\mu_s \\ge v^2/(g\\rho)\\), with \\(v\\) in m/s.'];
+      spec.solution = M('\\mu_s = \\frac{v^2}{g\\rho} = \\frac{' + n4(v) + '^2}{9.81(' + nn(rho) + ')} = ' + n4(mu0));
+      right = mu0; wrong = wrongOf(mu0, [kmh * kmh / (G * rho), v / (G * rho), v * v / rho]);
+      view = fled({ title: 'Forces toward the center, per kg', items: [['F_f/m', an, 'r']], end: ['v^2/\\rho', an], readouts: [ro('\\(v^2/\\rho\\)', n4(an) + AU), ro('\\(\\mu_s\\)', n4(mu0))], note: 'The mass cancels.' });
+      spec.explain = '\\(\\mu_s \\ge v^2/g\\rho\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'accel') {
+      var at = rng.pick([1, 1.5, 2, 2.5, 3, 3.5, 4]), atot = Math.hypot(at, an), mu1 = atot / G;
+      spec = { type: 'numeric', prompt: 'A car on a flat curve of radius ' + m(nn(rho) + MU) + ' is traveling at ' + m(nn(kmh) + KMH) + ' and speeding up at ' + m(nn(at) + AU) + '. What is the least coefficient of static friction that prevents sliding?', label: '\\(\\mu_s =\\)', answer: mu1, unit: '' };
+      spec.hints = ['Friction supplies both components: \\(ma_t\\) along the road and \\(mv^2/\\rho\\) across it.', 'The total, \\(m\\sqrt{a_t^2 + a_n^2}\\), must be at most \\(\\mu_s mg\\).'];
+      spec.solution = M('a_n = \\frac{' + n4(v) + '^2}{' + nn(rho) + '} = ' + n4(an) + AU + '\\qquad a = \\sqrt{' + nn(at) + '^2 + ' + n4(an) + '^2} = ' + n4(atot) + AU + '\\qquad \\mu_s = \\frac{a}{g} = ' + n4(mu1));
+      right = mu1; wrong = wrongOf(mu1, [an / G, (at + an) / G, at / G]);
+      view = fled({ title: 'Friction per kg, at its limit', items: [['F_f/m', atot, 'r']], end: ['\\sqrt{a_t^2 + a_n^2}', atot], readouts: [ro('\\(a_t\\)', nn(at) + AU), ro('\\(a_n\\)', n4(an) + AU), ro('\\(\\mu_s = a/g\\)', n4(mu1))],
+        note: 'Speeding up uses some of the grip the curve needs.' });
+      spec.explain = 'Total friction \\(= m\\sqrt{a_t^2 + a_n^2} \\le \\mu_s N\\).';
+      return done(spec, view, right, wrong);
+    }
+    var mb = rng.pick([0.1, 0.2, 0.25, 0.5, 0.75, 1, 1.5, 2]), Lc = rng.pick([0.5, 0.8, 1, 1.2, 1.5, 2]), th = rng.pick([15, 20, 25, 30, 35, 40, 45, 50, 55, 60]), what = rng.pick(['T', 'v', 'tau']);
+    var T = mb * G / cs(th), vc = Math.sqrt(G * Lc * sn(th) * tn(th)), tau = 2 * PI * Math.sqrt(Lc * cs(th) / G);
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mb) + KG) + ' ball on a ' + m(nn(Lc) + MU) + ' cord swings as a conical pendulum, the cord at ' + m(nn(th) + DEG) + ' to the vertical. Find ' + (what === 'T' ? 'the tension in the cord.' : what === 'v' ? 'the ball\u2019s speed.' : 'the time for one revolution.'),
+      label: what === 'T' ? '\\(T =\\)' : what === 'v' ? '\\(v =\\)' : '\\(\\tau =\\)', answer: what === 'T' ? T : what === 'v' ? vc : tau, unit: what === 'T' ? 'N' : what === 'v' ? 'm/s' : 's' };
+    spec.hints = ['Vertically, no acceleration: \\(T\\cos\\theta = mg\\).', 'Horizontally, toward the axis: \\(T\\sin\\theta = mv^2/\\rho\\), with \\(\\rho = L\\sin\\theta\\).'];
+    spec.solution = M('T = \\frac{mg}{\\cos\\theta} = ' + n4(T) + NU + '\\qquad v = \\sqrt{gL\\sin\\theta\\tan\\theta} = ' + n4(vc) + MS + '\\qquad \\tau = \\frac{2\\pi L\\sin\\theta}{v} = ' + n4(tau) + SU);
+    right = what === 'T' ? T : what === 'v' ? vc : tau;
+    wrong = what === 'T' ? wrongOf(T, [mb * G * cs(th), mb * G, mb * G * sn(th)]) : what === 'v' ? wrongOf(vc, [Math.sqrt(G * Lc * tn(th)), Math.sqrt(G * Lc), Math.sqrt(G * Lc * sn(th))]) : wrongOf(tau, [2 * PI * Math.sqrt(Lc / G), 2 * PI * Math.sqrt(Lc * sn(th) / G), PI * Math.sqrt(Lc * cs(th) / G)]);
+    view = fled({ title: 'Forces toward the axis', items: [['T\\sin\\theta', T * sn(th), 'muted']], end: ['mv^2/\\rho', mb * vc * vc / (Lc * sn(th))], readouts: [ro('\\(T\\)', n4(T) + NU), ro('\\(\\rho = L\\sin\\theta\\)', n4(Lc * sn(th)) + MU), ro('\\(v\\)', n4(vc) + MS)],
+      note: 'The vertical part of the tension holds up the weight; the horizontal part turns the ball.' });
+    spec.explain = 'Conical pendulum: \\(T\\cos\\theta = mg\\), \\(T\\sin\\theta = mv^2/\\rho\\).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.8 Banked curves, crests and loops (Lesson 7) ---------- */
+  function genBanked(rng) {
+    var kind = pickW(rng, [['design', 2], ['angle', 1], ['vmax', 2], ['crest', 2], ['dip', 1], ['loop', 2]]), spec, view, right, wrong;
+    var rho = rng.pick(range(30, 400, 10)), th = rng.pick([5, 8, 10, 12, 15, 18, 20, 25, 30]);
+    if (kind === 'design') {
+      var v0 = Math.sqrt(G * rho * tn(th));
+      spec = { type: 'numeric', prompt: 'A curve of radius ' + m(nn(rho) + MU) + ' is banked at ' + m(nn(th) + DEG) + '. Find its design speed, at which a car needs no friction.', label: '\\(v_0 =\\)', answer: v0, unit: 'm/s' };
+      spec.hints = ['With no friction: \\(N\\cos\\theta = mg\\) vertically and \\(N\\sin\\theta = mv^2/\\rho\\) toward the center.', 'Divide: \\(\\tan\\theta = v^2/(g\\rho)\\).'];
+      spec.solution = M('v_0 = \\sqrt{g\\rho\\tan\\theta} = \\sqrt{9.81(' + nn(rho) + ')\\tan ' + nn(th) + DEG + '} = ' + n4(v0) + MS) + '<p>That is \\(' + n4(v0 * 3.6) + '\\ \\text{km/h}\\).</p>';
+      right = v0; wrong = wrongOf(v0, [Math.sqrt(G * rho * sn(th)), Math.sqrt(G * rho), G * rho * tn(th)]);
+      view = fled({ title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', G * tn(th), 'ink']], end: ['v^2/\\rho', G * tn(th)], readouts: [ro('\\(N/m = g/\\cos\\theta\\)', n4(G / cs(th)) + AU), ro('\\(v_0\\)', n4(v0) + MS)], note: 'The tilted normal force does all the turning.' });
+      spec.explain = '\\(v_0 = \\sqrt{g\\rho\\tan\\theta}\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'angle') {
+      var kmh = rng.pick(range(40, 130, 10)), v = kmh / 3.6, ang = Math.atan(v * v / (G * rho)) / D2R;
+      spec = { type: 'numeric', prompt: 'At what angle should a curve of radius ' + m(nn(rho) + MU) + ' be banked so that cars at ' + m(nn(kmh) + KMH) + ' need no friction?', label: '\\(\\theta =\\)', answer: ang, unit: '°' };
+      spec.hints = ['\\(\\tan\\theta = v^2/(g\\rho)\\), with \\(v\\) in m/s.', 'Convert: divide km/h by 3.6.'];
+      spec.solution = M('\\tan\\theta = \\frac{' + n4(v) + '^2}{9.81(' + nn(rho) + ')} = ' + n4(v * v / (G * rho)) + '\\quad\\Rightarrow\\quad \\theta = ' + n4(ang) + DEG);
+      right = ang; wrong = wrongOf(ang, [Math.atan(kmh * kmh / (G * rho)) / D2R, Math.asin(Math.min(1, v * v / (G * rho))) / D2R, Math.atan(v / (G * rho)) / D2R]);
+      view = fled({ title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', v * v / rho, 'ink']], end: ['v^2/\\rho', v * v / rho], readouts: [ro('\\(v^2/\\rho\\)', n4(v * v / rho) + AU), ro('\\(\\theta\\)', n4(ang) + '^\\circ')], note: 'Faster design speeds or tighter curves need steeper banks.' });
+      spec.explain = '\\(\\tan\\theta = v^2/g\\rho\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'vmax') {
+      var mu = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5]), dn = cs(th) - mu * sn(th), vx = Math.sqrt(G * rho * (sn(th) + mu * cs(th)) / dn);
+      spec = { type: 'numeric', prompt: 'A curve of radius ' + m(nn(rho) + MU) + ' is banked at ' + m(nn(th) + DEG) + ', and ' + m('\\mu_s = ' + nn(mu)) + '. What is the fastest a car can take it without sliding up and out?', label: '\\(v_{\\max} =\\)', answer: vx, unit: 'm/s' };
+      spec.hints = ['Too fast, the car tends to slide up the bank, so friction acts down the bank, at its limit \\(\\mu_s N\\).', 'Vertical: \\(N\\cos\\theta - \\mu_s N\\sin\\theta = mg\\). Toward the center: \\(N\\sin\\theta + \\mu_s N\\cos\\theta = mv^2/\\rho\\). Divide.'];
+      spec.solution = M('v_{\\max} = \\sqrt{g\\rho\\,\\frac{\\sin\\theta + \\mu_s\\cos\\theta}{\\cos\\theta - \\mu_s\\sin\\theta}} = \\sqrt{9.81(' + nn(rho) + ')\\frac{' + n4(sn(th) + mu * cs(th)) + '}{' + n4(dn) + '}} = ' + n4(vx) + MS);
+      right = vx; wrong = wrongOf(vx, [Math.sqrt(G * rho * tn(th)), Math.sqrt(G * rho * (tn(th) + mu)), Math.sqrt(mu * G * rho)]);
+      view = fled({ title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', (G / dn) * sn(th), 'ink'], ['F_f\\cos\\theta/m', (G / dn) * mu * cs(th), 'r']], end: ['v^2/\\rho', vx * vx / rho],
+        readouts: [ro('\\(N/m\\)', n4(G / dn) + AU), ro('Design speed \\(v_0\\)', n4(Math.sqrt(G * rho * tn(th))) + MS), ro('\\(v_{\\max}\\)', n4(vx) + MS)], note: 'Above the design speed, friction acts down the bank and helps turn the car.' });
+      spec.explain = 'At \\(v_{\\max}\\), friction is at its limit, pointing down the bank.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'crest' || kind === 'dip') {
+      var mass = rng.pick(range(800, 2500, 100)), rc = rng.pick(range(20, 150, 5)), kmh2 = rng.pick(range(20, 100, 5)), v2 = kmh2 / 3.6, an = v2 * v2 / rc;
+      if (kind === 'crest') {
+        var leave = rng.next() < 0.35;
+        if (!leave) while (an >= 0.9 * G) { rc += 20; an = v2 * v2 / rc; }
+        var N = mass * (G - an), vl = Math.sqrt(G * rc);
+        spec = leave ? { type: 'numeric', prompt: 'A car goes over the top of a crest whose radius of curvature is ' + m(nn(rc) + MU) + '. At what speed would it lose contact with the road at the top?', label: '\\(v =\\)', answer: vl, unit: 'm/s' }
+          : { type: 'numeric', prompt: 'A ' + m(nn(mass) + KG) + ' car goes over the top of a crest of radius ' + m(nn(rc) + MU) + ' at ' + m(nn(kmh2) + KMH) + '. Find the normal force of the road on the car at the top.', label: '\\(N =\\)', answer: N, unit: 'N' };
+        spec.hints = ['At the top, the center of curvature is below: down is toward the center.', 'Toward the center: \\(mg - N = mv^2/\\rho\\)' + (leave ? '; it loses contact when \\(N = 0\\).' : '.')];
+        spec.solution = leave ? M('v = \\sqrt{g\\rho} = \\sqrt{9.81(' + nn(rc) + ')} = ' + n4(vl) + MS) + '<p>That is \\(' + n4(vl * 3.6) + '\\ \\text{km/h}\\).</p>'
+          : M('N = m\\left(g - \\frac{v^2}{\\rho}\\right) = ' + nn(mass) + '\\left(9.81 - \\frac{' + n4(v2) + '^2}{' + nn(rc) + '}\\right) = ' + n4(N) + NU);
+        right = leave ? vl : N; wrong = leave ? wrongOf(vl, [G * rc, Math.sqrt(2 * G * rc), Math.sqrt(rc / G)]) : wrongOf(N, [mass * (G + an), mass * G, mass * an]);
+        view = leave ? fled({ title: 'Forces toward the center (down), per kg, as it leaves', items: [['g', G, 'z']], end: ['v^2/\\rho', G], readouts: [ro('\\(N\\)', '0' + NU), ro('Leaves the road at', n4(vl) + MS)], note: 'At the speed of leaving, the weight alone supplies \\(mv^2/\\rho\\).' })
+          : fled({ title: 'Forces toward the center (down)', items: [['W', mass * G, 'z'], ['N', -N, 'ink']], end: ['mv^2/\\rho', mass * an],
+            readouts: [ro('\\(v^2/\\rho\\)', n4(an) + AU), ro('\\(N\\)', n4(N) + NU), ro('Leaves the road at', n4(vl) + MS)], note: 'The faster the car, the less the road needs to push.' });
+        spec.explain = 'Crest: \\(N = m(g - v^2/\\rho)\\).';
+        return done(spec, view, right, wrong);
+      }
+      var pilot = rng.next() < 0.5, mp = pilot ? rng.pick(range(60, 100, 5)) : mass, vp = pilot ? rng.pick(range(60, 250, 10)) : v2, rp = pilot ? rng.pick(range(300, 2000, 100)) : rc, ap = vp * vp / rp, Np = mp * (G + ap);
+      spec = { type: 'numeric', prompt: pilot ? 'A ' + m(nn(mp) + KG) + ' pilot pulls out of a dive at ' + m(nn(vp) + MS) + ' on a vertical circle of radius ' + m(nn(rp) + MU) + '. How hard does the seat push on the pilot at the bottom?'
+        : 'A ' + m(nn(mp) + KG) + ' car drives through the bottom of a dip of radius ' + m(nn(rp) + MU) + ' at ' + m(nn(kmh2) + KMH) + '. Find the normal force of the road on the car.', label: '\\(N =\\)', answer: Np, unit: 'N' };
+      spec.hints = ['At the bottom, the center of curvature is above: up is toward the center.', 'Toward the center: \\(N - mg = mv^2/\\rho\\).'];
+      spec.solution = M('N = m\\left(g + \\frac{v^2}{\\rho}\\right) = ' + nn(mp) + '\\left(9.81 + \\frac{' + n4(vp) + '^2}{' + nn(rp) + '}\\right) = ' + n4(Np) + NU) + '<p>That is \\(' + n4(Np / (mp * G)) + '\\) times the weight.</p>';
+      right = Np; wrong = wrongOf(Np, [mp * (G - ap), mp * ap, mp * G]);
+      view = fled({ title: 'Forces toward the center (up)', items: [['N', Np, 'ink'], ['W', -mp * G, 'z']], end: ['mv^2/\\rho', mp * ap], readouts: [ro('\\(v^2/\\rho\\)', n4(ap) + AU), ro('\\(N/mg\\)', n4(Np / (mp * G)))], note: 'A dip presses you into the seat.' });
+      spec.explain = 'Dip: \\(N = m(g + v^2/\\rho)\\).';
+      return done(spec, view, right, wrong);
+    }
+    var r = rng.pick([0.5, 1, 1.5, 2, 3, 5, 8, 10, 12, 15]), what = pickW(rng, [['N', 2], ['vtop', 1], ['vb', 1]]), mr = rng.pick([0.1, 0.2, 0.5, 1, 50, 60, 70, 80, 90]);
+    if (what === 'N') {
+      var vt = +(Math.sqrt(G * r) * rng.pick([1.1, 1.2, 1.3, 1.5, 1.7, 2])).toFixed(1), Nt = mr * (vt * vt / r - G);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mr) + KG) + ' ' + (mr > 10 ? 'rider in a roller coaster car' : 'toy car') + ' goes over the top of a vertical loop of radius ' + m(nn(r) + MU) + ', upside down, at ' + m(nn(vt) + MS) + '. How hard does the ' + (mr > 10 ? 'seat' : 'track') + ' push on it there?', label: '\\(N =\\)', answer: Nt, unit: 'N' };
+      spec.hints = ['At the top, both \\(N\\) and the weight point down, toward the center.', '\\(N + mg = mv^2/r\\).'];
+      spec.solution = M('N = m\\left(\\frac{v^2}{r} - g\\right) = ' + nn(mr) + '\\left(\\frac{' + nn(vt) + '^2}{' + nn(r) + '} - 9.81\\right) = ' + n4(Nt) + NU);
+      right = Nt; wrong = wrongOf(Nt, [mr * (vt * vt / r + G), mr * vt * vt / r, mr * G]);
+      view = fled({ title: 'Forces toward the center (down, at the top)', items: [['N', Nt, 'ink'], ['W', mr * G, 'z']], end: ['mv^2/r', mr * vt * vt / r], readouts: [ro('\\(v^2/r\\)', n4(vt * vt / r) + AU), ro('\\(N\\)', n4(Nt) + NU), ro('Least speed at the top', n4(Math.sqrt(G * r)) + MS)], note: 'At the top, the weight helps turn the car.' });
+      spec.explain = 'Top of a loop: \\(N + mg = mv^2/r\\).';
+      return done(spec, view, right, wrong);
+    }
+    var vtop = Math.sqrt(G * r), vb = Math.sqrt(5 * G * r), cord = rng.next() < 0.4;
+    spec = what === 'vtop' ? { type: 'numeric', prompt: cord ? 'A ball on a cord is whirled in a vertical circle of radius ' + m(nn(r) + MU) + '. What is the least speed at the top that keeps the cord taut?' : 'What is the least speed at the top of a vertical loop of radius ' + m(nn(r) + MU) + ' that keeps a car on the track?', label: '\\(v_{\\text{top}} =\\)', answer: vtop, unit: 'm/s' }
+      : { type: 'numeric', prompt: 'A car enters a smooth vertical loop of radius ' + m(nn(r) + MU) + ' at the bottom. What is the least speed at the bottom that carries it all the way around on the track?', label: '\\(v_b =\\)', answer: vb, unit: 'm/s' };
+    spec.hints = ['At the top: \\(' + (cord ? 'T' : 'N') + ' + mg = mv^2/r\\), and it must be that \\(' + (cord ? 'T' : 'N') + ' \\ge 0\\), so \\(v_{\\text{top}}^2 \\ge gr\\).', what === 'vtop' ? 'Set the push (or pull) to zero.' : 'The tangential equation gives \\(v_{\\text{top}}^2 = v_b^2 - 4gr\\).'];
+    spec.solution = what === 'vtop' ? M('v_{\\text{top}} = \\sqrt{gr} = \\sqrt{9.81(' + nn(r) + ')} = ' + n4(vtop) + MS) : M('v_b^2 = v_{\\text{top}}^2 + 4gr \\ge 5gr \\quad\\Rightarrow\\quad v_b = \\sqrt{5(9.81)(' + nn(r) + ')} = ' + n4(vb) + MS);
+    right = what === 'vtop' ? vtop : vb; wrong = what === 'vtop' ? wrongOf(vtop, [G * r, Math.sqrt(2 * G * r), Math.sqrt(5 * G * r)]) : wrongOf(vb, [Math.sqrt(4 * G * r), Math.sqrt(G * r), Math.sqrt(2 * G * r)]);
+    view = fled({ title: 'At the top, per kg, toward the center', items: [['g', G, 'z']], end: ['v_{\\text{top}}^2/r', G], readouts: [ro('\\(v_{\\text{top}}\\)', n4(vtop) + MS), ro('\\(v_b\\)', n4(vb) + MS)], note: 'At the least speed, the weight alone supplies the normal acceleration at the top.' });
+    spec.explain = 'Top: \\(v^2/r \\ge g\\); bottom: \\(v_b \\ge \\sqrt{5gr}\\).';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.9 Systems of particles (Lesson 8) ---------- */
+  function genSystems(rng) {
+    var kind = pickW(rng, [['row', 3], ['train', 3], ['tow', 2], ['brake', 2]]), spec, view, right, wrong;
+    if (kind === 'row') {
+      var ms = [rng.pick(range(1, 10, 1)), rng.pick(range(1, 10, 1)), rng.pick(range(1, 10, 1))], P = rng.pick(range(20, 200, 5)), tot = ms[0] + ms[1] + ms[2], a = P / tot, cut = rng.pick([1, 2]);
+      var behind = cut === 1 ? ms[1] + ms[2] : ms[2], F = behind * a;
+      spec = { type: 'numeric', prompt: 'Crates \\(A\\), \\(B\\) and \\(C\\), of ' + m(nn(ms[0]) + KG) + ', ' + m(nn(ms[1]) + KG) + ' and ' + m(nn(ms[2]) + KG) + ', stand in a row on a smooth floor. A horizontal push of ' + m(nn(P) + NU) + ' on \\(A\\) moves all three. Find the force ' + (cut === 1 ? '\\(A\\) exerts on \\(B\\).' : '\\(B\\) exerts on \\(C\\).'), label: '\\(F =\\)', answer: F, unit: 'N' };
+      spec.hints = ['The whole system first: the contact forces are internal, so \\(P = (m_A + m_B + m_C)a\\).', 'Then cut: isolate ' + (cut === 1 ? '\\(B\\) and \\(C\\) together' : '\\(C\\)') + '. The only horizontal force on it is the push you want.'];
+      spec.solution = M('a = \\frac{' + nn(P) + '}{' + nn(tot) + '} = ' + n4(a) + AU + '\\qquad F = ' + nn(behind) + '(' + n4(a) + ') = ' + n4(F) + NU);
+      right = F; wrong = wrongOf(F, [P, ms[cut] * a, P - behind * a]);
+      view = fled({ title: 'Horizontal forces on ' + (cut === 1 ? 'B and C' : 'C'), items: [[cut === 1 ? 'F_{AB}' : 'F_{BC}', F, 'ink']], end: [(cut === 1 ? '(m_B + m_C)' : 'm_C') + 'a', F],
+        readouts: [ro('\\(a\\)', n4(a) + AU), ro('\\(F\\)', n4(F) + NU)], note: 'Each contact force pushes only the crates ahead of it.' });
+      spec.explain = 'Whole system for \\(a\\), then cut for the internal force.';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'train') {
+      var ML = rng.pick(range(40, 120, 10)) * 1000, n = rng.pick([2, 3, 4, 5]), mc = rng.pick(range(20, 60, 5)) * 1000, Ft = rng.pick(range(50, 400, 25)) * 1000, k = rng.int(1, n);
+      var at = Ft / (ML + n * mc), Tk = (n - k + 1) * mc * at;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(ML / 1000) + '\\ \\text{t}') + ' locomotive pulls ' + n + ' freight cars of ' + m(nn(mc / 1000) + '\\ \\text{t}') + ' each. The rails push the locomotive\u2019s wheels forward with ' + m(nn(Ft / 1000) + '\\ \\text{kN}') + '; ignore rolling resistance and drag. Find the tension in the coupling ' + (k === 1 ? 'between the locomotive and the first car' : 'just ahead of car ' + k) + '.', label: '\\(T =\\)', answer: Tk / 1000, unit: 'kN' };
+      spec.hints = ['The whole train: the couplings are internal, so \\(F = (m_L + ' + n + 'm_c)a\\).', 'Cut at that coupling: it pulls the ' + (n - k + 1) + ' car' + (n - k + 1 > 1 ? 's' : '') + ' behind it, and nothing else does.'];
+      spec.solution = M('a = \\frac{' + nn(Ft) + '}{' + nn(ML + n * mc) + '} = ' + n4(at) + AU + '\\qquad T = ' + (n - k + 1) + '(' + nn(mc) + ')(' + n4(at) + ') = ' + n4(Tk) + NU);
+      right = Tk / 1000; wrong = wrongOf(Tk / 1000, [Ft / 1000, mc * at / 1000, (n - k) * mc * at / 1000 || Ft / 2000]);
+      view = fled({ title: 'Horizontal forces on the cars behind the cut (kN)', items: [['T', Tk / 1000, 'muted']], end: [(n - k + 1) + 'm_c a', Tk / 1000], readouts: [ro('\\(a\\)', n4(at) + AU), ro('\\(T\\)', n4(Tk / 1000) + '\\ \\text{kN}')], note: 'The couplings nearer the locomotive pull more cars, so they carry more tension.' });
+      view.unit = 'kN';
+      spec.explain = 'The coupling force is the mass behind it times \\(a\\).';
+      return done(spec, view, right, wrong);
+    }
+    if (kind === 'tow') {
+      var mcar = rng.pick(range(900, 2500, 100)), mtr = rng.pick(range(200, 1500, 100)), a2 = rng.pick([0.5, 0.8, 1, 1.2, 1.5, 2, 2.5]), askDrive = rng.next() < 0.4;
+      var Tb = mtr * a2, Fd = (mcar + mtr) * a2;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mcar) + KG) + ' car tows a ' + m(nn(mtr) + KG) + ' trailer and speeds up at ' + m(nn(a2) + AU) + '. Ignoring rolling resistance and drag, find ' + (askDrive ? 'the forward force of the road on the car\u2019s driven tires.' : 'the tension in the tow bar.'), label: askDrive ? '\\(F =\\)' : '\\(T =\\)', answer: askDrive ? Fd : Tb, unit: 'N' };
+      spec.hints = [askDrive ? 'The whole rig: the tow bar is internal.' : 'Isolate the trailer: the tow bar is the only horizontal force on it.', askDrive ? '\\(F = (m_{\\text{car}} + m_{\\text{trailer}})a\\).' : '\\(T = m_{\\text{trailer}}\\,a\\).'];
+      spec.solution = M(askDrive ? 'F = (' + nn(mcar) + ' + ' + nn(mtr) + ')(' + nn(a2) + ') = ' + n4(Fd) + NU : 'T = ' + nn(mtr) + '(' + nn(a2) + ') = ' + n4(Tb) + NU);
+      right = askDrive ? Fd : Tb; wrong = askDrive ? wrongOf(Fd, [mcar * a2, mtr * a2, (mcar - mtr) * a2]) : wrongOf(Tb, [mcar * a2, (mcar + mtr) * a2, mtr * G]);
+      view = askDrive ? fled({ title: 'Horizontal forces on the whole rig', items: [['F', Fd, 'r']], end: ['(m_c + m_t)a', Fd], readouts: [ro('\\(F\\)', n4(Fd) + NU), ro('Tow bar \\(T\\)', n4(Tb) + NU)], note: 'The road\u2019s friction on the driven tires accelerates the whole rig.' })
+        : fled({ title: 'Horizontal forces on the trailer', items: [['T', Tb, 'muted']], end: ['m_t a', Tb], readouts: [ro('\\(T\\)', n4(Tb) + NU), ro('Road on the car', n4(Fd) + NU)], note: 'The tow bar pulls only the trailer.' });
+      spec.explain = 'Choose the system so that the unknown force is external to it.';
+      return done(spec, view, right, wrong);
+    }
+    var mt = rng.pick(range(5000, 12000, 500)), mtl = rng.pick(range(2000, 10000, 500)), db = rng.pick([1.5, 2, 2.5, 3, 3.5, 4]), askC = rng.next() < 0.6;
+    var Fc = mtl * db, Fb = (mt + mtl) * db;
+    spec = { type: 'numeric', prompt: 'A ' + m(nn(mt) + KG) + ' tractor tows a ' + m(nn(mtl) + KG) + ' trailer whose brakes have failed. The tractor\u2019s brakes slow the rig at ' + m(nn(db) + AU) + '. Find ' + (askC ? 'the force in the coupling.' : 'the braking force of the road on the tractor.'), label: '\\(F =\\)', answer: askC ? Fc : Fb, unit: 'N' };
+    spec.hints = [askC ? 'Isolate the trailer: only the coupling can slow it.' : 'The whole rig: the coupling is internal, and the road\u2019s braking force on the tractor is the only external horizontal force.', askC ? '\\(F_c = m_{\\text{trailer}}\\,a\\); it pushes back on the trailer, so the trailer pushes forward on the tractor.' : '\\(F_b = (m_{\\text{tractor}} + m_{\\text{trailer}})a\\).'];
+    spec.solution = M(askC ? 'F_c = ' + nn(mtl) + '(' + nn(db) + ') = ' + n4(Fc) + NU : 'F_b = (' + nn(mt) + ' + ' + nn(mtl) + ')(' + nn(db) + ') = ' + n4(Fb) + NU) + (askC ? '<p>The coupling is in compression: the trailer pushes the tractor forward.</p>' : '');
+    right = askC ? Fc : Fb; wrong = askC ? wrongOf(Fc, [mt * db, Fb, mtl * G]) : wrongOf(Fb, [mt * db, mtl * db, (mt - mtl) * db]);
+    view = askC ? fled({ title: 'Horizontal forces on the trailer, forward positive', items: [['-F_c', -Fc, 'ink']], end: ['m_t a', -Fc], readouts: [ro('Deceleration', nn(db) + AU), ro('\\(F_c\\)', n4(Fc) + NU)], note: 'Only the coupling slows the trailer.' })
+      : fled({ title: 'Horizontal forces on the rig, forward positive', items: [['-F_b', -Fb, 'r']], end: ['(m + m_t)a', -Fb], readouts: [ro('\\(F_b\\)', n4(Fb) + NU), ro('Coupling force', n4(Fc) + NU)], note: 'The tractor\u2019s brakes must stop both.' });
+    spec.explain = 'Whole system for the external force; cut for the coupling.';
+    return done(spec, view, right, wrong);
+  }
+
+  /* ================================================================ 5. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-newtons-second-law.html', 'Newton\'s Second Law'), l02: L(2, '02-free-body-diagrams.html', 'Free-Body and Kinetic Diagrams'),
+    l03: L(3, '03-rectangular.html', 'Rectangular Coordinates: Friction and Inclines'), l04: L(4, '04-connected-particles.html', 'Connected Particles and Pulleys'),
+    l05: L(5, '05-varying-forces.html', 'Forces That Vary'), l06: L(6, '06-normal-tangential.html', 'Normal and Tangential Coordinates'),
+    l07: L(7, '07-curves-banking-loops.html', 'Banked Curves, Crests and Loops'), l08: L(8, '08-systems-and-choices.html', 'Systems of Particles and Choosing a Method')
+  };
+  var CATS = [
+    { id: 'newton', label: 'Newton\u2019s second law', gen: genNewton, lessons: [LES.l01] },
+    { id: 'fbd', label: 'Free-body diagrams', gen: genFbd, lessons: [LES.l02] },
+    { id: 'friction', label: 'Friction', gen: genFriction, lessons: [LES.l03] },
+    { id: 'incline', label: 'Inclines', gen: genIncline, lessons: [LES.l03] },
+    { id: 'pulley', label: 'Cords and pulleys', gen: genPulley, lessons: [LES.l04] },
+    { id: 'varying', label: 'Forces that vary', gen: genVarying, lessons: [LES.l05] },
+    { id: 'curves', label: 'Curves and pendulums', gen: genCurves, lessons: [LES.l06] },
+    { id: 'banked', label: 'Banking, crests, loops', gen: genBanked, lessons: [LES.l07] },
+    { id: 'systems', label: 'Systems of particles', gen: genSystems, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 6. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      if (v.note) out.push(['view note', v.note]);
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.kind === 'ledger') [v.start].concat(v.items, [v.end]).forEach(function (it) { out.push(['ledger label', '\\(' + it.label + '\\)']); });
+      if (v.kind === 'area') { out.push(['x label', v.x.label]); out.push(['y label', v.y.label]); }
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|sec|csc|arctan|left|right|Longrightarrow|quad|dot|ddot|ihat|jhat|khat|er|et|ez|Fvec|vvec|avec|int|iiint|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'point') return spec.answerPoint.every(isFinite);
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {}, kinds = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        kinds[p.view && p.view.kind] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['mc', 'numeric', 'fields', 'point'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          if (s.type === 'mc') {
+            if (s.choices.length < 4) f('fewer than 4 choices');
+            if (s.choices.filter(function (c) { return c.correct; }).length !== 1) f('not exactly one correct choice');
+            var hs = s.choices.map(function (c) { return c.html; });
+            if (hs.some(function (h, j) { return hs.indexOf(h) !== j; })) f('duplicate choices');
+            if (s.choices.some(function (c) { return !c.correct && !c.feedback; })) f('distractor without feedback');
+          }
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || ['ledger', 'area'].indexOf(vw.kind) < 0) f('bad view');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else if (vw.kind === 'ledger') {
+            var tot = ledgerTotals(vw), last = tot[tot.length - 2], end = tot[tot.length - 1];
+            if (!tot.every(isFinite)) f('ledger value not finite');
+            else if (Math.abs(last - end) > 1e-6 * Math.max(1, Math.abs(vw.start.value), Math.abs(end))) f('ledger does not add up: ' + last + ' vs ' + end);
+          } else if (!vw.pts.every(function (q) { return isFinite(q[0]) && isFinite(q[1]); }) || !isFinite(vw.from) || !isFinite(vw.to)) f('area view not finite');
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      st.viewKinds = Object.keys(kinds);
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec, view: sp.view }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 7. The shared view (a force ledger or a graph with a shaded area) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  function ledgerTotals(vw) {                                // running totals: start, after each item, and the end
+    var c = vw.start.value, out = [c];
+    vw.items.forEach(function (it) { c += it.value; out.push(c); });
+    out.push(vw.end.value);
+    return out;
+  }
+  function interp(pts) {
+    return function (x) {
+      if (x <= pts[0][0]) return pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        if (x <= pts[i][0]) { var a = pts[i - 1], b = pts[i], u = (x - a[0]) / ((b[0] - a[0]) || 1); return a[1] + u * (b[1] - a[1]); }
+      }
+      return pts[pts.length - 1][1];
+    };
+  }
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var host = CYL.el('div', { class: 'pl-viewhost' });
+    stage.appendChild(host);
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see its force picture here.' })]);
+    stage.appendChild(veil);
+    var cur = null, revealed = false;
+    function hint(text) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Force picture' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: text }));
+    }
+    function idle() {                                      // a neutral placeholder the same size as a real view
+      host.innerHTML = '';
+      var g = CYL.el('div', { class: 'pl-ghost', 'aria-hidden': 'true' });
+      [62, 38, 80, 24, 54].forEach(function (w, i) {
+        var r = CYL.el('div', { class: 'pl-ghost-row' }), b = CYL.el('span');
+        b.style.marginLeft = (i % 2 ? 18 : 6) + '%'; b.style.width = w * 0.7 + '%';
+        r.appendChild(b); g.appendChild(r);
+      });
+      host.appendChild(g);
+      host.setAttribute('role', 'img');
+      host.setAttribute('aria-label', 'Placeholder: the force picture for the current problem appears here after you solve it or open its solution.');
+    }
+    function build(vw) {
+      host.innerHTML = '';
+      host.removeAttribute('role'); host.removeAttribute('aria-label');
+      if (vw.kind === 'ledger') {
+        var works = vw.items.map(function (it, i) { return { key: 'w' + i, label: it.label, color: it.color }; });
+        var lg = ENERGY.ledger(host, { works: works, start: vw.start.label, end: vw.end.label, unit: vw.unit, title: vw.title + ' (' + vw.unit + ')', ariaLabel: vw.aria });
+        var tot = ledgerTotals(vw), lo = Math.min.apply(null, tot.concat([0])), hi = Math.max.apply(null, tot.concat([0]));
+        if (hi - lo < 1e-9) hi = lo + 1;
+        lg.setScale(lo - 0.04 * (hi - lo), hi + 0.04 * (hi - lo));
+        var v = { start: vw.start.value, end: vw.end.value };
+        vw.items.forEach(function (it, i) { v['w' + i] = it.value; });
+        lg.set(v);
+      } else {
+        host.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title }));
+        var ch = ENERGY.chart(host, { x: vw.x, y: vw.y, height: 280, ariaLabel: vw.aria });
+        var f = interp(vw.pts), a = Math.min(vw.from, vw.to), b = Math.max(vw.from, vw.to);
+        ch.area(f, { domain: [a, b], color: vw.color, fillOpacity: 0.3 });
+        ch.polyline(vw.pts, { color: vw.color, width: 2.6 });
+        ch.hline(0, { color: 'ink' });
+        if (Math.abs(vw.from) > 1e-9) ch.vline(vw.from, { color: 'ink', dashed: true, label: 'start' });
+        if (Math.abs(vw.to) > 1e-9) ch.vline(vw.to, { color: 'ink', dashed: true, label: 'end', labelDy: 16 });
+      }
+    }
+    function fillPanel(vw) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.kind === 'ledger' ? 'Numbers' : vw.title }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      if (vw.note) { var n = CYL.el('p', { class: 'pl-panel-note', html: vw.note }); panel.appendChild(n); CYL.renderMath(n); }
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+      hint('Hidden until you solve the problem (or open its solution), so it does not give the answer away.');
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      build(cur);
+      veil.hidden = true;
+      fillPanel(cur);
+    };
+    VIEW.isRevealed = function () { return revealed; };
+  });
+
+  /* ================================================================ 8. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like incline-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

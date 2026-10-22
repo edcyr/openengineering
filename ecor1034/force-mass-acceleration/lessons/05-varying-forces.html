@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forces That Vary · Force, Mass and Acceleration</title>
+<meta name="description" content="Equations of motion when the force depends on time, position or velocity: separating variables with a = dv/dt and v dv = a ds, a push that grows until static friction gives way, a spring launch, a coasting boat, and terminal velocity under air drag.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/fma.js"></script>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 35 min</p>
+    <h1>Forces That Vary</h1>
+    <p class="lede">So far every force has been constant, so the acceleration was too, and the constant-acceleration formulas did the rest. Real forces change. A spring pushes harder the more it is compressed, air drag grows with speed, and a motor's thrust changes with time. Newton's second law still gives the acceleration at every instant; what changes is how you turn that acceleration into the motion.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Recognize whether a force depends on time, position or velocity, and pick the kinematic relation that separates the variables.</li>
+      <li>Integrate \(a = F(t)/m\) for the velocity, and \(v\,dv = a\,ds\) when the force depends on position.</li>
+      <li>Solve for the time or the distance when the force depends on speed, as with fluid drag.</li>
+      <li>Find a terminal velocity, and explain why a falling body approaches it but never exceeds it from rest.</li>
+    </ul>
+  </section>
+
+  <section id="kinds">
+    <h2>Which relation to use</h2>
+    <p>Newton's second law gives the acceleration, \(a = \sum F/m\), as a function of whatever the force depends on. Pair it with the kinematic relation that keeps only that variable and the one you want, separate, and integrate.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Separating variables in \(m\,a = F\)</caption>
+        <thead><tr><th scope="col">The force depends on</th><th scope="col">Write \(a\) as</th><th scope="col">Separate and integrate</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Time, \(F(t)\)</th><td>\(\dfrac{dv}{dt}\)</td><td>\(m(v_2 - v_1) = \displaystyle\int_{t_1}^{t_2} F(t)\,dt\)</td></tr>
+          <tr><th scope="row">Position, \(F(s)\)</th><td>\(v\dfrac{dv}{ds}\)</td><td>\(\tfrac12 m(v_2^2 - v_1^2) = \displaystyle\int_{s_1}^{s_2} F(s)\,ds\)</td></tr>
+          <tr><th scope="row">Velocity, \(F(v)\), for the time</th><td>\(\dfrac{dv}{dt}\)</td><td>\(t_2 - t_1 = \displaystyle\int_{v_1}^{v_2} \frac{m\,dv}{F(v)}\)</td></tr>
+          <tr><th scope="row">Velocity, \(F(v)\), for the distance</th><td>\(v\dfrac{dv}{ds}\)</td><td>\(s_2 - s_1 = \displaystyle\int_{v_1}^{v_2} \frac{m\,v\,dv}{F(v)}\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The first two rows are previews of the modules that follow. The integral of a force over time is its <em>impulse</em>, and over distance its <em>work</em>; the Work and Energy and the Impulse and Momentum modules build whole methods on them.</p>
+  </section>
+
+  <section id="time">
+    <h2>A force that depends on time</h2>
+    <p>A worker leans on a crate harder and harder, so the push grows steadily with time, \(P = ct\). At first the crate does not move: static friction matches the push exactly, whatever its size. Only when \(P\) reaches \(\mu_s N\) does the crate break free. Then friction drops to \(\mu_k N\) and the crate accelerates, faster and faster as the push keeps growing.</p>
+
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> A push that grows with time, \(\colP{P = ct}\), on a crate on a rough floor. The chart plots the push and the size of the friction force against time. While the crate is at rest, friction follows the push up the same line. When it reaches \(\mu_s N\), the crate slips, friction drops to \(\mu_k N\) and stays there, and the gap between the two lines is \(\colMA{ma}\), growing as the push grows.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 5.1 — The push that grows</p>
+      <p>A \(10\ \text{kg}\) crate rests on a floor with \(\mu_s = 0.5\) and \(\mu_k = 0.4\). Starting at \(t = 0\), a horizontal push \(P = 20t\ \text{N}\) (\(t\) in seconds) acts on it. When does it start to slide, and how fast is it moving at \(t = 4\ \text{s}\)?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>\(N = mg = 98.1\ \text{N}\). The crate slips when the push reaches \(\mu_s N = 49.05\ \text{N}\):</p>
+          \[ 20t_1 = 49.05 \quad\Rightarrow\quad t_1 = 2.45\ \text{s} \]
+          <p>After that, friction is \(\mu_k N = 39.24\ \text{N}\) and</p>
+          \[ m\frac{dv}{dt} = 20t - 39.24 \quad\Rightarrow\quad 10\,v = \int_{2.45}^{4} (20t - 39.24)\,dt = \Big[10t^2 - 39.24\,t\Big]_{2.45}^{4} \]
+          \[ 10\,v = (160 - 156.96) - (60.15 - 96.24) = 39.13 \quad\Rightarrow\quad v = 3.91\ \text{m/s} \]
+          <p>The acceleration jumps from zero to \(0.98\ \text{m/s}^2\) at the instant of slipping, because friction drops from \(\mu_s N\) to \(\mu_k N\). Check the jump in Figure 5.1.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="position">
+    <h2>A force that depends on position</h2>
+    <p>Springs and gravity at large distances give forces that depend on where the particle is. Write the acceleration as \(a = v\,dv/ds\), so time drops out:</p>
+    \[ m\,v\,dv = F(s)\,ds \quad\Rightarrow\quad \tfrac12 m v_2^2 - \tfrac12 m v_1^2 = \int_{s_1}^{s_2} F(s)\,ds \]
+
+    <div class="example">
+      <p class="example-title">Example 5.2 — A spring launcher</p>
+      <p>A \(2\ \text{kg}\) block is held against a spring of stiffness \(k = 800\ \text{N/m}\), compressed \(\delta = 0.1\ \text{m}\), on a smooth floor. It is released. How fast does it leave the spring?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Measure \(s\) from the released position. The spring pushes with \(F_s = k(\delta - s)\) until it reaches its free length at \(s = \delta\):</p>
+          \[ \int_0^{v} 2\,v\,dv = \int_0^{0.1} 800(0.1 - s)\,ds \quad\Rightarrow\quad v^2 = 800\left[0.1s - \tfrac12 s^2\right]_0^{0.1} = 800(0.005) = 4 \]
+          <p>so \(v = 2\ \text{m/s}\). In general \(v = \delta\sqrt{k/m}\). The block's acceleration falls from \(40\ \text{m/s}^2\) to zero during the launch, so the constant-acceleration formulas would give the wrong answer.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="velocity">
+    <h2>A force that depends on velocity</h2>
+    <p>A body moving through a fluid feels a drag force against its velocity. At low speeds, or for very small bodies, drag is nearly proportional to the speed, \(F_D = cv\); for cars, balls, boats and people at everyday speeds it is closer to the square of the speed, \(F_D = kv^2\).</p>
+
+    <div class="example">
+      <p class="example-title">Example 5.3 — A boat coasts</p>
+      <p>A \(500\ \text{kg}\) boat moving at \(10\ \text{m/s}\) cuts its engine. The water's drag is \(F_D = 20v^2\ \text{N}\), with \(v\) in m/s. How long does it take to slow to \(5\ \text{m/s}\), and how far does it go?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>For the time, \(a = dv/dt\):</p>
+          \[ 500\frac{dv}{dt} = -20v^2 \quad\Rightarrow\quad \int_0^t dt = -25\int_{10}^{5}\frac{dv}{v^2} \quad\Rightarrow\quad t = 25\left(\frac15 - \frac1{10}\right) = 2.5\ \text{s} \]
+          <p>For the distance, \(a = v\,dv/ds\):</p>
+          \[ 500\,v\frac{dv}{ds} = -20v^2 \quad\Rightarrow\quad \int_0^s ds = -25\int_{10}^{5}\frac{dv}{v} \quad\Rightarrow\quad s = 25\ln 2 = 17.3\ \text{m} \]
+          <p>Quadratic drag never quite stops the boat: \(s\) grows without limit as \(v \to 0\), though ever more slowly.</p>
+        </div>
+      </details>
+    </div>
+
+    <h3>Falling against drag: terminal velocity</h3>
+    <p>A skydiver of mass \(m\) falls with drag \(kv^2\). Take down as positive:</p>
+    \[ m\frac{dv}{dt} = \colW{mg} - \colP{kv^2} \]
+    <p>At first the drag is small and the skydiver accelerates at nearly \(g\). As the speed grows, so does the drag, and the acceleration shrinks. It reaches zero when the drag equals the weight:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Terminal velocity, and the approach to it from rest</p>
+      \[ v_t = \sqrt{\frac{mg}{k}} \qquad\qquad v = v_t\tanh\frac{gt}{v_t} \]
+      <p>Separate \(dt = dv/[g(1 - v^2/v_t^2)]\) and integrate to get the second result. Starting from rest, \(v\) creeps up on \(v_t\) but never reaches it. Starting faster than \(v_t\), the drag exceeds the weight, the acceleration points up, and the body slows down to \(v_t\).</p>
+    </div>
+
+    <figure class="figure wide" aria-labelledby="fig52-cap">
+      <div class="viz mf-viz">
+        <div class="viz-stage" id="fig52-stage"></div>
+        <div class="viz-controls" id="fig52-controls"></div>
+      </div>
+      <figcaption id="fig52-cap"><strong>Figure 5.2</strong> A skydiver falling against air drag \(\colP{F_D = kv^2}\). The view falls with the skydiver; the scale on the left shows the distance fallen. The weight \(\colW{W}\) ends at the center of gravity, and the drag pushes up on the side facing the oncoming air. The bars add the two forces to give \(\colMA{ma}\), which shrinks as the drag grows, and the chart shows the speed approaching \(v_t\), dashed. Start the skydiver faster than \(v_t\) and the drag wins: the body slows down.</figcaption>
+    </figure>
+
+    <p>A spread-eagle skydiver of \(80\ \text{kg}\) has \(k \approx 0.25\ \text{kg/m}\), so \(v_t = \sqrt{80(9.81)/0.25} = 56\ \text{m/s}\), about \(200\ \text{km/h}\). Five seconds after jumping, \(v = 56\tanh(9.81 \times 5/56) = 39.5\ \text{m/s}\); it takes about \(10\ \text{s}\) and \(370\ \text{m}\) of fall to reach \(95\%\) of \(v_t\). Diving head first cuts \(k\) to about \(0.08\ \text{kg/m}\) and raises \(v_t\) to nearly \(100\ \text{m/s}\).</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>When the force varies, so does the acceleration: integrate, and never use the constant-acceleration formulas.</li>
+      <li>\(F(t)\): use \(a = dv/dt\). \(F(s)\): use \(a = v\,dv/ds\). \(F(v)\): use either, for the time or for the distance.</li>
+      <li>Static friction rises with the push until it reaches \(\mu_s N\); then it drops to \(\mu_k N\), and the acceleration jumps.</li>
+      <li>A body falling against drag approaches its terminal velocity, where the drag equals the weight: \(v_t = \sqrt{mg/k}\) for \(F_D = kv^2\).</li>
+      <li>Next, <a href="06-normal-tangential.html">Lesson 6</a> writes the equation of motion along and across a curved path.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: a push that grows with time ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G = 9.81, MUS = 0.5, MUK = 0.4;
+  var st = { c: 20, m: 10 };
+  function spec() {
+    var t1 = MUS * st.m * G / st.c, c = st.c;
+    return { bodies: [{ m: st.m, x: 0.5, w: 0.8, mu: MUK, muS: MUS, P: function (t) { return c * t; }, label: 'A' }], tmax: t1 + 1.8, stopWhenStill: false };
+  }
+  var panel = document.getElementById('fig51-controls');
+  var fig = MOMENTUM.figure({
+    stage: document.getElementById('fig51-stage'), controls: panel,
+    xRange: [-0.6, 7.6], yRange: [-1.6, 2.6], maxHeight: 280, follow: true,
+    spec: spec(), draw: [{ shape: 'block', h: 0.6, color: 'accent' }],
+    show: { v: true, forces: true }, toggles: ['v', 'forces'], forces: ['W', 'N', 'Ff', 'P'], fScale: 0.012,
+    pbars: false, forceLedger: { items: ['P', 'Ff'] },
+    readouts: ['t', 'vA', 'aA'], chart: { kind: 'F', height: 190, magnitude: true },
+    aria: 'A crate on a rough floor is pushed from the left by a force that grows steadily with time. At first it does not move; then it breaks free and speeds up faster and faster. A chart plots the push and the size of the friction force against time.'
+  });
+  var roS = CYL.readout('It slips at \\(t_1 = \\mu_s mg/c\\)');
+  function rebuild() { fig.setSpec(spec()); roS.set(CYL.fmt(MUS * st.m * G / st.c, 3) + '\u00a0s'); }
+  panel.appendChild(CYL.el('div', { class: 'readout-grid' }, [roS.el]));
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the setup' }));
+  panel.appendChild(CYL.slider({ label: 'Rate \\(c\\) at which the push grows', min: 10, max: 40, step: 5, value: st.c, unit: 'N/s', color: 'warn', onInput: function (v) { st.c = v; rebuild(); } }).el);
+  panel.appendChild(CYL.slider({ label: 'Mass \\(m\\)', min: 4, max: 12, step: 1, value: st.m, unit: 'kg', onInput: function (v) { st.m = v; rebuild(); } }).el);
+  panel.appendChild(CYL.el('p', { class: 'mf-note', text: '\u03bcs = 0.5 and \u03bck = 0.4. Arrows are drawn at 1.2 cm per newton, so the push outgrows the weight.' }));
+  rebuild();
+  CYL.renderMath(panel);
+});
+
+/* ---------- Figure 5.2: a skydiver against quadratic drag ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G = 9.81, R = 0.32, YC = 0.55, SC = 40;            // body radius and center in the view; meters of fall per unit
+  var st = { m: 80, k: 0.25, v0: 0 };
+  var stage = document.getElementById('fig52-stage'), panel = document.getElementById('fig52-controls');
+  var p = CYL2D.plane(stage, { xRange: [-2.6, 2.6], yRange: [-2.3, 2.5], grid: 'none', axes: false, maxHeight: 300,
+    ariaLabel: 'A skydiver, drawn as a disk, falls; the view falls with them, and a scale on the left scrolls up to show the distance fallen. The weight points down to the center, and the drag pushes up on the bottom. A velocity arrow beside the body grows toward the terminal velocity.' });
+  p.line([-2.0, -2.3], [-2.0, 2.5], { color: 'muted', width: 1.4 });
+  var gTicks = p.group();
+  var body = p.circle({ center: [0, YC], r: R, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.35 });
+  p.circle({ center: [0, YC], r: 0.04, color: 'z', fill: 'z', fillOpacity: 1 });
+  var fW = FMA.force(p, { color: 'z', label: 'W' }), fD = FMA.force(p, { color: 'warn', label: 'F_D' });
+  var vArr = p.line([0, 0], [0, 0], { color: 'good', width: 2.8, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
+  var chartEl = CYL.el('div', { class: 'mf-chart' });
+  stage.parentNode.insertBefore(chartEl, stage.nextSibling);
+  var chart = ENERGY.chart(chartEl, { x: { label: 'Time \\(t\\) (s)', min: 0, max: 1 }, y: { label: 'Speed \\(v\\) (m/s)', min: 0, max: 1 }, height: 170,
+    ariaLabel: 'The skydiver\u2019s speed against time, with a dashed line at the terminal velocity and a line at the current time.' });
+  var curve = null, vtLine = null, cursor = chart.vline(0, { color: 'ink' });
+  var ledger = ENERGY.ledger(panel, { works: [{ key: 'W', label: 'W', color: 'z' }, { key: 'D', label: 'F_D', color: 'warn' }], start: '0', end: 'ma',
+    startColor: 'muted', endColor: 'bad', unit: 'N', title: 'Forces, down positive (N)' });
+  var roT = CYL.readout('Time \\(t\\)'), roV = CYL.readout('Speed \\(v\\)', { color: 'good' }), roA = CYL.readout('Acceleration \\(a\\)', { color: 'bad' });
+  var roY = CYL.readout('Distance fallen'), roVt = CYL.readout('Terminal velocity \\(v_t\\)');
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roT.el, roV.el, roA.el, roY.el, roVt.el]));
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the jump' }));
+  panel.appendChild(CYL.slider({ label: 'Mass \\(m\\)', min: 50, max: 120, step: 5, value: st.m, unit: 'kg', onInput: function (v) { st.m = v; rebuild(); } }).el);
+  panel.appendChild(CYL.slider({ label: 'Drag constant \\(k\\)', min: 0.05, max: 0.5, step: 0.01, value: st.k, unit: 'kg/m', color: 'warn', onInput: function (v) { st.k = v; rebuild(); } }).el);
+  panel.appendChild(CYL.slider({ label: 'Starting speed \\(v_0\\)', min: 0, max: 100, step: 5, value: st.v0, unit: 'm/s', color: 'good', onInput: function (v) { st.v0 = v; rebuild(); } }).el);
+  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Spread-eagle k \u2248 0.25 kg/m; head-down k \u2248 0.08 kg/m. Played at twice real speed; the drag arrow is capped at two and a half times the weight.' }));
+  var sol = null, vt = 1, dur = 1;
+  function rebuild() {
+    var m = st.m, k = st.k;
+    vt = Math.sqrt(m * G / k);
+    dur = Math.min(40, Math.max(4, 3 * vt / G));
+    sol = FMA.ode(function (t, y) { return [y[1], G - k / m * y[1] * Math.abs(y[1])]; }, [0, st.v0], 0, dur, 0.01);
+    var hi = Math.max(vt, st.v0) * 1.1;
+    chart.setAxes({ x: { min: 0, max: dur }, y: { min: 0, max: hi } });
+    if (curve) curve.remove();
+    if (vtLine) vtLine.remove();
+    curve = chart.polyline(sol.t.map(function (t, i) { return [t, sol.y[i][1]]; }), { color: 'good', width: 2.6 });
+    vtLine = chart.hline(vt, { color: 'muted', dashed: true });
+    chart.setLegend([{ label: 'Speed \\(v\\)', color: 'good', line: true }, { label: 'Terminal velocity \\(v_t\\)', color: 'muted', line: true, dashed: true }]);
+    var W = m * G, Dmax = Math.max(W, k * st.v0 * st.v0);
+    ledger.setScale(-Dmax * 1.04, W * 1.04);
+    roVt.set(CYL.fmt(vt, 3) + '\u00a0m/s');
+    if (pl) pl.refresh();
+  }
+  function draw(t) {
+    var y = sol.at(t), s = y[0], v = y[1], m = st.m, W = m * G, D = st.k * v * Math.abs(v), K = 1 / W;
+    gTicks.clear();
+    var step = 50, first = Math.ceil((s - (2.5 - YC) * SC) / step) * step;
+    for (var d = Math.max(0, first); d <= s + (YC + 2.3) * SC; d += step) {
+      var py = YC - (d - s) / SC;
+      gTicks.line([-2.0, py], [-1.82, py], { color: 'ink', width: 1.4 });
+      gTicks.label([-2.12, py], d + '\u00a0m', { tex: false, color: 'muted', anchor: 'w' });
+    }
+    fW.set([0, YC], [0, -1], W * K);
+    if (D > 1e-6) fD.set([0, YC - R], [0, 1], Math.min(D, 2.5 * W) * K); else fD.hide();
+    var vl = 1.6 * v / Math.max(vt, st.v0, 1);
+    vArr.setVisible(vl > 0.02);
+    if (vl > 0.02) vArr.set([0.85, YC + 0.75], [0.85, YC + 0.75 - vl]);
+    ledger.set({ start: 0, W: W, D: -D, end: W - D });
+    cursor.set(t);
+    roT.set(CYL.fmt(t, 3) + '\u00a0s'); roV.set(CYL.fmt(v, 4) + '\u00a0m/s');
+    roA.set(CYL.fmt((W - D) / m, 3) + '\u00a0m/s\u00b2'); roY.set(CYL.fmt(s, 4) + '\u00a0m');
+  }
+  var pl = null;
+  rebuild();
+  pl = MOMENTUM.player({ stage: stage, duration: function () { return dur; }, onTime: draw, speed: 2 });
+  stage.parentNode.insertBefore(chartEl, stage.nextSibling);                        // the chart sits between the scene and the transport
+  chart.redraw();
+  CYL.renderMath(panel);
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1', type: 'numeric',
+    prompt: 'A \\(2\\ \\text{kg}\\) block starts from rest on a smooth floor. A horizontal force \\(F = 6t\\ \\text{N}\\) (\\(t\\) in seconds) acts on it. How fast is it moving at \\(t = 2\\ \\text{s}\\)?',
+    label: '\\(v =\\)', answer: 6, unit: 'm/s',
+    hints: ['\\(a = F/m = 3t\\), and \\(a = dv/dt\\).'],
+    explain: 'Integrate the acceleration over time.',
+    solution: '\\[ v = \\int_0^2 3t\\,dt = \\tfrac32 t^2\\Big|_0^2 = 6\\ \\text{m/s} \\]<p>A constant force equal to the final \\(12\\ \\text{N}\\) would have given twice as much.</p>'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2', type: 'numeric',
+    prompt: 'A \\(0.1\\ \\text{kg}\\) ball falls through air with drag \\(F_D = 0.001v^2\\ \\text{N}\\) (\\(v\\) in m/s). What is its terminal velocity?',
+    label: '\\(v_t =\\)', answer: 31.32, unit: 'm/s',
+    hints: ['At terminal velocity the acceleration is zero: the drag equals the weight.'],
+    explain: '\\(kv_t^2 = mg\\).',
+    solution: '\\[ v_t = \\sqrt{\\frac{mg}{k}} = \\sqrt{\\frac{0.1(9.81)}{0.001}} = 31.3\\ \\text{m/s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3', type: 'mc',
+    prompt: 'A skydiver falling from rest against drag \\(kv^2\\) reaches half the terminal velocity. What is the acceleration at that instant?',
+    choices: [
+      { html: '\\(\\tfrac34 g\\)', correct: true, feedback: '\\(a = g - (k/m)v^2 = g(1 - v^2/v_t^2) = g(1 - \\tfrac14)\\).' },
+      { html: '\\(\\tfrac12 g\\)', feedback: 'That would be true for linear drag, \\(cv\\). With \\(kv^2\\), half the speed gives a quarter of the drag at \\(v_t\\), which equals the weight.' },
+      { html: '\\(\\tfrac14 g\\)', feedback: 'At \\(v_t/2\\), the drag is a quarter of the weight, not three quarters.' },
+      { html: '\\(g\\)', feedback: 'Only at the very start, when \\(v = 0\\) and there is no drag.' }
+    ],
+    explain: 'At terminal velocity \\(kv_t^2 = mg\\), so \\(a = g(1 - v^2/v_t^2)\\).'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l05-q4', type: 'numeric',
+    prompt: 'A \\(0.5\\ \\text{kg}\\) puck is pressed \\(0.05\\ \\text{m}\\) against a spring of stiffness \\(200\\ \\text{N/m}\\) on smooth ice and released. How fast does it leave the spring?',
+    label: '\\(v =\\)', answer: 1, unit: 'm/s',
+    hints: ['Use \\(m\\,v\\,dv = k(\\delta - s)\\,ds\\), integrated from \\(s = 0\\) to \\(\\delta\\).'],
+    explain: '\\(\\tfrac12 mv^2 = \\tfrac12 k\\delta^2\\), so \\(v = \\delta\\sqrt{k/m}\\).',
+    solution: '\\[ v = 0.05\\sqrt{\\frac{200}{0.5}} = 0.05(20) = 1\\ \\text{m/s} \\]'
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Force Lab · Force, Mass and Acceleration</title>
+<meta name="description" content="Pick a scene (a crate on a floor, a block on an incline, an angled pull, a push that grows, a spring launch, two blocks and a pulley, or a slide to rest), change its numbers, and watch the forces add up to m a at every instant.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/fma.js"></script>
+<style>
+  /* ---- Force Lab: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-desc { margin: 10px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-events { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; }
+  .ex-events li { margin: 0 0 0.35em; }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+</style>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Force Lab</h1>
+    <p class="lede">Pick a scene, change its numbers, and watch Newton's second law at work. The bars in the panel add up the forces along the motion at every instant, and they always land on \(ma\): when the push beats friction, when static friction gives way, when a spring's push fades, and when the forces balance and nothing accelerates.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a scene</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label" id="ex-scene-label">Scene</p>
+        <div class="chip-row" id="ex-scene" role="group" aria-labelledby="ex-scene-label"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide" aria-labelledby="ex-cap">
+      <div class="viz mf-viz" id="ex-viz">
+        <div class="viz-stage" id="ex-stage"></div>
+        <div class="viz-controls" id="ex-controls"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure F.1</strong> The chosen scene. Press <em>Play</em> or drag the time slider, and change the numbers in the panel (the motion is recomputed at once). Forces are drawn as in a free-body diagram: the weight \(\colW{W}\) ends at the center of gravity, a push (the normal force, a spring, an applied push) ends on the face it acts on, and friction \(\colF{F_f}\) and a pull start where they act. The bars add the forces along the motion and land on \(\colMA{ma}\); velocity is green.</figcaption>
+    </figure>
+    <div class="ex-events" id="ex-events" aria-live="polite"></div>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>Too weak to move it.</strong> Push a \(20\ \text{kg}\) crate with \(60\ \text{N}\) on a floor with \(\mu_k = 0.3\): static friction matches the push, and the bars cancel to \(ma = 0\). <button type="button" class="btn small" data-load="floor" data-set='{"P": 60, "m": 20, "mu": 0.3, "v0": 0}'>Load</button></li>
+      <li><strong>The angle of repose.</strong> On the incline, set \(\mu_s = 0.5\) and raise \(\theta\) a degree at a time: the block holds until \(\tan\theta > 0.5\), at \(26.6^\circ\). <button type="button" class="btn small" data-load="incline" data-set='{"th": 26, "muS": 0.5, "muK": 0.4, "v0": 0, "P": 0}'>Load</button></li>
+      <li><strong>Up, stop, and back?</strong> Send the block up a \(30^\circ\) slope at \(5\ \text{m/s}\). Friction points down the slope on the way up, then up the slope if it slides back. With \(\mu_s &gt; \tan 30^\circ\), it stays at the top. <button type="button" class="btn small" data-load="incline" data-set='{"th": 30, "muS": 0.4, "muK": 0.3, "v0": -5, "P": 0}'>Load</button></li>
+      <li><strong>The best pulling angle.</strong> With \(\mu_k = 0.4\), find the angle that gives the largest acceleration. It is \(\tan^{-1}0.4 = 21.8^\circ\). <button type="button" class="btn small" data-load="angled" data-set='{"P": 250, "al": 22, "m": 40, "mu": 0.4}'>Load</button></li>
+      <li><strong>Static friction gives way.</strong> With a push that grows, the friction line follows the push up to \(\mu_s N\), then drops to \(\mu_k N\): the acceleration jumps. <button type="button" class="btn small" data-load="grow" data-set='{"c": 20, "m": 10, "muS": 0.5, "muK": 0.3}'>Load</button></li>
+      <li><strong>A push that fades.</strong> In the spring launch, the acceleration is largest at release and zero where the spring reaches its free length; the speed is largest there. <button type="button" class="btn small" data-load="spring" data-set='{"k": 800, "d": 0.2, "m": 2, "mu": 0}'>Load</button></li>
+      <li><strong>Tension is not the hanging weight.</strong> With two blocks and a pulley, compare \(T\) with \(m_B g\) as you change the masses. <button type="button" class="btn small" data-load="pulley" data-set='{"mA": 8, "mB": 4, "mu": 0.2}'>Load</button></li>
+      <li><strong>The mass cancels.</strong> Slide to rest from \(8\ \text{m/s}\) with \(\mu_k = 0.4\), then change the mass: the stopping distance, \(v_0^2/2\mu_k g = 8.15\ \text{m}\), does not change. <button type="button" class="btn small" data-load="slide" data-set='{"v0": 8, "mu": 0.4, "m": 10}'>Load</button></li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the lab works</h2>
+    <p>The scenes integrate Newton's second law in small time steps (fourth-order Runge&ndash;Kutta, \(\Delta t = 0.5\ \text{ms}\)). At each step the forces along the track are added up: the applied force, the component of the weight along the slope, a spring's push, and friction. Friction is static while the body is at rest and the other forces fit within \(\mu_s N\), and kinetic, \(\mu_k N\) against the motion, once it slides. The normal force comes from the equation across the track, so an angled pull or a slope changes it. The two blocks and the pulley are solved exactly, from the equations of <a href="../lessons/04-connected-particles.html">Lesson 4</a>.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Pause at any instant and check the readouts by hand: add the forces along the motion, divide by the mass, and compare with the acceleration. The list under the figure says when the body starts to slide or comes to rest.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ---------- Force Lab: scenes, sliders and the force ledger ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G = 9.81, D2R = Math.PI / 180, L = 6;
+  var stage = document.getElementById('ex-stage'), panel = document.getElementById('ex-controls');
+  var eventsEl = document.getElementById('ex-events'), descEl = document.getElementById('ex-desc');
+  var BLOCK = { shape: 'block', h: 0.6 };
+  function slope(st) { return st.th * D2R; }
+
+  /* Track scenes: sliders and spec(st) for MOMENTUM.figure. Custom scenes: build(stage, panel, st) -> {destroy, events()}. */
+  var SCENES = [
+    { id: 'floor', label: 'Level floor',
+      desc: 'A crate on a level floor, pushed horizontally. Start it moving if you like, and see whether the push beats friction.',
+      sliders: [
+        { key: 'P', label: 'Push \\(P\\)', min: 0, max: 150, step: 5, value: 60, unit: 'N', color: 'warn' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 1, max: 30, step: 1, value: 10, unit: 'kg' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.6, step: 0.05, value: 0.3, color: 'r' },
+        { key: 'v0', label: 'Starting velocity \\(v_0\\)', min: 0, max: 6, step: 0.5, value: 0, unit: 'm/s', color: 'good' }
+      ],
+      note: 'With friction, \u03bcs = \u03bck + 0.1. The view follows the crate; the marks on the floor are distances from its start.',
+      frame: { xRange: [-0.6, 9.6], yRange: [-1.9, 2.7], maxHeight: 320, follow: true }, draw: [BLOCK],
+      forces: ['W', 'N', 'Ff', 'P'], ledger: ['P', 'Ff'], readouts: ['t', 'vA', 'aA', 'sA'], chart: { kind: 'v' },
+      spec: function (st) { return { bodies: [{ m: st.m, x: 0.5, v: st.v0, w: 0.8, mu: st.mu, muS: st.mu > 0 ? st.mu + 0.1 : 0, P: st.P, label: 'A' }], tmax: 4 }; } },
+    { id: 'incline', label: 'Incline',
+      desc: 'A block on a rough slope, released or sent off along it, with an optional push up the slope. Positive is down the slope.',
+      sliders: [
+        { key: 'th', label: 'Slope \\(\\theta\\)', min: 0, max: 45, step: 1, value: 30 , unit: '°' },
+        { key: 'muS', label: 'Static friction \\(\\mu_s\\)', min: 0, max: 0.8, step: 0.05, value: 0.4, color: 'r' },
+        { key: 'muK', label: 'Kinetic friction \\(\\mu_k\\)', min: 0, max: 0.8, step: 0.05, value: 0.3, color: 'r' },
+        { key: 'v0', label: 'Starting velocity, down the slope', min: -6, max: 6, step: 0.5, value: 0, unit: 'm/s', color: 'good' },
+        { key: 'P', label: 'Push up the slope \\(P\\)', min: 0, max: 200, step: 5, value: 0, unit: 'N', color: 'warn' }
+      ],
+      note: 'A 10 kg block, starting halfway along a 6 m slope. \u03bck is held at \u03bcs if you set it higher. A negative starting velocity sends the block up the slope.',
+      frame: { xRange: [-0.4, 6.6], yRange: [-0.5, 5.1], maxHeight: 380 }, draw: [{ shape: 'block', h: 0.5 }],
+      forces: ['W', 'N', 'Ff', 'P'], ledger: ['W', 'Ff', 'P'], ledgerTitle: 'Forces down the slope (N)', readouts: ['t', 'vA', 'aA', 'NA'], chart: { kind: 'v' },
+      track: function (st) { return { origin: [0, L * Math.sin(slope(st))], from: 0, to: L }; },
+      scenery: function (g, f, st) {
+        var top = f.toPlane(0, 0), bot = f.toPlane(L, 0), th = slope(st);
+        g.polyline([top, bot, [top[0], bot[1]]], { closed: true, color: 'muted', width: 1, fill: 'muted', fillOpacity: 0.12 });
+        if (th > 0.01) {
+          g.arc({ center: bot, r: 0.9, theta0: Math.PI - th, theta1: Math.PI, color: 'muted', width: 1.2, arrow: false });
+          g.label([bot[0] - 1.2 * Math.cos(th / 2), bot[1] + 1.2 * Math.sin(th / 2)], '\\theta', { color: 'muted' });
+        }
+      },
+      spec: function (st) {
+        return { theta: -slope(st), bodies: [{ m: 10, x: L / 2, v: st.v0, w: 0.8, mu: Math.min(st.muK, st.muS), muS: st.muS, P: -st.P, label: 'A' }], tmax: 5,
+          until: function (s) { return s.x[0] > L - 0.45 || s.x[0] < 0.45; } };
+      } },
+    { id: 'angled', label: 'Angled pull',
+      desc: 'A crate pulled across a rough floor by a force at an angle above the horizontal. The pull lifts part of the weight, so the normal force, and friction, drop.',
+      sliders: [
+        { key: 'P', label: 'Pull \\(P\\)', min: 0, max: 300, step: 10, value: 250, unit: 'N', color: 'warn' },
+        { key: 'al', label: 'Angle \\(\\alpha\\)', min: 0, max: 60, step: 1, value: 30, unit: '°' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 30, max: 80, step: 5, value: 40, unit: 'kg' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.6, step: 0.05, value: 0.4, color: 'r' }
+      ],
+      note: '\u03bcs = \u03bck + 0.1. The bars show the horizontal component of the pull, P cos \u03b1.',
+      frame: { xRange: [-0.6, 9.6], yRange: [-1.9, 2.7], maxHeight: 320, follow: true }, draw: [{ shape: 'block', h: 0.6, pull: true }],
+      forces: ['W', 'N', 'Ff', 'P'], ledger: ['P', 'Ff'], readouts: ['t', 'vA', 'aA', 'NA'], chart: { kind: 'v' },
+      spec: function (st) { var a = st.al * D2R; return { bodies: [{ m: st.m, x: 0.5, w: 0.8, mu: st.mu, muS: st.mu + 0.1, P: st.P * Math.cos(a), Pn: st.P * Math.sin(a), label: 'A' }], tmax: 3, stopWhenStill: false }; } },
+    { id: 'grow', label: 'Growing push',
+      desc: 'A push that grows steadily with time, P = ct. Static friction follows it up until it reaches \u03bcs N; then the crate breaks free.',
+      sliders: [
+        { key: 'c', label: 'Rate \\(c\\)', min: 5, max: 50, step: 5, value: 20, unit: 'N/s', color: 'warn' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 2, max: 20, step: 1, value: 10, unit: 'kg' },
+        { key: 'muS', label: 'Static friction \\(\\mu_s\\)', min: 0.1, max: 0.8, step: 0.05, value: 0.5, color: 'r' },
+        { key: 'muK', label: 'Kinetic friction \\(\\mu_k\\)', min: 0, max: 0.8, step: 0.05, value: 0.4, color: 'r' }
+      ],
+      note: 'The chart shows the push and the size of friction. \u03bck is held at \u03bcs if you set it higher.',
+      frame: { xRange: [-0.6, 7.6], yRange: [-1.6, 2.6], maxHeight: 300, follow: true }, draw: [BLOCK], fScale: 0.012,
+      forces: ['W', 'N', 'Ff', 'P'], ledger: ['P', 'Ff'], readouts: ['t', 'vA', 'aA'], chart: { kind: 'F', magnitude: true },
+      spec: function (st) { var c = st.c, t1 = st.muS * st.m * G / c; return { bodies: [{ m: st.m, x: 0.5, w: 0.8, mu: Math.min(st.muK, st.muS), muS: st.muS, P: function (t) { return c * t; }, label: 'A' }], tmax: Math.min(12, t1 + 2), stopWhenStill: false }; } },
+    { id: 'spring', label: 'Spring launch',
+      desc: 'A block pressed against a spring, then released. The spring\u2019s push falls as it extends, so the acceleration falls too: a force that depends on position.',
+      sliders: [
+        { key: 'k', label: 'Stiffness \\(k\\)', min: 200, max: 2000, step: 100, value: 800, unit: 'N/m', color: 't' },
+        { key: 'd', label: 'Compression \\(\\delta\\)', min: 0.05, max: 0.3, step: 0.01, value: 0.2, unit: 'm', color: 't' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 0.5, max: 5, step: 0.5, value: 2, unit: 'kg' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.4, step: 0.05, value: 0, color: 'r' }
+      ],
+      note: 'On a smooth floor the block leaves the spring at \u03b4\u221a(k/m). The view follows the block. Played at a tenth of real speed: the launch takes a few hundredths of a second.',
+      frame: { xRange: [-0.9, 2.1], yRange: [-0.5, 0.85], maxHeight: 280, follow: { body: 0, lead: 0.5 }, speed: 0.1 }, draw: [{ shape: 'block', h: 0.3 }],
+      forces: ['W', 'N', 'Ff', 'Fs'], ledger: ['Fs', 'Ff'], readouts: ['t', 'vA', 'aA', 'sA'], chart: { kind: 'v' },
+      spec: function (st) { var w = 0.4; return { bodies: [{ m: st.m, x: -st.d + w / 2, w: w, mu: st.mu, muS: st.mu > 0 ? st.mu + 0.1 : 0, label: 'A' }], springs: [{ x: 0, side: -1, k: st.k, len: 0.6 }], tmax: 0.4 }; } },
+    { id: 'pulley', label: 'Two blocks and a pulley',
+      desc: 'Block A on a rough table, joined by a cord over a light, smooth pulley to block B, which hangs. Both move with the same acceleration; the cord\u2019s tension acts on each.',
+      sliders: [
+        { key: 'mA', label: 'Mass of \\(A\\), \\(m_A\\)', min: 2, max: 20, step: 1, value: 8, unit: 'kg', color: 'accent' },
+        { key: 'mB', label: 'Mass of \\(B\\), \\(m_B\\)', min: 1, max: 20, step: 1, value: 4, unit: 'kg', color: 'warn' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0, max: 0.6, step: 0.05, value: 0.2, color: 'r' }
+      ],
+      note: '\u03bcs = \u03bck + 0.05. B falls 2.4 m. M = m_A + m_B is the mass of the system.',
+      build: buildPulley },
+    { id: 'slide', label: 'Slide to rest',
+      desc: 'A crate sent sliding across a rough floor, with nothing pushing it. Friction alone slows it, at \u03bck g, whatever its mass.',
+      sliders: [
+        { key: 'v0', label: 'Starting velocity \\(v_0\\)', min: 1, max: 10, step: 0.5, value: 6, unit: 'm/s', color: 'good' },
+        { key: 'mu', label: 'Friction \\(\\mu_k\\)', min: 0.05, max: 0.8, step: 0.05, value: 0.3, color: 'r' },
+        { key: 'm', label: 'Mass \\(m\\)', min: 1, max: 30, step: 1, value: 10, unit: 'kg' }
+      ],
+      note: 'The stopping distance is v\u2080\u00b2/(2\u03bck g). The view follows the crate.',
+      frame: { xRange: [-0.6, 9.6], yRange: [-1.9, 2.7], maxHeight: 320, follow: true }, draw: [BLOCK],
+      forces: ['W', 'N', 'Ff'], ledger: ['Ff'], readouts: ['t', 'vA', 'aA', 'sA'], chart: { kind: 'v' },
+      spec: function (st) { return { bodies: [{ m: st.m, x: 0.5, v: st.v0, w: 0.8, mu: st.mu, muS: st.mu + 0.1, label: 'A' }], tmax: 8 }; } }
+  ];
+  var SCENE = {};
+  SCENES.forEach(function (s) { SCENE[s.id] = s; });
+  var cur = null, st = {}, fig = null, custom = null, chips = {};
+
+  /* ----- two blocks and a pulley (exact: constant acceleration) ----- */
+  function buildPulley(stg, pnl, st) {
+    var TX = 5.0, AH = 0.7, AW = 1.2, BW = 0.6, BH = 0.7, D = 2.4, XA0 = 0.2, FLOOR = -3.8;
+    var PR = 0.22, PC = [TX + 0.38, AH / 2 - PR], XB = PC[0] + PR, YB0 = -0.6;
+    var p = CYL2D.plane(stg, { xRange: [-0.5, 6.6], yRange: [-4.0, 1.9], grid: 'none', axes: false, maxHeight: 460,
+      ariaLabel: 'Block A on a rough table is tied to a cord that runs over a pulley at the edge, held by a bracket, down to block B, which hangs. When released, B falls and drags A toward the pulley. Arrows show the weights, the normal force and friction on A, and the cord\u2019s tension on both.' });
+    p.polyline([[-0.4, 0], [TX, 0], [TX, FLOOR], [-0.4, FLOOR]], { closed: true, color: 'surface', width: 0, fill: 'surface', fillOpacity: 0.2 });
+    p.polyline([[-0.4, 0], [TX, 0], [TX, FLOOR]], { color: 'ink', width: 2.6 });
+    p.line([TX, FLOOR], [6.5, FLOOR], { color: 'ink', width: 2.2 });
+    for (var q = TX + 0.05; q <= 6.45; q += 0.14) p.line([q, FLOOR], [q - 0.08, FLOOR - 0.12], { color: 'muted', width: 1 });
+    p.polyline([[TX, 0], [TX, -0.38], [PC[0] + 0.05, PC[1] - 0.04], [PC[0] - 0.04, PC[1] + 0.06]], { closed: true, color: 'ink', width: 1.6, fill: 'muted', fillOpacity: 0.45 });
+    p.circle({ center: [TX + 0.06, -0.3], r: 0.025, color: 'ink', fill: 'ink', fillOpacity: 1 });
+    p.circle({ center: [TX + 0.06, -0.08], r: 0.025, color: 'ink', fill: 'ink', fillOpacity: 1 });
+    p.circle({ center: PC, r: PR, color: 'ink', width: 2, fill: 'bg', fillOpacity: 1 });
+    p.circle({ center: PC, r: 0.07, color: 'ink', width: 1.4, fill: 'muted', fillOpacity: 0.6 });
+    p.circle({ center: PC, r: 0.025, color: 'ink', fill: 'ink', fillOpacity: 1 });
+    p.arc({ center: PC, r: PR, theta0: Math.PI / 2, theta1: 0, color: 'ink', width: 1.6, arrow: false });
+    var cordA = p.line([0, 0], [0, 0], { color: 'ink', width: 1.6 }), cordB = p.line([0, 0], [0, 0], { color: 'ink', width: 1.6 });
+    var A = FMA.block(p, { w: AW, h: AH, color: 'accent', label: 'A' }), B = FMA.block(p, { w: BW, h: BH, color: 'warn', label: 'B' });
+    var cgA = p.circle({ center: [0, 0], r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 }), cgB = p.circle({ center: [0, 0], r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 });
+    var f = {
+      WA: FMA.force(p, { color: 'z', label: 'W_A' }), NA: FMA.force(p, { color: 'ink', label: 'N_A' }),
+      Ff: FMA.force(p, { color: 'r', label: 'F_f', labelSide: 'left', minLength: 0.25 }), TA: FMA.force(p, { color: 'muted', label: 'T', labelSide: 'left' }),
+      WB: FMA.force(p, { color: 'z', label: 'W_B', labelSide: 'right' }), TB: FMA.force(p, { color: 'muted', label: 'T' })
+    };
+    var vA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v', labelAt: 1, labelSide: 'left' });
+    var vB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v', labelAt: 1, labelSide: 'left' });
+    var ledger = ENERGY.ledger(pnl, { works: [{ key: 'WB', label: 'W_B', color: 'z' }, { key: 'Ff', label: 'F_f', color: 'r' }], start: '0', end: 'Ma',
+      startColor: 'muted', endColor: 'bad', unit: 'N', title: 'The system, along the cord (N)' });
+    var roA = CYL.readout('Acceleration \\(a\\)', { color: 'bad' }), roT = CYL.readout('Tension \\(T\\)'), roW = CYL.readout('Weight of \\(B\\), \\(m_B g\\)', { color: 'z' }), roV = CYL.readout('Speed \\(v\\)', { color: 'good' });
+    pnl.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roA.el, roT.el, roW.el, roV.el]));
+    var mA = st.mA, mB = st.mB, muS = st.mu + 0.05, moves = mB > muS * mA + 1e-9;
+    var a = moves ? (mB - st.mu * mA) * G / (mA + mB) : 0, Ffr = moves ? st.mu * mA * G : mB * G, T = moves ? mB * (G - a) : mB * G, dur = moves ? Math.sqrt(2 * D / a) : 1.5;
+    var K = 1.15 / Math.max(mA, mB) / G;
+    roA.set(CYL.fmt(a, 4) + '\u00a0m/s\u00b2'); roT.set(CYL.fmt(T, 4) + '\u00a0N'); roW.set(CYL.fmt(mB * G, 4) + '\u00a0N');
+    ledger.setScale(-Ffr, mB * G * 1.04);
+    ledger.set({ start: 0, WB: mB * G, Ff: -Ffr, end: (mA + mB) * a });
+    function draw(t) {
+      var s = moves ? Math.min(D, 0.5 * a * t * t) : 0, v = moves ? a * Math.min(t, dur) : 0;
+      var xa = XA0 + AW / 2 + s, yb = YB0 - BH / 2 - s;
+      A.set([xa, AH / 2], 0); B.set([XB, yb], 0);
+      cordA.set([xa + AW / 2, AH / 2], [PC[0], AH / 2]);
+      cordB.set([XB, PC[1]], [XB, yb + BH / 2]);
+      cgA.set({ center: [xa, AH / 2], r: 0.035 }); cgB.set({ center: [XB, yb], r: 0.035 });
+      f.WA.set([xa, AH / 2], [0, -1], mA * G * K);
+      f.NA.set([xa + 0.3, 0], [0, 1], mA * G * K);
+      if (Ffr > 1e-9) f.Ff.set([xa - 0.2, 0], [-1, 0], Ffr * K); else f.Ff.hide();
+      f.TA.set([xa + AW / 2, AH / 2 + 0.17], [1, 0], T * K);
+      f.WB.set([XB, yb], [0, -1], mB * G * K);
+      f.TB.set([XB + 0.14, yb + BH / 2], [0, 1], T * K);
+      var vl = Math.min(1.2, 0.2 * v);
+      vA.setVisible(vl > 0.02); vB.setVisible(vl > 0.02);
+      if (vl > 0.02) { vA.set([xa + 0.12, AH + 0.32], [xa + 0.12 + vl, AH + 0.32]); vB.set([XB + 0.55, yb + 0.35], [XB + 0.55, yb + 0.35 - vl]); }
+      roV.set(CYL.fmt(v, 4) + '\u00a0m/s');
+    }
+    var pl = MOMENTUM.player({ stage: stg, duration: function () { return dur; }, onTime: draw });
+    return {
+      destroy: function () { pl.destroy(); },
+      events: function () {
+        if (!moves) return ['Nothing moves: B\u2019s weight, ' + CYL.fmt(mB * G, 4) + ' N, is no more than the largest static friction on A, ' + CYL.fmt(muS * mA * G, 4) + ' N. The tension equals B\u2019s weight.'];
+        return ['The blocks accelerate at \\(a = (m_B g - \\mu_k m_A g)/(m_A + m_B) = ' + CYL.fmt(a, 4) + '\\ \\text{m/s}^2\\), and B falls ' + D + ' m in ' + CYL.fmt(dur, 3) + ' s, reaching ' + CYL.fmt(a * dur, 3) + ' m/s.',
+          'Block B alone: \\(m_B g - T = m_B a\\), so \\(T = ' + CYL.fmt(T, 4) + '\\ \\text{N}\\), ' + CYL.fmt(100 * T / (mB * G), 3) + '% of its weight.'];
+      }
+    };
+  }
+
+  /* ----- what happened, for track scenes ----- */
+  function trackEvents(run) {
+    var lines = [], B = run.bodies, b = B[0];
+    run.events.forEach(function (ev) {
+      if (lines.length > 5) return;
+      if (ev.kind === 'slip') lines.push('At ' + CYL.fmt(ev.t, 3) + ' s the other forces exceed the largest static friction, \\(\\mu_s N\\), and the body starts to slide.');
+      else if (ev.kind === 'rest') { var sr = run.at(ev.t); lines.push('At ' + CYL.fmt(ev.t, 3) + ' s the body comes to rest, ' + CYL.fmt(Math.abs(sr.x[0] - num0(run)), 4) + ' m from where it started' + (cur.id === 'incline' ? ', measured along the slope.' : '.')); }
+    });
+    var s0 = run.at(0), s1 = run.at(run.duration);
+    if (!run.events.length && Math.abs(s1.v[0]) < 1e-6 && Math.abs(s0.v[0]) < 1e-6) lines.push('Nothing moves: the forces along the track fit within the largest static friction, so friction balances them and \\(ma = 0\\).');
+    // Newton's second law, checked against the motion: the mean of sum F / m over the run equals the change in velocity over the time
+    var N = 400, sum = 0, D = run.duration;
+    for (var k = 0; k < N; k++) { var s = run.at(D * (k + 0.5) / N); sum += (s.F.P[0] + s.F.W[0] + s.F.Ff[0] + s.F.Fs[0]) / b.m; }
+    var dv = s1.v[0] - s0.v[0], mean = D > 0 ? sum / N : 0;
+    lines.push('Newton check: over the ' + CYL.fmt(D, 3) + ' s shown, the average of \\(\\sum F/m\\) is ' + CYL.fmt(mean, 4) + ' m/s\u00b2, and the change in velocity divided by the time is ' + CYL.fmt(D > 0 ? dv / D : 0, 4) + ' m/s\u00b2.');
+    return lines;
+  }
+  function num0(run) { var b0 = (run.spec.bodies || [])[0] || {}; return +b0.x || 0; }
+  function showEvents() {
+    var lines = custom ? custom.events() : trackEvents(fig.run());
+    eventsEl.innerHTML = '';
+    var ul = CYL.el('ul');
+    lines.forEach(function (l) { ul.appendChild(CYL.el('li', { html: l })); });
+    eventsEl.appendChild(ul);
+    CYL.renderMath(eventsEl);
+  }
+
+  function controls(sc) {
+    panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the numbers' }));
+    sc.sliders.forEach(function (sl) {
+      panel.appendChild(CYL.slider({ label: sl.label, min: sl.min, max: sl.max, step: sl.step, value: st[sl.key], unit: sl.unit, color: sl.color,
+        onInput: function (v) { st[sl.key] = v; rerun(); } }).el);
+    });
+    panel.appendChild(CYL.el('p', { class: 'mf-note', text: sc.note }));
+  }
+  function clear() {
+    if (fig) { fig.destroy(); fig = null; }
+    if (custom) { custom.destroy(); custom = null; }
+    stage.innerHTML = ''; panel.innerHTML = '';
+    var main = stage.parentNode;
+    if (main && main.classList.contains('mf-main')) Array.prototype.forEach.call(main.querySelectorAll(':scope > .mf-chart, :scope > .mf-transport'), function (nd) { nd.remove(); });
+  }
+  var vizEl = document.getElementById('ex-viz');
+  function build() {
+    clear();
+    var sc = cur;
+    vizEl.classList.toggle('mf-viz', !sc.build);           // the track scenes have a chart under the stage
+    if (sc.build) {
+      custom = sc.build(stage, panel, st);
+      controls(sc);
+    } else {
+      fig = MOMENTUM.figure(Object.assign({}, sc.frame, {
+        stage: stage, controls: panel, spec: sc.spec(st), draw: sc.draw, fScale: sc.fScale,
+        track: sc.track ? sc.track(st) : undefined, scenery: sc.scenery ? function (g, f) { sc.scenery(g, f, st); } : undefined,
+        show: { v: true, forces: true }, toggles: ['v', 'forces'], forces: sc.forces,
+        pbars: false, forceLedger: { items: sc.ledger, title: sc.ledgerTitle },
+        readouts: sc.readouts, chart: sc.chart,
+        aria: sc.label + ': ' + sc.desc
+      }));
+      controls(sc);
+    }
+    CYL.renderMath(panel);
+    if (fig) fig.update();
+    showEvents();
+  }
+  function rerun() {
+    if (cur.build) { build(); return; }
+    fig.setSpec(cur.spec(st), false, cur.track ? cur.track(st) : undefined);
+    showEvents();
+  }
+  function choose(id, set) {
+    cur = SCENE[id] || SCENES[0];
+    st = {};
+    cur.sliders.forEach(function (sl) { st[sl.key] = sl.value; });
+    if (set) Object.keys(set).forEach(function (k) { if (k in st) st[k] = set[k]; });
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === cur.id)); });
+    descEl.textContent = cur.desc;
+    try { CYL.store.set('explorer:scene', cur.id); } catch (e) { /* fine without */ }
+    build();
+  }
+
+  var sceneRow = document.getElementById('ex-scene');
+  SCENES.forEach(function (sc) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: sc.label });
+    b.addEventListener('click', function () { if (!cur || cur.id !== sc.id) choose(sc.id); });
+    chips[sc.id] = b; sceneRow.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var set = null;
+      try { set = btn.getAttribute('data-set') ? JSON.parse(btn.getAttribute('data-set')) : null; } catch (e) { set = null; }
+      choose(btn.getAttribute('data-load'), set);
+      document.getElementById('explore').scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+
+  choose(CYL.store.get('explorer:scene', 'floor'));
+  window.__explorer = { choose: choose, state: function () { return { scene: cur.id, values: st }; }, figure: function () { return fig; }, custom: function () { return custom; }, scenes: SCENES.map(function (s) { return s.id; }) };   // for QA scripts
+});
+</script>
+</body>
+</html>

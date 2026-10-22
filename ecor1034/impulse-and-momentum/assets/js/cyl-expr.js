@@ -52,7 +52,8 @@
  *  - Angles: "°" (also º, ˚) always means degrees (x π/180), so sin(30°) works everywhere. The words
  *    deg / degree(s) / rad / radian(s) are accepted only with {angle:true}. A unit applies to the product or
  *    quotient before it: 135° , 135 deg, -45deg = -π/4, 180/4° = 45°, 3pi/4 rad = 3π/4, 90° + 45° = 3π/4.
- *    parseNumber without {angle:true} rejects "°" (NaN) because it only makes sense for angles.
+ *    parseNumber without {angle:true} rejects "°" (NaN) because it only makes sense for angles, except inside the
+ *    argument of sin, cos, tan, sec, csc or cot, where it marks that angle in degrees: 12*9.81*sin(25°) is a force.
  *  - Not supported (friendly error instead): "=", |x| bars (use abs), factorial "!", decimal commas "2,5".
  */
 (function (root) {
@@ -690,9 +691,11 @@
     return f.apply(null, vals);
   }
 
-  function findUnit(nd) {
+  var TRIG_ARG = { sin: 1, cos: 1, tan: 1, sec: 1, csc: 1, cot: 1 };
+  function findUnit(nd) {                                  // a degree sign outside the argument of sin, cos, tan, ...
     if (!nd || typeof nd !== 'object') return null;
     if (nd.type === 'unit' && nd.unit === 'deg') return nd;
+    if (nd.type === 'call' && TRIG_ARG[nd.name]) return null;   // there it marks an angle in degrees: 9.81*sin(25°)
     var kids = nd.type === 'call' ? nd.args : [nd.arg, nd.left, nd.right];
     for (var i = 0; i < kids.length; i++) { var r = findUnit(kids[i]); if (r) return r; }
     return null;
