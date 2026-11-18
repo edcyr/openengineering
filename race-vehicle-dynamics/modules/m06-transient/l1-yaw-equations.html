@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>From steady state to motion: the yaw equations — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="../../assets/vendor/katex/katex.inline-fonts.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="../../assets/vendor/katex/katex.min.js"></script>
+  <script defer src="../../assets/vendor/katex/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/bicycle.js"></script>
+  <script defer src="../../assets/js/widgets/transient.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m06-l1">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>The journey, not just the destination</h2>
+    <p>
+      Module 5 told you where a car ends up in a steady turn: how much steer, how much yaw rate, how much sideslip.
+      It said nothing about how the car gets there. Yet that is what a driver feels first. Turn the wheel and the car
+      responds in a fraction of a second, crisply or lazily, settling cleanly or swinging past and back. In
+      Lesson 1.2's hands-off test the same car either settled or spun after a gust, depending on speed. This optional
+      module builds the equations that decide all of this. It assumes you have met first-order differential equations.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="inertia">
+    <h2>Yaw moment of inertia</h2>
+    <p>
+      A car resists changes in yaw rate through its <strong>yaw moment of inertia</strong> \(I_z\), the
+      \(\int \rho^2\,dm\) of its mass about a vertical axis through the CG. Engineers often write it with a radius of
+      gyration \(k\), \(I_z = m k^2\), and compare \(k^2\) with the product of the axle distances \(a\,b\):
+    </p>
+    <div class="equation">\[ I_z = m k^2, \qquad \text{DI} = \frac{k^2}{a\,b} \]</div>
+    <p>
+      The <strong>dynamic index</strong> DI is typically 0.8–1.0. With DI = 1, a side force at the front axle produces
+      no instantaneous sideways acceleration at the rear axle, and vice versa: the axles behave as if they were
+      independent. Mid-engined race cars concentrate their mass near the CG, which lowers \(k\) and the dynamic index,
+      and makes the car quicker to yaw. The club racer used here has DI = 0.85, so
+      \(I_z = 0.85 \times 750 \times 1.176 \times 1.274 = 955\) kg·m² (\(k = 1.13\) m).
+    </p>
+  </section>
+
+  <section class="lesson-section" id="eom">
+    <h2>The two equations of motion</h2>
+    <p>
+      Keep the bicycle model of Lesson 5.2 (constant speed \(V\), small angles, linear tires, SAE signs) but let the
+      sideslip \(\beta\) and yaw rate \(r\) change with time. Newton's law sideways and about the vertical axis give
+    </p>
+    <div class="equation">\[ \begin{aligned} m\,V\,(\dot\beta + r) &= F_{yf} + F_{yr} \\[4pt] I_z\,\dot r &= a\,F_{yf} - b\,F_{yr} \end{aligned} \]</div>
+    <p>
+      The lateral acceleration is \(a_y = V(\dot\beta + r)\): the direction of travel is \(\psi + \beta\) (Lesson 0.2), and
+      a velocity of fixed size \(V\) turning at rate \(\dot\psi + \dot\beta = r + \dot\beta\) has a sideways acceleration
+      \(V\) times that rate. In a steady turn \(\dot\beta = 0\) and this is the familiar \(a_y = V r\) of Lesson 0.1.
+    </p>
+    <p>
+      Substituting the tire forces \(F_y = -C\alpha\) and the slip angles of Lesson 0.2 gives two linear first-order
+      equations for the state \((\beta, r)\), driven by the steer \(\delta\):
+    </p>
+    <div class="equation">\[ \begin{aligned} \dot\beta &= -\frac{C_f + C_r}{m V}\,\beta + \left(\frac{b C_r - a C_f}{m V^2} - 1\right) r + \frac{C_f}{m V}\,\delta \\[6pt] \dot r &= \frac{b C_r - a C_f}{I_z}\,\beta - \frac{a^2 C_f + b^2 C_r}{I_z V}\,r + \frac{a\,C_f}{I_z}\,\delta \end{aligned} \]</div>
+    <details class="derivation">
+      <summary>Derivation: from forces to the state equations <span class="derivation__hint">Show</span></summary>
+      <div class="derivation__body">
+        <p class="derivation__step">1. Tire forces in terms of the state</p>
+        <p>With \(\alpha_f = \beta + a r/V - \delta\) and \(\alpha_r = \beta - b r/V\):</p>
+        <div class="equation">\[ \begin{aligned} F_{yf} &= -C_f\left(\beta + \frac{a\,r}{V} - \delta\right) \\[4pt] F_{yr} &= -C_r\left(\beta - \frac{b\,r}{V}\right) \end{aligned} \]</div>
+        <p class="derivation__step">2. Total side force and yaw moment</p>
+        <div class="equation">\[ \begin{aligned} F_{yf} + F_{yr} &= -(C_f + C_r)\,\beta + (b C_r - a C_f)\,\frac{r}{V} + C_f\,\delta \\[4pt] a F_{yf} - b F_{yr} &= (b C_r - a C_f)\,\beta - (a^2 C_f + b^2 C_r)\,\frac{r}{V} + a C_f\,\delta \end{aligned} \]</div>
+        <p class="derivation__step">3. Divide through</p>
+        <p>Divide the first by \(mV\) and subtract \(r\) to get \(\dot\beta\); divide the second by \(I_z\) to get \(\dot r\). Setting both derivatives to zero recovers the steady state of Lesson 5.2, including \(\delta = L/R + K a_y\).</p>
+      </div>
+    </details>
+    <figure>
+      <div class="fig-pair">
+        <div>
+          <svg viewBox="66 26 222 384" width="222" role="img" aria-label="Top view of the bicycle model with the x axis forward and the y axis to the right. The front tire force F yf acts to the right at the front axle, a distance a ahead of the CG; the rear tire force F yr acts to the right at the rear axle, a distance b behind it. A clockwise arrow around the CG shows the yaw rate r."><rect x="112" y="59.4" width="76" height="321.0" rx="22" class="fig-chassis" stroke-width="1.2" opacity="0.55"/><line x1="150.0" y1="390.4" x2="150.0" y2="35.4" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><text x="144.0" y="43.4" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:15px">x</text><line x1="150.0" y1="215.0" x2="262.0" y2="215.0" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><text x="266.0" y="220.0" text-anchor="start" class="fig-text fig-dimlabel" style="font-size:15px">y</text><rect x="143.0" y="77.4" width="14" height="40" rx="4" class="fig-fill" transform="rotate(8.0 150.0 97.4)"/><rect x="143.0" y="322.4" width="14" height="40" rx="4" class="fig-fill" transform="rotate(0.0 150.0 342.4)"/><line x1="162.0" y1="97.4" x2="241.0" y2="97.4" class="fig-s2" stroke-width="2.5"/><polygon points="250.0,97.4 239.0,102.4 239.0,92.4" class="fig-s2-fill"/><text x="232.0" y="86.4" text-anchor="middle" class="fig-text fig-s2-fill" style="font-size:15px;font-weight:700">F<tspan dy="4" style="font-size:12px">yf</tspan></text><line x1="162.0" y1="342.4" x2="229.0" y2="342.4" class="fig-s2" stroke-width="2.5"/><polygon points="238.0,342.4 227.0,347.4 227.0,337.4" class="fig-s2-fill"/><text x="222.0" y="331.4" text-anchor="middle" class="fig-text fig-s2-fill" style="font-size:15px;font-weight:700">F<tspan dy="4" style="font-size:12px">yr</tspan></text><polyline points="183.8,227.3 183.6,227.9 183.4,228.5 183.1,229.1 182.9,229.6 182.6,230.2 182.4,230.8 182.1,231.3 181.8,231.9 181.5,232.5 181.2,233.0 180.9,233.5 180.5,234.1 180.2,234.6 179.8,235.1 179.5,235.6 179.1,236.2 178.8,236.7 178.4,237.2 178.0,237.7 177.6,238.1 177.2,238.6 176.8,239.1 176.3,239.6 175.9,240.0 175.5,240.5 175.0,240.9 174.6,241.3 174.1,241.8 173.6,242.2 173.1,242.6 172.7,243.0 172.2,243.4 171.7,243.8 171.2,244.1 170.6,244.5 170.1,244.8 169.6,245.2 169.1,245.5 168.5,245.9 168.0,246.2 167.5,246.5 166.9,246.8 166.3,247.1 165.8,247.4 165.2,247.6 164.6,247.9 164.1,248.1 163.5,248.4 162.9,248.6 162.3,248.8 161.7,249.0 161.1,249.2 160.5,249.4 159.9,249.6 159.3,249.8 158.7,249.9 158.1,250.1 157.5,250.2 156.9,250.3 156.3,250.5 155.6,250.6 155.0,250.6 154.4,250.7 153.8,250.8 153.1,250.9 152.5,250.9 151.9,251.0 151.3,251.0 150.6,251.0 150.0,251.0 149.4,251.0 148.7,251.0 148.1,251.0 147.5,250.9 146.9,250.9 146.2,250.8 145.6,250.7 145.0,250.6 144.4,250.6 143.7,250.5 143.1,250.3 142.5,250.2 141.9,250.1 141.3,249.9 140.7,249.8 140.1,249.6 139.5,249.4 138.9,249.2 138.3,249.0 137.7,248.8 137.1,248.6 136.5,248.4 135.9,248.1 135.4,247.9 134.8,247.6 134.2,247.4 133.7,247.1 133.1,246.8 132.5,246.5 132.0,246.2 131.5,245.9 130.9,245.5 130.4,245.2 129.9,244.8 129.4,244.5" fill="none" class="fig-s1" stroke-width="2"/><polygon points="129.4,244.5 140.1,246.5 135.0,253.9" class="fig-s1-fill"/><text x="169.8" y="269.9" text-anchor="start" class="fig-text fig-s1-fill" style="font-size:15px;font-weight:700;font-style:italic">r</text><circle cx="150" cy="215" r="5" class="fig-fill"/><text x="159.0" y="207.0" text-anchor="start" class="fig-text" style="font-size:12px">CG</text><line x1="88.0" y1="97.4" x2="88.0" y2="342.4" class="fig-muted" stroke-width="1.2"/><line x1="83.0" y1="97.4" x2="93.0" y2="97.4" class="fig-muted" stroke-width="1.2"/><line x1="95.0" y1="97.4" x2="110.0" y2="97.4" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><line x1="83.0" y1="215.0" x2="93.0" y2="215.0" class="fig-muted" stroke-width="1.2"/><line x1="95.0" y1="215.0" x2="110.0" y2="215.0" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><line x1="83.0" y1="342.4" x2="93.0" y2="342.4" class="fig-muted" stroke-width="1.2"/><line x1="95.0" y1="342.4" x2="110.0" y2="342.4" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><text x="80.0" y="161.2" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:15px">a</text><text x="80.0" y="283.7" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:15px">b</text></svg>
+          <div class="fig-sub">(a) Side forces and their lever arms:<br>\(I_z\,\dot r = a\,F_{yf} - b\,F_{yr}\)</div>
+        </div>
+        <div>
+          <svg viewBox="44 38 316 332" width="316" role="img" aria-label="The CG velocity V points at the course angle psi plus beta, measured clockwise from the track-fixed X axis; psi is the heading of the car x axis and beta the sideslip. A moment later the velocity, still of length V, has turned further by delta of psi plus beta. The change in velocity, delta V, runs from tip to tip and points sideways, at right angles to V."><line x1="70.0" y1="340.0" x2="70.0" y2="54.0" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><text x="64.0" y="62.0" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:15px">X</text><line x1="70.0" y1="340.0" x2="161.7" y2="88.2" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><text x="165.7" y="90.2" text-anchor="start" class="fig-text fig-dimlabel" style="font-size:15px">x</text><line x1="70.0" y1="340.0" x2="271.9" y2="250.1" class="fig-s4" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.4"/><polygon points="280.1,246.5 272.1,255.5 268.0,246.4" class="fig-s4-fill" opacity="0.4"/><line x1="70.0" y1="340.0" x2="217.9" y2="175.8" class="fig-s4" stroke-width="2.5"/><polygon points="223.9,169.1 220.3,180.6 212.8,173.9" class="fig-s4-fill"/><text x="229.9" y="163.1" text-anchor="start" class="fig-text fig-s4-fill" style="font-size:15px;font-weight:700;font-style:italic">V</text><text x="288.1" y="256.5" text-anchor="start" class="fig-text fig-s4-fill" style="font-size:13px">V later</text><line x1="225.7" y1="171.5" x2="270.1" y2="232.7" class="fig-s2" stroke-width="2.2"/><polygon points="275.4,240.0 264.9,234.0 273.0,228.1" class="fig-s2-fill"/><text x="263.3" y="204.5" text-anchor="start" class="fig-text fig-s2-fill" style="font-size:15px;font-weight:700">ΔV</text><polyline points="70.0,278.0 71.1,278.0 72.2,278.0 73.2,278.1 74.3,278.2 75.4,278.2 76.5,278.3 77.6,278.5 78.6,278.6 79.7,278.8 80.8,278.9 81.8,279.1 82.9,279.4 83.9,279.6 85.0,279.8 86.0,280.1 87.1,280.4 88.1,280.7 89.2,281.0 90.2,281.4 91.2,281.7" fill="none" class="fig-muted" stroke-width="1.3"/><text x="83.2" y="270.2" text-anchor="middle" class="fig-text" style="font-size:15px;font-style:italic">ψ</text><polyline points="105.6,242.3 107.3,242.9 109.0,243.6 110.6,244.3 112.3,245.0 114.0,245.7 115.6,246.5 117.2,247.3 118.8,248.2 120.4,249.0 122.0,249.9 123.6,250.9 125.1,251.8 126.6,252.8 128.2,253.8 129.7,254.8 131.1,255.9 132.6,256.9 134.0,258.0 135.4,259.2 136.8,260.3 138.2,261.5 139.6,262.7" fill="none" class="fig-muted" stroke-width="1.3"/><text x="130.8" y="243.9" text-anchor="middle" class="fig-text" style="font-size:15px;font-style:italic">β</text><polyline points="170.4,228.5 172.3,230.3 174.2,232.1 176.1,233.9 177.9,235.8 179.7,237.7 181.5,239.6 183.2,241.6 184.9,243.6 186.6,245.6 188.2,247.7 189.8,249.7 191.4,251.8 192.9,254.0 194.4,256.1 195.8,258.3 197.2,260.5 198.6,262.7 199.9,265.0 201.2,267.3 202.4,269.6 203.7,271.9 204.8,274.2 205.9,276.6 207.0,279.0" fill="none" class="fig-muted" stroke-width="1.3"/><text x="222.1" y="234.5" text-anchor="middle" class="fig-text" style="font-size:13px;font-style:italic">Δ(ψ + β)</text><circle cx="70" cy="340" r="5" class="fig-fill"/><text x="80.0" y="358.0" text-anchor="start" class="fig-text" style="font-size:12px">CG</text></svg>
+          <div class="fig-sub">(b) The velocity turns at \(r + \dot\beta\),<br>so \(a_y = V(\dot\beta + r)\)</div>
+        </div>
+      </div>
+      <figcaption><strong>The two equations of motion</strong> (SAE: positive to the right; angles exaggerated). (a) Both tire forces push the car sideways, \(m\,a_y = F_{yf} + F_{yr}\). About the CG, \(F_{yf}\) acts a distance \(a\) ahead and yaws the nose right (positive \(r\)), while \(F_{yr}\) acts \(b\) behind and yaws it back. Forces are drawn along the car's \(y\) axis, as small angles allow. (b) The direction of travel is \(\psi + \beta\) from the track's fixed \(X\) axis. In a short time \(\Delta t\) it turns by \((r + \dot\beta)\,\Delta t\), so the velocity, which keeps its size \(V\), changes by a sideways \(\Delta V = V(r + \dot\beta)\,\Delta t\).</figcaption>
+    </figure>
+  </section>
+
+  <section class="lesson-section" id="derivatives">
+    <h2>Stability derivatives in plain language</h2>
+    <p>
+      Each coefficient in those equations says how much side force or yaw moment one kind of motion creates. Engineers
+      call them <strong>stability derivatives</strong>. Four of them carry the physics:
+    </p>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Derivative</th><th>Value</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td>Side force from sideslip</td><td>\(-(C_f + C_r)\)</td><td>A car sliding sideways gets a side force that opposes the slide. Always resists.</td></tr>
+          <tr><td>Yaw moment from sideslip</td><td>\(b C_r - a C_f\)</td><td>Positive when the neutral steer point is behind the CG (it equals \(\text{SM}\cdot L\,(C_f + C_r)\)): sideslip turns the nose toward the direction of travel, like a weathervane.</td></tr>
+          <tr><td>Yaw damping</td><td>\(-(a^2 C_f + b^2 C_r)/V\)</td><td>Yaw rate creates slip angles that oppose the rotation. It weakens as \(1/V\): the reason high-speed handling is harder.</td></tr>
+          <tr><td>Control moment</td><td>\(a\,C_f\)</td><td>The yaw moment per unit of steer. It is what the driver uses to start a turn.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="modes">
+    <h2>Natural frequency and damping</h2>
+    <p>
+      A pair of linear equations like these behaves like a mass, spring and damper. Its characteristic equation is
+      \(\lambda^2 + 2\zeta\omega_n\lambda + \omega_n^2 = 0\). The two roots \(\lambda\) are the <strong>eigenvalues</strong>:
+      each mode of motion evolves as \(e^{\lambda t}\), so it dies away when the real part of \(\lambda\) is negative. The
+      coefficients are
+    </p>
+    <div class="equation">\[ \begin{aligned} \omega_n^2 &= \frac{C_f C_r L^2}{m I_z V^2}\left(1 + \frac{K V^2}{L}\right) \\[6pt] 2\zeta\omega_n &= \frac{C_f + C_r}{m V} + \frac{a^2 C_f + b^2 C_r}{I_z V} \end{aligned} \]</div>
+    <p>
+      where \(K\) is the understeer gradient of Lesson 5.3. Read the trends straight off:
+    </p>
+    <ul>
+      <li><strong>Damping falls with speed.</strong> Both terms in \(2\zeta\omega_n\) shrink as \(1/V\). At low speed the
+      response is overdamped and settles without oscillating; at high speed it overshoots.</li>
+      <li><strong>Understeer keeps the car stiff.</strong> With \(K &gt; 0\), \(\omega_n^2\) levels off at
+      \(C_f C_r L K/(m I_z)\) instead of falling to zero.</li>
+      <li><strong>Oversteer loses stability.</strong> With \(K &lt; 0\), \(\omega_n^2\) reaches zero at the critical speed
+      \(\sqrt{L/|K|}\). Above it one mode grows exponentially: Lesson 1.2's spin, now explained.</li>
+    </ul>
+
+    <div class="widget" data-widget="phase-portrait">
+      <div class="widget__title">Phase portrait and modes</div>
+      <p class="widget__desc">The left plot is the phase plane: each blue path starts from a disturbed state (a gust, a bump) and shows how sideslip and yaw rate evolve with the steer held fixed. The red dot is the steady state they return to, if the car is stable. The right plot shows the car's two modes (eigenvalues) as speed rises from 10 to 300 km/h, with your speed marked: further left means faster decay, further from the axis means more oscillation, and the shaded side is unstable.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the club racer at 30 km/h, do the paths circle the steady state or head straight in? Raise the speed to 200 km/h. What changes, and which number in the readouts tells you?</li>
+        <li>Make the car oversteer (front stiffness above rear, for example 3000 and 2000 N/deg) and raise the speed past 190 km/h. What happens to the paths and to the modes plot?</li>
+        <li>Lower the dynamic index from 1.0 to 0.7. How do the natural frequency and the decay time change? Why would a race car designer want that?</li>
+        <li>Set a steer angle of 1°. Where does the steady state move, and does the shape of the paths change?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>Find the natural frequency and damping ratio of the club racer (\(m = 750\) kg, \(a = 1.176\) m, \(b = 1.274\) m, \(I_z = 955\) kg·m², \(C_f = 114\,600\) N/rad, \(C_r = 171\,900\) N/rad, \(K = 0.00131\) rad/(m/s²)) at 90 and 180 km/h.</p>
+      <p><strong>90 km/h</strong> (25 m/s):</p>
+      <div class="equation">\[ \begin{aligned} \omega_n^2 &= \frac{114\,600 \times 171\,900 \times 2.45^2}{750 \times 955 \times 25^2}\left(1 + \frac{0.00131 \times 625}{2.45}\right) \\ &= 264.1 \times 1.334 = 352\ \text{s}^{-2} \end{aligned} \]</div>
+      <p>so \(\omega_n = 18.8\) rad/s (3.0 Hz). \(2\zeta\omega_n = 15.3 + 18.3 = 33.6\ \text{s}^{-1}\), so \(\zeta = 0.90\): barely any overshoot.</p>
+      <p><strong>180 km/h</strong> (50 m/s): \(\omega_n^2 = 154\ \text{s}^{-2}\), \(\omega_n = 12.4\) rad/s (2.0 Hz), and \(2\zeta\omega_n = 16.8\ \text{s}^{-1}\), so \(\zeta = 0.68\). Doubling the speed has halved the damping term, and the car now overshoots noticeably when steered (Lesson 6.2).</p>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“A stable car settles without overshoot.” Stability only means a disturbance dies away eventually. A stable
+      car with a low damping ratio swings past its new heading and back before settling, which drivers feel as a
+      nervous or “floaty” car. Stability and good damping are separate goals.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m06-l1-n1" data-answer="134.1" data-tol="0.01" data-units="kg·m²">
+        <p>A Formula SAE car has \(m = 280\) kg, \(a = 0.8215\) m and \(b = 0.7285\) m, and a dynamic index of 0.8. What is its yaw moment of inertia?</p>
+        <div class="hint"><p>\(I_z = \text{DI} \times m\,a\,b\).</p></div>
+        <div class="solution"><p>\(I_z = 0.8 \times 280 \times 0.8215 \times 0.7285 = 134\) kg·m².</p></div>
+      </div>
+
+      <div class="numeric" data-id="m06-l1-n2" data-answer="7.5" data-tol="0.01" data-units="m/s²">
+        <p>A car at 30 m/s has a yaw rate of 0.20 rad/s, and its sideslip is changing at 0.05 rad/s. What is its lateral acceleration?</p>
+        <div class="hint"><p>\(a_y = V(\dot\beta + r)\).</p></div>
+        <div class="solution"><p>\(a_y = 30 \times (0.05 + 0.20) = 7.5\) m/s², or 0.76 g. In a steady turn (\(\dot\beta = 0\)) it would be only 6.0 m/s².</p></div>
+      </div>
+
+      <div class="numeric" data-id="m06-l1-n3" data-answer="0.676" data-tol="0.01" data-units="">
+        <p>At 180 km/h the club racer has \(\omega_n^2 = 154.2\ \text{s}^{-2}\) and \(2\zeta\omega_n = 16.8\ \text{s}^{-1}\). What is its damping ratio \(\zeta\)?</p>
+        <div class="hint"><p>Find \(\omega_n\) first, then divide.</p></div>
+        <div class="solution"><p>\(\omega_n = \sqrt{154.2} = 12.42\) rad/s, so \(\zeta = 16.8/(2 \times 12.42) = 0.68\).</p></div>
+      </div>
+
+      <div class="mcq" data-id="m06-l1-q1">
+        <p class="mcq__prompt">The yaw moment from sideslip, \(b C_r - a C_f\), is positive for a car. What does a gust that makes it slide sideways do?</p>
+        <ul>
+          <li data-correct>It creates a yaw moment that turns the nose toward the direction of travel, reducing the sideslip.<span class="why">That is weathervane stability: the neutral steer point is behind the CG.</span></li>
+          <li>It turns the nose away from the direction of travel.<span class="why">That happens when the derivative is negative (neutral steer point ahead of the CG).</span></li>
+          <li>It creates no yaw moment, only a side force.<span class="why">Only a car with its neutral steer point exactly at the CG would behave like that.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m06-l1-q2">
+        <p class="mcq__prompt">Why does yaw damping weaken as speed rises?</p>
+        <ul>
+          <li>Because the tires get hotter.<span class="why">Temperature isn't in this model.</span></li>
+          <li data-correct>Because a given yaw rate creates slip angles \(a r/V\) and \(b r/V\), which shrink as \(V\) grows, so the restoring tire forces shrink too.<span class="why">The damping derivative is \(-(a^2 C_f + b^2 C_r)/V\).</span></li>
+          <li>Because the car's yaw inertia grows with speed.<span class="why">\(I_z\) is a property of the mass distribution and doesn't change with speed.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m06-l1-q3">
+        <p class="mcq__prompt">On the phase portrait, the paths spiral into the steady state at 200 km/h but head straight in at 30 km/h. What does that tell you?</p>
+        <ul>
+          <li data-correct>The car is stable at both speeds, but overdamped at low speed and underdamped (oscillatory) at high speed.<span class="why">Spirals mean complex eigenvalues; straight approaches mean real ones.</span></li>
+          <li>The car is unstable at 200 km/h.<span class="why">The paths still end at the steady state, so it is stable.</span></li>
+          <li>The car oversteers at high speed.<span class="why">An understeering car becomes underdamped at speed too; damping and balance are different questions.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 6, <em>Simplified Transient Stability and Control</em>.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How does the book write the two equations of motion, and what names does it give the stability derivatives?</li>
+        <li>What role does the dynamic index play in the transient response?</li>
+        <li>How do natural frequency and damping change with speed for an understeering and an oversteering car?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Yaw inertia</td><td>\(I_z = m k^2\); dynamic index \(\text{DI} = k^2/(ab)\), typically 0.8–1.0</td></tr>
+          <tr><td>Equations of motion</td><td>\(m V(\dot\beta + r) = F_{yf} + F_{yr},\quad I_z \dot r = a F_{yf} - b F_{yr}\)</td></tr>
+          <tr><td>Lateral acceleration</td><td>\(a_y = V(\dot\beta + r)\)</td></tr>
+          <tr><td>Key derivatives</td><td>Yaw from sideslip \(b C_r - a C_f\); yaw damping \(-(a^2 C_f + b^2 C_r)/V\)</td></tr>
+          <tr><td>Natural frequency</td><td>\(\omega_n^2 = \dfrac{C_f C_r L^2}{m I_z V^2}(1 + K V^2/L)\)</td></tr>
+          <tr><td>Damping</td><td>\(2\zeta\omega_n = (C_f + C_r)/(mV) + (a^2 C_f + b^2 C_r)/(I_z V)\): falls with speed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: solving these equations step by step on a computer, and measuring how quickly a car responds to a step of steer.</p>
+  </section>
+
+</article>
+</body>
+</html>

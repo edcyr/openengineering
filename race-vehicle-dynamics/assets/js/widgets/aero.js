@@ -17,56 +17,8 @@
   // Text offsets on fixed-text plots are in screen px; convert to the plot's units.
   const off = (p, v) => v * p.textScale;
 
-  /* Label placement. Each candidate is [x, y, anchor, dx, dy, text?] (data coords, screen-px
-     offsets). The first candidate that stays inside the plot and clear of the given curves
-     (data-space polylines) and other labels is used; if none is clear the label is hidden.
-     The widgets' readouts always carry the same numbers. */
-  function placeFirst(p, key, cands, text, cls, lines, others) {
-    const [x0, x1] = p.xlim, [y0, y1] = p.ylim;
-    const L = Math.min(p.sx(x0), p.sx(x1)), R = Math.max(p.sx(x0), p.sx(x1));
-    const T = Math.min(p.sy(y0), p.sy(y1)), B = Math.max(p.sy(y0), p.sy(y1));
-    const segs = [];
-    (lines || []).forEach((pts) => {
-      for (let i = 1; i < pts.length; i++) {
-        const a = pts[i - 1], b = pts[i];
-        if (!isFinite(a[1]) || !isFinite(b[1])) continue;
-        segs.push([p.sx(a[0]), p.sy(a[1]), p.sx(b[0]), p.sy(b[1])]);
-      }
-    });
-    const boxes = (others || []).filter((n) => n && n.isConnected && n.textContent).map((n) => n.getBBox());
-    const pad = off(p, 2);
-    const hitSeg = (bb, sg) => {   // sample the segment; fine enough for plot curves
-      const n = Math.max(2, Math.ceil(Math.hypot(sg[2] - sg[0], sg[3] - sg[1]) / 2));
-      for (let i = 0; i <= n; i++) {
-        const px = sg[0] + ((sg[2] - sg[0]) * i) / n, py = sg[1] + ((sg[3] - sg[1]) * i) / n;
-        if (px > bb.x - pad && px < bb.x + bb.width + pad && py > bb.y - pad && py < bb.y + bb.height + pad) return true;
-      }
-      return false;
-    };
-    for (const [x, y, anchor, dx, dy, alt] of cands) {
-      const t = p.label(key, x, y, alt || text, { cls, anchor, dx: off(p, dx), dy: off(p, dy) });
-      const bb = t.getBBox();
-      if (!bb.width) return t;                       // not laid out yet: keep the first spot
-      if (bb.x < L || bb.x + bb.width > R || bb.y < T || bb.y + bb.height > B) continue;
-      if (boxes.some((o) => bb.x < o.x + o.width && o.x < bb.x + bb.width && bb.y < o.y + o.height && o.y < bb.y + bb.height)) continue;
-      if (segs.some((sg) => hitSeg(bb, sg))) continue;
-      return t;
-    }
-    p.remove(key);
-    return null;
-  }
-  // Candidates in a ring around a point.
-  const SPOTS = [["start", 8, -8], ["end", -8, -8], ["start", 8, 17], ["end", -8, 17], ["middle", 0, -12],
-    ["middle", 0, 24], ["start", 14, -24], ["end", -14, -24], ["start", 14, 32], ["end", -14, 32]];
-  const placeLabel = (p, key, x, y, text, cls, lines, others) =>
-    placeFirst(p, key, SPOTS.map(([a, dx, dy]) => [x, y, a, dx, dy]), text, cls, lines, others);
-  // Candidates along a horizontal line at y: right end, left end, middle; above, then below.
-  function placeOnHLine(p, key, y, text, cls, lines, others) {
-    const [x0, x1] = p.xlim, mid = (x0 + x1) / 2, e = (x1 - x0) * 0.013;
-    const c = [];
-    [-5, 15].forEach((dy) => c.push([x1 - e, y, "end", 0, dy], [x0 + e, y, "start", 0, dy], [mid, y, "middle", 0, dy]));
-    return placeFirst(p, key, c, text, cls, lines, others);
-  }
+  // Collision-aware label placement (shared helpers in plot.js).
+  const placeFirst = RVD.place.first, placeLabel = RVD.place.near, placeOnHLine = RVD.place.onHLine;
 
   /* ------------------------------------------------------------------ */
   /* 4.1  Corner speed with and without downforce                        */

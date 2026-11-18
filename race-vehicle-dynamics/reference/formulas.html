@@ -61,6 +61,17 @@
           <tr><td>\(C_\alpha,\ C_\kappa,\ C_\gamma\)</td><td>Cornering stiffness, longitudinal slip stiffness, camber stiffness</td><td>N/deg, N, N/deg</td></tr>
           <tr><td>\(\Omega,\ r_e,\ I_w\)</td><td>Wheel spin rate, effective rolling radius, wheel inertia</td><td>rad/s, m, kg·m²</td></tr>
           <tr><td>\(T_b,\ p\)</td><td>Brake torque; tire pressure</td><td>N·m; kPa</td></tr>
+          <tr class="group"><td colspan="3">Steady-state cornering</td></tr>
+          <tr><td>\(C_f,\ C_r\)</td><td>Axle cornering stiffness (both tires on the axle)</td><td>N/rad or N/deg</td></tr>
+          <tr><td>\(m_f,\ m_r\)</td><td>Mass carried by the front and rear axle, \(m\,b/L\) and \(m\,a/L\)</td><td>kg</td></tr>
+          <tr><td>\(\delta_i,\ \delta_o\)</td><td>Inside and outside front-wheel steer angles</td><td>deg</td></tr>
+          <tr><td>\(x_{\text{NSP}},\ \text{SM}\)</td><td>Neutral steer point behind the front axle; static margin</td><td>m; —</td></tr>
+          <tr><td>\(V_{\text{ch}},\ V_{\text{crit}}\)</td><td>Characteristic speed (understeer); critical speed (oversteer)</td><td>m/s</td></tr>
+          <tr class="group"><td colspan="3">Transient response</td></tr>
+          <tr><td>\(k,\ \text{DI}\)</td><td>Yaw radius of gyration, \(I_z = m k^2\); dynamic index \(k^2/(ab)\)</td><td>m; —</td></tr>
+          <tr><td>\(\omega_n,\ \zeta\)</td><td>Natural frequency and damping ratio of the yaw–sideslip motion</td><td>rad/s; —</td></tr>
+          <tr><td>\(\lambda\)</td><td>Eigenvalue of a mode, which evolves as \(e^{\lambda t}\). <em>In Module 4, \(\lambda\) is the aero balance.</em></td><td>1/s</td></tr>
+          <tr><td>\(h,\ \delta_0\)</td><td>Simulation time step (<em>not</em> the CG height); size of a steer step</td><td>s; deg</td></tr>
           <tr class="group"><td colspan="3">Aerodynamics and power</td></tr>
           <tr><td>\(\rho,\ q\)</td><td>Air density (1.225 at sea level, 15 °C); dynamic pressure</td><td>kg/m³; Pa</td></tr>
           <tr><td>\(F_D,\ F_L\)</td><td>Drag; downforce (positive downward in this course)</td><td>N</td></tr>
@@ -103,7 +114,7 @@
           <tr><td>Yaw rotation</td><td>\(\Sigma M_z = I_z\,\ddot\psi\)</td><td>Steady turn: \(\Sigma M_z = 0\).</td></tr>
           <tr><td>Circular motion</td><td>\(a_y = \dfrac{V^2}{R} = V r\)<br>\(r = \dfrac{V}{R}\)</td><td>Know any two of \(V, R, r, a_y\) and you know the rest.</td></tr>
           <tr><td>Steady turn, forces</td><td>\(N_{\text{in}} + N_{\text{out}} = mg\)<br>\(F_{y,\text{in}} + F_{y,\text{out}} = m\dfrac{V^2}{R}\)</td><td>Vertical and lateral balance.</td></tr>
-          <tr><td>Steady turn, roll moment</td><td>\((N_{\text{out}} - N_{\text{in}})\,\dfrac{t}{2} = (F_{y,\text{in}} + F_{y,\text{out}})\,h\)</td><td>Moments about the CG: why the outside tires carry more load.</td></tr>
+          <tr><td>Steady turn, roll moment</td><td>\((N_{\text{out}} - N_{\text{in}})\,\tfrac{t}{2} = (F_{y,\text{in}} + F_{y,\text{out}})\,h\)</td><td>Moments about the CG: why the outside tires carry more load.</td></tr>
         </tbody>
       </table>
     </div>
@@ -291,6 +302,80 @@
           <tr><td>Net acceleration</td><td>\(m a_x = \min\!\left(F_{x,\text{trac}},\ P/V\right) - F_D\)</td><td>Traction-limited below the crossover speed, power-limited above.</td></tr>
           <tr><td>Top speed</td><td>\(V_{\text{top}} = \left(\dfrac{2P}{\rho\,C_D A}\right)^{1/3}\)</td><td>No rolling resistance. +10% power gives +3.2% speed.</td></tr>
           <tr><td>Power to overcome drag</td><td>\(P = \tfrac{1}{2}\rho\,C_D A\,V^3\)</td><td>Grows with the cube of speed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="lesson-section formula-module" data-module="m05">
+    <h3 data-lesson-ref="m05-l1"></h3>
+    <div class="table-wrap">
+      <table class="data formula-table">
+        <thead><tr><th>Quantity</th><th>Formula</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Ackermann steer angle</td><td>\(\tan\delta = \dfrac{L}{R}\)<br>\(\delta \approx \dfrac{L}{R}\)</td><td>\(R\) to the rear-axle center; small-angle form in radians, for \(R \gg L\).</td></tr>
+          <tr><td>Inside and outside wheels</td><td>\(\tan\delta_i = \dfrac{L}{R - t/2}\)<br>\(\tan\delta_o = \dfrac{L}{R + t/2}\)</td><td>Ackermann condition: \(\cot\delta_o - \cot\delta_i = t/L\).</td></tr>
+          <tr><td>Off-tracking</td><td>\(R_{\text{front}} = \sqrt{R^2 + L^2}\)</td><td>The rear axle runs inside the front.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 data-lesson-ref="m05-l2"></h3>
+    <div class="table-wrap">
+      <table class="data formula-table">
+        <thead><tr><th>Quantity</th><th>Formula</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Slip angles (kinematics)</td><td>\(\alpha_f = \beta + \dfrac{a\,r}{V} - \delta\)<br>\(\alpha_r = \beta - \dfrac{b\,r}{V}\)</td><td>SAE signs, as in Lesson 0.2.</td></tr>
+          <tr><td>Axle forces, steady turn</td><td>\(F_{yf} = m\,a_y\,\dfrac{b}{L}\)<br>\(F_{yr} = m\,a_y\,\dfrac{a}{L}\)</td><td>From \(\Sigma F_y = m a_y\) and \(\Sigma M_z = 0\).</td></tr>
+          <tr><td>Linear tires</td><td>\(\alpha_f = -\dfrac{F_{yf}}{C_f}, \quad \alpha_r = -\dfrac{F_{yr}}{C_r}\)</td><td>\(C\) per axle.</td></tr>
+          <tr><td>Steer angle</td><td>\(\delta = \dfrac{L}{R} - \alpha_f + \alpha_r\)</td><td>Right turn: \(L/R + |\alpha_f| - |\alpha_r|\).</td></tr>
+          <tr><td>Sideslip at the CG</td><td>\(\beta = \alpha_r + \dfrac{b}{R}\)</td><td>\(b/R\) at walking pace; negative (nose into the turn) at speed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 data-lesson-ref="m05-l3"></h3>
+    <div class="table-wrap">
+      <table class="data formula-table">
+        <thead><tr><th>Quantity</th><th>Formula</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Understeer gradient</td><td>\(\delta = \dfrac{L}{R} + K\,a_y\)<br>\(K = \dfrac{m_f}{C_f} - \dfrac{m_r}{C_r}\)</td><td>\(K &gt; 0\) understeer, \(0\) neutral, \(&lt; 0\) oversteer. Multiply rad/(m/s²) by \(g \times 57.3\) for deg/g.</td></tr>
+          <tr><td>Yaw-rate gain</td><td>\(\dfrac{r}{\delta} = \dfrac{V/L}{1 + K V^2/L}\)</td><td>Steady state.</td></tr>
+          <tr><td>Characteristic speed</td><td>\(V_{\text{ch}} = \sqrt{L/K}\)</td><td>Understeer: gain peaks here at half the neutral value.</td></tr>
+          <tr><td>Critical speed</td><td>\(V_{\text{crit}} = \sqrt{L/|K|}\)</td><td>Oversteer: unstable above it (\(U_{\text{crit}}\) in Lesson 1.2).</td></tr>
+          <tr><td>Neutral steer point</td><td>\(x_{\text{NSP}} = \dfrac{C_r}{C_f + C_r}\,L\)</td><td>Behind the front axle.</td></tr>
+          <tr><td>Static margin</td><td>\(\text{SM} = \dfrac{x_{\text{NSP}} - a}{L}\)<br>\(K = \dfrac{m\,\text{SM}\,(C_f + C_r)}{C_f C_r}\)</td><td>So SM and \(K\) always have the same sign.</td></tr>
+          <tr><td>Handling diagram</td><td>\(\delta - \dfrac{L}{R} = |\alpha_f| - |\alpha_r|\) at each \(a_y\)</td><td>Axle that saturates first: front = limit understeer, rear = limit oversteer.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="lesson-section formula-module" data-module="m06">
+    <h3 data-lesson-ref="m06-l1"></h3>
+    <div class="table-wrap">
+      <table class="data formula-table">
+        <thead><tr><th>Quantity</th><th>Formula</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Yaw inertia</td><td>\(I_z = m k^2\)<br>\(\text{DI} = \dfrac{k^2}{a\,b}\)</td><td>DI is typically 0.8–1.0, so \(I_z \approx \text{DI}\,m\,a\,b\).</td></tr>
+          <tr><td>Equations of motion</td><td>\(m V(\dot\beta + r) = F_{yf} + F_{yr}\)<br>\(I_z\,\dot r = a F_{yf} - b F_{yr}\)</td><td>Lateral acceleration \(a_y = V(\dot\beta + r)\).</td></tr>
+          <tr><td>State equations</td><td>\(\begin{aligned} \dot\beta &= -\dfrac{C_f + C_r}{mV}\beta + \left(\dfrac{bC_r - aC_f}{mV^2} - 1\right) r + \dfrac{C_f}{mV}\delta \\[10pt] \dot r &= \dfrac{bC_r - aC_f}{I_z}\beta - \dfrac{a^2C_f + b^2C_r}{I_z V} r + \dfrac{aC_f}{I_z}\delta \end{aligned}\)</td><td>Linear tires, constant speed.</td></tr>
+          <tr><td>Stability derivatives</td><td>Yaw from sideslip: \(bC_r - aC_f\)<br>Yaw damping: \(-(a^2C_f + b^2C_r)/V\)<br>Control: \(aC_f\)</td><td>\(bC_r - aC_f = \text{SM}\cdot L\,(C_f + C_r)\).</td></tr>
+          <tr><td>Natural frequency</td><td>\(\omega_n^2 = \dfrac{C_f C_r L^2}{m I_z V^2}\left(1 + \dfrac{K V^2}{L}\right)\)</td><td>Reaches zero at the critical speed if \(K &lt; 0\).</td></tr>
+          <tr><td>Damping</td><td>\(2\zeta\omega_n = \dfrac{C_f + C_r}{mV} + \dfrac{a^2C_f + b^2C_r}{I_z V}\)</td><td>Falls as \(1/V\); \(\zeta &lt; 1\) means overshoot.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 data-lesson-ref="m06-l2"></h3>
+    <div class="table-wrap">
+      <table class="data formula-table">
+        <thead><tr><th>Quantity</th><th>Formula</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Explicit Euler step</td><td>\(\mathbf{x}_{n+1} = \mathbf{x}_n + h\,f(\mathbf{x}_n, t_n)\)</td><td>Error after a fixed time \(\propto h\).</td></tr>
+          <tr><td>Euler stability</td><td>\(|1 + h\lambda| &lt; 1\) for every mode<br>\(h &lt; 2/|\lambda|\) (real \(\lambda\))<br>\(h &lt; -2\,\text{Re}(\lambda)/|\lambda|^2\) (complex)</td><td>Smallest at low speed, where sideslip decays fastest.</td></tr>
+          <tr><td>Step-steer steady state</td><td>\(r_{ss} = \delta_0\,\dfrac{V/L}{1 + K V^2/L}\)</td><td>Same gain as Lesson 5.3.</td></tr>
+          <tr><td>Overshoot</td><td>\(\dfrac{r_{\text{peak}} - r_{ss}}{r_{ss}}\)</td><td>Response time: time to reach 90% of \(r_{ss}\).</td></tr>
         </tbody>
       </table>
     </div>

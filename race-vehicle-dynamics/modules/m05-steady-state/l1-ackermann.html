@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Low-speed turning and Ackermann geometry — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="../../assets/vendor/katex/katex.inline-fonts.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="../../assets/vendor/katex/katex.min.js"></script>
+  <script defer src="../../assets/vendor/katex/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/bicycle.js"></script>
+  <script defer src="../../assets/js/widgets/steady.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m05-l1">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>Parking-lot physics</h2>
+    <p>
+      Drive a car slowly around a tight car park. There is almost no lateral acceleration, so the tires need almost
+      no lateral force, and therefore almost no slip angle (Lesson 2.1). Each wheel simply rolls in the direction it
+      points. That one fact decides the whole steering geometry at low speed, and it gives the baseline that every
+      high-speed handling effect in this module is measured against.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="kinematic">
+    <h2>Kinematic turning</h2>
+    <p>
+      If every wheel rolls without slipping sideways, every wheel must travel on a circle, and all those circles must
+      share one center: the <strong>turn center</strong>. The rear wheels don't steer, so each one moves along its own
+      heading, and the turn center has to lie on the line of the rear axle, extended. For the front wheel to roll on a
+      circle about the same point, its heading must be at right angles to the line joining it to the turn center.
+    </p>
+    <p>
+      Treat the car as a single track, a “bicycle” with one wheel per axle on the centerline, and the geometry is one
+      right-angled triangle. With wheelbase \(L\) and turn radius \(R\) measured to the rear-axle center:
+    </p>
+    <div class="equation">\[ \begin{aligned} \tan\delta &= \frac{L}{R} \\[4pt] \delta &\approx \frac{L}{R} \quad (R \gg L) \end{aligned} \]</div>
+    <p>
+      with \(\delta\) in radians in the small-angle form. This is the <strong>Ackermann steer angle</strong>. For the club racer (\(L = 2.45\) m) it is 13.8° in a 10 m
+      hairpin but only 1.4° in a 100 m corner. It is the road-wheel angle; the steering wheel turns further, by the
+      steering ratio (typically 10–18 to 1).
+    </p>
+    <figure>
+      <svg viewBox="40 60 470 320" width="470" role="img" aria-label="Top view of a single-track car turning right at walking pace. The rear wheel is unsteered; the turn center lies on the line of the rear axle, a distance R to the right. The front wheel, a wheelbase L ahead, is steered by delta so that its heading is at right angles to the line joining it to the turn center. The same angle delta appears at the turn center between the two lines, so the rear wheel, the front wheel and the turn center form a right-angled triangle with tan delta equal to L over R. Dashed arcs show the paths of the two wheels."><rect x="86" y="139.0" width="68" height="235.0" rx="20" class="fig-chassis" stroke-width="1.2" opacity="0.55"/><polyline points="121.7,362.9 121.0,355.5 120.5,348.1 120.2,340.7 120.0,333.3 120.0,325.9 120.2,318.5 120.6,311.0 121.1,303.6 121.8,296.3 122.7,288.9 123.8,281.5 125.0,274.2 126.4,266.9 128.0,259.7 129.7,252.5 131.6,245.3 133.7,238.2 135.9,231.1 138.3,224.1 140.9,217.1 143.7,210.2 146.6,203.4 149.6,196.6 152.9,189.9 156.2,183.3 159.8,176.8 163.4,170.4 167.3,164.0 171.3,157.7 175.4,151.6 179.7,145.5 184.1,139.6 188.6,133.7 193.3,127.9 198.2,122.3 203.1,116.8 208.2,111.4 213.4,106.1 218.8,100.9 224.2,95.9" fill="none" class="fig-s1" stroke-width="1.5" stroke-dasharray="4 4"/><polyline points="106.3,216.8 107.7,213.0 109.1,209.1 110.5,205.3 112.0,201.5 113.6,197.7 115.1,193.9 116.8,190.1 118.4,186.4 120.1,182.7 121.9,179.0 123.7,175.3 125.6,171.6 127.4,168.0 129.4,164.4 131.3,160.8 133.4,157.2 135.4,153.7 137.5,150.2 139.6,146.7 141.8,143.2 144.0,139.8 146.3,136.4 148.6,133.0 151.0,129.6 153.3,126.3 155.8,123.0 158.2,119.7 160.7,116.5 163.2,113.3 165.8,110.1 168.4,106.9 171.1,103.8 173.8,100.7 176.5,97.6 179.2,94.6 182.0,91.6 184.8,88.6 187.7,85.7 190.6,82.8 193.5,79.9" fill="none" class="fig-s2" stroke-width="1.5" stroke-dasharray="4 4"/><line x1="120.0" y1="364.0" x2="120.0" y2="91.0" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><text x="114.0" y="99.0" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:13px">x</text><line x1="120.0" y1="330.0" x2="435.0" y2="330.0" class="fig-muted" stroke-width="1.5" stroke-dasharray="6 4"/><line x1="120.0" y1="183.0" x2="435.0" y2="330.0" class="fig-muted" stroke-width="1.5" stroke-dasharray="6 4"/><rect x="113.0" y="309.0" width="14" height="42" rx="4" class="fig-fill" transform="rotate(0.0 120.0 330.0)"/><rect x="113.0" y="162.0" width="14" height="42" rx="4" class="fig-fill" transform="rotate(25.0 120.0 183.0)"/><line x1="120.0" y1="183.0" x2="158.9" y2="99.6" class="fig-s3" stroke-width="1.5" stroke-dasharray="5 4"/><polyline points="120.0,121.0 121.1,121.0 122.2,121.0 123.2,121.1 124.3,121.2 125.4,121.2 126.5,121.3 127.6,121.5 128.6,121.6 129.7,121.8 130.8,121.9 131.8,122.1 132.9,122.4 134.0,122.6 135.0,122.8 136.1,123.1 137.1,123.4 138.1,123.7 139.2,124.0 140.2,124.4 141.2,124.7 142.2,125.1 143.2,125.5 144.2,125.9 145.2,126.4 146.2,126.8" fill="none" class="fig-s3" stroke-width="2"/><text x="137.6" y="116.7" text-anchor="start" class="fig-text fig-s3-fill" style="font-size:15px;font-weight:700">δ</text><polyline points="365.0,330.0 365.0,328.8 365.0,327.6 365.1,326.3 365.2,325.1 365.3,323.9 365.4,322.7 365.5,321.5 365.7,320.3 365.9,319.0 366.1,317.8 366.3,316.6 366.5,315.4 366.8,314.2 367.1,313.1 367.4,311.9 367.7,310.7 368.1,309.5 368.4,308.4 368.8,307.2 369.2,306.0 369.7,304.9 370.1,303.8 370.6,302.6 371.1,301.5 371.6,300.4" fill="none" class="fig-s3" stroke-width="2"/><text x="352.9" y="316.2" text-anchor="end" class="fig-text fig-s3-fill" style="font-size:15px;font-weight:700">δ</text><polyline points="120,318 132,318 132,330" fill="none" class="fig-muted" stroke-width="1.2"/><polyline points="125.1,172.1 135.9,177.2 130.9,188.1" fill="none" class="fig-muted" stroke-width="1.2"/><circle cx="435.0" cy="330" r="5" class="fig-fill"/><text x="435.0" y="352.0" text-anchor="middle" class="fig-text" style="font-size:12px">turn center</text><text x="277.5" y="348.0" text-anchor="middle" class="fig-text fig-dimlabel" style="font-size:14px">R</text><line x1="64.0" y1="183.0" x2="64.0" y2="330.0" class="fig-muted" stroke-width="1.2"/><line x1="59.0" y1="183.0" x2="69.0" y2="183.0" class="fig-muted" stroke-width="1.2"/><line x1="70.0" y1="183.0" x2="84.0" y2="183.0" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><line x1="59.0" y1="330.0" x2="69.0" y2="330.0" class="fig-muted" stroke-width="1.2"/><line x1="70.0" y1="330.0" x2="84.0" y2="330.0" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><text x="56.0" y="261.5" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:14px">L</text><text x="465.0" y="123.0" text-anchor="end" class="fig-text" style="font-size:12px">right turn →</text></svg>
+      <figcaption><strong>Low-speed turning in the bicycle model</strong> (drawn for a tight 5.25 m turn so that \(\delta\) is easy to see). The unsteered rear wheel puts the turn center on the rear-axle line, a distance \(R\) away. The front wheel is steered until its heading is at right angles to the line joining it to the turn center. Because both lines from the turn center are at right angles to a wheel heading, the angle between them is also \(\delta\), and the right-angled triangle formed by the two wheels and the turn center gives \(\tan\delta = L/R\). The dashed arcs are the wheels' paths: the front wheel runs on the larger circle.</figcaption>
+    </figure>
+  </section>
+
+  <section class="lesson-section" id="inner-outer">
+    <h2>Inner and outer wheels</h2>
+    <p>
+      A real car has two front wheels a track width \(t\) apart, and they are on different circles. The inside wheel
+      is on the smaller circle, so it needs <em>more</em> steer than the outside wheel:
+    </p>
+    <div class="equation">\[ \tan\delta_i = \frac{L}{R - t/2}, \qquad \tan\delta_o = \frac{L}{R + t/2} \]</div>
+    <p>
+      Getting both right at once is the <strong>Ackermann condition</strong>, \(\cot\delta_o - \cot\delta_i = t/L\). The
+      rear wheels, meanwhile, follow a tighter path than the fronts: the front-axle center is on a circle of radius
+      \(\sqrt{R^2 + L^2}\), so the rear <em>off-tracks</em> toward the inside, which is why long vehicles clip kerbs with
+      their rear wheels.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="geometry">
+    <h2>Ackermann, parallel and anti-Ackermann steering</h2>
+    <p>
+      A steering linkage can give the inside wheel more steer by angling the steering arms. The classic rule of thumb,
+      patented for horse-drawn carriages in 1818 by Rudolph Ackermann, is to point both arms so that their extensions
+      meet at the center of the rear axle:
+    </p>
+    <figure>
+      <svg viewBox="0 10 520 360" width="520" role="img" aria-label="Top view of a car showing the steering linkage. Each front wheel pivots on a kingpin. Its steering arm points rearward and inward, and the two arms are joined by a tie rod. Extending each steering arm with a dashed line, the two lines meet at the center of the rear axle."><rect x="135" y="50" width="250" height="320" rx="26" class="fig-chassis" stroke-width="1.5"/><rect x="155.0" y="70.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 162.0 90.0)"/><rect x="155.0" y="310.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 162.0 330.0)"/><rect x="351.0" y="70.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 358.0 90.0)"/><rect x="351.0" y="310.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 358.0 330.0)"/><line x1="162.0" y1="330.0" x2="358.0" y2="330.0" class="fig-muted" stroke-width="2"/><circle cx="260.0" cy="330" r="5" class="fig-fill"/><text x="260.0" y="354.0" text-anchor="middle" class="fig-text" style="font-size:12px">rear-axle center</text><line x1="170.0" y1="90.0" x2="186.2" y2="133.1" class="fig-stroke" stroke-width="5"/><line x1="186.2" y1="133.1" x2="260.0" y2="330.0" class="fig-s1" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="170" cy="90" r="5" class="fig-joint"/><line x1="350.0" y1="90.0" x2="333.8" y2="133.1" class="fig-stroke" stroke-width="5"/><line x1="333.8" y1="133.1" x2="260.0" y2="330.0" class="fig-s1" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="350" cy="90" r="5" class="fig-joint"/><line x1="186.2" y1="133.1" x2="333.8" y2="133.1" class="fig-s2" stroke-width="4"/><text x="260.0" y="123.1" text-anchor="middle" class="fig-text fig-s2-fill" style="font-size:12.5px;font-weight:700">tie rod</text><text x="118.0" y="142.0" text-anchor="end" class="fig-text" style="font-size:12.5px">steering arm</text><line x1="120.0" y1="138.0" x2="175.1" y2="113.5" class="fig-muted" stroke-width="1"/><text x="118.0" y="94.0" text-anchor="end" class="fig-text" style="font-size:12.5px">kingpin</text><line x1="120.0" y1="90.0" x2="163.0" y2="90.0" class="fig-muted" stroke-width="1"/><text x="125.0" y="240.0" text-anchor="end" class="fig-text fig-s1-fill" style="font-size:12.5px">arm lines meet at the</text><text x="125.0" y="256.0" text-anchor="end" class="fig-text fig-s1-fill" style="font-size:12.5px">rear-axle center</text><text x="260.0" y="28.0" text-anchor="middle" class="fig-text" style="font-size:12px">front</text></svg>
+      <figcaption><strong>The Ackermann trapezoid.</strong> Because the steering arms lean inward, turning the wheel swings the inside arm through a larger angle than the outside one, so the inside wheel steers more. This rule of thumb gives close to perfect Ackermann over the useful range of steer.</figcaption>
+    </figure>
+    <p>
+      Engineers describe a linkage by its <strong>percentage Ackermann</strong>: 100% matches the low-speed geometry
+      exactly, 0% (<strong>parallel steer</strong>) turns both wheels by the same angle, and a negative value
+      (<strong>anti-Ackermann</strong>) gives the <em>outside</em> wheel more steer. Anything other than 100% makes the
+      front tires disagree about where the turn center is, so at walking pace they scrub sideways against each other.
+    </p>
+    <p>
+      So why do many race cars run less than 100%, and some run anti-Ackermann? At racing speeds the geometric
+      difference is tiny (a few hundredths of a degree in a 100 m corner), while the tires run several degrees of slip
+      angle. The heavily loaded outside tire typically reaches its peak force at a slightly larger slip angle than the
+      lightly loaded inside tire. Full Ackermann gives the inside tire <em>more</em> steer, dragging it past its peak
+      while the outside tire, which does most of the work, still has more to give. Less Ackermann shares the slip
+      angles more usefully. The cost is tire scrub in very slow corners. Module 8 returns to steering geometry.
+    </p>
+
+    <div class="widget" data-widget="ackermann">
+      <div class="widget__title">Turning-circle sketcher</div>
+      <p class="widget__desc">A top view of the car turning right at walking pace, drawn to scale. Each front wheel's axis line (dashed) shows where that wheel “thinks” the turn center is. With full Ackermann both pass through the turn center on the rear-axle line. The colored arcs are the paths of the front-axle center (red) and the rear-axle center (blue).</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the club racer in an 8 m turn and 100% Ackermann, where do the wheel axis lines meet? Now set parallel steer (0%). Which front wheel is now steered wrongly, and by how much?</li>
+        <li>Increase the radius to 20 m. How does the difference between the inside and outside steer angles change? Estimate it for a 100 m corner.</li>
+        <li>Try −50% (anti-Ackermann). What would the front tires do in a car park?</li>
+        <li>Compare the off-tracking of the road car and the Formula SAE car at a 6 m radius. Which matters more for a long-wheelbase car?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>The club racer (\(L = 2.45\) m, \(t = 1.50\) m) creeps around a hairpin with its rear-axle center on a 10 m radius. Find the steer angles each front wheel needs, and what parallel steering would do.</p>
+      <p><strong>Bicycle angle:</strong> \(\delta = \arctan(2.45/10) = 13.77°\). The small-angle value \(L/R = 0.245\) rad \(= 14.04°\) is 2% high at this tight radius.</p>
+      <p><strong>Inside wheel:</strong> \(\arctan(2.45/9.25) = 14.83°\). <strong>Outside wheel:</strong> \(\arctan(2.45/10.75) = 12.84°\). The inside wheel needs 2.0° more.</p>
+      <p><strong>Parallel steer at 13.77°:</strong> the inside wheel is 1.07° short and the outside 0.93° too far, so both front tires run about 1° of slip angle in opposite directions, scrubbing even at walking pace.</p>
+      <p><strong>Off-tracking:</strong> the front-axle center runs on \(\sqrt{10^2 + 2.45^2} = 10.30\) m, so the rear cuts 30 cm inside the front.</p>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“Ackermann geometry is what makes the car turn.” The car turns because the front wheels are steered.
+      Ackermann geometry only decides how the steer is <em>shared</em> between the inside and outside wheels, so that
+      neither scrubs at low speed. At racing speeds slip angles, not geometry, decide where each tire points
+      relative to its path.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m05-l1-n1" data-answer="9.77" data-tol="0.015" data-units="°">
+        <p>A Formula SAE car with a 1.55 m wheelbase drives around a 9 m radius skidpad at walking pace (radius measured to the rear-axle center). What steer angle does the bicycle model give?</p>
+        <div class="hint"><p>\(\tan\delta = L/R\). The small-angle value \(L/R\) in degrees is close enough too.</p></div>
+        <div class="solution"><p>\(\delta = \arctan(1.55/9) = 9.77°\) (the small-angle value is \(0.172\) rad \(= 9.87°\)).</p></div>
+      </div>
+
+      <div class="numeric" data-id="m05-l1-n2" data-answer="14.83" data-tol="0.01" data-units="°">
+        <p>For the club racer in the worked example (\(L = 2.45\) m, \(t = 1.50\) m, \(R = 10\) m to the rear-axle center), what steer angle does the inside front wheel need?</p>
+        <div class="hint"><p>The inside wheel is \(t/2\) closer to the turn center: \(\tan\delta_i = L/(R - t/2)\).</p></div>
+        <div class="solution"><p>\(\delta_i = \arctan(2.45/9.25) = 14.83°\).</p></div>
+      </div>
+
+      <div class="numeric" data-id="m05-l1-n3" data-answer="0.559" data-tol="0.02" data-units="m">
+        <p>A road car with a 2.65 m wheelbase turns with its rear-axle center on a 6 m radius. How far inside the front-axle path does the rear axle run?</p>
+        <div class="hint"><p>The front-axle center is on a circle of radius \(\sqrt{R^2 + L^2}\).</p></div>
+        <div class="solution"><p>\(\sqrt{6^2 + 2.65^2} - 6 = 6.559 - 6 = 0.559\) m.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m05-l1-q1">
+        <p class="mcq__prompt">At walking pace, why must the turn center lie on the extension of the rear axle?</p>
+        <ul>
+          <li>Because the CG is close to the rear axle.<span class="why">The CG position doesn't enter the low-speed geometry.</span></li>
+          <li data-correct>Because the rear wheels aren't steered, so to roll without sliding each one must move along its own heading, at right angles to the line to the turn center.<span class="why">Only points on the rear-axle line are perpendicular to both rear wheels' headings.</span></li>
+          <li>Because the driver steers the front wheels toward it.<span class="why">The front wheels' steer has to match the center; it doesn't choose its line.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m05-l1-q2">
+        <p class="mcq__prompt">A car with parallel steering creeps around a tight car park. What happens at the front tires?</p>
+        <ul>
+          <li>Nothing: the tires are rolling so slowly that geometry doesn't matter.<span class="why">At walking pace geometry is all that matters, because there is no lateral acceleration to explain any slip angle.</span></li>
+          <li data-correct>The inside wheel is steered too little and the outside too much, so both run small slip angles in opposite directions and scrub against each other.<span class="why">They disagree about where the turn center is.</span></li>
+          <li>The car turns on a larger radius than the driver asked for, but the tires don't slip.<span class="why">With two front wheels pointing at different centers, at least one tire must slip.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m05-l1-q3">
+        <p class="mcq__prompt">Why do many race cars use less than full Ackermann?</p>
+        <ul>
+          <li>Because Ackermann linkages are too heavy.<span class="why">The linkage is the same parts with different arm angles.</span></li>
+          <li data-correct>At racing speeds the slip angles dwarf the geometric difference, and the lightly loaded inside tire peaks at a smaller slip angle, so giving it extra steer only drags it past its peak.<span class="why">Less Ackermann shares the slip more usefully between the tires that do the work.</span></li>
+          <li>Because race cars only turn at high speed.<span class="why">They also use slow hairpins, where less Ackermann does cost some scrub.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 19, <em>Steering Systems</em>, on Ackermann geometry, and the low-speed turning section at the start of Chapter 5.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How does the book define and measure the amount of Ackermann in a steering system?</li>
+        <li>What reasons does it give for using parallel or reverse (anti-) Ackermann on race cars?</li>
+        <li>How does the low-speed turning geometry become the starting point for the high-speed analysis of Chapter 5?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Ackermann steer angle</td><td>\(\tan\delta = L/R \approx \delta\) for \(R \gg L\)</td></tr>
+          <tr><td>Inside and outside wheels</td><td>\(\tan\delta_i = L/(R - t/2),\quad \tan\delta_o = L/(R + t/2)\)</td></tr>
+          <tr><td>Ackermann condition</td><td>\(\cot\delta_o - \cot\delta_i = t/L\)</td></tr>
+          <tr><td>Off-tracking</td><td>Front-axle path radius \(\sqrt{R^2 + L^2}\)</td></tr>
+          <tr><td>Steering geometry</td><td>100% Ackermann, parallel (0%) or anti-Ackermann; race cars often use less than 100%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Next: at speed the tires need slip angles, and the bicycle model works out how much steer the driver must add.</p>
+  </section>
+
+</article>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulating a step-steer with Euler integration — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="../../assets/vendor/katex/katex.inline-fonts.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="../../assets/vendor/katex/katex.min.js"></script>
+  <script defer src="../../assets/vendor/katex/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/bicycle.js"></script>
+  <script defer src="../../assets/js/widgets/transient.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m06-l2">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>Letting the computer drive</h2>
+    <p>
+      The equations of Lesson 6.1 can be solved by hand for a step of steer, but add a saturating tire, a driver or a
+      changing speed and closed-form answers run out. Every vehicle simulator, from a team's lap-time tool to a
+      driving game, does the same thing instead: it starts from a known state and steps forward in time, a small
+      interval at a time. This lesson builds the simplest such method and uses it on the classic handling test, the
+      step steer.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="euler">
+    <h2>The explicit Euler method</h2>
+    <p>
+      Write the equations of motion as \(\dot{\mathbf{x}} = f(\mathbf{x}, t)\), with state \(\mathbf{x} = (\beta, r)\).
+      If you know the state at time \(t_n\), the derivative tells you which way it is heading. Follow that direction for
+      a short <strong>time step</strong> \(h\):
+    </p>
+    <div class="equation">\[ \mathbf{x}_{n+1} = \mathbf{x}_n + h\,f(\mathbf{x}_n, t_n), \qquad t_{n+1} = t_n + h \]</div>
+    <p>
+      That is the whole of the <strong>explicit Euler method</strong>: evaluate the derivatives, take a step, repeat. Its
+      weakness is that it uses the slope at the <em>start</em> of each step, so on a curving solution it drifts off.
+      The error after a fixed time is proportional to \(h\): halve the step and the error roughly halves. Methods such as
+      the fourth-order Runge–Kutta method (RK4, used in this course's interactives) sample the slope several times per
+      step and are far more accurate for the same \(h\).
+    </p>
+    <figure>
+      <svg viewBox="20 20 500 290" width="500" role="img" aria-label="Explicit Euler steps compared with the exact solution of x dot equals one minus x over tau, starting from zero. Each Euler step follows the slope at the start of the step for a time h, so the steps overshoot the curving exact solution early on; the gap between them is the error, which shrinks as h shrinks."><line x1="70.0" y1="250.0" x2="500.0" y2="250.0" class="fig-stroke" stroke-width="1.5"/><line x1="70.0" y1="250.0" x2="70.0" y2="31.5" class="fig-stroke" stroke-width="1.5"/><text x="500.0" y="268.0" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:15px">t</text><text x="62.0" y="37.5" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:15px">x</text><line x1="70.0" y1="60.0" x2="490.0" y2="60.0" class="fig-muted" stroke-width="1" stroke-dasharray="4 4"/><text x="62.0" y="64.0" text-anchor="end" class="fig-text" style="font-size:14px">1</text><polyline points="70.0,250.0 73.5,245.3 77.0,240.7 80.5,236.3 84.0,231.9 87.5,227.7 91.0,223.5 94.5,219.5 98.0,215.6 101.5,211.7 105.0,208.0 108.5,204.3 112.0,200.8 115.5,197.3 119.0,193.9 122.5,190.6 126.0,187.4 129.5,184.2 133.0,181.1 136.5,178.2 140.0,175.2 143.5,172.4 147.0,169.6 150.5,166.9 154.0,164.3 157.5,161.7 161.0,159.2 164.5,156.7 168.0,154.4 171.5,152.0 175.0,149.7 178.5,147.5 182.0,145.4 185.5,143.3 189.0,141.2 192.5,139.2 196.0,137.2 199.5,135.3 203.0,133.5 206.5,131.7 210.0,129.9 213.5,128.2 217.0,126.5 220.5,124.8 224.0,123.2 227.5,121.7 231.0,120.2 234.5,118.7 238.0,117.2 241.5,115.8 245.0,114.4 248.5,113.1 252.0,111.8 255.5,110.5 259.0,109.3 262.5,108.0 266.0,106.9 269.5,105.7 273.0,104.6 276.5,103.5 280.0,102.4 283.5,101.3 287.0,100.3 290.5,99.3 294.0,98.4 297.5,97.4 301.0,96.5 304.5,95.6 308.0,94.7 311.5,93.9 315.0,93.0 318.5,92.2 322.0,91.4 325.5,90.6 329.0,89.9 332.5,89.1 336.0,88.4 339.5,87.7 343.0,87.0 346.5,86.4 350.0,85.7 353.5,85.1 357.0,84.5 360.5,83.9 364.0,83.3 367.5,82.7 371.0,82.1 374.5,81.6 378.0,81.1 381.5,80.5 385.0,80.0 388.5,79.5 392.0,79.0 395.5,78.6 399.0,78.1 402.5,77.7 406.0,77.2 409.5,76.8 413.0,76.4 416.5,76.0 420.0,75.6 423.5,75.2 427.0,74.8 430.5,74.5 434.0,74.1 437.5,73.8 441.0,73.4 444.5,73.1 448.0,72.8 451.5,72.5 455.0,72.1 458.5,71.8 462.0,71.6 465.5,71.3 469.0,71.0 472.5,70.7 476.0,70.5 479.5,70.2 483.0,69.9 486.5,69.7 490.0,69.5" fill="none" class="fig-muted" stroke-width="2.5" stroke-dasharray="7 5"/><polyline points="70.0,250.0 154.0,136.0 238.0,90.4 322.0,72.2 406.0,64.9 490.0,61.9" fill="none" class="fig-s1" stroke-width="2.5"/><circle cx="70.0" cy="250.0" r="4.5" class="fig-s1-fill"/><circle cx="154.0" cy="136.0" r="4.5" class="fig-s1-fill"/><circle cx="238.0" cy="90.4" r="4.5" class="fig-s1-fill"/><circle cx="322.0" cy="72.2" r="4.5" class="fig-s1-fill"/><circle cx="406.0" cy="64.9" r="4.5" class="fig-s1-fill"/><circle cx="490.0" cy="61.9" r="4.5" class="fig-s1-fill"/><text x="80.0" y="100.0" text-anchor="start" class="fig-text fig-s1-fill" style="font-size:14px;font-weight:700">slope = f(x₀)</text><line x1="100.0" y1="105.0" x2="119.1" y2="177.3" class="fig-muted" stroke-width="1"/><line x1="70.0" y1="276.0" x2="154.0" y2="276.0" class="fig-muted" stroke-width="1.2"/><line x1="70.0" y1="271.0" x2="70.0" y2="281.0" class="fig-muted" stroke-width="1.2"/><line x1="154.0" y1="271.0" x2="154.0" y2="281.0" class="fig-muted" stroke-width="1.2"/><text x="112.0" y="294.0" text-anchor="middle" class="fig-text fig-dimlabel" style="font-size:15px">h</text><line x1="252.0" y1="90.4" x2="252.0" y2="117.2" class="fig-s2" stroke-width="2"/><line x1="247.0" y1="90.4" x2="257.0" y2="90.4" class="fig-s2" stroke-width="2"/><line x1="247.0" y1="117.2" x2="257.0" y2="117.2" class="fig-s2" stroke-width="2"/><text x="252.0" y="141.2" text-anchor="middle" class="fig-text fig-s2-fill" style="font-size:14px;font-weight:700">error</text><line x1="308.0" y1="164.5" x2="336.0" y2="164.5" class="fig-s1" stroke-width="2.5"/><text x="342.0" y="168.5" text-anchor="start" class="fig-text" style="font-size:14px">Euler steps</text><line x1="308.0" y1="193.0" x2="336.0" y2="193.0" class="fig-muted" stroke-width="2.5" stroke-dasharray="7 5"/><text x="342.0" y="197.0" text-anchor="start" class="fig-text" style="font-size:14px">exact solution</text></svg>
+      <figcaption><strong>Euler steps</strong> for \(\dot x = (1 - x)/\tau\) with a deliberately coarse step \(h = 0.6\tau\). Each step follows the slope at its start, so it overshoots the curving exact solution; the gap is the error. Smaller steps follow the curve more closely.</figcaption>
+    </figure>
+  </section>
+
+  <section class="lesson-section" id="step">
+    <h2>Choosing a time step</h2>
+    <p>
+      A small step costs computing time; too large a step costs accuracy, and beyond a point something worse happens.
+      For a linear system, each step multiplies every mode by \(1 + h\lambda\), where \(\lambda\) is that mode's
+      eigenvalue (Lesson 6.1). The simulation only settles if \(|1 + h\lambda| &lt; 1\) for every mode:
+    </p>
+    <div class="equation">\[ \begin{aligned} h &amp;&lt; \frac{2}{|\lambda|} &amp;&amp; \text{for a real } \lambda \\[4pt] h &amp;&lt; \frac{-2\,\text{Re}(\lambda)}{|\lambda|^2} &amp;&amp; \text{for a complex } \lambda \end{aligned} \]</div>
+    <p>
+      Break that limit and the numbers grow without bound, even for a perfectly stable car: <strong>numerical
+      instability</strong>. For the bicycle model the fastest mode is fastest at low speed, where the sideslip mode
+      decays at roughly \((C_f + C_r)/(mV)\). The club racer's limit is about 11 ms at 10 km/h but 95 ms at 90 km/h.
+      For accuracy, not just stability, a step of a tenth of the fastest time constant is a sensible start.
+    </p>
+    <div class="callout callout--key">
+      <p>A simulation that runs is not necessarily right. Check it against a smaller time step: if the answer changes,
+      the step was too large.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="test">
+    <h2>The step-steer test and its metrics</h2>
+    <p>
+      In a <strong>step steer</strong> the car drives straight at constant speed and the steer jumps to a fixed angle
+      \(\delta_0\). (Standard tests, such as ISO 7401, use a fast ramp of the steering wheel rather than a true step.)
+      The yaw rate and lateral acceleration rise toward the steady values of Lesson 5.3, and the way they get there is
+      summarized by a few numbers:
+    </p>
+    <ul>
+      <li><strong>Steady-state yaw rate</strong>, \(r_{ss} = \delta_0\,(V/L)/(1 + K V^2/L)\) (Lesson 5.3).</li>
+      <li><strong>Response time</strong>: how long the yaw rate takes to reach 90% of \(r_{ss}\).</li>
+      <li><strong>Overshoot</strong>: how far the peak exceeds the steady value, \((r_{\text{peak}} - r_{ss})/r_{ss}\).
+      It grows as the damping ratio falls, so it grows with speed.</li>
+    </ul>
+    <p>
+      Lateral acceleration follows a different path. With ideal tires that respond instantly, it jumps the moment the
+      steer is applied, to \(C_f\,\delta_0/m\), because the front tires push sideways at once. As the car starts to
+      yaw, the front slip angle shrinks and \(a_y\) dips briefly. It then builds as sideslip grows and the rear tires
+      take their share, reaching 90% of its steady value later than the yaw rate does (160 ms against 99 ms for the
+      club racer at 90 km/h). Real tires must roll a short distance, their <strong>relaxation length</strong>, before
+      their force builds, which smooths out the initial jump.
+    </p>
+
+    <div class="widget" data-widget="step-steer">
+      <div class="widget__title">Step-steer simulator</div>
+      <p class="widget__desc">Choose a car, a speed and a steer step, then integrate the Lesson 6.1 equations with Euler or RK4 at the time step you choose. The dashed grey curves are a reference solution (RK4 with a 0.5 ms step); when your steps are coarse enough to see, each one is marked with a dot. The readouts give the response metrics from your simulation and the largest error against the reference.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the club racer at 90 km/h and Euler, raise the time step from 10 ms toward 120 ms. When does the response stop looking like the reference, and when does it blow up? Compare with the “stable below” readout.</li>
+        <li>Keep a 40 ms step and lower the speed to 20 km/h. Why does a step that was fine at 90 km/h now fail?</li>
+        <li>Switch to RK4 at the same steps. How large can the step get before RK4 goes wrong?</li>
+        <li>Back at a 5 ms step, compare the overshoot at 90 and 180 km/h. Link the change to the damping ratio of Lesson 6.1.</li>
+        <li>Make the car oversteer (front 3000, rear 2000 N/deg) and drive at 200 km/h. What happens, and is it the integrator's fault this time?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>Take the first Euler step by hand for the club racer at 90 km/h (25 m/s) after a 1° step of steer, with \(h = 10\) ms. The car starts from \(\beta = r = 0\).</p>
+      <p><strong>Derivatives at \(t = 0\):</strong> only the steer terms are non-zero. With \(C_f = 2000\) N/deg, the front tires produce \(C_f\,\delta_0 = 2000\) N, so \(\dot\beta = 2000/(750 \times 25) = 0.107\) rad/s and \(\dot r = 1.176 \times 2000/955 = 2.46\) rad/s².</p>
+      <p><strong>One step:</strong> \(\beta_1 = 0.010 \times 0.107 = 0.00107\) rad \((0.061°)\) and \(r_1 = 0.010 \times 2.46 = 0.0246\) rad/s \((1.41\) deg/s).</p>
+      <p><strong>Where it ends up:</strong> the steady yaw rate is \(7.65\) deg/s (0.34 g). The reference solution reaches 90% of it after 99 ms, with 1% overshoot; at 180 km/h the overshoot grows to about 20%. Lateral acceleration jumps at once to \(2000/750 = 2.67\) m/s² (0.27 g), then dips before building to 0.34 g.</p>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“If the simulated car spins, the car is unstable.” It might be, or the time step might be past the
+      integrator's stability limit, and the growth is numerical, not physical. Before believing a dramatic result,
+      halve the time step. A real instability stays; a numerical one disappears.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="code">
+    <h2>The same simulation in code</h2>
+    <p>
+      The heart of the simulation is a few lines. This is the core of the downloadable Python script, without the lines
+      that record and plot the results; the MATLAB version follows it line for line.
+    </p>
+<pre class="code-block"><code>def derivatives(beta, r, delta):
+    alpha_f = beta + a * r / V - delta      # slip angles (Lesson 0.2)
+    alpha_r = beta - b * r / V
+    Fyf = -Cf * alpha_f                     # linear tires (Lesson 2.1)
+    Fyr = -Cr * alpha_r
+    beta_dot = (Fyf + Fyr) / (m * V) - r    # m V (beta' + r) = Fyf + Fyr
+    r_dot = (a * Fyf - b * Fyr) / Iz        # Iz r' = a Fyf - b Fyr
+    return beta_dot, r_dot
+
+t, beta, r = 0.0, 0.0, 0.0
+while t &lt;= T:
+    beta_dot, r_dot = derivatives(beta, r, delta0)
+    beta += h * beta_dot                    # explicit Euler step
+    r += h * r_dot
+    t += h</code></pre>
+    <p class="code-downloads">
+      Download the complete scripts:
+      <a href="../../assets/code/step_steer.py" download>step_steer.py</a> (plain Python 3; plots if matplotlib is installed) ·
+      <a href="../../assets/code/step_steer.m" download>step_steer.m</a> (MATLAB or Octave).
+    </p>
+    <p>
+      Both print the steady yaw rate, the response time and the overshoot. Try changing \(h\), the speed or the
+      cornering stiffnesses, and check your results against the simulator above.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m06-l2-n1" data-answer="1.41" data-tol="0.01" data-units="deg/s">
+        <p>In the worked example, what is the yaw rate after the first Euler step if the step is 10 ms?</p>
+        <div class="hint"><p>\(r_1 = r_0 + h\,\dot r_0\), with \(\dot r_0 = a\,C_f\,\delta_0/I_z\).</p></div>
+        <div class="solution"><p>\(\dot r_0 = 1.176 \times 2000/955 = 2.46\) rad/s², so \(r_1 = 0.0246\) rad/s \(= 1.41\) deg/s.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m06-l2-n2" data-answer="50" data-tol="0.01" data-units="ms">
+        <p>A system has one real eigenvalue of \(-40\ \text{s}^{-1}\) (and slower modes). What is the largest time step for which explicit Euler stays stable?</p>
+        <div class="hint"><p>For a real eigenvalue, \(h &lt; 2/|\lambda|\).</p></div>
+        <div class="solution"><p>\(h &lt; 2/40 = 0.05\) s \(= 50\) ms.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m06-l2-n3" data-answer="20.1" data-tol="0.01" data-units="%">
+        <p>After a step steer the yaw rate peaks at 10.5 deg/s and settles at 8.74 deg/s. What is the overshoot?</p>
+        <div class="hint"><p>\((r_{\text{peak}} - r_{ss})/r_{ss}\).</p></div>
+        <div class="solution"><p>\((10.5 - 8.74)/8.74 = 0.201\), or 20.1%.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m06-l2-q1">
+        <p class="mcq__prompt">Why does the bicycle model need a smaller Euler time step at low speed?</p>
+        <ul>
+          <li>Because the car turns more sharply at low speed.<span class="why">The stability limit comes from the eigenvalues, not the turn radius.</span></li>
+          <li data-correct>Because the sideslip mode decays at roughly \((C_f + C_r)/(mV)\), which is fastest at low speed, and Euler needs \(h &lt; 2/|\lambda|\).<span class="why">Faster modes demand smaller steps.</span></li>
+          <li>Because the tire forces are larger at low speed.<span class="why">They are not; the issue is how fast the state changes.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m06-l2-q2">
+        <p class="mcq__prompt">The yaw-rate overshoot after a step steer grows from 1% at 90 km/h to 20% at 180 km/h. What causes it?</p>
+        <ul>
+          <li>The car oversteers at 180 km/h.<span class="why">The club racer understeers at both speeds; overshoot is about damping, not balance.</span></li>
+          <li data-correct>The damping ratio falls with speed, because yaw damping weakens as \(1/V\).<span class="why">Lower damping means a larger overshoot (Lesson 6.1).</span></li>
+          <li>The Euler time step is too large at high speed.<span class="why">The reference solution, with a tiny step, shows the same overshoot.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m06-l2-q3">
+        <p class="mcq__prompt">A simulated car spins after a gentle step of steer. What should you check first?</p>
+        <ul>
+          <li data-correct>Halve the time step and run it again: if the spin disappears, it was numerical instability, not the car.<span class="why">A real instability doesn't depend on the step size.</span></li>
+          <li>Increase the time step to speed up the simulation.<span class="why">That makes numerical instability more likely, not less.</span></li>
+          <li>Nothing: a spin always means the car is unstable.<span class="why">Integrators can produce growth that the real system doesn't have.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 6, <em>Simplified Transient Stability and Control</em>, on the response to a step of steer.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>Which response measures does the book use to compare cars after a step steer?</li>
+        <li>How do the yaw-rate and lateral-acceleration responses differ in shape and timing, and why?</li>
+        <li>How do speed and the understeer gradient change the step response?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Explicit Euler</td><td>\(\mathbf{x}_{n+1} = \mathbf{x}_n + h\,f(\mathbf{x}_n, t_n)\); error \(\propto h\)</td></tr>
+          <tr><td>Euler stability</td><td>\(|1 + h\lambda| &lt; 1\) for every mode; \(h &lt; 2/|\lambda|\) for real \(\lambda\)</td></tr>
+          <tr><td>Step-steer steady state</td><td>\(r_{ss} = \delta_0\,(V/L)/(1 + K V^2/L)\)</td></tr>
+          <tr><td>Response metrics</td><td>Time to 90% of \(r_{ss}\); overshoot \((r_{\text{peak}} - r_{ss})/r_{ss}\)</td></tr>
+          <tr><td>Good practice</td><td>Check results against a smaller step; numerical growth disappears, real instability doesn't</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>That completes the transient stretch module. Module 7 turns to the suspension: springs, dampers and how roll stiffness is set.</p>
+  </section>
+
+</article>
+</body>
+</html>

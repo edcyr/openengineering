@@ -74,16 +74,24 @@
     // A ResizeObserver feeds the viewBox-to-screen ratio into a CSS variable.
     if (o.fixedText && typeof ResizeObserver !== "undefined") {
       svg.classList.add("plot--fixed-text");
+      // The update changes the SVG's own size (viewBox trimming), so it runs on the next frame
+      // rather than inside the observer callback, which would trigger a resize-loop warning.
+      let pending = false;
       new ResizeObserver(() => {
-        const w = svg.getBoundingClientRect().width;
-        if (w > 0) {
-          const nk = Math.min((W - vx) / w, 1.65);   // on very small plots, let text shrink a little rather than crowd
-          svg.style.setProperty("--pt", nk.toFixed(4));
-          if (Math.abs(nk - k) > 0.01) {   // move tick labels / titles to suit the text size
-            k = nk; drawAxes();
-            if (o.onTextScale) o.onTextScale(k);   // lets a widget re-place its own text
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(() => {
+          pending = false;
+          const w = svg.getBoundingClientRect().width;
+          if (w > 0) {
+            const nk = Math.min((W - vx) / w, 1.65);   // on very small plots, let text shrink a little rather than crowd
+            svg.style.setProperty("--pt", nk.toFixed(4));
+            if (Math.abs(nk - k) > 0.01) {   // move tick labels / titles to suit the text size
+              k = nk; drawAxes();
+              if (o.onTextScale) o.onTextScale(k);   // lets a widget re-place its own text
+            }
           }
-        }
+        });
       }).observe(svg);
     }
 
@@ -254,6 +262,61 @@
       }
     };
   };
+
+  /* Label placement for widgets. Offsets are in screen px (converted with the plot's text scale). */
+  const off = (p, v) => v * p.textScale;
+  /* Label placement. Each candidate is [x, y, anchor, dx, dy, text?] (data coords, screen-px
+     offsets). The first candidate that stays inside the plot and clear of the given curves
+     (data-space polylines) and other labels is used; if none is clear the label is hidden.
+     The widgets' readouts always carry the same numbers. */
+  function placeFirst(p, key, cands, text, cls, lines, others) {
+    const [x0, x1] = p.xlim, [y0, y1] = p.ylim;
+    const L = Math.min(p.sx(x0), p.sx(x1)), R = Math.max(p.sx(x0), p.sx(x1));
+    const T = Math.min(p.sy(y0), p.sy(y1)), B = Math.max(p.sy(y0), p.sy(y1));
+    const segs = [];
+    (lines || []).forEach((pts) => {
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], b = pts[i];
+        if (!isFinite(a[1]) || !isFinite(b[1])) continue;
+        segs.push([p.sx(a[0]), p.sy(a[1]), p.sx(b[0]), p.sy(b[1])]);
+      }
+    });
+    const boxes = (others || []).filter((n) => n && n.isConnected && n.textContent).map((n) => n.getBBox());
+    const pad = off(p, 2);
+    const hitSeg = (bb, sg) => {   // sample the segment; fine enough for plot curves
+      const n = Math.max(2, Math.ceil(Math.hypot(sg[2] - sg[0], sg[3] - sg[1]) / 2));
+      for (let i = 0; i <= n; i++) {
+        const px = sg[0] + ((sg[2] - sg[0]) * i) / n, py = sg[1] + ((sg[3] - sg[1]) * i) / n;
+        if (px > bb.x - pad && px < bb.x + bb.width + pad && py > bb.y - pad && py < bb.y + bb.height + pad) return true;
+      }
+      return false;
+    };
+    for (const [x, y, anchor, dx, dy, alt] of cands) {
+      const t = p.label(key, x, y, alt || text, { cls, anchor, dx: off(p, dx), dy: off(p, dy) });
+      const bb = t.getBBox();
+      if (!bb.width) return t;                       // not laid out yet: keep the first spot
+      if (bb.x < L || bb.x + bb.width > R || bb.y < T || bb.y + bb.height > B) continue;
+      if (boxes.some((o) => bb.x < o.x + o.width && o.x < bb.x + bb.width && bb.y < o.y + o.height && o.y < bb.y + bb.height)) continue;
+      if (segs.some((sg) => hitSeg(bb, sg))) continue;
+      return t;
+    }
+    p.remove(key);
+    return null;
+  }
+  // Candidates in a ring around a point.
+  const SPOTS = [["start", 8, -8], ["end", -8, -8], ["start", 8, 17], ["end", -8, 17], ["middle", 0, -12],
+    ["middle", 0, 24], ["start", 14, -24], ["end", -14, -24], ["start", 14, 32], ["end", -14, 32]];
+  const placeLabel = (p, key, x, y, text, cls, lines, others) =>
+    placeFirst(p, key, SPOTS.map(([a, dx, dy]) => [x, y, a, dx, dy]), text, cls, lines, others);
+  // Candidates along a horizontal line at y: right end, left end, middle; above, then below.
+  function placeOnHLine(p, key, y, text, cls, lines, others) {
+    const [x0, x1] = p.xlim, mid = (x0 + x1) / 2, e = (x1 - x0) * 0.013;
+    const c = [];
+    [-5, 15].forEach((dy) => c.push([x1 - e, y, "end", 0, dy], [x0 + e, y, "start", 0, dy], [mid, y, "middle", 0, dy]));
+    return placeFirst(p, key, c, text, cls, lines, others);
+  }
+
+  RVD.place = { first: placeFirst, near: placeLabel, onHLine: placeOnHLine };
 
   /* Legend helper: items = [{ label, color: "var(--s1)", dash: true }] */
   RVD.legend = function (container, itemsList) {

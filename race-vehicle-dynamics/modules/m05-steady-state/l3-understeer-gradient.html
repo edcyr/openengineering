@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Understeer, oversteer and the understeer gradient — Race Vehicle Dynamics</title>
+  <link rel="stylesheet" href="../../assets/vendor/katex/katex.inline-fonts.min.css">
+  <link rel="stylesheet" href="../../assets/css/course.css">
+  <script defer src="../../assets/vendor/katex/katex.min.js"></script>
+  <script defer src="../../assets/vendor/katex/auto-render.min.js"></script>
+  <script defer src="../../assets/js/course-data.js"></script>
+  <script defer src="../../assets/js/plot.js"></script>
+  <script defer src="../../assets/js/components.js"></script>
+  <script defer src="../../assets/js/models/bicycle.js"></script>
+  <script defer src="../../assets/js/widgets/steady.js"></script>
+  <script defer src="../../assets/js/course.js"></script>
+</head>
+<body data-root="../.." data-page="lesson" data-lesson="m05-l3">
+<article class="lesson">
+
+  <section class="lesson-section" id="hook">
+    <h2>One number for balance</h2>
+    <p>
+      Lesson 1.2 described understeer and oversteer loosely, by which axle “wins”, and promised a critical speed
+      \(\sqrt{L/|K|}\) without saying where \(K\) came from. The bicycle model of Lesson 5.2 now delivers both. This lesson
+      turns the difference between the front and rear slip angles into a single number, the
+      <strong>understeer gradient</strong>, and follows what it says about stability, the driver's steering, and the
+      car at its limit.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="gradient">
+    <h2>The understeer gradient</h2>
+    <p>
+      From Lesson 5.2, in a right turn \(\delta = L/R + |\alpha_f| - |\alpha_r|\), with \(|\alpha_f| = m a_y (b/L)/C_f\) and
+      \(|\alpha_r| = m a_y (a/L)/C_r\). Writing \(m_f = m\,b/L\) and \(m_r = m\,a/L\) for the mass carried by each axle:
+    </p>
+    <div class="equation">\[ \delta = \frac{L}{R} + K\,a_y, \qquad K = \frac{m_f}{C_f} - \frac{m_r}{C_r} \]</div>
+    <p>
+      \(K\) is the <strong>understeer gradient</strong>: the extra steer needed per unit of lateral acceleration. With
+      \(C\) in N/rad and \(a_y\) in m/s², \(K\) is in rad/(m/s²); engineers usually quote it in degrees per g. It defines
+      the three classic behaviors precisely:
+    </p>
+    <ul>
+      <li><strong>Understeer</strong> (\(K &gt; 0\)): the steer needed grows with lateral acceleration. The front axle needs
+      more slip angle than the rear.</li>
+      <li><strong>Neutral steer</strong> (\(K = 0\)): the steer stays at the low-speed value \(L/R\).</li>
+      <li><strong>Oversteer</strong> (\(K &lt; 0\)): the steer needed <em>falls</em> as lateral acceleration grows.</li>
+    </ul>
+    <p>
+      Anything that reduces an axle's cornering stiffness relative to the weight it carries pushes the balance toward
+      that end: a heavier front or narrower front tires add understeer. So do the Module 3 set-up tools, because more
+      load transfer on an axle lowers its <em>effective</em> cornering stiffness through load sensitivity. Road cars
+      are typically set up with a few deg/g of understeer; race cars usually run much closer to neutral.
+    </p>
+    <div class="callout callout--key">
+      <p>Understeer and oversteer describe how the needed steer changes with lateral acceleration, not whether any
+      tire is sliding. In the linear range no tire is at its limit: the axle that needs more slip angle per unit of the
+      weight it carries sets the balance.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="speed">
+    <h2>Characteristic speed and critical speed</h2>
+    <p>
+      In a steady turn \(r = V/R\) and \(a_y = V^2/R\), so \(\delta = (L + K V^2)/R\). The car's steady
+      <strong>yaw-rate gain</strong>, the yaw rate it settles at per unit of steer, is then
+    </p>
+    <div class="equation">\[ \frac{r}{\delta} = \frac{V/L}{1 + K V^2/L} \]</div>
+    <ul>
+      <li><strong>Neutral steer:</strong> the gain grows in proportion to speed.</li>
+      <li><strong>Understeer:</strong> the gain rises to a maximum at the <strong>characteristic speed</strong>
+      \(V_{\text{ch}} = \sqrt{L/K}\), where it is half the neutral car's, then falls. The car gets steadily less
+      responsive at high speed.</li>
+      <li><strong>Oversteer:</strong> the denominator reaches zero at the <strong>critical speed</strong>
+      \(V_{\text{crit}} = \sqrt{L/|K|}\). The gain becomes infinite: the car is unstable, as Lesson 1.2 showed (where it
+      was written \(U_{\text{crit}}\)).</li>
+    </ul>
+    <p>
+      The same equation explains the <strong>constant-radius test</strong>: drive faster and faster around one circle and
+      record the steer. An understeering car needs more and more steer, a neutral car the same, and an oversteering car
+      less and less, reaching zero at the critical speed and needing opposite lock above it.
+    </p>
+
+    <div class="widget" data-widget="speed-response">
+      <div class="widget__title">Speed response</div>
+      <p class="widget__desc">Set the understeer gradient directly. The left plot shows the steady yaw-rate gain against speed, compared with a neutral-steer car; the right plot shows the steer needed to hold the chosen radius as speed rises. The shaded band is beyond the speed the tires can hold that radius.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the club racer's \(K\), find its characteristic speed. How does its yaw-rate gain there compare with a neutral car's?</li>
+        <li>Slide \(K\) slowly through zero into oversteer. What happens to the gain curve, and to the steer needed in the constant-radius test?</li>
+        <li>Pick the road car. Why might a manufacturer want this much understeer for drivers who aren't racers?</li>
+        <li>For \(K = -0.5\) deg/g, how does the critical speed change between a 2.45 m and a 1.55 m wheelbase?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="nsp">
+    <h2>Neutral steer point and static margin</h2>
+    <p>
+      There is another way to see the same balance. Push the car sideways without making it yaw, so that it slides at a
+      small sideslip angle \(\beta\). Both axles get the same slip angle, so the front tires push back with
+      \(C_f\beta\) and the rears with \(C_r\beta\). Their resultant acts at the <strong>neutral steer point</strong> (NSP), a distance \(x_{\text{NSP}}\) behind the front axle:
+    </p>
+    <div class="equation">\[ \begin{aligned} x_{\text{NSP}} &= \frac{C_r}{C_f + C_r}\,L \\[4pt] \text{SM} &= \frac{x_{\text{NSP}} - a}{L} \end{aligned} \]</div>
+    <figure>
+      <svg viewBox="60 30 420 370" width="420" role="img" aria-label="Top view of a car sliding slightly sideways without yawing. Both axles get the same slip angle beta, so the front tires push back with C f beta and the rear with C r beta, both to the left. Their resultant acts at the neutral steer point, here behind the CG because the rear cornering stiffness is larger. The distance from the CG back to the neutral steer point is the static margin times the wheelbase."><rect x="170" y="55" width="120" height="330" rx="24" class="fig-chassis" stroke-width="1.5"/><rect x="171.0" y="80.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 178.0 100.0)"/><rect x="171.0" y="320.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 178.0 340.0)"/><rect x="275.0" y="80.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 282.0 100.0)"/><rect x="275.0" y="320.0" width="14" height="40" rx="4" class="fig-wheelc" transform="rotate(0.0 282.0 340.0)"/><line x1="230.0" y1="380.0" x2="230.0" y2="38.0" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><text x="224.0" y="48.0" text-anchor="end" class="fig-text fig-dimlabel" style="font-size:13px">x</text><text x="238.0" y="48.0" text-anchor="start" class="fig-text" style="font-size:12px">front</text><line x1="395.0" y1="145.0" x2="395.0" y2="67.0" class="fig-muted" stroke-width="1.2" stroke-dasharray="4 4"/><line x1="395.0" y1="145.0" x2="409.8" y2="85.8" class="fig-s4" stroke-width="2.5"/><polygon points="412.4,75.1 415.6,87.3 403.9,84.4" class="fig-s4-fill"/><text x="418.4" y="79.1" text-anchor="start" class="fig-text fig-s4-fill" style="font-size:13px;font-weight:700">V</text><polyline points="395.0,97.0 395.8,97.0 396.7,97.0 397.5,97.1 398.3,97.1 399.2,97.2 400.0,97.3 400.8,97.4 401.7,97.5 402.5,97.6 403.3,97.7 404.2,97.9 405.0,98.0 405.8,98.2 406.6,98.4" fill="none" class="fig-s1" stroke-width="2"/><text x="389.0" y="109.0" text-anchor="end" class="fig-text fig-s1-fill" style="font-size:14px;font-weight:700">β</text><text x="395.0" y="165.0" text-anchor="middle" class="fig-text" style="font-size:12px">pure sideslip,</text><text x="395.0" y="181.0" text-anchor="middle" class="fig-text" style="font-size:12px">no yaw</text><line x1="168.0" y1="100.0" x2="119.0" y2="100.0" class="fig-s5" stroke-width="3"/><polygon points="108.0,100.0 119.0,94.0 119.0,106.0" class="fig-s5-fill"/><text x="138.0" y="90.0" text-anchor="middle" class="fig-text fig-s5-fill" style="font-size:13px;font-weight:700">C<tspan dy="4" style="font-size:11px">f</tspan><tspan dy="-4"> β</tspan></text><line x1="168.0" y1="340.0" x2="89.0" y2="340.0" class="fig-s5" stroke-width="3"/><polygon points="78.0,340.0 89.0,334.0 89.0,346.0" class="fig-s5-fill"/><text x="123.0" y="330.0" text-anchor="middle" class="fig-text fig-s5-fill" style="font-size:13px;font-weight:700">C<tspan dy="4" style="font-size:11px">r</tspan><tspan dy="-4"> β</tspan></text><line x1="230.0" y1="244.0" x2="149.0" y2="244.0" class="fig-s2" stroke-width="3"/><polygon points="137.0,244.0 149.0,237.5 149.0,250.5" class="fig-s2-fill"/><text x="131.0" y="249.0" text-anchor="end" class="fig-text fig-s2-fill" style="font-size:12.5px;font-weight:700">resultant</text><circle cx="230" cy="215.2" r="5" class="fig-fill"/><text x="240.0" y="220.2" text-anchor="start" class="fig-text" style="font-size:12px">CG</text><circle cx="230" cy="244.0" r="6" class="fig-s2-fill"/><text x="240.0" y="249.0" text-anchor="start" class="fig-text fig-s2-fill" style="font-size:12.5px;font-weight:700">NSP</text><line x1="325.0" y1="215.2" x2="325.0" y2="244.0" class="fig-muted" stroke-width="1.2"/><line x1="320.0" y1="215.2" x2="330.0" y2="215.2" class="fig-muted" stroke-width="1.2"/><line x1="276.0" y1="215.2" x2="319.0" y2="215.2" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><line x1="320.0" y1="244.0" x2="330.0" y2="244.0" class="fig-muted" stroke-width="1.2"/><line x1="276.0" y1="244.0" x2="319.0" y2="244.0" class="fig-muted" stroke-width="1" stroke-dasharray="2 3"/><text x="333.0" y="233.6" text-anchor="start" class="fig-text fig-dimlabel" style="font-size:12.5px">static margin × L</text></svg>
+      <figcaption><strong>The neutral steer point</strong> (club racer, \(C_f = 2000\) N/deg, \(C_r = 3000\) N/deg, arrows to scale). A pure sideslip gives both axles the same slip angle, so the stiffer rear axle pushes back harder and the resultant acts behind the CG. A side force at the NSP would push the car sideways without turning it.</figcaption>
+    </figure>
+    <p>
+      The <strong>static margin</strong> SM is the distance from the CG back to the NSP, as a fraction of the wheelbase.
+      When the NSP is behind the CG (positive margin), a disturbance that swings the car sideways creates tire forces
+      that turn its nose back into line, like the feathers on the arrow in Lesson 1.2: the car understeers and is stable.
+      With the NSP ahead of the CG the forces turn it further away. The two descriptions agree:
+      \(K = m\,\text{SM}\,(C_f + C_r)/(C_f C_r)\), so the static margin and the understeer gradient always have the same sign.
+    </p>
+  </section>
+
+  <section class="lesson-section" id="pair">
+    <h2>Pair analysis and the handling diagram</h2>
+    <p>
+      The understeer gradient assumes linear tires. Near the limit, each axle's lateral force curve flattens (Lesson 2.1),
+      and the two axles do so at different points. RCVD's <strong>pair analysis</strong> handles this by plotting each
+      axle's force divided by the weight it carries against its slip angle. In a steady turn both axles must deliver
+      \(F_y/W_{\text{axle}} = a_y/g\) (Lesson 5.2), so at any lateral acceleration you can read off both slip angles, and
+      their difference is the extra steer \(\delta - L/R = |\alpha_f| - |\alpha_r|\).
+    </p>
+    <p>
+      Plotting lateral acceleration against that extra steer gives the <strong>handling diagram</strong>. Its slope at
+      the origin is \(K\). Near the limit it shows what the linear model can't: whichever axle runs out of grip first decides
+      the car's behavior at the limit. If the front saturates first, the extra steer grows without bound
+      (<strong>limit understeer</strong>: the car runs wide, however much the driver steers). If the rear saturates first,
+      it falls without bound (<strong>limit oversteer</strong>: the car spins). This is the same balance Modules 3 and 4
+      tuned with load transfer and aero balance.
+    </p>
+
+    <div class="widget" data-widget="handling-diagram">
+      <div class="widget__title">Pair analysis and the handling diagram</div>
+      <p class="widget__desc">The left plot shows each axle's lateral force per unit of its own weight against slip angle (saturating tires). The dashed line is the chosen lateral acceleration; where it crosses each curve gives that axle's slip angle. The right plot is the handling diagram: lateral acceleration against the extra steer the driver needs. Axle grip \(\mu\) stands in for the load-transfer effects of Module 3.</p>
+      <p class="widget-fallback">This interactive needs JavaScript.</p>
+    </div>
+
+    <div class="callout callout--try">
+      <ul>
+        <li>With the club racer's defaults, raise the lateral acceleration. Which axle's slip angle grows faster, and how does the handling curve bend near the limit?</li>
+        <li>Lower the rear axle grip below the front (as a stiffer rear anti-roll bar would, Lesson 3.1). How does the car behave at the limit now, even though \(K\) hasn't changed?</li>
+        <li>Find settings where the car understeers at low lateral acceleration but oversteers at the limit. Why would that car catch a driver out?</li>
+        <li>Make \(K\) exactly zero. Is the car still neutral at the limit?</li>
+      </ul>
+    </div>
+
+    <div class="callout callout--example">
+      <p>Find the club racer's understeer gradient, characteristic speed and static margin (\(m = 750\) kg, 52% front weight, \(L = 2.45\) m, \(a = 1.176\) m, \(C_f = 2000\) N/deg, \(C_r = 3000\) N/deg).</p>
+      <p><strong>Gradient:</strong> \(m_f = 390\) kg and \(m_r = 360\) kg, so \(K = 390/2000 - 360/3000 = 0.075\) deg per m/s² \(= 0.075 \times 9.81 = 0.74\) deg/g.</p>
+      <p><strong>Characteristic speed:</strong> \(K = 0.075 \times \pi/180 = 1.309 \times 10^{-3}\) rad/(m/s²), so \(V_{\text{ch}} = \sqrt{2.45/0.001309} = 43.3\) m/s \(= 156\) km/h.</p>
+      <p><strong>Static margin:</strong> \(x_{\text{NSP}} = 2.45 \times 3000/5000 = 1.47\) m, 0.29 m behind the CG, so \(\text{SM} = 0.294/2.45 = 12\%\).</p>
+      <p><strong>Swap the tires</strong> (\(C_f = 3000\), \(C_r = 2000\) N/deg): \(K = 0.13 - 0.18 = -0.05\) deg per m/s², or \(-0.49\) deg/g. The car now oversteers, with a critical speed of \(\sqrt{2.45/0.000873} = 53\) m/s \(= 191\) km/h.</p>
+    </div>
+
+    <div class="callout callout--misconception">
+      <p>“Understeer means the front tires are sliding.” In the linear range neither axle is sliding: an understeering
+      car simply needs more slip angle at the front than at the rear. Running wide because the front tires have reached
+      their limit is <em>limit</em> understeer, which the handling diagram shows separately. A car can understeer
+      gently in the linear range and still oversteer at the limit.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="check">
+    <h2>Check your understanding</h2>
+    <div class="check-block">
+
+      <div class="numeric" data-id="m05-l3-n1" data-answer="2.007" data-tol="0.01" data-units="deg/g">
+        <p>The road car has \(m = 1400\) kg, 60% front weight, \(C_f = 2000\) N/deg and \(C_r = 2600\) N/deg. What is its understeer gradient in deg/g?</p>
+        <div class="hint"><p>\(K = m_f/C_f - m_r/C_r\) with \(C\) in N/deg gives deg per m/s²; multiply by 9.81 for deg/g.</p></div>
+        <div class="solution"><p>\(m_f = 840\) kg, \(m_r = 560\) kg. \(K = 840/2000 - 560/2600 = 0.420 - 0.215 = 0.205\) deg per m/s² \(= 2.01\) deg/g.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m05-l3-n2" data-answer="155.7" data-tol="0.01" data-units="km/h">
+        <p>A car with a 2.45 m wheelbase has an understeer gradient of 0.736 deg/g. What is its characteristic speed?</p>
+        <div class="hint"><p>Convert \(K\) to rad/(m/s²): multiply by \(\pi/180\) and divide by 9.81. Then \(V_{\text{ch}} = \sqrt{L/K}\).</p></div>
+        <div class="solution"><p>\(K = 0.736 \times 0.01745/9.81 = 1.309 \times 10^{-3}\) rad/(m/s²). \(V_{\text{ch}} = \sqrt{2.45/0.001309} = 43.3\) m/s \(= 156\) km/h.</p></div>
+      </div>
+
+      <div class="numeric" data-id="m05-l3-n3" data-answer="2" data-tol="0.02" data-units="%">
+        <p>A car with a 2.5 m wheelbase has its CG 1.20 m behind the front axle and equal front and rear axle cornering stiffness. What is its static margin, as a percentage of the wheelbase?</p>
+        <div class="hint"><p>With equal stiffness the neutral steer point is at mid-wheelbase.</p></div>
+        <div class="solution"><p>\(x_{\text{NSP}} = 1.25\) m, so \(\text{SM} = (1.25 - 1.20)/2.5 = 0.02 = 2\%\): a small margin, so the car understeers only slightly.</p></div>
+      </div>
+
+      <div class="mcq" data-id="m05-l3-q1">
+        <p class="mcq__prompt">What happens to an oversteering car as it approaches its critical speed?</p>
+        <ul>
+          <li>It needs more and more steer to hold a corner.<span class="why">That describes an understeering car.</span></li>
+          <li data-correct>Its yaw response to steering grows without limit and it becomes unstable; the steer needed for a given corner falls to zero.<span class="why">\(r/\delta = (V/L)/(1 + K V^2/L)\) blows up when \(1 + K V^2/L = 0\).</span></li>
+          <li>It becomes neutral steer.<span class="why">\(K\) is a property of the car and doesn't change with speed in this model.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m05-l3-q2">
+        <p class="mcq__prompt">A team moves ballast rearward, shifting weight from the front axle to the rear, with the same tires. How does the understeer gradient change?</p>
+        <ul>
+          <li data-correct>It falls (less understeer, toward oversteer), because \(m_f/C_f\) shrinks and \(m_r/C_r\) grows.<span class="why">The rear now needs more slip angle per unit of its stiffness.</span></li>
+          <li>It rises, because the rear tires have more grip.<span class="why">More load raises grip, but in the linear range what matters is load per unit of cornering stiffness.</span></li>
+          <li>It doesn't change; only tire stiffness affects \(K\).<span class="why">\(K\) depends on the mass each axle carries as well as its stiffness.</span></li>
+        </ul>
+      </div>
+
+      <div class="mcq" data-id="m05-l3-q3">
+        <p class="mcq__prompt">On a car's handling diagram, the curve bends sharply toward negative extra steer just before the limit. What does that mean?</p>
+        <ul>
+          <li>The front axle saturates first: limit understeer.<span class="why">Front saturation makes the extra steer grow, bending the curve the other way.</span></li>
+          <li data-correct>The rear axle saturates first: limit oversteer, and the car will tend to spin at the limit.<span class="why">The rear slip angle grows without bound, so the extra steer \(|\alpha_f| - |\alpha_r|\) falls.</span></li>
+          <li>The car is neutral at the limit.<span class="why">A neutral car's curve would stay vertical.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="lesson-section" id="milliken">
+    <h2>Going further with Milliken</h2>
+    <div class="callout callout--rcvd">
+      <p><strong>Read:</strong> RCVD Chapter 5, <em>Simplified Steady-State Stability and Control</em>, on the understeer gradient, characteristic and critical speed, neutral steer point and static margin, and Chapter 7, <em>Steady-State Pair Analysis</em>.</p>
+      <p>As you read, look for answers to these questions:</p>
+      <ul>
+        <li>How does the book define understeer and oversteer, and how does that compare with the definition from \(K\) here?</li>
+        <li>How does Chapter 7 build the handling diagram from the front and rear axle characteristics?</li>
+        <li>Which vehicle changes does the book list as moving the neutral steer point, and in which direction?</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lesson-section" id="summary">
+    <h2>Summary</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Idea</th><th>Key relation</th></tr></thead>
+        <tbody>
+          <tr><td>Steer in a steady turn</td><td>\(\delta = L/R + K a_y\)</td></tr>
+          <tr><td>Understeer gradient</td><td>\(K = m_f/C_f - m_r/C_r\); \(K &gt; 0\) understeer, \(K &lt; 0\) oversteer</td></tr>
+          <tr><td>Yaw-rate gain</td><td>\(r/\delta = (V/L)/(1 + K V^2/L)\)</td></tr>
+          <tr><td>Characteristic / critical speed</td><td>\(V_{\text{ch}} = \sqrt{L/K}\) (understeer), \(V_{\text{crit}} = \sqrt{L/|K|}\) (oversteer)</td></tr>
+          <tr><td>Neutral steer point, static margin</td><td>\(x_{\text{NSP}} = L\,C_r/(C_f + C_r)\), \(\text{SM} = (x_{\text{NSP}} - a)/L\), same sign as \(K\)</td></tr>
+          <tr><td>Limit behavior</td><td>Whichever axle saturates first: front = limit understeer, rear = limit oversteer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>That completes steady-state cornering. Module 6 adds time: how the car gets from one steady turn to another.</p>
+  </section>
+
+</article>
+</body>
+</html>

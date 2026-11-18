@@ -338,41 +338,50 @@ window.RVD_COURSE = {
         {
           id: "m05-l1",
           title: "Low-speed turning and Ackermann geometry",
-          status: "planned",
-          minutes: 25,
+          file: "modules/m05-steady-state/l1-ackermann.html",
+          status: "ready",
+          minutes: 30,
+          rcvd: [5, 19],
           objectives: [
-            "Derive the Ackermann steer angle δ = L/R.",
-            "Explain why inner and outer wheels need different steer angles at low speed."
+            "Derive the Ackermann steer angle δ = L/R from low-speed turning geometry.",
+            "Explain why inner and outer wheels need different steer angles at low speed, and calculate both.",
+            "Compare Ackermann, parallel and anti-Ackermann steering and explain why race cars often use less Ackermann."
           ],
-          outline: ["Kinematic turning", "Ackermann, parallel and anti-Ackermann steering"],
+          outline: ["Kinematic turning", "Inner and outer wheels, off-tracking", "Ackermann, parallel and anti-Ackermann steering"],
           interactives: ["Top-down turning-circle sketcher"]
         },
         {
           id: "m05-l2",
           title: "The bicycle model",
-          status: "planned",
+          file: "modules/m05-steady-state/l2-bicycle-model.html",
+          status: "ready",
           minutes: 45,
+          rcvd: [5],
           objectives: [
-            "Set up the force and moment equations of a two-wheel vehicle model.",
-            "Solve for the slip angles front and rear in a steady turn."
+            "Set up the kinematic, force and moment equations of a two-wheel vehicle model.",
+            "Solve for the front and rear slip angles, the steer angle and the sideslip in a steady turn.",
+            "Explain how the car's sideslip changes with speed."
           ],
           outline: [
             "Lumping each axle into one tire",
             "Force balance and yaw-moment balance",
-            "Front and rear slip angles from cornering stiffness"
+            "Front and rear slip angles from cornering stiffness",
+            "Steer angle and sideslip"
           ],
-          interactives: ["Bicycle-model solver with live velocity and force vectors"]
+          interactives: ["Steady-turn solver with velocity and force vectors, and angles vs speed"]
         },
         {
           id: "m05-l3",
           title: "Understeer, oversteer and the understeer gradient",
-          status: "planned",
-          minutes: 45,
+          file: "modules/m05-steady-state/l3-understeer-gradient.html",
+          status: "ready",
+          minutes: 50,
           rcvd: [5, 7],
           objectives: [
             "Calculate the understeer gradient K from vehicle parameters.",
-            "Find the characteristic or critical speed of a vehicle.",
-            "Relate the neutral steer point and static margin to stability."
+            "Find the characteristic or critical speed of a vehicle and explain the yaw-rate gain.",
+            "Relate the neutral steer point and static margin to stability.",
+            "Read a handling diagram and predict limit understeer or oversteer from the axle characteristics."
           ],
           outline: [
             "δ = L/R + K·ay",
@@ -380,7 +389,7 @@ window.RVD_COURSE = {
             "Neutral steer point and static margin",
             "Pair analysis: front vs rear axle characteristics (RCVD Ch. 7)"
           ],
-          interactives: ["Steer-angle vs lateral-acceleration plot with tunable cornering stiffness"]
+          interactives: ["Yaw-rate gain and constant-radius steer vs speed", "Pair analysis and handling diagram"]
         }
       ]
     },
@@ -396,25 +405,37 @@ window.RVD_COURSE = {
         {
           id: "m06-l1",
           title: "From steady state to motion: the yaw equations",
-          status: "planned",
-          minutes: 40,
+          file: "modules/m06-transient/l1-yaw-equations.html",
+          status: "ready",
+          minutes: 45,
+          rcvd: [6],
           objectives: [
+            "Estimate the yaw moment of inertia from the dynamic index.",
             "Write the two-degree-of-freedom equations for sideslip and yaw rate.",
-            "Interpret yaw damping and the effect of speed on transient response."
+            "Explain the stability derivatives, including yaw damping, in plain language.",
+            "Calculate the natural frequency and damping ratio and explain how speed changes them."
           ],
-          outline: ["Yaw moment of inertia", "Lateral and yaw equations of motion", "Stability derivatives in plain language"],
-          interactives: ["Phase-portrait of yaw rate vs sideslip"]
+          outline: [
+            "Yaw moment of inertia and the dynamic index",
+            "Lateral and yaw equations of motion",
+            "Stability derivatives in plain language",
+            "Natural frequency and damping vs speed"
+          ],
+          interactives: ["Phase portrait of yaw rate vs sideslip, with eigenvalues vs speed"]
         },
         {
           id: "m06-l2",
           title: "Simulating a step-steer with Euler integration",
-          status: "planned",
+          file: "modules/m06-transient/l2-step-steer.html",
+          status: "ready",
           minutes: 45,
+          rcvd: [6],
           objectives: [
             "Integrate the bicycle-model equations numerically with a fixed time step.",
-            "Measure rise time and overshoot from a simulated step-steer."
+            "Choose a time step using the Euler stability limit and tell numerical from physical instability.",
+            "Measure response time and overshoot from a simulated step steer."
           ],
-          outline: ["Explicit Euler method", "Choosing a time step", "Response metrics"],
+          outline: ["Explicit Euler method", "Choosing a time step", "Step-steer test and response metrics", "The simulation in Python and MATLAB"],
           interactives: ["In-browser step-steer simulator with downloadable code (Python/MATLAB)"]
         }
       ]
