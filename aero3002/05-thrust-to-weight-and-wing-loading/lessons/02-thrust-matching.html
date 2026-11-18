@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Statistics and Thrust Matching · Thrust-to-Weight Ratio and Wing Loading</title>
+<meta name="description" content="A first thrust-to-weight ratio or power loading from statistics against maximum Mach number or speed, then from thrust matching in cruise: the weight fraction, the thrust lapse with altitude, and the power a propeller needs.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/match.js"></script>
+<style>
+  .tnum td, .tnum th { text-align: right; font-variant-numeric: tabular-nums; }
+  .tnum td:first-child, .tnum th:first-child { text-align: left; }
+</style>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 35 min</p>
+    <h1>Statistics and Thrust Matching</h1>
+    <p class="lede">Before any requirement is analyzed, two quick estimates give a first thrust-to-weight ratio: statistics from aircraft of the same class, and thrust matching, which asks how much thrust the cruise needs. Both have to deal with the same complication. The engines are rated at sea level and standing still, but the aircraft cruises high and fast, lighter than at takeoff.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Estimate \(\TW\) of a jet from its maximum Mach number, and \(\PW\) of a propeller aircraft from its maximum speed, using statistical fits.</li>
+      <li>Explain the weight fraction \(\beta\) and the thrust lapse \(\alpha\), and convert a thrust-to-weight ratio in flight to takeoff conditions.</li>
+      <li>Match the thrust to the drag in cruise to find the takeoff \(\TW\) a cruise needs.</li>
+      <li>Convert a required thrust to a power for a propeller aircraft, with a lapse of power with altitude.</li>
+    </ul>
+  </section>
+
+  <section id="statistics">
+    <h2>Statistical estimates</h2>
+    <p>Aircraft built for the same job end up with similar thrust-to-weight ratios. For jets, \(\TW\) grows with the maximum Mach number; a fit of the form \(a\,M_{\max}^{\,C}\) captures the trend for each class. Propeller aircraft are fitted the same way, with the power loading against the maximum speed:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Statistical thrust-to-weight ratio and power loading</p>
+      \[ \TWo = a\,M_{\max}^{\,C}, \qquad \left(\frac{P}{W}\right)_0 = a\,V_{\max}^{\,C}\ \ (\text{kW/kg},\ V_{\max}\ \text{in km/h}) \]
+    </div>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Thrust-to-weight ratio against maximum Mach number (source: Raymer, Table 5.2)</caption>
+        <thead><tr><th scope="col">Aircraft</th><th scope="col">\(a\)</th><th scope="col">\(C\)</th><th scope="col">\(\TWo\) at \(M\) 0.8</th><th scope="col">at \(M\) 2.0</th></tr></thead>
+        <tbody id="t-twfit"></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Power loading against maximum speed, in kW/kg with \(V_{\max}\) in km/h (source: Raymer, Table 5.4, converted)</caption>
+        <thead><tr><th scope="col">Aircraft</th><th scope="col">\(a\)</th><th scope="col">\(C\)</th><th scope="col">\(\PW\) at 300 km/h</th></tr></thead>
+        <tbody id="t-pwfit"></tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 2.1 — Two jets from statistics</p>
+      <p>Estimate the takeoff thrust-to-weight ratio of a jet trainer with a maximum Mach number of 0.8, and of a jet transport with a maximum Mach number of 0.85.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{Trainer:}\quad \TWo = 0.488(0.8)^{0.728} = 0.415 \]
+          \[ \text{Transport:}\quad \TWo = 0.267(0.85)^{0.363} = 0.252 \]
+          <p>Both agree with the typical values of Lesson 1, 0.4 and 0.25 to 0.4. The fit cannot know about the runway, the ceiling or the number of engines; it only says what similar aircraft carry.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig21-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig21-stage"></div>
+        <div class="viz-controls" id="fig21-controls"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> The statistical fits against the real aircraft of Module 1's data. Jet transports are plotted at their cruise Mach number, a few hundredths below their maximum. Choose jets or propeller aircraft, and move the slider to read each fit. The fits come from a different, more recent sample, so the older aircraft scatter around them.</figcaption>
+    </figure>
+  </section>
+
+  <section id="lapse">
+    <h2>From takeoff to cruise: weight fraction and thrust lapse</h2>
+    <p>A thrust-to-weight ratio always refers to the takeoff weight and the sea-level static thrust. In flight, the weight and the available thrust are both smaller:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Weight fraction and thrust lapse</p>
+      \[ \beta = \frac{W}{\Wo}, \qquad \alpha = \frac{T}{T_0}, \qquad \TWo = \frac{\beta}{\alpha}\left(\frac{T}{W}\right) \]
+      <p>\(\beta\) comes from the mission segment weight fractions of Module 3. \(\alpha\) depends on the engine, the altitude, the speed and the throttle setting.</p>
+    </div>
+    <p>A turbojet or turbofan's thrust falls roughly with the air density. This module uses the simplest model, \(\alpha = \sigma = \rho/\rho_0\), the density ratio of the standard atmosphere. Real engines differ: a high-bypass turbofan also loses thrust as its speed rises, and at a cruise Mach number of 0.8 it may give noticeably less than \(\sigma\) predicts. Engine data replace this model as soon as an engine is chosen, and designs sized with \(\alpha = \sigma\) should expect to need some extra thrust.</p>
+  </section>
+
+  <section id="matching">
+    <h2>Thrust matching in cruise</h2>
+    <p>In steady, level cruise the thrust equals the drag and the lift equals the weight, so the thrust-to-weight ratio in cruise is the inverse of the lift-to-drag ratio. Corrected to takeoff conditions:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Thrust matching in cruise</p>
+      \[ \left(\frac{T}{W}\right)_{\text{cruise}} = \frac{1}{(L/D)_{\text{cruise}}}, \qquad \TWo = \frac{\beta}{\alpha}\,\frac{1}{(L/D)_{\text{cruise}}} \]
+      <p>A jet cruises for best range at \(0.866\,\LDmax\), a propeller aircraft at \(\LDmax\) (Module 3).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 2.2 — The business jet's cruise thrust</p>
+      <p>The business jet has \(\LDmax = 16.9\) and starts its cruise at Mach 0.80 and \(12\ \text{km}\) with \(\beta = 0.9555\). Find the takeoff thrust-to-weight ratio its cruise needs, with \(\alpha = \sigma\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>At 12 km the density ratio is \(\sigma = 0.2537\), and the best-range lift-to-drag ratio is \(0.866(16.9) = 14.64\):</p>
+          \[ \TWo = \frac{0.9555}{0.2537}\,\frac{1}{14.64} = 0.257 \]
+          <p>The cruise needs only 6.8% of the weight in thrust, but the engines lose three-quarters of their thrust at 12 km, so the takeoff thrust must be almost four times the cruise thrust. This assumes the business jet can cruise at its best-range lift coefficient; Lesson 5 checks whether its wing loading allows it.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> The thrust lapse \(\alpha = \sigma\) and the takeoff thrust-to-weight ratio a jet needs to cruise, against the cruise altitude. The higher the cruise, the more takeoff thrust the same lift-to-drag ratio needs. The dot is the chosen altitude; the start values are the business jet's.</figcaption>
+    </figure>
+  </section>
+
+  <section id="power">
+    <h2>Propeller aircraft: from thrust to power</h2>
+    <p>A propeller converts shaft power into thrust power with the propeller efficiency \(\eta_p\), about 0.8 to 0.85 in cruise: \(P = TV/\eta_p\). Dividing by the weight and correcting to takeoff conditions gives the power loading a cruise needs:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Power loading for a cruise</p>
+      \[ \left(\frac{P}{W}\right)_0 = \frac{gV}{1000\,\eta_p}\,\frac{\beta}{\alpha_P}\,\frac{1}{(L/D)_{\text{cruise}}}\ \ (\text{kW/kg}) \]
+      <p>\(V\) in m/s. The power lapse \(\alpha_P = P/P_0\) is about \(\sigma\) for a turboprop; for a piston engine without a supercharger, \(\alpha_P = \sigma - (1-\sigma)/7.55\).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 2.3 — A turboprop's cruise power</p>
+      <p>A twin turboprop cruises at \(500\ \text{km/h}\) and \(7\ \text{km}\) (\(\sigma = 0.4812\)) with \(L/D = 15\), \(\eta_p = 0.85\) and \(\beta = 0.97\). What takeoff power loading does the cruise need?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ V = \frac{500}{3.6} = 138.9\ \text{m/s} \]
+          \[ \left(\frac{P}{W}\right)_0 = \frac{9.81(138.9)}{1000(0.85)}\,\frac{0.97}{0.4812}\,\frac{1}{15} = 0.215\ \text{kW/kg} \]
+          <p>An 18-tonne turboprop would need about 3900 kW, two engines of about 1950 kW. In Module 1's data the C-130 carries 0.21 kW/kg and the King Air 200 0.22 kW/kg. The twin-turboprop fit of Figure 2.1 suggests more, 0.36 kW/kg at a maximum speed of 500 km/h, because statistics include the takeoff and climb requirements that the cruise alone does not see.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="which">
+    <h2>Which estimate to trust</h2>
+    <p>The two estimates answer different questions. Statistics say what similar aircraft carry, which includes every requirement those aircraft had to meet. Thrust matching says what one requirement, the cruise, needs. A business jet's cruise thrust of 0.257 is a lower limit: the takeoff, the climb to the ceiling and the climb with one engine failed may need more. Lessons 3 to 6 derive each of those limits, and Lesson 7 finds the one that decides.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Statistics: \(\TWo = a\,M_{\max}^{\,C}\) for jets and \((P/W)_0 = a\,V_{\max}^{\,C}\) for propeller aircraft give a first estimate.</li>
+      <li>Every \(\TW\) refers to the takeoff weight and sea-level static thrust; \(\TWo = (\beta/\alpha)(T/W)\), with \(\beta = W/\Wo\) and \(\alpha = T/T_0\).</li>
+      <li>This module takes \(\alpha = \sigma\) for jets; real turbofans lose more thrust with speed.</li>
+      <li>In cruise \(T/W = 1/(L/D)\); the business jet needs \(\TWo = 0.257\) for its cruise at 12 km.</li>
+      <li>For a propeller aircraft, \(P = TV/\eta_p\) converts the thrust to a power.</li>
+      <li>Next, <a href="03-stall-and-landing.html">Lesson 3</a> finds the wing loading the stall speed and the landing allow.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Tables (from MATCH.TW_FIT and PW_FIT) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tt = document.getElementById('t-twfit'), tp = document.getElementById('t-pwfit');
+  MATCH.TW_FIT.forEach(function (f) {
+    tt.appendChild(CYL.el('tr', null, [CYL.el('td', { text: f.label }), CYL.el('td', { text: f.a.toFixed(3) }), CYL.el('td', { text: f.C.toFixed(3) }),
+      CYL.el('td', { text: MATCH.twFit(f.id, 0.8).toFixed(3) }), CYL.el('td', { text: f.id === 'dogfighter' || f.id === 'fighter' ? MATCH.twFit(f.id, 2).toFixed(3) : '\u2013' })]));
+  });
+  MATCH.PW_FIT.forEach(function (f) {
+    tp.appendChild(CYL.el('tr', null, [CYL.el('td', { text: f.label }), CYL.el('td', { text: CYL.fmt(f.a, 3) }), CYL.el('td', { text: f.C.toFixed(2) }), CYL.el('td', { text: MATCH.pwFit(f.id, 300).toFixed(3) })]));
+  });
+});
+
+/* ---------- Figure 2.1: statistics against real aircraft ---------- */
+CYL.ready(function () {
+  'use strict';
+  var g = 9.81;
+  var JF = [['dogfighter', 'z', false, [0.8, 2.6]], ['fighter', 'z', true, [0.8, 2.6]], ['trainer', 'good', false, [0.5, 1.0]], ['cargo', 'r', false, [0.5, 0.95]], ['jt', 'warn', false, [0.6, 0.95]]];
+  var PF = [['homemw', 'v', false, [120, 350]], ['ga1', 'good', false, [150, 450]], ['ag', 'r', false, [130, 300]], ['ga2', 't', false, [250, 550]], ['tprop', 'warn', false, [350, 700]]];
+  function lab(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i].label; return id; }
+  var MODES = {
+    jet: { label: 'Jets: thrust-to-weight ratio', x: { label: 'Maximum Mach number \\(M_{\\max}\\)', min: 0.4, max: 2.8 }, y: { label: 'Thrust-to-weight ratio \\(\\TWo\\)', min: 0, max: 1.3 } },
+    prop: { label: 'Propeller aircraft: power loading', x: { label: 'Maximum speed \\(V_{\\max}\\) (km/h)', min: 100, max: 800 }, y: { label: 'Power loading \\((P/W)_0\\) (kW/kg)', min: 0, max: 0.5 } }
+  };
+  var st = { k: 'jet', M: 0.85, V: 300 };
+  var chart = AERO.chart(document.getElementById('fig21-stage'), { x: MODES.jet.x, y: MODES.jet.y, height: 340, ariaLabel: 'Statistical thrust-to-weight ratios against Mach number.' });
+  var jl = JF.map(function (f) { return chart.fn(function (M) { return MATCH.twFit(f[0], M); }, { color: f[1], width: f[2] ? 1.8 : 2.4, dashed: f[2], domain: f[3] }); });
+  var pl = PF.map(function (f) { return chart.fn(function (V) { return MATCH.pwFit(f[0], V); }, { color: f[1], width: 2.4, domain: f[3] }); });
+  var cur = chart.vline(st.M, { color: 'muted', dashed: true });
+  var jets = AERO.DATA.filter(function (d) { return d.T && (d.Mmax || d.Mc); }), props = AERO.DATA.filter(function (d) { return d.P && d.Vmax; });
+  var pts = chart.points([], {
+    x: function (d) { return d.T ? (d.Mmax || d.Mc) : d.Vmax; },
+    y: function (d) { return d.T ? d.T * 1000 / (d.W0 * g) : d.P / d.W0; },
+    color: function (d) { return d.T ? (d.role === 'fighter' ? 'z' : 'warn') : (d.eng === 'turboprop' ? 'warn' : 'muted'); },
+    shape: function (d) { return d.T ? (d.role === 'fighter' ? 'tri' : 'square') : (d.eng === 'turboprop' ? 'square' : 'circle'); }, r: 4.5,
+    title: function (d) {
+      return '<strong>' + CYL.escapeHtml(d.name) + '</strong><span class="muted">' + d.year + '</span><br>' + (d.T
+        ? '\\(T/W\\) = ' + CYL.fmt(d.T * 1000 / (d.W0 * g), 3) + (d.Mmax ? ', \\(M_{\\max}\\) ' + d.Mmax : ', cruise Mach ' + d.Mc)
+        : '\\(P/W\\) = ' + CYL.fmt(d.P / d.W0, 3) + ' kW/kg, ' + Math.round(d.Vmax) + ' km/h');
+    } });
+  var panel = document.getElementById('fig21-controls');
+  var sel = CYL.select({ label: 'Aircraft', value: st.k, options: Object.keys(MODES).map(function (k) { return { value: k, label: MODES[k].label }; }), onChange: function (v) { st.k = v; draw(); } });
+  var sM = CYL.slider({ label: 'Maximum Mach number', min: 0.5, max: 2.6, step: 0.05, value: st.M, color: 'accent', onInput: function (v) { st.M = v; draw(); } });
+  var sV = CYL.slider({ label: 'Maximum speed', min: 120, max: 700, step: 10, value: st.V, unit: ' km/h', color: 'accent', onInput: function (v) { st.V = v; draw(); } });
+  var ro = [0, 1, 2, 3, 4].map(function () { return CYL.readout(''); });
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Data' }));
+  panel.appendChild(sel.el); panel.appendChild(sM.el); panel.appendChild(sV.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, ro.map(function (r) { return r.el; })));
+  CYL.renderMath(panel);
+  function draw() {
+    var jet = st.k === 'jet', m = MODES[st.k], F = jet ? JF : PF;
+    chart.setAxes({ x: m.x, y: m.y });
+    jl.forEach(function (h) { h.setVisible(jet); }); pl.forEach(function (h) { h.setVisible(!jet); });
+    sM.el.hidden = !jet; sV.el.hidden = jet;
+    pts.set(jet ? jets : props);
+    cur.set(jet ? st.M : st.V);
+    F.forEach(function (f, i) {
+      var name = jet ? lab(MATCH.TW_FIT, f[0]) : lab(MATCH.PW_FIT, f[0]), x = jet ? st.M : st.V, ok = x >= f[3][0] - 1e-9 && x <= f[3][1] + 1e-9;
+      ro[i].label.textContent = name;
+      ro[i].set(ok ? (jet ? MATCH.twFit(f[0], x).toFixed(3) : MATCH.pwFit(f[0], x).toFixed(3) + ' kW/kg') : 'outside its range');
+    });
+    chart.setLegend(jet
+      ? [{ label: 'Dogfighter', color: 'z', line: true }, { label: 'Fighter (other)', color: 'z', line: true, dashed: true }, { label: 'Jet trainer', color: 'good', line: true }, { label: 'Cargo or bomber', color: 'r', line: true }, { label: 'Jet transport', color: 'warn', line: true }, { label: 'Real fighters', color: 'z', shape: 'tri' }, { label: 'Real transports', color: 'warn', shape: 'square' }]
+      : [{ label: 'Homebuilt', color: 'v', line: true }, { label: 'GA single', color: 'good', line: true }, { label: 'Agricultural', color: 'r', line: true }, { label: 'GA twin', color: 't', line: true }, { label: 'Twin turboprop', color: 'warn', line: true }, { label: 'Real piston aircraft', color: 'muted' }, { label: 'Real turboprops', color: 'warn', shape: 'square' }]);
+    chart.setAriaLabel(jet ? 'Statistical thrust-to-weight ratios of five classes of jet against maximum Mach number, with ' + jets.length + ' real jets.'
+      : 'Statistical power loadings of five classes of propeller aircraft against maximum speed, with ' + props.length + ' real aircraft.');
+  }
+  draw();
+});
+
+/* ---------- Figure 2.2: thrust lapse and the cruise thrust ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { h: 12, LD: 14.64, b: 0.9555 };
+  var chart = AERO.chart(document.getElementById('fig22-stage'), {
+    x: { label: 'Cruise altitude \\(h\\) (km)', min: 0, max: 15 }, y: { label: 'Thrust lapse \\(\\alpha\\) and \\(\\TWo\\)', min: 0, max: 1.0 }, height: 320,
+    ariaLabel: 'Thrust lapse and the takeoff thrust-to-weight ratio for cruise, against altitude.',
+    legend: [{ label: 'Thrust lapse \\(\\alpha = \\sigma\\)', color: 'muted', line: true, dashed: true }, { label: '\\(\\TWo\\) for cruise', color: 'accent', line: true }, { label: '\\(1/(L/D)\\)', color: 'good', line: true }]
+  });
+  chart.fn(function (h) { return MATCH.isa(h * 1000).sigma; }, { color: 'muted', width: 1.8, dashed: true });
+  var inv = chart.fn(function () { return 0; }, { color: 'good', width: 1.6 });
+  var req = chart.fn(function () { return 0; }, { color: 'accent', width: 2.8 });
+  var dot = chart.marker([0, 0], { color: 'accent', r: 5, ring: false });
+  var dotA = chart.marker([0, 0], { color: 'muted', r: 4, ring: false });
+  var panel = document.getElementById('fig22-controls');
+  var sH = CYL.slider({ label: 'Cruise altitude \\(h\\)', min: 0, max: 15, step: 0.5, value: st.h, unit: ' km', color: 'accent', onInput: function (v) { st.h = v; draw(); } });
+  var sL = CYL.slider({ label: 'Cruise \\(L/D\\)', min: 8, max: 20, step: 0.01, value: st.LD, color: 'good', onInput: function (v) { st.LD = v; draw(); } });
+  var sB = CYL.slider({ label: 'Weight fraction \\(\\beta\\)', min: 0.85, max: 1, step: 0.0005, value: st.b, color: 't', onInput: function (v) { st.b = v; draw(); } });
+  var ro = { s: CYL.readout('\\(\\alpha = \\sigma\\)'), c: CYL.readout('\\(T/W\\) in cruise'), t: CYL.readout('\\(\\TWo\\)'), k: CYL.readout('Takeoff thrust per cruise thrust') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Cruise' }));
+  [sH, sL, sB].forEach(function (s) { panel.appendChild(s.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.s.el, ro.c.el, ro.t.el, ro.k.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var sg = MATCH.isa(st.h * 1000).sigma, tw = st.b / (sg * st.LD);
+    inv.setFn(function () { return 1 / st.LD; });
+    req.setFn(function (h) { return st.b / (MATCH.isa(h * 1000).sigma * st.LD); });
+    dot.set([st.h, tw]); dotA.set([st.h, sg]);
+    ro.s.set(sg.toFixed(4)); ro.c.set((st.b / st.LD).toFixed(4)); ro.t.set(tw.toFixed(3)); ro.k.set((1 / sg).toFixed(2) + ' times');
+    chart.setAriaLabel('At ' + st.h + ' km the density ratio is ' + sg.toFixed(3) + '; with a cruise lift-to-drag ratio of ' + st.LD + ' and a weight fraction of ' + st.b + ', the cruise needs a takeoff thrust-to-weight ratio of ' + tw.toFixed(3) + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1',
+    type: 'numeric',
+    prompt: 'Estimate the takeoff thrust-to-weight ratio of a dogfighter with a maximum Mach number of 2.0, from the statistical fit.',
+    label: '\\(\\TWo =\\)', answer: MATCH.twFit('dogfighter', 2.0),
+    hints: ['Dogfighter: \\(a = 0.648\\), \\(C = 0.594\\).', '\\(0.648(2.0)^{0.594}\\).'],
+    explain: 'About 0.98: modern dogfighters have nearly as much thrust as weight.',
+    solution: '\\[ \\TWo = 0.648(2.0)^{0.594} = 0.648(1.509) = 0.978 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2',
+    type: 'numeric',
+    prompt: 'A jet transport cruises at \\(11\\ \\text{km}\\) (\\(\\sigma = 0.2971\\)) with \\(L/D = 16\\), at a weight fraction \\(\\beta = 0.95\\). With \\(\\alpha = \\sigma\\), what takeoff thrust-to-weight ratio does its cruise need?',
+    label: '\\(\\TWo =\\)', answer: 0.95 / (0.29708 * 16),
+    hints: ['\\(\\TWo = (\\beta/\\alpha)/(L/D)\\).', '\\(0.95/(0.2971 \\times 16)\\).'],
+    explain: 'Cruise needs 1/16 of the weight in thrust, but the engines give under 30% of their sea-level thrust at 11 km.',
+    solution: '\\[ \\TWo = \\frac{0.95}{0.2971}\\,\\frac{1}{16} = 0.200 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3',
+    type: 'mc',
+    prompt: 'A jet needs a thrust of only \\(1/(L/D) \\approx 0.07\\) of its weight in cruise, yet thrust matching gives a takeoff \\(T/W\\) near 0.26. What accounts for most of the difference?',
+    choices: [
+      { html: 'The fuel burned before the cruise', feedback: 'That makes the aircraft lighter, which lowers the takeoff \\(T/W\\) needed, by only a few percent.' },
+      { html: 'The lapse of engine thrust with altitude', correct: true, feedback: 'Yes: at 12 km the engines give about a quarter of their sea-level static thrust.' },
+      { html: 'The propeller efficiency', feedback: 'A jet has no propeller.' },
+      { html: 'The safety factor of the certification rules', feedback: 'Thrust matching has no safety factor; the rules enter in the takeoff and climb requirements.' }
+    ],
+    explain: 'The thrust lapse \\(\\alpha\\) is the large correction; \\(\\beta\\) is a small one in the other direction.'
+  });
+});
+</script>
+</body>
+</html>

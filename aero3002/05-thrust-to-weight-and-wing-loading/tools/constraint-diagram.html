@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constraint Diagram · Thrust-to-Weight Ratio and Wing Loading</title>
+<meta name="description" content="A constraint diagram builder for jets and propeller aircraft: enter the landing, takeoff, cruise, ceiling, engine-out climb, missed approach, turn and stall requirements, and see every constraint on a chart of thrust-to-weight ratio or power loading against wing loading, with the feasible region, the design point, the wing area and the engine thrust or power. Presets include the module's business jet and the Dash 8-400 turboprop.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/match.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-box h3 label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .sc-box.off .sc-fields { opacity: 0.45; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child, .sc-table td:nth-child(2), .sc-table th:nth-child(2) { text-align: left; }
+  .sc-warn { color: var(--c-bad); font-weight: 700; }
+</style>
+</head>
+<body data-page="constraint" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Thrust-to-weight ratio and wing loading</p>
+    <h1>Constraint Diagram</h1>
+    <p class="lede">The whole module on one page: enter a jet's or a propeller aircraft's requirements, switch each one on or off, and see every constraint on a chart of thrust-to-weight ratio (jets) or power loading (propeller aircraft) against wing loading, with the feasible region and the design point. The design point gives the wing area and the engine thrust or power, and a table lists what each requirement needs there, so you can check every number by hand.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="cd-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="cd-presets" role="group" aria-labelledby="cd-presets-label"></div>
+    <div class="sc-grid" id="cd-grid"></div>
+    <p class="small muted" id="cd-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="cd-totals"></div>
+    <figure class="figure wide" aria-labelledby="cd-fig-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="cd-stage"></div>
+      </div>
+      <figcaption id="cd-fig-cap"><strong>Figure T.1</strong> The constraint diagram. Each thrust or power constraint is a curve; each wing loading limit is a dashed vertical line. The shaded region meets every requirement switched on, and the ringed dot is the design point: the lowest \(\TW\) or \(\PW\) in the region, at the highest wing loading that gives it. For the Dash 8-400 preset, the diamond is the aircraft as built.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="cd-table">
+        <caption>Each requirement at the design point</caption>
+        <thead><tr><th scope="col">Requirement</th><th scope="col">Constraint</th><th scope="col">Needs</th><th scope="col">Margin</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="cd-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <h3>Jets</h3>
+    <ul>
+      <li>Every \(\TW\) refers to the takeoff weight and the total sea-level static thrust; every \(\WS\) is the takeoff mass over the reference area, in kg/m².</li>
+      <li>Landing (Lesson 3): \(\WSo \le (s_L - S_a)\,\sigma\,C_{L_{\max},L}/(4.996\,k_r\,W_L/\Wo)\), with \(k_r = 0.66\) for thrust reversers. Stall: \(\WSo \le \rho V_s^2\CLmax/(2g)\) divided by the weight fraction.</li>
+      <li>Takeoff (Lesson 4): \(\TWo \ge k\,\WSo/(s_{TO}\,\sigma\,C_{L_{\max},TO})\), with \(k = 2.34\) for jet transports and business jets; other aircraft may need their own constant.</li>
+      <li>Cruise, ceiling and sustained turn (Lessons 5 and 6): the master equation, \(\TWo = (\beta/\alpha)[q\CDz/(\beta g\,\WSo) + n^2K\beta g\,\WSo/q + (\dd h/\dd t)/V]\), with \(K = 1/(\pi Ae)\), the standard atmosphere and \(\alpha = \sigma\) unless you enter a thrust lapse.</li>
+      <li>Engine out (Lesson 6): \(\TWo \ge [N/(N-1)](1/(L/D) + G)\). Instantaneous turn: \(\WSo \le q\CLmax/(ng\beta)\).</li>
+    </ul>
+    <h3>Propeller aircraft</h3>
+    <ul>
+      <li>Every \(\PW\) is the total sea-level takeoff shaft power over the takeoff mass, in kW/kg. Large turboprops certified to the transport rules follow Scholz and Niţă's method, with their statistical factors for turboprop transports.</li>
+      <li>Speeds: the approach speed follows from the landing field length, \(V_{APP} = k_{APP}\sqrt{s_{LFL}}\) with \(k_{APP} = 1.64\ \text{m}^{1/2}/\text{s}\); then \(V_{S,L} = V_{APP}/1.3\), \(V_{S,TO} = V_{S,L}\sqrt{C_{L_{\max},L}/C_{L_{\max},TO}}\), \(V_2 = 1.2\,V_{S,TO}\), and the average takeoff speed \(\bar V = V_2/\sqrt2\).</li>
+      <li>Landing: \(\WSo \le k_L\,\sigma\,C_{L_{\max},L}\,s_{LFL}/(W_L/\Wo)\), with \(k_L = 0.137\ \text{kg/m}^3\) and \(s_{LFL}\) the landing field length.</li>
+      <li>Takeoff (transport rules): \(\PW \ge k_{TO}\,\WSo\,g\,\bar V/(1000\,s_{TOFL}\,\sigma\,C_{L_{\max},TO}\,\eta_{TO})\), with \(k_{TO} = 2.25\ \text{m}^3/\text{kg}\): a straight line through the origin. Light aircraft (Lesson 4): the ground roll \(s_G = 0.503\,\text{TOP}_P + 3.11 \times 10^{-4}\,\text{TOP}_P^{\,2}\) solved for \(\text{TOP}_P\), then \(\PW \ge \WSo/(\sigma\,C_{L_{\max},TO}\,\text{TOP}_P)\).</li>
+      <li>Engine out: \(\PW \ge [N/(N-1)](1/(L/D) + G)\,g\,V_2/(1000\,\eta)\). Missed approach: the same at \(V_{APP}\) with the landing \(L/D\), times \(W_L/\Wo\); minimum gradients 2.1%, 2.4% and 2.7% for two, three and four engines.</li>
+      <li>Cruise, ceiling and sustained turn: the master equation in power, \(\PW = (\beta/\alpha_P)[\ldots]\,gV/(1000\,\eta)\) (Lesson 2's \(P = TV/\eta_p\)), with \(\alpha_P = \sigma\) unless you enter a power lapse.</li>
+    </ul>
+    <h3>Design point and presets</h3>
+    <ul>
+      <li>Design point (Lesson 7): the lowest point of the envelope at or below the smallest wing loading limit, at the highest wing loading that reaches it. Wing area \(S = \Wo/\WSo\); thrust \(T_0 = \TWo\,\Wo\,g\) or power \(P_0 = (P/W)_0\,\Wo\) (Lesson 8).</li>
+      <li>Dash 8-400: maximum takeoff and landing weights, takeoff and landing field lengths, maximum cruise speed and altitude, and engine ratings from De Havilland's specification sheet (2026); wing area 63.1 m² and span 28.42 m from published operator data. Estimated, following Scholz and Niţă's statistics and their ATR 72 example: the drag polar (\(\LDmax = 11.22\sqrt{A/(S_{wet}/S)} = 16.1\) with \(S_{wet}/S = 6.2\) and \(e = 0.85\)), \(C_{L_{\max},L} = 2.6\), \(C_{L_{\max},TO} = 2.1\), the climb \(L/D\) values and the propeller efficiencies (0.64 takeoff, 0.73 climb, 0.86 cruise). The cruise power lapse is the maximum cruise power over the maximum takeoff power, 3947/5071 = 0.78, assuming the flat-rated engines hold their cruise rating at 7620 m, and the cruise weight fraction is taken as 0.95.</li>
+      <li>The other non-business-jet presets are illustrative designs, not real types. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var G = 9.81, KW_SHP = 0.745699872;
+  var BASE = {
+    mode: 'jet', W0: 6943, N: 2, CD0: 0.0165, A: 8, e: 0.75, apH: 0, apT: 0,
+    land: true, sL: 840, CL: 2.1, wl: 0.9, Sa: 'airliner', rev: 'no',
+    to: true, sTO: 1200, CTO: 1.7, kTO: 2.34,
+    cr: true, crH: 12000, crM: 0.8, crB: 0.9555, crA: '', crEta: 0.86,
+    ce: true, ceH: 12000, ceM: 0.8, ceB: 0.9555, ceF: 300, ceA: '', ceEta: 0.8,
+    oei: true, oLD: 10, oG: 2.4,
+    tu: false, tuH: 6000, tuM: 0.9, tuB: 0.8, tuN: 5, tuEta: 0.8,
+    it: false, itH: 6000, itM: 0.6, itB: 0.8, itN: 7, itC: 1.2,
+    st: false, stV: 185, stC: 1.6, stW: 1,
+    // propeller aircraft (the Dash 8-400's values; see the method below)
+    pland: true, lfl: 1268, pCL: 2.6, pwl: 0.951, kL: 0.137, kAPP: 1.64, rApp: 1.3,
+    pto: true, psTO: 1277, pCTO: 2.1, pEtaTO: 0.64, pkTO: 2.25, pR2: 1.2,
+    pgr: false, pgrS: 300, pgrC: 1.6,
+    poei: true, pLD: 12.9, pG: 2.4, pEtaCL: 0.73,
+    pma: true, pmaLD: 10.9, pmaG: 2.1, pEtaL: 0.73,
+    ref: null
+  };
+  var Q400 = { mode: 'prop', W0: 29574, N: 2, CD0: 0.0329, A: 12.8, e: 0.85, cr: true, crH: 7620, crM: 0.598, crB: 0.95, crEta: 0.86, crA: 0.778, ce: false,
+    ref: { ws: 29574 / 63.1, y: 2 * 5071 * KW_SHP / 29574, label: 'Dash 8-400 as built' } };
+  var PRESETS = {
+    biz: { label: 'Business jet (this module)', v: {} },
+    nb: { label: 'Narrow-body twin (illustrative)', v: { W0: 73500, N: 2, CD0: 0.018, A: 9.5, e: 0.8, sL: 1200, CL: 3.0, wl: 0.88, sTO: 2300, CTO: 2.4, crH: 11000, crM: 0.78, crB: 0.96, crA: 0.21, ceH: 11000, ceM: 0.78, ceB: 0.96, ceF: 300, ceA: 0.21, oLD: 12, oG: 2.4 } },
+    trainer: { label: 'Jet trainer (illustrative)', v: { W0: 5500, N: 1, CD0: 0.022, A: 5.5, e: 0.8, sL: 900, CL: 1.8, wl: 0.85, Sa: 'light', sTO: 900, CTO: 1.5, crH: 9000, crM: 0.7, crB: 0.95, ceH: 12000, ceM: 0.7, ceB: 0.9, ceF: 500, oei: false, tu: true, tuH: 4500, tuM: 0.6, tuB: 0.85, tuN: 4 } },
+    fighter: { label: 'Fighter (illustrative)', v: { W0: 16000, N: 1, CD0: 0.02, A: 3.2, e: 0.8, sL: 1000, CL: 1.8, wl: 0.8, sTO: 900, CTO: 1.4, crH: 11000, crM: 0.9, crB: 0.9, ce: false, oei: false, tu: true, tuH: 6000, tuM: 0.9, tuB: 0.8, tuN: 5, it: true, itH: 6000, itM: 0.6, itB: 0.8, itN: 7, itC: 1.2 } },
+    q400: { label: 'Dash 8-400 turboprop', v: Q400 },
+    light: { label: 'Light single, propeller (illustrative)', v: { mode: 'prop', W0: 1100, N: 1, CD0: 0.028, A: 7.5, e: 0.75, pland: false, pto: false, pgr: true, pgrS: 300, pgrC: 1.6,
+      st: true, stV: 113, stC: 1.6, stW: 1, cr: true, crH: 2500, crM: 0.2, crB: 0.97, crEta: 0.8, crA: '', ce: true, ceH: 4000, ceM: 0.13, ceB: 0.98, ceF: 100, ceEta: 0.75, ceA: '', poei: false, pma: false } }
+  };
+  var KEY = 'constraint:inputs';
+  var st = Object.assign({}, BASE, CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+  var COLOR = { takeoff: 'warn', ground: 'warn', cruise: 'good', ceiling: 'v', oei: 't', missed: 'muted', turn: 'z', landing: 'r', stall: 'muted', inst: 'z' };
+  var DASHED = { cruise: true, ground: true };
+  function prop() { return st.mode === 'prop'; }
+
+  /* ---------- model ---------- */
+  function alpha(v) { return v === '' || v == null || !isFinite(+v) || +v <= 0 ? undefined : +v; }
+  function common(sp) {
+    if (st.st) sp.stall = { V: st.stV, C: st.stC, wl: st.stW, h: st.apH, dT: st.apT };
+    if (st.it) sp.inst = { h: st.itH, M: st.itM, beta: st.itB, n: st.itN, C: st.itC };
+    if (st.cr) sp.cruise = { h: st.crH, M: st.crM, beta: st.crB, alpha: alpha(st.crA), eta: st.crEta };
+    if (st.ce) sp.ceiling = { h: st.ceH, M: st.ceM, beta: st.ceB, fpm: st.ceF, alpha: alpha(st.ceA), eta: st.ceEta };
+    if (st.tu) sp.turn = { h: st.tuH, M: st.tuM, beta: st.tuB, n: st.tuN, eta: st.tuEta };
+    return sp;
+  }
+  function spec() {
+    var sp = { polar: { CD0: st.CD0, A: st.A, e: st.e } };
+    if (st.land) sp.landing = { s: st.sL, C: st.CL, wl: st.wl, Sa: MATCH.SA[st.Sa], rev: st.rev === 'yes', h: st.apH, dT: st.apT };
+    if (st.to) sp.takeoff = { s: st.sTO, C: st.CTO, h: st.apH, dT: st.apT, k: st.kTO };
+    if (st.oei && st.N > 1) sp.oei = { N: st.N, LD: st.oLD, G: st.oG / 100 };
+    return common(sp);
+  }
+  function specP() {
+    var sp = { polar: { CD0: st.CD0, A: st.A, e: st.e }, N: st.N, speeds: { sLFL: st.lfl, CL: st.pCL, CTO: st.pCTO, kAPP: st.kAPP, rApp: st.rApp, r2: st.pR2 } };
+    if (st.pland) sp.landing = { s: st.lfl, C: st.pCL, wl: st.pwl, kL: st.kL, h: st.apH, dT: st.apT };
+    if (st.pto) sp.takeoff = { s: st.psTO, C: st.pCTO, eta: st.pEtaTO, k: st.pkTO, h: st.apH, dT: st.apT };
+    if (st.pgr) sp.ground = { s: st.pgrS, C: st.pgrC, h: st.apH, dT: st.apT };
+    if (st.poei && st.N > 1) sp.oei = { LD: st.pLD, G: st.pG / 100, eta: st.pEtaCL };
+    if (st.pma && st.N > 1) sp.missed = { LD: st.pmaLD, G: st.pmaG / 100, eta: st.pEtaL, wl: st.pwl };
+    return common(sp);
+  }
+  function compute() {
+    var D = prop() ? MATCH.diagramP(specP()) : MATCH.diagram(spec()), dp = D.design;
+    var act = D.curves.filter(function (c) { return c.f(dp.ws) >= dp.tw - 5e-4; }).map(function (c) { return c.label; });
+    D.limits.forEach(function (l) { if (Math.abs(l.ws - dp.ws) < 1e-6 * Math.max(1, l.ws)) act.unshift(l.label); });
+    var T0 = dp.tw * st.W0 * G, P0 = dp.tw * st.W0;   // N (jets) or kW (propeller aircraft)
+    return { D: D, dp: dp, active: act, S: st.W0 / dp.ws, T0: T0, Te: T0 / st.N, P0: P0, Pe: P0 / st.N, prop: prop() };
+  }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('cd-grid'), inputs = {}, boxes = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options) { return { k: k, label: label, type: 'sel', options: options }; }
+  var LAPSE = { cr: 'Thrust lapse \\(\\alpha\\) (blank: \\(\\sigma\\))', ce: 'Thrust lapse \\(\\alpha\\) (blank: \\(\\sigma\\))' };
+  function aircraftBox() {
+    return { t: 'Aircraft', f: [opt('mode', 'Propulsion', [['jet', 'Jet: thrust \u2192 T/W'], ['prop', 'Propeller: power \u2192 P/W']]), num('W0', 'Takeoff mass \\(\\Wo\\) (kg)'), num('N', 'Engines \\(N\\)', 1), num('CD0', '\\(\\CDz\\)'), num('A', 'Aspect ratio \\(A\\)'), num('e', 'Oswald factor \\(e\\)')] };
+  }
+  function flightBoxes(p) {
+    var lapse = p ? 'Power lapse \\(\\alpha_P\\) (blank: \\(\\sigma\\))' : 'Thrust lapse \\(\\alpha\\) (blank: \\(\\sigma\\))';
+    return [
+      { t: 'Cruise', on: 'cr', f: [num('crH', 'Altitude (m)'), num('crM', 'Mach number'), num('crB', 'Weight fraction \\(\\beta\\)'), num('crA', lapse)].concat(p ? [num('crEta', 'Propeller efficiency \\(\\eta\\)')] : []) },
+      { t: 'Ceiling', on: 'ce', f: [num('ceH', 'Altitude (m)'), num('ceM', 'Mach number'), num('ceB', 'Weight fraction \\(\\beta\\)'), num('ceF', 'Climb rate (ft/min)'), num('ceA', lapse)].concat(p ? [num('ceEta', 'Propeller efficiency \\(\\eta\\)')] : []) }
+    ];
+  }
+  function tailBoxes(p) {
+    return [
+      { t: 'Sustained turn', on: 'tu', f: [num('tuH', 'Altitude (m)'), num('tuM', 'Mach number'), num('tuB', 'Weight fraction \\(\\beta\\)'), num('tuN', 'Load factor \\(n\\)')].concat(p ? [num('tuEta', 'Propeller efficiency \\(\\eta\\)')] : []) },
+      { t: 'Instantaneous turn', on: 'it', f: [num('itH', 'Altitude (m)'), num('itM', 'Mach number'), num('itB', 'Weight fraction \\(\\beta\\)'), num('itN', 'Load factor \\(n\\)'), num('itC', '\\(\\CLmax\\)')] },
+      { t: 'Stall speed', on: 'st', f: [num('stV', 'Stall speed \\(V_s\\) (km/h)'), num('stC', '\\(\\CLmax\\)'), num('stW', 'Weight fraction')] }
+    ];
+  }
+  function jetBoxes() {
+    return [aircraftBox(),
+      { t: 'Airport', f: [num('apH', 'Altitude (m)'), num('apT', 'Hotter than standard (K)')] },
+      { t: 'Landing', on: 'land', f: [num('sL', 'Landing distance \\(s_L\\) (m)'), num('CL', '\\(C_{L_{\\max},L}\\)'), num('wl', '\\(W_L/\\Wo\\)'), opt('Sa', 'Obstacle allowance', [['airliner', 'Airliner, 305 m'], ['light', 'Light, 183 m'], ['stol', 'STOL, 137 m']]), opt('rev', 'Thrust reversers', [['no', 'No'], ['yes', 'Yes']])] },
+      { t: 'Takeoff', on: 'to', f: [num('sTO', 'Field length \\(s_{TO}\\) (m)'), num('CTO', '\\(C_{L_{\\max},TO}\\)'), num('kTO', 'Constant \\(k\\) (m³/kg)')] }]
+      .concat(flightBoxes(false), [{ t: 'Engine out (second segment)', on: 'oei', f: [num('oLD', '\\(L/D\\) with takeoff flaps'), num('oG', 'Gradient \\(G\\) (%)')] }], tailBoxes(false));
+  }
+  function propBoxes() {
+    return [aircraftBox(),
+      { t: 'Airport', f: [num('apH', 'Altitude (m)'), num('apT', 'Hotter than standard (K)')] },
+      { t: 'Landing (transport rules)', on: 'pland', n: 'The field length and \\(C_{L_{\\max},L}\\) also set \\(V_{APP}\\) and \\(V_2\\) for the takeoff and climb boxes.', f: [num('lfl', 'Landing field length \\(s_{LFL}\\) (m)'), num('pCL', '\\(C_{L_{\\max},L}\\)'), num('pwl', '\\(W_L/\\Wo\\)'), num('kL', 'Factor \\(k_L\\) (kg/m³)'), num('kAPP', 'Factor \\(k_{APP}\\) (m\u00bd/s)'), num('rApp', '\\(V_{APP}/V_{S,L}\\)')] },
+      { t: 'Takeoff (transport rules)', on: 'pto', f: [num('psTO', 'Field length \\(s_{TOFL}\\) (m)'), num('pCTO', '\\(C_{L_{\\max},TO}\\)'), num('pEtaTO', 'Propeller efficiency \\(\\eta_{TO}\\)'), num('pkTO', 'Factor \\(k_{TO}\\) (m³/kg)'), num('pR2', '\\(V_2/V_{S,TO}\\)')] },
+      { t: 'Takeoff (light aircraft, ground roll)', on: 'pgr', f: [num('pgrS', 'Ground roll \\(s_G\\) (m)'), num('pgrC', '\\(C_{L_{\\max},TO}\\)')] },
+      { t: 'Engine out (second segment)', on: 'poei', f: [num('pLD', '\\(L/D\\) with takeoff flaps'), num('pG', 'Gradient \\(G\\) (%)'), num('pEtaCL', 'Propeller efficiency \\(\\eta\\)')] },
+      { t: 'Missed approach (one engine out)', on: 'pma', f: [num('pmaLD', '\\(L/D\\) in landing configuration'), num('pmaG', 'Gradient \\(G\\) (%)'), num('pEtaL', 'Propeller efficiency \\(\\eta\\)')] }]
+      .concat(flightBoxes(true), tailBoxes(true));
+  }
+  var OPTIONAL = { crA: 1, ceA: 1 };
+  function buildGrid() {
+    grid.innerHTML = ''; inputs = {}; boxes = {};
+    (prop() ? propBoxes() : jetBoxes()).forEach(function (bx) {
+      var f = CYL.el('div', { class: 'sc-fields' }), head;
+      bx.f.forEach(function (q) {
+        var id = 'cd-' + q.k, el;
+        if (q.type === 'sel') {
+          el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+          el.addEventListener('change', function () { st[q.k] = el.value; if (q.k === 'mode') { st.ref = null; save(); buildGrid(); fill(); } else save(); update(); });
+        } else {
+          el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+          el.addEventListener('input', function () {
+            if (el.value.trim() === '' && OPTIONAL[q.k]) { st[q.k] = ''; save(); update(); return; }
+            var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); }
+          });
+        }
+        inputs[q.k] = el;
+        f.appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+      });
+      if (bx.on) {
+        var cb = CYL.el('input', { type: 'checkbox', id: 'cd-on-' + bx.on });
+        cb.addEventListener('change', function () { st[bx.on] = cb.checked; save(); update(); });
+        inputs[bx.on] = cb;
+        head = CYL.el('h3', null, [CYL.el('label', { for: 'cd-on-' + bx.on }, [cb, CYL.el('span', { text: bx.t })])]);
+      } else head = CYL.el('h3', { text: bx.t });
+      var kids = [head, f]; if (bx.n) kids.push(CYL.el('p', { class: 'small muted', style: 'margin:8px 0 0', html: bx.n }));
+      var box = CYL.el('div', { class: 'sc-box' }, kids);
+      if (bx.on) boxes[bx.on] = box;
+      grid.appendChild(box);
+    });
+    CYL.renderMath(grid);
+  }
+  function ok(k, v) {   // keep the inputs where the formulas make sense
+    if (k === 'N') return v >= 1 && v <= 8 && Math.round(v) === v;
+    if (k === 'apH') return v >= 0 && v <= 5000;
+    if (k === 'apT') return v >= -40 && v <= 40;
+    if (/Eta/.test(k)) return v > 0 && v <= 1;
+    if (k === 'rApp' || k === 'pR2') return v >= 1 && v <= 2;
+    if (/H$/.test(k)) return v >= 0 && v <= 20000;
+    if (/M$/.test(k)) return v > 0 && v < 3;
+    if (/B$/.test(k) || k === 'wl' || k === 'pwl' || k === 'stW') return v > 0 && v <= 1;
+    if (k === 'e') return v > 0 && v <= 1;
+    if (k === 'tuN' || k === 'itN') return v >= 1 && v <= 12;
+    if (k === 'ceF' || k === 'oG' || k === 'pG' || k === 'pmaG') return v >= 0;
+    return v > 0;
+  }
+  function fill() {
+    Object.keys(inputs).forEach(function (k) { if (inputs[k].type === 'checkbox') inputs[k].checked = !!st[k]; else inputs[k].value = String(st[k]); });
+    Object.keys(boxes).forEach(function (k) { boxes[k].classList.toggle('off', !st[k]); });
+  }
+  function loadPreset(k) { st = Object.assign({}, BASE, PRESETS[k].v); save(); buildGrid(); fill(); update(); }
+  var pr = document.getElementById('cd-presets');
+  Object.keys(PRESETS).forEach(function (k) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', text: PRESETS[k].label });
+    b.addEventListener('click', function () {
+      loadPreset(k);
+      document.getElementById('cd-msg').textContent = 'Loaded: ' + PRESETS[k].label + '.' + (k === 'q400' ? ' The diamond is the aircraft as built: on the takeoff line near the landing limit, with a smaller wing and more power than the lowest-power design point.' : '');
+    });
+    pr.appendChild(b);
+  });
+
+  /* ---------- outputs ---------- */
+  var chart = AERO.chart(document.getElementById('cd-stage'), {
+    x: { label: 'Takeoff wing loading \\(\\WSo\\) (kg/m²)', min: 0, max: 500 }, y: { label: 'Takeoff thrust-to-weight ratio \\(\\TWo\\)', min: 0, max: 0.6 }, height: 400,
+    ariaLabel: 'Constraint diagram.'
+  });
+  var area = chart.polyline([], { color: 'good', width: 0, fill: 'good', fillOpacity: 0.13, closed: true });
+  var handles = [];
+  var dot = chart.marker([0, 0], { color: 'accent', r: 6 });
+  var refDot = chart.marker(null, { color: 'r', r: 6, ring: false, shape: 'diamond' });
+  function nice(v, s) { return Math.ceil(v / s) * s; }
+  var last = null;
+  function update() {
+    Object.keys(boxes).forEach(function (k) { boxes[k].classList.toggle('off', !st[k]); });
+    var r = compute(); last = r;
+    var D = r.D, dp = r.dp, msg = document.getElementById('cd-msg'), p = r.prop, Y = p ? 'P/W' : 'T/W';
+    msg.textContent = '';
+    var bad = !D.curves.length || !isFinite(dp.ws) || !isFinite(dp.tw) || dp.ws < 5;   // no thrust or power requirement, no allowed wing loading, or nothing bounds it
+    var ref = p && st.ref ? st.ref : null;
+    // axes: room for the design point, the limits and the reference aircraft
+    var xm = nice(Math.max(dp.ws * 1.7, Math.min(D.wsMax * 1.2, 1500), ref ? ref.ws * 1.25 : 0, 200), 100);
+    var ym = Math.max(p ? 0.1 : 0.2, nice(Math.min(Math.max(dp.tw * 1.8, ref ? ref.y * 1.4 : 0), 2.5), p ? 0.05 : 0.1));
+    if (bad) { xm = 800; ym = p ? 0.5 : 1; }
+    chart.setAxes({ x: { max: xm }, y: { max: ym, label: p ? 'Takeoff power loading \\(\\PW\\) (kW/kg)' : 'Takeoff thrust-to-weight ratio \\(\\TWo\\)' } });
+    handles.forEach(function (h) { h.remove(); }); handles = [];
+    D.curves.forEach(function (c) { handles.push(chart.fn(c.f, { color: COLOR[c.id], width: DASHED[c.id] ? 1.8 : 2.4, dashed: !!DASHED[c.id], samples: 240 })); });
+    D.limits.forEach(function (l) { handles.push(chart.vline(l.ws, { color: COLOR[l.id], dashed: true, width: 2.2 })); });
+    var xe = Math.min(D.wsMax, xm), pts = [];
+    for (var i = 0; i <= 200; i++) { var w = Math.max(xm / 1000, xe * i / 200); pts.push([w, Math.min(ym, D.env(w))]); }
+    area.set(bad ? [] : pts.concat([[xe, ym], [xm / 1000, ym]]));
+    dot.set(bad ? null : [dp.ws, dp.tw]);
+    refDot.set(ref ? [ref.ws, ref.y] : null);
+    chart.setLegend(D.curves.map(function (c) { return { label: c.label, color: COLOR[c.id], line: true, dashed: !!DASHED[c.id] }; })
+      .concat(D.limits.map(function (l) { return { label: l.label, color: COLOR[l.id], line: true, dashed: true }; }))
+      .concat([{ label: 'Design point', color: 'accent' }], ref ? [{ label: ref.label, color: 'r', shape: 'diamond' }] : []));
+    // tiles
+    var tot = document.getElementById('cd-totals'), dash = '\u2013'; tot.innerHTML = '';
+    var T = [['Design wing loading', bad ? dash : CYL.fmt(dp.ws, 4) + ' kg/m²'], ['Design \\(' + Y + '\\)', bad ? dash : p ? dp.tw.toFixed(4) + ' kW/kg' : dp.tw.toFixed(3)], ['Wing area', bad ? dash : CYL.fmt(r.S, 4) + ' m²']];
+    if (p) T.push(['Total power', bad ? dash : CYL.fmt(r.P0, 4) + ' kW'], ['Per engine', bad ? dash : CYL.fmt(r.Pe, 4) + ' kW (' + CYL.fmt(r.Pe / KW_SHP, 4) + ' shp)']);
+    else T.push(['Total thrust', bad ? dash : CYL.fmt(r.T0 / 1000, 4) + ' kN'], ['Per engine', bad ? dash : CYL.fmt(r.Te / 1000, 4) + ' kN']);
+    T.push(['Set by', bad ? dash : r.active.join(', ') || dash]);
+    if (p && D.speeds && (st.pto || st.poei || st.pma)) T.push(['\\(V_{APP}\\), \\(V_2\\)', D.speeds.vapp.toFixed(1) + ', ' + D.speeds.v2.toFixed(1) + ' m/s']);
+    T.forEach(function (t) { tot.appendChild(CYL.el('div', { class: 'sc-tile' }, [CYL.el('p', { class: 'lab', html: t[0] }), CYL.el('p', { class: 'val', text: t[1] })])); });
+    // table
+    var tb = document.querySelector('#cd-table tbody'); tb.innerHTML = '';
+    var FORM = p ? { landing: '\\(\\WSo \\le k_L\\sigma C_{L_{\\max},L}s_{LFL}/(W_L/\\Wo)\\)', stall: '\\(\\WSo \\le \\rho V_s^2\\CLmax/(2g)\\)', inst: '\\(\\WSo \\le q\\CLmax/(ng\\beta)\\)',
+        takeoff: '\\(\\PW \\ge k_{TO}\\WSo g\\bar V/(s_{TOFL}\\sigma C_{L_{\\max},TO}\\eta)\\)', ground: '\\(\\PW \\ge \\WSo/(\\sigma C_{L_{\\max},TO}\\text{TOP}_P)\\)',
+        oei: '\\([N/(N-1)](1/(L/D) + G)gV_2/\\eta\\)', missed: '\\([N/(N-1)](1/(L/D) + G)gV_{APP}W_L/(\\eta\\Wo)\\)', cruise: 'master equation in power, \\(n = 1\\)', ceiling: 'master equation in power, with climb', turn: 'master equation in power, \\(n > 1\\)' }
+      : { landing: '\\(\\WSo \\le (s_L - S_a)\\sigma C_{L_{\\max},L}/(4.996k_rW_L/\\Wo)\\)', stall: '\\(\\WSo \\le \\rho V_s^2\\CLmax/(2g)\\)', inst: '\\(\\WSo \\le q\\CLmax/(ng\\beta)\\)',
+        takeoff: '\\(\\TWo \\ge k\\WSo/(s_{TO}\\sigma C_{L_{\\max},TO})\\)', cruise: 'master equation, \\(n = 1\\)', ceiling: 'master equation with climb', oei: '\\([N/(N-1)](1/(L/D) + G)\\)', turn: 'master equation, \\(n > 1\\)' };
+    D.limits.forEach(function (l) {
+      var m = l.ws - dp.ws;
+      tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: l.label }), CYL.el('td', { html: FORM[l.id] }), CYL.el('td', { text: '\u2264 ' + CYL.fmt(l.ws, 4) + ' kg/m²' }),
+        CYL.el('td', { text: bad ? '' : m < 0.05 ? 'active' : CYL.fmt(m, 3) + ' kg/m²' })]));
+    });
+    D.curves.forEach(function (c) {
+      var v = c.f(dp.ws), m = dp.tw - v, dig = p ? 4 : 3;
+      tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { html: FORM[c.id] }), CYL.el('td', { text: bad ? '' : '\u2265 ' + v.toFixed(dig) + (p ? ' kW/kg' : '') }),
+        CYL.el('td', { text: bad ? '' : m < 5e-4 * (p ? 0.2 : 1) ? 'active' : m.toFixed(dig) })]));
+    });
+    if (ref) tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: ref.label }), CYL.el('td', { text: 'for comparison' }), CYL.el('td', { text: CYL.fmt(ref.ws, 4) + ' kg/m², ' + ref.y.toFixed(4) + ' kW/kg' }), CYL.el('td', { text: '' })]));
+    CYL.renderMath(document.getElementById('result'));
+    if (!D.curves.length && !D.limits.length) msg.textContent = 'Switch on at least one requirement.';
+    else if (!D.curves.length) msg.textContent = 'No ' + (p ? 'power' : 'thrust') + ' requirement is switched on, so there is no design point: switch on a takeoff, climb, cruise, ceiling or turn requirement.';
+    else if (!(D.wsMax > 0)) msg.textContent = 'No wing loading meets the limits: ' + (p ? 'check the landing field length and lift coefficient.' : 'the landing distance must be longer than the obstacle allowance.');
+    else if (bad) msg.textContent = 'These requirements alone do not bound the wing loading: switch on a landing, stall or turn limit.';
+    chart.setAriaLabel(bad ? 'Constraint diagram with no feasible design.' : 'Constraint diagram with ' + D.curves.length + (p ? ' power' : ' thrust') + ' constraints and ' + D.limits.length + ' wing loading limits. The design point is ' + CYL.fmt(dp.ws, 3) + ' kg/m² and ' + (p ? 'a power loading of ' + dp.tw.toFixed(3) + ' kW/kg' : 'a thrust-to-weight ratio of ' + dp.tw.toFixed(3)) + ', set by ' + (r.active.join(' and ') || 'nothing') + '.' + (ref ? ' ' + ref.label + ': ' + CYL.fmt(ref.ws, 3) + ' kg/m² and ' + ref.y.toFixed(3) + ' kW/kg.' : ''));
+  }
+  document.getElementById('cd-csv').addEventListener('click', function () {
+    var r = last || compute(), D = r.D, lines = [], Y = r.prop ? 'PW_kW_kg' : 'TW';
+    lines.push('# design point: W/S ' + r.dp.ws.toPrecision(5) + ' kg/m2, ' + (r.prop ? 'P/W ' + r.dp.tw.toPrecision(4) + ' kW/kg' : 'T/W ' + r.dp.tw.toPrecision(4)) + ', S ' + r.S.toPrecision(5) + ' m2, ' + (r.prop ? 'P0 ' + r.P0.toPrecision(5) + ' kW' : 'T0 ' + (r.T0 / 1000).toPrecision(5) + ' kN'));
+    D.limits.forEach(function (l) { lines.push('# ' + l.label + ' limit: W/S <= ' + l.ws.toPrecision(5) + ' kg/m2'); });
+    lines.push(['WS_kg_m2'].concat(D.curves.map(function (c) { return c.id + '_' + Y; }), ['envelope_' + Y]).join(','));
+    var top = Math.max(r.dp.ws * 1.7, Math.min(D.wsMax * 1.2, 1500), 200);
+    for (var w = 10; w <= top + 1e-9; w += 10) lines.push([w].concat(D.curves.map(function (c) { return c.f(w).toPrecision(5); }), [D.env(w).toPrecision(5)]).join(','));
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob), a = CYL.el('a', { href: url, download: 'constraint-diagram.csv' });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    document.getElementById('cd-msg').textContent = 'Downloaded constraint-diagram.csv.';
+  });
+  window.__constraint = { compute: compute, state: function () { return st; }, load: function (k) { loadPreset(k); return compute(); } };   // for QA scripts
+  buildGrid(); fill(); update();
+});
+</script>
+</body>
+</html>

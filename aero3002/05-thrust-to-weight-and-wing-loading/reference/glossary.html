@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary · Thrust-to-Weight Ratio and Wing Loading</title>
+<meta name="description" content="Short definitions of the terms and symbols of the Thrust-to-Weight Ratio and Wing Loading module, from the active constraint to the wing loading, each linked to its lesson.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Glossary page (page-specific styles; colors come from module.css tokens) ---------- */
+.gl-tools {
+  --gl-i-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+  margin: 0 0 32px;
+  padding: 16px 16px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.gl-controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+.gl-controls > .field { flex: 1 1 250px; }
+.gl-controls > .gl-lesson-field { flex: 1 1 220px; }
+@container cylmain (min-width: 700px) { .gl-controls > .gl-lesson-field { flex: 0 1 260px; } }
+.gl-search { position: relative; }
+.gl-search::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  pointer-events: none;
+  background-color: var(--ink-faint);
+  -webkit-mask: var(--gl-i-search) center / contain no-repeat;
+  mask: var(--gl-i-search) center / contain no-repeat;
+}
+.gl-search input { width: 100%; min-height: 44px; padding-left: 38px; font-size: 1rem; }
+.gl-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.gl-lesson-field select { width: 100%; min-height: 44px; }
+.gl-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  min-height: 34px;
+  margin-top: 10px;
+}
+.gl-count { margin: 0; color: var(--ink-muted); font-size: 0.9rem; }
+.gl-az {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+@container cylmain (min-width: 700px) { .gl-az { grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 3px; } }
+.gl-az > a, .gl-az > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+.gl-az > a { color: var(--accent); background: var(--accent-soft); }
+.gl-az > a:hover { color: var(--accent-ink); background: var(--accent); }
+.gl-az > a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gl-az > span, .gl-az > a.is-off, .gl-az > a.is-off:hover {
+  color: var(--ink-faint);
+  background: transparent;
+  opacity: 0.55;
+  cursor: default;
+}
+.gl-empty { margin: 0 0 32px; }
+.gl-empty .btn { margin-top: 2px; }
+
+.gl-group { margin: 0 0 28px; }
+.gl-letter-row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.gl-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.gl-rule { flex: 1 1 auto; height: 1px; background: var(--line); }
+.gl-top { flex: none; font-size: 0.84rem; font-weight: 600; text-decoration: none; }
+.gl-top:hover { text-decoration: underline; }
+.gl-terms {
+  margin: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.gl-entry { padding: 14px 18px 15px; border-top: 1px solid var(--line); }
+.gl-entry.is-first { border-top: 0; border-top-left-radius: calc(var(--radius) - 1px); border-top-right-radius: calc(var(--radius) - 1px); }
+.gl-entry.is-last { border-bottom-left-radius: calc(var(--radius) - 1px); border-bottom-right-radius: calc(var(--radius) - 1px); }
+.gl-entry:target { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); }
+.gl-entry > dt { margin: 0; color: var(--ink); font-size: 1.06rem; font-weight: 700; line-height: 1.35; }
+.gl-entry dfn { font-style: normal; }
+.gl-qual { color: var(--ink-muted); font-size: 0.92em; font-weight: 500; }
+.gl-entry > dd { margin: 4px 0 0; }
+.gl-entry > dd.gl-see {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+}
+.gl-lesson-link {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.gl-lesson-link:hover { background: var(--accent); color: var(--accent-ink); }
+/* the highlighted (:target) entry has the pills' own tint, so the pills switch to the card color there */
+.gl-entry:target .gl-lesson-link { background: var(--bg-elev); }
+.gl-entry:target .gl-lesson-link:hover { background: var(--accent); }
+/* rendered math is inline-block, which a text underline skips: underline links that contain math with a border */
+a.gl-mlink { text-decoration: none; border-bottom: 1px solid currentColor; }
+a.gl-mlink:hover { border-bottom-width: 2px; }
+mark.gl-hit {
+  padding: 0 1px;
+  margin: 0 -1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--c-warn) 24%, transparent);
+  color: inherit;
+}
+.gl-symbols { margin-top: 3rem; }
+.gl-symbols tbody th[scope="row"] { white-space: nowrap; }
+
+@media print {
+  .gl-tools, .gl-top, .gl-empty { display: none !important; }
+  .gl-list [hidden] { display: block !important; }
+  .gl-terms { box-shadow: none; }
+  .gl-entry, .gl-entry.is-first, .gl-entry.is-last { border-top: 1px solid var(--line); border-radius: 0; break-inside: avoid; page-break-inside: avoid; }
+  .gl-entry:first-child { border-top: 0; }
+  .gl-letter-row { break-after: avoid; page-break-after: avoid; }
+  .gl-letter { background: none; color: inherit; border: 1px solid var(--line-strong); }
+  mark.gl-hit { background: none; }
+  .gl-lesson-link { padding: 0; background: none; }
+  .gl-lesson-link:not(:last-of-type)::after { content: ","; }
+}
+</style>
+</head>
+<body data-page="glossary" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Reference · 44 terms</p>
+    <h1>Glossary</h1>
+    <p class="lede">Short, precise definitions of the words and symbols used in this module, each linked to the lesson where it is taught. Filter the list as you type, jump to a letter, or look a symbol up in <a href="#symbols">Symbols at a glance</a>.</p>
+  </header>
+
+  <div class="gl-tools" id="gl-tools">
+    <div class="gl-controls" role="search" aria-label="Glossary filter">
+      <div class="field gl-filter-field">
+        <label for="gl-filter">Filter terms</label>
+        <div class="gl-search">
+          <input type="search" id="gl-filter" placeholder="Try ceiling, TOP or lapse" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="gl-count" aria-controls="gl-list">
+        </div>
+      </div>
+      <div class="field gl-lesson-field">
+        <label for="gl-lesson">Taught in</label>
+        <select id="gl-lesson" aria-controls="gl-list">
+          <option value="">All lessons</option>
+        </select>
+      </div>
+    </div>
+    <div class="gl-status">
+      <p class="gl-count" id="gl-count">Showing all 44 terms</p>
+      <button type="button" class="btn small" id="gl-clear" hidden>Clear filter</button>
+    </div>
+    <p class="visually-hidden" id="gl-live" aria-live="polite" aria-atomic="true"></p>
+    <nav class="gl-az" id="gl-az" aria-label="Jump to a letter">
+      <a href="#letter-a" data-letter="A">A</a>
+      <a href="#letter-b" data-letter="B">B</a>
+      <a href="#letter-c" data-letter="C">C</a>
+      <a href="#letter-d" data-letter="D">D</a>
+      <a href="#letter-e" data-letter="E">E</a>
+      <a href="#letter-f" data-letter="F">F</a>
+      <span class="is-empty" aria-hidden="true">G</span>
+      <a href="#letter-h" data-letter="H">H</a>
+      <a href="#letter-i" data-letter="I">I</a>
+      <span class="is-empty" aria-hidden="true">J</span>
+      <span class="is-empty" aria-hidden="true">K</span>
+      <a href="#letter-l" data-letter="L">L</a>
+      <a href="#letter-m" data-letter="M">M</a>
+      <span class="is-empty" aria-hidden="true">N</span>
+      <a href="#letter-o" data-letter="O">O</a>
+      <a href="#letter-p" data-letter="P">P</a>
+      <span class="is-empty" aria-hidden="true">Q</span>
+      <a href="#letter-r" data-letter="R">R</a>
+      <a href="#letter-s" data-letter="S">S</a>
+      <a href="#letter-t" data-letter="T">T</a>
+      <span class="is-empty" aria-hidden="true">U</span>
+      <span class="is-empty" aria-hidden="true">V</span>
+      <a href="#letter-w" data-letter="W">W</a>
+      <span class="is-empty" aria-hidden="true">X</span>
+      <span class="is-empty" aria-hidden="true">Y</span>
+      <span class="is-empty" aria-hidden="true">Z</span>
+    </nav>
+  </div>
+
+  <div class="callout note gl-empty" id="gl-empty" hidden>
+    <p class="callout-title">No matches</p>
+    <p><span id="gl-empty-msg">No terms match this filter.</span> Check the spelling, or type just the first few letters of a word.</p>
+    <p><button type="button" class="btn small" id="gl-empty-clear">Clear filter</button></p>
+  </div>
+
+  <div class="gl-list" id="gl-list">
+  <div class="gl-group" id="letter-a" data-letter="A">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">A</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-active" data-lessons="7" data-keys="active constraint binding sets design point corner">
+        <dt><dfn class="gl-name">Active constraint</dfn></dt>
+        <dd>A requirement that the design point meets exactly, so it sizes the aircraft. The business jet's are the landing and the ceiling; the others are met with margin.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-constraint-diagram.html#design-point">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-design-point">Design point</a>, <a href="#term-envelope">Envelope</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-b" data-letter="B">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">B</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-bfl" data-lessons="4" data-keys="balanced field length decision speed engine failure accelerate stop">
+        <dt><dfn class="gl-name">Balanced field length</dfn></dt>
+        <dd>The runway length at which an engine failure at the decision speed needs the same distance whether the pilot stops or continues the takeoff. A transport's takeoff field length is at least this.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-takeoff.html#what">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tofl">Takeoff field length \(s_{TO}\)</a>, <a href="#term-oei">Engine-out climb</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-best-loiter" data-lessons="5" data-keys="loiter endurance wing loading">
+        <dt><dfn class="gl-name">Best loiter wing loading</dfn></dt>
+        <dd>The wing loading for the longest endurance: \((q/g)\sqrt{\CDz/K}\) for a jet, at \(\LDmax\), and \((q/g)\sqrt{3\CDz/K}\) for a propeller aircraft.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-cruise.html#best">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-best-range">Best-range wing loading</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-best-range" data-lessons="5" data-keys="best range wing loading cruise lift coefficient">
+        <dt><dfn class="gl-name">Best-range wing loading</dfn></dt>
+        <dd>The wing loading that puts the start of a cruise at the best lift coefficient for range: \((q/g)\sqrt{\CDz/(3K)}\) for a jet, \((q/g)\sqrt{\CDz/K}\) for a propeller aircraft. Divide by \(\beta\) for the takeoff value.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-cruise.html#best">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-best-loiter">Best loiter wing loading</a>, <a href="#term-cruise">Cruise constraint</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-c" data-letter="C">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">C</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-ceiling" data-lessons="6" data-keys="ceiling service cruise absolute rate of climb">
+        <dt><dfn class="gl-name">Ceiling</dfn></dt>
+        <dd>The altitude where the rate of climb falls to a set value: 0 for the absolute ceiling, 100 ft/min (0.51 m/s) for the service ceiling, 300 ft/min (1.52 m/s) for the cruise ceiling.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#ceiling">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-master">Master equation</a>, <a class="gl-mlink" href="#term-gradient">Climb gradient \(G\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-gradient" data-lessons="6" data-keys="climb gradient angle rate of climb">
+        <dt><dfn class="gl-name">Climb gradient \(G\)</dfn></dt>
+        <dd>The height gained per distance flown, \(G = (\dd h/\dd t)/V\), the sine of the climb angle. Transports need 2.4%, 2.7% or 3.0% with one engine failed.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#master">Lesson 6</a>, <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#oei">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-oei">Engine-out climb</a>, <a href="#term-master">Master equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-constraint-diagram" data-lessons="7" data-keys="constraint diagram matching chart sizing plot">
+        <dt><dfn class="gl-name">Constraint diagram</dfn></dt>
+        <dd>A chart of \(\TW\) against \(\WS\) on which every requirement is drawn as a curve or a limit, leaving the feasible region and the design point.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-constraint-diagram.html#assemble">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-feasible">Feasible region</a>, <a href="#term-design-point">Design point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cruise" data-lessons="5" data-keys="cruise constraint level flight thrust drag">
+        <dt><dfn class="gl-name">Cruise constraint</dfn></dt>
+        <dd>The takeoff \(\TW\) a level cruise needs at each wing loading: \((\beta/\alpha)[q\CDz/(\beta g\WSo) + K\beta g\WSo/q]\), a U-shaped curve.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-cruise.html#level">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-master">Master equation</a>, <a href="#term-best-range">Best-range wing loading</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-d" data-letter="D">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">D</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-sigma" data-lessons="2 4" data-keys="density ratio sigma altitude temperature">
+        <dt><dfn class="gl-name">Density ratio \(\sigma\)</dfn></dt>
+        <dd>The air density as a fraction of the sea-level standard value, \(\rho/1.225\). It falls with altitude and with temperature, and enters every field-length and flight requirement.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#lapse">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/04-takeoff.html#hot-high">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a>, <a href="#term-hot-high">Hot and high</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-design-point" data-lessons="7 8" data-keys="design point chosen wing loading thrust weight ratio">
+        <dt><dfn class="gl-name">Design point</dfn></dt>
+        <dd>The chosen pair of \(\WS\) and \(\TW\): the lowest thrust-to-weight ratio in the feasible region, at the highest wing loading that gives it. Times \(\Wo\), it gives the wing area and the thrust.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-constraint-diagram.html#design-point">Lesson 7</a>, <a class="gl-lesson-link" href="../lessons/08-design-point.html#sizes">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-feasible">Feasible region</a>, <a href="#term-active">Active constraint</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-q" data-lessons="5" data-keys="dynamic pressure q mach pressure">
+        <dt><dfn class="gl-name">Dynamic pressure \(q\)</dfn></dt>
+        <dd>\(q = \tfrac12\rho V^2 = \tfrac12\gamma pM^2 = 0.7pM^2\). In level flight the lift coefficient is \(C_L = (W/S)\,g/q\) with \(W/S\) in kg/m².</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-cruise.html#level">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-cruise">Cruise constraint</a>, <a href="#term-master">Master equation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-e" data-letter="E">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">E</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-oei" data-lessons="6" data-keys="engine out one engine inoperative OEI climb gradient">
+        <dt><dfn class="gl-name">Engine-out climb</dfn></dt>
+        <dd>The climb a multi-engine aircraft must hold after an engine fails at takeoff. It needs \(\TWo = [N/(N-1)](1/(L/D) + G)\), a horizontal line on the constraint diagram.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#oei">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-second-segment">Second segment</a>, <a class="gl-mlink" href="#term-gradient">Climb gradient \(G\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-envelope" data-lessons="7" data-keys="envelope highest constraint boundary">
+        <dt><dfn class="gl-name">Envelope</dfn></dt>
+        <dd>The highest of the \(\TW\) constraints at each wing loading: the lower boundary of the feasible region.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-constraint-diagram.html#assemble">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-feasible">Feasible region</a>, <a href="#term-constraint-diagram">Constraint diagram</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-f" data-letter="F">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">F</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-feasible" data-lessons="7" data-keys="feasible region acceptable designs">
+        <dt><dfn class="gl-name">Feasible region</dfn></dt>
+        <dd>The part of the constraint diagram above every \(\TW\) constraint and left of every wing loading limit: the designs that meet every requirement.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-constraint-diagram.html#assemble">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-envelope">Envelope</a>, <a href="#term-design-point">Design point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-flat-rating" data-lessons="4" data-keys="flat rated engine temperature thrust">
+        <dt><dfn class="gl-name">Flat rating</dfn></dt>
+        <dd>An engine rating held constant up to a set outside temperature, so the takeoff thrust does not fall on warm days until that temperature is passed.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-takeoff.html#hot-high">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-hot-high">Hot and high</a>, <a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-h" data-letter="H">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">H</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-high-lift" data-lessons="3" data-keys="flaps slats slotted high lift devices">
+        <dt><dfn class="gl-name">High-lift devices</dfn></dt>
+        <dd>Flaps on the trailing edge and slats on the leading edge that raise \(\CLmax\) for takeoff and landing, allowing a smaller wing for the same field lengths.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#clmax">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-clmax">Maximum lift coefficient \(\CLmax\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-hot-high" data-lessons="4" data-keys="hot high airport density altitude">
+        <dt><dfn class="gl-name">Hot and high</dfn></dt>
+        <dd>An airport at altitude on a hot day, where the low density lengthens the takeoff and landing and the engines may give less thrust.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-takeoff.html#hot-high">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-sigma">Density ratio \(\sigma\)</a>, <a href="#term-flat-rating">Flat rating</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-i" data-letter="I">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">I</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-inst-turn" data-lessons="6" data-keys="instantaneous turn maximum load factor CLmax">
+        <dt><dfn class="gl-name">Instantaneous turn</dfn></dt>
+        <dd>The tightest turn the wing can pull for a moment, trading speed for it, limited only by \(\CLmax\): \(\WSo \le q\CLmax/(ng\beta)\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#turns">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sust-turn">Sustained turn</a>, <a class="gl-mlink" href="#term-load-factor">Load factor \(n\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-l" data-letter="L">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">L</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-landing-distance" data-lessons="3" data-keys="landing distance 50 ft stop">
+        <dt><dfn class="gl-name">Landing distance \(s_L\)</dfn></dt>
+        <dd>The distance from 50 ft above the threshold to a stop: \(s_L = 4.996(W/S)_L/(\sigma C_{L_{\max},L}) + S_a\) in m, with \((W/S)_L\) in kg/m².</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#landing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-obstacle">Obstacle allowance \(S_a\)</a>, <a href="#term-landing-field">Landing field length</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-landing-field" data-lessons="3" data-keys="landing field length 60 percent rule runway">
+        <dt><dfn class="gl-name">Landing field length</dfn></dt>
+        <dd>The runway a transport needs to land: the landing distance divided by 0.6, because it must stop within 60% of the runway.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#landing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-landing-distance">Landing distance \(s_L\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-load-factor" data-lessons="6" data-keys="load factor g turn lift weight">
+        <dt><dfn class="gl-name">Load factor \(n\)</dfn></dt>
+        <dd>The lift as a multiple of the weight, \(n = L/W\). A turn needs \(n > 1\), which multiplies the induced drag by \(n^2\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#master">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sust-turn">Sustained turn</a>, <a href="#term-inst-turn">Instantaneous turn</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-m" data-letter="M">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">M</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-master" data-lessons="6" data-keys="master equation constraint analysis excess power">
+        <dt><dfn class="gl-name">Master equation</dfn></dt>
+        <dd>The \(\TW\) a flight condition needs at each wing loading: \((\beta/\alpha)[q\CDz/(\beta g\WSo) + n^2K\beta g\WSo/q + (\dd h/\dd t)/V]\). It covers cruise, climb, ceiling and sustained turns.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#master">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-ps">Specific excess power \(P_s\)</a>, <a href="#term-cruise">Cruise constraint</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-clmax" data-lessons="3" data-keys="maximum lift coefficient CLmax flaps slats stall">
+        <dt><dfn class="gl-name">Maximum lift coefficient \(\CLmax\)</dfn></dt>
+        <dd>The largest lift coefficient the wing reaches before it stalls. Flaps and slats raise it: landing flaps the most, takeoff flaps about 80% as much.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#clmax">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-stall-speed">Stall speed \(V_s\)</a>, <a href="#term-high-lift">High-lift devices</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-o" data-letter="O">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">O</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-obstacle" data-lessons="3" data-keys="obstacle allowance approach flare distance">
+        <dt><dfn class="gl-name">Obstacle allowance \(S_a\)</dfn></dt>
+        <dd>The part of the landing distance spent clearing the 50 ft obstacle and flaring: about 305 m for airliners, 183 m for light aircraft and 137 m for short-takeoff-and-landing aircraft.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#landing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-landing-distance">Landing distance \(s_L\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-p" data-letter="P">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">P</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-power-lapse" data-lessons="2" data-keys="power lapse piston turboprop altitude">
+        <dt><dfn class="gl-name">Power lapse \(\alpha_P\)</dfn></dt>
+        <dd>The power available as a fraction of the sea-level power: about \(\sigma\) for a turboprop, \(\sigma - (1 - \sigma)/7.55\) for a piston engine without a supercharger.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#power">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a>, <a class="gl-mlink" href="#term-pw">Power loading \(P/W\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-pw" data-lessons="1 2" data-keys="power loading power to weight kW per kg propeller">
+        <dt><dfn class="gl-name">Power loading \(P/W\)</dfn></dt>
+        <dd>The installed sea-level power per unit of takeoff mass, in kW/kg; the propeller aircraft's counterpart of \(\TW\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-two-numbers.html#definitions">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#power">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tw">Thrust-to-weight ratio \(T/W\)</a>, <a class="gl-mlink" href="#term-eta-p">Propeller efficiency \(\eta_p\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-eta-p" data-lessons="2" data-keys="propeller efficiency thrust power shaft power">
+        <dt><dfn class="gl-name">Propeller efficiency \(\eta_p\)</dfn></dt>
+        <dd>The fraction of the shaft power a propeller turns into thrust power, \(TV = \eta_pP\); about 0.8 to 0.85 in cruise.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#power">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-pw">Power loading \(P/W\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-r" data-letter="R">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">R</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-vref" data-lessons="3" data-keys="reference landing speed approach speed VREF">
+        <dt><dfn class="gl-name">Reference landing speed \(V_{\text{REF}}\)</dfn></dt>
+        <dd>The speed at 50 ft on approach, \(V_{\text{REF}} = 1.23\,V_{SR}\) at the landing weight. A limit on it limits the wing loading.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#stall">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-stall-speed">Stall speed \(V_s\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-rubber-engine" data-lessons="8" data-keys="rubber engine scaled engine size">
+        <dt><dfn class="gl-name">Rubber engine</dfn></dt>
+        <dd>An engine of a known type scaled up or down to give exactly the thrust the design point needs, used until a real engine is chosen.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-design-point.html#rubber">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-design-point">Design point</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-s" data-letter="S">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">S</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-static-thrust" data-lessons="1" data-keys="sea level static thrust rated">
+        <dt><dfn class="gl-name">Sea-level static thrust \(T_0\)</dfn></dt>
+        <dd>The total thrust of all the engines at sea level, standing still, on a standard day: the thrust every \(\TW\) in this module refers to.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-two-numbers.html#definitions">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tw">Thrust-to-weight ratio \(T/W\)</a>, <a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-second-segment" data-lessons="6" data-keys="second segment climb gear up takeoff flaps V2">
+        <dt><dfn class="gl-name">Second segment</dfn></dt>
+        <dd>The part of the takeoff climb with the landing gear up and takeoff flaps, at the takeoff safety speed; usually the hardest climb with one engine failed.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#oei">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-oei">Engine-out climb</a>, <a class="gl-mlink" href="#term-gradient">Climb gradient \(G\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-ps" data-lessons="6" data-keys="specific excess power energy height climb accelerate">
+        <dt><dfn class="gl-name">Specific excess power \(P_s\)</dfn></dt>
+        <dd>\(P_s = V(T - D)/W\): the rate at which the aircraft can gain energy height, by climbing or accelerating. The master equation is built on it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#master">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-master">Master equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stall-speed" data-lessons="3" data-keys="stall speed V_s VSR wing loading">
+        <dt><dfn class="gl-name">Stall speed \(V_s\)</dfn></dt>
+        <dd>The slowest steady flight speed, where the wing reaches \(\CLmax\): \(W/S = \rho V_s^2\CLmax/(2g)\). Transports use the reference stall speed \(V_{SR}\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#stall">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-vref">Reference landing speed \(V_{\text{REF}}\)</a>, <a class="gl-mlink" href="#term-clmax">Maximum lift coefficient \(\CLmax\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stat-fit" data-lessons="2" data-keys="statistical fit regression historical trend">
+        <dt><dfn class="gl-name">Statistical fit</dfn></dt>
+        <dd>An equation fitted to aircraft of one class, such as \(\TWo = aM_{\max}^{\,C}\) or \((P/W)_0 = aV_{\max}^{\,C}\), used for a first estimate before any requirement is analyzed.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#statistics">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tw">Thrust-to-weight ratio \(T/W\)</a>, <a class="gl-mlink" href="#term-pw">Power loading \(P/W\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-sust-turn" data-lessons="6" data-keys="sustained turn load factor thrust">
+        <dt><dfn class="gl-name">Sustained turn</dfn></dt>
+        <dd>A turn held without losing speed or height: the master equation with \(n > 1\) and no climb.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-climb-and-maneuver.html#turns">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-inst-turn">Instantaneous turn</a>, <a class="gl-mlink" href="#term-load-factor">Load factor \(n\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-t" data-letter="T">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">T</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-tofl" data-lessons="4" data-keys="takeoff field length runway obstacle 35 ft">
+        <dt><dfn class="gl-name">Takeoff field length \(s_{TO}\)</dfn></dt>
+        <dd>The runway a takeoff needs, including the climb over a 35 ft obstacle (50 ft for light aircraft) and the margins for an engine failure. For jets, \(s_{TO} \approx 2.34\,\text{TOP}\) m.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-takeoff.html#what">Lesson 4</a>, <a class="gl-lesson-link" href="../lessons/04-takeoff.html#data">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-top">Takeoff parameter (TOP)</a>, <a href="#term-bfl">Balanced field length</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-top" data-lessons="4" data-keys="takeoff parameter TOP correlation statistical fit propeller ground roll">
+        <dt><dfn class="gl-name">Takeoff parameter (TOP)</dfn></dt>
+        <dd>\(\text{TOP} = (W/S)/(\sigma C_{L_{\max},TO}\,T/W)\): the group of variables the takeoff distance grows with. The distance per unit of TOP is a statistical fit to the field lengths of similar aircraft, about 2.34 m per kg/m² for jet transports. Light propeller aircraft use the power loading in place of \(T/W\), and a curve fitted to their ground rolls.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-takeoff.html#what">Lesson 4</a>, <a class="gl-lesson-link" href="../lessons/04-takeoff.html#data">Lesson 4</a>, <a class="gl-lesson-link" href="../lessons/04-takeoff.html#props">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tofl">Takeoff field length \(s_{TO}\)</a>, <a href="#term-stat-fit">Statistical fit</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-alpha" data-lessons="2" data-keys="thrust lapse alpha altitude speed engine">
+        <dt><dfn class="gl-name">Thrust lapse \(\alpha\)</dfn></dt>
+        <dd>The thrust available in flight as a fraction of the sea-level static thrust, \(\alpha = T/T_0\). This module takes \(\alpha = \sigma\); high-bypass turbofans also lose thrust as their speed rises.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#lapse">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-sigma">Density ratio \(\sigma\)</a>, <a class="gl-mlink" href="#term-static-thrust">Sea-level static thrust \(T_0\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-thrust-matching" data-lessons="2" data-keys="thrust matching cruise drag">
+        <dt><dfn class="gl-name">Thrust matching</dfn></dt>
+        <dd>Setting the thrust equal to the drag in cruise: \((T/W)_{\text{cruise}} = 1/(L/D)\), or \(\TWo = (\beta/\alpha)/(L/D)\) at takeoff conditions.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#matching">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a>, <a class="gl-mlink" href="#term-beta">Weight fraction \(\beta\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-reverser" data-lessons="3" data-keys="thrust reverser reverse thrust braking">
+        <dt><dfn class="gl-name">Thrust reverser</dfn></dt>
+        <dd>A device that turns the engine's thrust forward after touchdown. It cuts the ground roll by about a third, but certification field lengths usually do not count it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-stall-and-landing.html#landing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-landing-distance">Landing distance \(s_L\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tw" data-lessons="1" data-keys="thrust to weight ratio T/W">
+        <dt><dfn class="gl-name">Thrust-to-weight ratio \(T/W\)</dfn></dt>
+        <dd>The total sea-level static thrust over the takeoff weight, \(T_0/(\Wo g)\). It sets the takeoff, climb, ceiling and maneuver performance.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-two-numbers.html#definitions">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-ws">Wing loading \(W/S\)</a>, <a class="gl-mlink" href="#term-static-thrust">Sea-level static thrust \(T_0\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-w" data-letter="W">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">W</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-beta" data-lessons="2" data-keys="weight fraction beta fuel burned segment">
+        <dt><dfn class="gl-name">Weight fraction \(\beta\)</dfn></dt>
+        <dd>The weight at a flight condition as a fraction of the takeoff weight, \(\beta = W/\Wo\), from the mission segment weight fractions of Module 3.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-thrust-matching.html#lapse">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a>, <a href="#term-master">Master equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-what-if" data-lessons="7" data-keys="what if study trade sensitivity requirement">
+        <dt><dfn class="gl-name">What-if study</dfn></dt>
+        <dd>Changing one requirement or technology on the constraint diagram to see how far the design point moves, and what the change is worth.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-constraint-diagram.html#what-if">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-constraint-diagram">Constraint diagram</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-ws" data-lessons="1" data-keys="wing loading W/S kg per square metre">
+        <dt><dfn class="gl-name">Wing loading \(W/S\)</dfn></dt>
+        <dd>The takeoff mass over the reference wing area, in kg/m² (multiply by \(g\) for N/m², divide by 4.882 for lb/ft²). It sets the stall speed, the field lengths, the cruise lift coefficient and the ride.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-two-numbers.html#definitions">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tw">Thrust-to-weight ratio \(T/W\)</a>, <a href="#term-design-point">Design point</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  </div>
+
+  <section id="symbols" class="gl-symbols">
+    <h2>Symbols at a glance</h2>
+    <p>Met a symbol in a lesson or in another textbook and not sure what it stands for? Find it here, then follow the link to its entry.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Symbols used in this module</caption>
+        <thead>
+          <tr><th scope="col">Symbol</th><th scope="col">Meaning</th><th scope="col">Entry</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">\(T/W,\ P/W,\ W/S\)</th><td>Thrust-to-weight ratio, power loading, wing loading</td><td><a class="gl-mlink" href="#term-tw">Thrust-to-weight ratio \(T/W\)</a></td></tr>
+          <tr><th scope="row">\(T_0,\ P_0,\ \Wo\)</th><td>Sea-level static thrust and power, takeoff mass</td><td><a class="gl-mlink" href="#term-static-thrust">Sea-level static thrust \(T_0\)</a></td></tr>
+          <tr><th scope="row">\(\alpha,\ \alpha_P,\ \beta,\ \sigma\)</th><td>Thrust and power lapse, weight fraction, density ratio</td><td><a class="gl-mlink" href="#term-alpha">Thrust lapse \(\alpha\)</a></td></tr>
+          <tr><th scope="row">\(\eta_p\)</th><td>Propeller efficiency</td><td><a class="gl-mlink" href="#term-eta-p">Propeller efficiency \(\eta_p\)</a></td></tr>
+          <tr><th scope="row">\(V_s,\ V_{SR},\ V_{\text{REF}}\)</th><td>Stall speed, reference stall speed, reference landing speed</td><td><a class="gl-mlink" href="#term-vref">Reference landing speed \(V_{\text{REF}}\)</a></td></tr>
+          <tr><th scope="row">\(s_L,\ S_a,\ C_{L_{\max},L}\)</th><td>Landing distance, obstacle allowance, landing maximum lift coefficient</td><td><a class="gl-mlink" href="#term-landing-distance">Landing distance \(s_L\)</a></td></tr>
+          <tr><th scope="row">\(s_{TO},\ \text{TOP},\ C_{L_{\max},TO}\)</th><td>Takeoff field length, takeoff parameter, takeoff maximum lift coefficient</td><td><a class="gl-mlink" href="#term-top">Takeoff parameter (TOP)</a></td></tr>
+          <tr><th scope="row">\(q,\ K,\ n\)</th><td>Dynamic pressure, induced-drag factor, load factor</td><td><a class="gl-mlink" href="#term-master">Master equation</a></td></tr>
+          <tr><th scope="row">\(G,\ N\)</th><td>Climb gradient, number of engines</td><td><a class="gl-mlink" href="#term-oei">Engine-out climb</a></td></tr>
+          <tr><th scope="row">\(P_s\)</th><td>Specific excess power</td><td><a class="gl-mlink" href="#term-ps">Specific excess power \(P_s\)</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Statistical values are after D. P. Raymer, <em>Aircraft Design: A Conceptual Approach</em>, Chapter 5.</p>
+  </section>
+</main>
+
+<script>
+/* Glossary filter: filters as you type (term names and synonyms first; definitions when no name matches),
+   optional "Taught in" lesson filter, A–Z index that greys out empty letters, and links to hidden terms
+   clear the filter first. URL options: ?q=helix and ?lesson=8 pre-fill the filter. */
+CYL.ready(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+  function each(nodes, fn) { Array.prototype.forEach.call(nodes, fn); }
+  var list = $('gl-list'), input = $('gl-filter'), lessonSel = $('gl-lesson'), clearBtn = $('gl-clear'),
+      countEl = $('gl-count'), liveEl = $('gl-live'), emptyEl = $('gl-empty'), emptyMsg = $('gl-empty-msg'),
+      az = $('gl-az'), main = $('main');
+
+  // ---- Text normalization: lower case, Greek letters spelled out, subscripts joined (e_r → er,
+  //      I_z → iz, u_θ → utheta), accents dropped (ê → e), other punctuation → spaces
+  var GREEK = { 'θ': 'theta', 'ϑ': 'theta', 'ρ': 'rho', 'φ': 'phi', 'ϕ': 'phi', 'π': 'pi',
+                'ω': 'omega', 'τ': 'tau', 'δ': 'delta', 'α': 'alpha' };
+  var GREEK_WORDS = ' theta rho phi pi omega tau delta alpha ';
+  var GR = '\u0001', SUB = '\u0002';        // tag query words typed as a Greek letter / with a subscript
+  function fold(s, tag) {
+    s = String(s || '').toLowerCase().replace(/[θϑρφϕπωτδα]/g,
+      function (c) { return ' ' + (tag ? GR : '') + GREEK[c] + ' '; });
+    s = s.replace(/\s*_\s*\{?\s*/g, tag ? SUB : '');
+    if (s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return s;
+  }
+  function norm(s) { return ' ' + fold(s).replace(/[^a-z0-9]+/g, ' ').trim() + ' '; }
+
+  // A query word matches when one of its forms starts a word of the haystack. Forms: the word plus
+  // simple singulars (vectors → vector, axes → axis). A word typed as a Greek letter (π → "pi") or
+  // as a subscripted symbol (a_r → "ar") must match a whole word, so π does not find "pipe" and
+  // a_r does not find "arc".
+  var IRREGULAR = { axes: 'axis', radii: 'radius', tori: 'torus', helices: 'helix', vertices: 'vertex' };
+  function tokensOf(q) {
+    var s = fold(String(q || '').replace(/[\u0001\u0002]/g, ''), true)
+      .replace(/[^a-z0-9\u0001\u0002]+/g, ' ').trim();
+    if (!s) return [];
+    return s.split(' ').map(function (w) {
+      var greek = w.charAt(0) === GR && GREEK_WORDS.indexOf(' ' + w.slice(1) + ' ') >= 0;
+      var sub = /\u0002\u0001?[a-z0-9]/.test(w);      // e_r, u_θ (not a bare "e_" while typing)
+      w = w.replace(/[\u0001\u0002]/g, '');
+      var forms = [w];
+      if (!greek && !sub) {
+        if (IRREGULAR[w]) forms.push(IRREGULAR[w]);
+        if (w.length > 4 && /ies$/.test(w)) forms.push(w.slice(0, -3) + 'y');
+        if (w.length > 4 && /(s|x|z|ch|sh)es$/.test(w)) forms.push(w.slice(0, -2));
+        if (w.length > 3 && /[^isu]s$/.test(w)) forms.push(w.slice(0, -1));
+      }
+      return { forms: forms, whole: greek || sub, greek: greek };
+    }).filter(function (t) { return t.forms[0]; });
+  }
+  function hasToken(hay, t, whole) {
+    for (var i = 0; i < t.forms.length; i++) {
+      if (hay.indexOf(' ' + t.forms[i] + (whole ? ' ' : '')) >= 0) return true;
+    }
+    return false;
+  }
+  // every query word must match. In definitions, one-letter words must be whole words ("I z" must
+  // not match every word that starts with i)
+  function hasAll(hay, tokens, inText) {
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (!hasToken(hay, t, t.whole || (inText && t.forms[0].length === 1))) return false;
+    }
+    return true;
+  }
+  // visible text of rendered math = its MathML text (drop KaTeX's visual HTML and TeX source)
+  function plainText(el) {
+    var c = el.cloneNode(true);
+    each(c.querySelectorAll('.katex-html, annotation'), function (n) { n.parentNode.removeChild(n); });
+    return c.textContent;
+  }
+
+  // ---- Index the entries
+  var groups = [], entries = [];
+  each(list.querySelectorAll('.gl-group'), function (gEl) {
+    var g = { el: gEl, link: az.querySelector('a[data-letter="' + gEl.getAttribute('data-letter') + '"]'), entries: [] };
+    each(gEl.querySelectorAll('.gl-entry'), function (eEl) {
+      var name = eEl.querySelector('.gl-name'), def = eEl.querySelector('dd:not(.gl-see)');
+      var it = {
+        el: eEl, name: name, def: def, nameHTML: name.innerHTML, defHTML: def.innerHTML, marked: null,
+        nameHay: norm(plainText(eEl.querySelector('dt')) + ' ' + (eEl.getAttribute('data-keys') || '')),
+        defHay: norm(plainText(def)),
+        lessons: ' ' + (eEl.getAttribute('data-lessons') || '') + ' '
+      };
+      g.entries.push(it);
+      entries.push(it);
+    });
+    groups.push(g);
+  });
+  var TOTAL = entries.length;
+  function taughtIn(it, n) { return !n || it.lessons.indexOf(' ' + n + ' ') >= 0; }
+
+  // "Taught in" options come from the page registry, so titles always match the lessons
+  CYL.PAGES.forEach(function (p) {
+    if (p.group !== 'lessons' || p.num == null) return;
+    var n = String(p.num);
+    if (!entries.some(function (it) { return taughtIn(it, n); })) return;
+    lessonSel.appendChild(CYL.el('option', { value: n, text: 'Lesson ' + n + ' · ' + p.title }));
+  });
+
+  // ---- Highlight word-start matches in plain text (never inside rendered math; Greek letters are
+  //      only ever in math, so their words are not highlighted)
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function mark(el, tokens, inText) {
+    var alts = [];
+    tokens.forEach(function (t) {
+      if (t.greek) return;
+      var whole = t.whole || (inText && t.forms[0].length === 1);
+      t.forms.forEach(function (f) { alts.push({ f: f, re: escRe(f) + (whole ? '(?![a-z0-9])' : '') }); });
+    });
+    if (!alts.length) return false;
+    alts.sort(function (a, b) { return b.f.length - a.f.length; });
+    var re = new RegExp('(^|[^a-z0-9])(' + alts.map(function (a) { return a.re; }).join('|') + ')', 'gi');
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n, hit = false;
+    while ((n = walker.nextNode())) if (!n.parentNode.closest('.katex')) nodes.push(n);
+    nodes.forEach(function (node) {
+      var text = node.data, m, last = 0, frag = null;
+      re.lastIndex = 0;
+      while ((m = re.exec(text))) {
+        var start = m.index + m[1].length, end = start + m[2].length;
+        frag = frag || document.createDocumentFragment();
+        if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+        frag.appendChild(CYL.el('mark', { class: 'gl-hit', text: text.slice(start, end) }));
+        last = end;
+      }
+      if (frag) {
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+        hit = true;
+      }
+    });
+    return hit;
+  }
+  function unmark(it) {
+    if (it.marked === 'name') it.name.innerHTML = it.nameHTML;
+    else if (it.marked === 'def') it.def.innerHTML = it.defHTML;
+    it.marked = null;
+  }
+
+  // ---- Apply the filter
+  var lastStatus = '';
+  var announce = CYL.debounce(function () { liveEl.textContent = lastStatus; }, 600);
+  function plural(k, word) { return k + ' ' + word + (k === 1 ? '' : 's'); }
+
+  function apply(quiet) {
+    var raw = input.value, tokens = tokensOf(raw), lesson = lessonSel.value;
+    var mode = 'name';
+    var shown = entries.filter(function (it) {
+      return taughtIn(it, lesson) && (!tokens.length || hasAll(it.nameHay, tokens));
+    });
+    if (tokens.length && !shown.length) {           // no term name matches: fall back to the definitions
+      mode = 'def';
+      shown = entries.filter(function (it) { return taughtIn(it, lesson) && hasAll(it.defHay, tokens, true); });
+    }
+    entries.forEach(function (it) {
+      var on = shown.indexOf(it) >= 0;
+      it.el.hidden = !on;
+      unmark(it);
+      if (on && tokens.length) {
+        if (mode === 'name' && mark(it.name, tokens, false)) it.marked = 'name';
+        else if (mode === 'def' && mark(it.def, tokens, true)) it.marked = 'def';
+      }
+    });
+    groups.forEach(function (g) {
+      var vis = g.entries.filter(function (it) { return !it.el.hidden; });
+      g.el.hidden = !vis.length;
+      g.entries.forEach(function (it) { it.el.classList.remove('is-first', 'is-last'); });
+      if (vis.length) {
+        vis[0].el.classList.add('is-first');
+        vis[vis.length - 1].el.classList.add('is-last');
+      }
+      if (g.link) {
+        g.link.classList.toggle('is-off', !vis.length);
+        if (vis.length) { g.link.removeAttribute('aria-disabled'); g.link.removeAttribute('tabindex'); }
+        else { g.link.setAttribute('aria-disabled', 'true'); g.link.setAttribute('tabindex', '-1'); }
+      }
+    });
+
+    var n = shown.length, inL = lesson ? ' in Lesson ' + lesson : '';
+    var quoted = '“' + raw.trim() + '”';
+    var status;
+    if (!tokens.length && !lesson) status = 'Showing all ' + plural(TOTAL, 'term');
+    else if (!n) status = 'No matches';
+    else if (mode === 'def') {
+      status = 'No term names match ' + quoted + inL + ', so showing ' + plural(n, 'term') +
+        (n === 1 ? ' whose definition mentions it' : ' whose definitions mention it');
+    } else if (tokens.length) status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' matching ' + quoted + inL;
+    else status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' taught in Lesson ' + lesson;
+    countEl.textContent = status;
+    emptyEl.hidden = n > 0;
+    if (!n) emptyMsg.textContent = 'No terms match ' + (tokens.length ? quoted : 'this filter') + inL + '.';
+    clearBtn.hidden = !(raw.length || lesson);
+    if (!quiet) { lastStatus = n ? status + '.' : emptyMsg.textContent; announce(); }
+  }
+
+  function reset() { input.value = ''; lessonSel.value = ''; apply(); }
+  function clearAndFocus() { reset(); input.focus(); }
+
+  input.addEventListener('input', function () { apply(); });
+  input.addEventListener('keydown', function (e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') && input.value) {
+      e.preventDefault();
+      e.stopPropagation();
+      input.value = '';
+      apply();
+    }
+  });
+  lessonSel.addEventListener('change', function () { apply(); });
+  clearBtn.addEventListener('click', clearAndFocus);
+  $('gl-empty-clear').addEventListener('click', clearAndFocus);
+
+  // Greyed-out letters do nothing
+  az.addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (a && a.getAttribute('aria-disabled') === 'true') e.preventDefault();
+  });
+
+  // A link to a term the filter is hiding (Related, Symbols) clears the filter before the jump
+  function targetOf(hash) {
+    if (!hash || hash.length < 2) return null;
+    var id = hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+    return document.getElementById(id);
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || az.contains(a)) return;
+    var t = targetOf(a.getAttribute('href'));
+    if (t && list.contains(t) && t.closest('[hidden]')) reset();
+  });
+  window.addEventListener('hashchange', function () {
+    var t = targetOf(location.hash);
+    if (t && list.contains(t) && t.closest('[hidden]')) { reset(); t.scrollIntoView({ block: 'start' }); }
+  });
+
+  // Optional pre-fill from the URL: glossary.html?q=helix or ?lesson=8
+  try {
+    var params = new URLSearchParams(location.search);
+    if (params.get('q')) input.value = params.get('q');
+    var pl = params.get('lesson');
+    if (pl && lessonSel.querySelector('option[value="' + pl.replace(/[^0-9]/g, '') + '"]')) lessonSel.value = pl.replace(/[^0-9]/g, '');
+  } catch (e) { /* old browser: no pre-fill */ }
+  apply(true);
+
+  // Deep link (#term-helix): the shell and the math change the layout after the browser's first jump,
+  // so jump again, instantly (the page otherwise scrolls smoothly)
+  var t0 = targetOf(location.hash);
+  if (t0 && main.contains(t0)) {
+    if (t0.closest('[hidden]')) reset();
+    requestAnimationFrame(function () {
+      var rootStyle = document.documentElement.style, prev = rootStyle.scrollBehavior;
+      rootStyle.scrollBehavior = 'auto';
+      t0.scrollIntoView({ block: 'start' });
+      rootStyle.scrollBehavior = prev;
+    });
+  }
+});
+</script>
+</body>
+</html>

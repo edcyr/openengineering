@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Takeoff Distance · Thrust-to-Weight Ratio and Wing Loading</title>
+<meta name="description" content="The takeoff field length from the takeoff parameter: what a takeoff distance needs, how the takeoff correlation is fitted to the field lengths of real jet transports, the propeller-aircraft ground roll, the thrust-to-weight ratio a runway requires at each wing loading, and the effect of a hot, high airport on the business jet.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/match.js"></script>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 35 min</p>
+    <h1>Takeoff Distance</h1>
+    <p class="lede">A takeoff accelerates the aircraft from rest to a safe climb speed and lifts it over a 35 ft obstacle. Thrust shortens it and a large wing shortens it; a high wing loading and thin air lengthen it. Physics says which group of variables matters, the takeoff parameter; the field lengths of real aircraft say how much runway each unit of it costs. The resulting correlation turns a runway length into a line of required thrust-to-weight ratio against wing loading.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Describe the parts of a takeoff and the field length the certification rules define.</li>
+      <li>Explain why the takeoff distance grows with \(\WS\) and falls with \(\TW\), \(\sigma\) and \(C_{L_{\max},TO}\).</li>
+      <li>Explain how the takeoff correlation is fitted to the field lengths of similar aircraft, and when it can be trusted.</li>
+      <li>Use the takeoff parameter to estimate a jet's field length or a propeller aircraft's ground roll, and the \(\TW\) a field length requires at each wing loading.</li>
+      <li>Find the effect of a hot, high airport on the takeoff thrust.</li>
+    </ul>
+  </section>
+
+  <section id="what">
+    <h2>What the takeoff distance is</h2>
+    <p>A takeoff has three parts: the ground roll, from rest to the liftoff speed; the rotation, a few seconds as the pilot raises the nose; and the transition and climb over an obstacle, 35 ft for transports and 50 ft for light aircraft. For a multi-engine transport the certification rules add a margin for engine failure. The <strong>balanced field length</strong> is the longer of two cases: an engine fails at the decision speed and the pilot either continues the takeoff on the remaining engines or stops, both in the same distance. A takeoff with all engines must also clear the obstacle within the field length with a 15% margin.</p>
+    <p>All of this is far too detailed for a first sizing. What matters is how the distance scales. The ground roll is roughly the kinetic energy at liftoff divided by the net accelerating force:</p>
+    \[ s_G \approx \frac{\tfrac12 m V_{LO}^2}{T} \propto \frac{W/S}{\rho\,C_{L_{\max}}}\,\frac{W}{T} \]
+    <p>because the liftoff speed is a fixed margin above the stall speed, so \(V_{LO}^2 \propto (W/S)/(\rho\,C_{L_{\max},TO})\). The takeoff distance therefore grows with one group of variables, the <strong>takeoff parameter</strong>:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Takeoff parameter (jets)</p>
+      \[ \text{TOP} = \frac{W/S}{\sigma\,C_{L_{\max},TO}\,(T/W)}\ \ (\text{kg/m}^2) \]
+      <p>\(W/S\) in kg/m² at takeoff, \(T/W\) at sea-level static thrust, \(\sigma\) the airport's density ratio. \(T/W\) and \(C_{L_{\max},TO}\) have no units, so TOP has the units of the wing loading.</p>
+    </div>
+    <p>The scaling argument says which variables matter, but not how much runway each kilogram per square metre of TOP costs. That depends on everything the argument left out: the speeds at liftoff and over the obstacle, the time to rotate, the climb to 35 ft, the engine-failure rules, the rolling friction, and the way the thrust falls as the aircraft speeds up.</p>
+  </section>
+
+  <section id="data">
+    <h2>A correlation fitted to real aircraft</h2>
+    <p>Rather than model each of those effects, designers measure them all at once, from aircraft that have already been certified. The method is the same statistical one as the trends of Lesson 2:</p>
+    <ol>
+      <li>Collect aircraft of one class, here jet transports, whose certified field lengths are published.</li>
+      <li>Work out each one's takeoff parameter from its wing loading, its thrust-to-weight ratio and an estimate of its takeoff lift coefficient.</li>
+      <li>Plot field length against TOP, and fit a line through the origin. Its slope is the constant of the correlation.</li>
+    </ol>
+    <p>Figure 4.1 does this for the 14 jet transports in Module 1's data that have a published takeoff field length. Their takeoff lift coefficients are not published, so the figure assumes one value for all of them. With \(C_{L_{\max},TO} = 2.0\), the best line through the points has a slope of 2.24 m per kg/m² (35.9 ft per lb/ft²), and the aircraft scatter about it by \(\pm 11\%\). The correlation in common use, 2.34 m per kg/m² (37.5 ft per lb/ft²), was fitted in the same way to the transports of its day; these 14 aircraft give that slope if their takeoff lift coefficient is taken as 2.09.</p>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> The takeoff field lengths of 14 jet transports at their maximum takeoff weights, against their takeoff parameters (data: Loftin, NASA SP-468). The bold line is the least-squares fit through the origin; the dashed line is the published correlation, 2.34 TOP. Every aircraft is given the same takeoff lift coefficient, which you can change: hover over a point to name the aircraft.</figcaption>
+    </figure>
+    <p>Three lessons come out of the figure:</p>
+    <ul>
+      <li><strong>The constant and the lift coefficient go together.</strong> Assume a higher \(C_{L_{\max},TO}\) and every TOP shrinks, so the fitted slope grows in proportion. The correlation is only as good as the takeoff lift coefficient fed into it: estimate it the same way for every design you compare, and check the answer against similar aircraft.</li>
+      <li><strong>It is a group average.</strong> The 737-200 and the C-5A, both built for shorter runways than their peers, take off 18 to 19% shorter than the line predicts, so one common \(C_{L_{\max},TO}\) undersells their flaps; the early Tu-104 takes 21% longer. A new design is predicted to within the scatter of the data, about \(\pm 10\) to 15%.</li>
+      <li><strong>It holds only for the class it was fitted to.</strong> The data are jet transports with two to four engines, certified to the transport rules. A fighter, a short-takeoff aircraft or a propeller aircraft needs its own fit.</li>
+    </ul>
+    <div class="key-formula">
+      <p class="key-formula-title">Takeoff field length of jet transports and business jets</p>
+      \[ s_{TO} = 2.34\ \text{TOP}\ \ (\text{m}) \]
+      <p>With TOP in kg/m². In US units, with \(W/S\) in lb/ft², \(s_{TO} = 37.5\ \text{TOP}\) ft.</p>
+    </div>
+  </section>
+
+  <section id="constraint">
+    <h2>The takeoff constraint</h2>
+    <p>Solved for the thrust-to-weight ratio, the correlation gives the takeoff constraint:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Takeoff constraint</p>
+      \[ \TWo \ge \frac{2.34}{s_{TO}\,\sigma\,C_{L_{\max},TO}}\,\WSo \]
+      <p>A straight line through the origin: doubling the wing loading doubles the thrust needed for the same field length.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.1 — The business jet's takeoff</p>
+      <p>The business jet must take off in \(1200\ \text{m}\) at sea level on a standard day, with \(C_{L_{\max},TO} = 1.7\). What \(\TW\) does it need at the landing limit of Lesson 3, \(\WS = 250\ \text{kg/m}^2\)?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \TWo = \frac{2.34}{1200(1)(1.7)}\,(250) = 0.287 \]
+          <p>That is more than the cruise needs (0.257, Lesson 2): so far, the takeoff sets the thrust. At the 248 kg/m² of Module 4, it is 0.284.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="figure">
+    <h2>Takeoff lines</h2>
+    <p>On a chart of \(\TW\) against \(\WS\), each field length is a straight line through the origin. Any design above the line takes off in that distance or less. Figure 4.2 draws the business jet's line and shows how the airport and the flaps move it.</p>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> The takeoff constraint: the smallest \(\TW\) that takes off within the chosen field length, against the wing loading. The shaded region is feasible. The faint line is the business jet's requirement, sea level on a standard day; the dashed line marks the landing limit of Lesson 3. Move the sliders to change the airport and the flaps.</figcaption>
+    </figure>
+  </section>
+
+  <section id="hot-high">
+    <h2>Hot and high</h2>
+    <p>An airport's density ratio falls with its altitude and its temperature. At a hot, high airport the takeoff needs more thrust in two ways. The air gives less lift, so the aircraft must go faster before it can fly; the \(\sigma\) in the takeoff parameter accounts for that. The engines also give less thrust, although many are flat rated: they hold their takeoff thrust up to a certain temperature. Like many first sizing methods, this module keeps \(\TW\) at the sea-level static thrust and leaves that loss out; a careful analysis uses the engine's real takeoff thrust at the airport, which raises the requirement further.</p>
+    <div class="example">
+      <p class="example-title">Example 4.2 — A hot day at a high airport</p>
+      <p>The customer also wants to take off in \(1200\ \text{m}\) from an airport at \(1600\ \text{m}\) on a day \(20\ \text{K}\) hotter than standard. At \(1600\ \text{m}\) the standard pressure is \(83\,524\ \text{Pa}\) and the temperature \(277.75\ \text{K}\). Find the \(\TW\) needed at \(250\ \text{kg/m}^2\), and the field length the business jet would need there with \(\TW = 0.31\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>At the same pressure and 297.75 K:</p>
+          \[ \rho = \frac{83\,524}{287.05(297.75)} = 0.9772\ \text{kg/m}^3, \qquad \sigma = \frac{0.9772}{1.225} = 0.798 \]
+          \[ \TWo = \frac{2.34}{1200(0.798)(1.7)}\,(250) = 0.360 \]
+          \[ s_{TO} = 2.34\,\frac{250}{0.798(1.7)(0.31)} = 1392\ \text{m} \]
+          <p>A 25% increase in thrust before any loss of engine thrust is counted, or a longer runway. Customers rarely require full performance on the worst day at every airport; the designer and the customer agree which airports matter.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="props">
+    <h2>Propeller aircraft and takeoff charts</h2>
+    <p>Light propeller aircraft are certified on their ground roll and the distance to clear 50 ft, with no engine-failure balance. Their engines fix the power rather than the thrust, and a propeller's thrust falls as the speed rises. So their takeoff parameter uses the power loading of Lesson 2, and the fit to their ground rolls is a curve rather than a line:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Ground roll of light propeller aircraft</p>
+      \[ \text{TOP}_P = \frac{W/S}{\sigma\,C_{L_{\max},TO}\,(P/W)} \]
+      \[ s_G = 0.503\,\text{TOP}_P + 3.11 \times 10^{-4}\,\text{TOP}_P^{\,2}\ \ (\text{m}) \]
+      <p>\(W/S\) in kg/m² and \(P/W\) in kW/kg, so \(\text{TOP}_P\) is in kg²/(m² kW). In US units, with \(W/S\) in lb/ft² and \(W/P\) in lb/hp, \(s_G = 4.9\,\text{TOP}_P + 0.009\,\text{TOP}_P^{\,2}\) ft. The distance to clear 50 ft is longer.</p>
+    </div>
+    <p>Textbooks print correlations like these as charts of takeoff distance against the takeoff parameter, one curve for each class of aircraft, so that a designer can read a distance off the chart, or the TOP a runway allows. Figure 4.3 is such a chart, built from the two correlations of this lesson. Solved for the power loading, a required ground roll gives a line through the origin on a chart of \(\PW\) against \(\WS\), just as the field length does for a jet.</p>
+    <figure class="figure wide" aria-labelledby="fig43-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig43-stage"></div>
+        <div class="viz-controls" id="fig43-controls"></div>
+      </div>
+      <figcaption id="fig43-cap"><strong>Figure 4.3</strong> A takeoff chart: the field length of jet transports and business jets, \(2.34\,\text{TOP}\), or the ground roll of light propeller aircraft, \(0.503\,\text{TOP}_P + 3.11 \times 10^{-4}\,\text{TOP}_P^{\,2}\) (sources: Loftin's correlation as given by Roskam and Scholz; Roskam, <em>Airplane Design</em>, Part I). Set an aircraft with the sliders and read its distance where the dashed lines meet the axes; the readouts also give TOP and the distance in the US units of published charts. The start values are the business jet's and Example 4.3's light single.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 4.3 — A light single's ground roll</p>
+      <p>A light single of \(1100\ \text{kg}\) has a \(16.2\ \text{m}^2\) wing, a \(134\ \text{kW}\) engine and \(C_{L_{\max},TO} = 1.6\). Estimate its ground roll at sea level.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \frac WS = \frac{1100}{16.2} = 67.9\ \text{kg/m}^2, \qquad \frac PW = \frac{134}{1100} = 0.1218\ \text{kW/kg} \]
+          \[ \text{TOP}_P = \frac{67.9}{1(1.6)(0.1218)} = 348.4\ \text{kg}^2/(\text{m}^2\,\text{kW}) \]
+          \[ s_G = 0.503(348.4) + 3.11 \times 10^{-4}(348.4)^2 = 175 + 38 = 213\ \text{m} \]
+          <p>About 700 ft. The squared term adds about a fifth: at this TOP the propeller's falling thrust already matters. Like the jet correlation, this is a class average, good to the scatter of the light aircraft it was fitted to.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>The ground roll scales with the takeoff parameter \(\text{TOP} = (W/S)/(\sigma C_{L_{\max},TO}\,T/W)\).</li>
+      <li>The constant is statistical: a fit to the field lengths of similar aircraft. For jet transports and business jets, \(s_{TO} \approx 2.34\ \text{TOP}\) m with \(W/S\) in kg/m², and real aircraft scatter about it by 10 to 15%.</li>
+      <li>Light propeller aircraft use \(\text{TOP}_P = (W/S)/(\sigma C_{L_{\max},TO}\,P/W)\) and a curve fitted to their ground rolls.</li>
+      <li>The takeoff constraint is a straight line through the origin: \(\TWo \ge 2.34\,\WSo/(s_{TO}\,\sigma\,C_{L_{\max},TO})\).</li>
+      <li>The business jet needs \(\TW = 0.287\) at 250 kg/m², more than its cruise needs; a hot, high airport raises it to 0.36.</li>
+      <li>Next, <a href="05-cruise.html">Lesson 5</a> finds the wing loading that cruises best, and the thrust the cruise needs at each wing loading.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 4.1: the takeoff correlation fitted to real jet transports ---------- */
+CYL.ready(function () {
+  'use strict';
+  var g = 9.81, FT = 0.3048, US = 4.88243 / FT;   // m per kg/m² × US = ft per lb/ft²
+  // FAA takeoff field lengths (ft) at maximum takeoff weight: Loftin, NASA SP-468, Table VII
+  var TOFL = { 'tupolev-tu-104': 7220, 'boeing-707-320b': 10000, 'douglas-dc-8-63': 10440, 'sud-aviation-caravelle': 6750, 'boeing-727-200': 9950,
+    'douglas-dc-9-30': 6200, 'boeing-737-200': 6475, 'vickers-vc10': 8280, 'boeing-747-200b': 10450, 'lockheed-l-1011': 8070,
+    'douglas-dc-10-30': 10370, 'boeing-767-200': 7000, 'boeing-757-200': 7370, 'lockheed-c-5a': 8400 };
+  var D = Object.keys(TOFL).map(function (id) { var a = AERO.byId(id); return { a: a, ws: a.W0 / a.S, tw: a.T * 1000 / (a.W0 * g), s: TOFL[id] * FT, n: a.n }; });
+  var st = { C: 2.0 }, k = 1;
+  function top(d) { return d.ws / (st.C * d.tw); }
+  var COL = { 2: 't', 3: 'good', 4: 'warn' }, SH = { 2: 'circle', 3: 'tri', 4: 'square' };
+  var chart = AERO.chart(document.getElementById('fig41-stage'), {
+    x: { label: 'Takeoff parameter TOP (kg/m²)', min: 0, max: 2200 }, y: { label: 'Takeoff field length \\(s_{TO}\\) (m)', min: 0, max: 4000 }, height: 340,
+    ariaLabel: 'Takeoff field lengths of jet transports against their takeoff parameters, with the fitted and published correlations.',
+    legend: [{ label: 'Twin', color: 't' }, { label: 'Three engines', color: 'good', shape: 'tri' }, { label: 'Four engines', color: 'warn', shape: 'square' },
+      { label: 'Fit to these aircraft', color: 'accent', line: true }, { label: 'Published, 2.34 TOP', color: 'muted', line: true, dashed: true }]
+  });
+  chart.fn(function (x) { return 2.34 * x; }, { color: 'muted', width: 1.8, dashed: true });
+  var line = chart.fn(function (x) { return k * x; }, { color: 'accent', width: 2.6 });
+  var pts = chart.points(D, { x: top, y: function (d) { return d.s; }, color: function (d) { return COL[d.n]; }, shape: function (d) { return SH[d.n]; }, r: 5,
+    title: function (d) {
+      return '<strong>' + CYL.escapeHtml(d.a.name) + '</strong><span class="muted">' + d.n + ' engines</span><br>\\(W/S\\) ' + Math.round(d.ws) + ' kg/m², \\(T/W\\) ' + d.tw.toFixed(3) +
+        '<br>TOP ' + Math.round(top(d)) + ' kg/m², field length ' + Math.round(d.s) + ' m (' + Math.round(100 * (d.s / (k * top(d)) - 1)) + '% from the fit)';
+    } });
+  var panel = document.getElementById('fig41-controls');
+  var sC = CYL.slider({ label: 'Assumed \\(C_{L_{\\max},TO}\\), every aircraft', min: 1.4, max: 2.8, step: 0.05, value: st.C, color: 'accent', onInput: function (v) { st.C = v; draw(); } });
+  var ro = { k: CYL.readout('Fitted constant'), r: CYL.readout('Scatter about the fit (rms)'), c: CYL.readout('\\(C_{L_{\\max},TO}\\) that gives 2.34'), o: CYL.readout('Farthest above and below') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Fit' }));
+  panel.appendChild(sC.el);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.k.el, ro.r.el, ro.c.el, ro.o.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var sxy = 0, sxx = 0;
+    D.forEach(function (d) { var x = top(d); sxy += x * d.s; sxx += x * x; });
+    k = sxy / sxx;                                   // least squares through the origin
+    var dev = D.map(function (d) { return { d: d, e: d.s / (k * top(d)) - 1 }; }).sort(function (a, b) { return a.e - b.e; });
+    var rms = Math.sqrt(dev.reduce(function (p, q) { return p + q.e * q.e; }, 0) / dev.length);
+    line.draw(); pts.set(D);
+    ro.k.set(k.toFixed(2) + ' m per kg/m² (' + (k * US).toFixed(1) + ' ft per lb/ft²)');
+    ro.r.set('\u00b1' + Math.round(100 * rms) + '%');
+    ro.c.set((st.C * 2.34 / k).toFixed(2));
+    ro.o.set(dev[dev.length - 1].d.a.name + ' +' + Math.round(100 * dev[dev.length - 1].e) + '%, ' + dev[0].d.a.name + ' \u2212' + Math.round(-100 * dev[0].e) + '%');
+    chart.setAriaLabel('With a takeoff lift coefficient of ' + st.C + ' for every aircraft, the 14 jet transports fit a line of ' + k.toFixed(2) + ' m per kg/m² of TOP, with a scatter of ' + Math.round(100 * rms) + ' percent; the published constant is 2.34.');
+  }
+  draw();
+});
+
+/* ---------- Figure 4.3: a takeoff chart, jets and propeller aircraft ---------- */
+CYL.ready(function () {
+  'use strict';
+  var A = 0.3048 * 4.9 / 2.96988, B = 0.3048 * 0.009 / (2.96988 * 2.96988);   // the US-unit fit, with TOP_P in kg²/(m² kW): 1 lb²/(ft² hp) = 2.96988
+  var MODES = {
+    jet: { label: 'Jet transport or business jet (field length)', x: { label: 'Takeoff parameter TOP (kg/m²)', min: 0, max: 1500 }, y: { label: 'Takeoff field length (m)', min: 0, max: 3500 },
+      f: function (x) { return 2.34 * x; }, us: 4.88243, tops: 'lb/ft²' },
+    prop: { label: 'Light propeller aircraft (ground roll)', x: { label: 'Takeoff parameter \\(\\text{TOP}_P\\) (kg²/(m² kW))', min: 0, max: 1200 }, y: { label: 'Ground roll \\(s_G\\) (m)', min: 0, max: 1100 },
+      f: function (x) { return A * x + B * x * x; }, us: 2.96988, tops: 'lb²/(ft² hp)' }
+  };
+  var st = { k: 'jet', wsJ: 248, tw: 0.31, CJ: 1.7, wsP: 68, pw: 0.122, CP: 1.6, h: 0 };
+  var chart = AERO.chart(document.getElementById('fig43-stage'), { x: MODES.jet.x, y: MODES.jet.y, height: 330, ariaLabel: 'A takeoff chart.',
+    legend: [{ label: 'Correlation', color: 'accent', line: true }, { label: 'Your aircraft', color: 'z' }] });
+  var curve = chart.fn(function (x) { return MODES[st.k].f(x); }, { color: 'accent', width: 2.6, samples: 200 });
+  var guide = chart.polyline([], { color: 'z', width: 1.4, dashed: true });
+  var dot = chart.marker([0, 0], { color: 'z', r: 6 });
+  var panel = document.getElementById('fig43-controls');
+  var sel = CYL.select({ label: 'Aircraft class', value: st.k, options: Object.keys(MODES).map(function (k) { return { value: k, label: MODES[k].label }; }), onChange: function (v) { st.k = v; draw(); } });
+  function sl(k, label, min, max, step, unit) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit || '', color: 'z', onInput: function (v) { st[k] = v; draw(); } }); }
+  var J = [sl('wsJ', 'Wing loading \\(\\WS\\)', 100, 800, 2, ' kg/m²'), sl('tw', 'Thrust-to-weight ratio \\(\\TW\\)', 0.15, 0.6, 0.01), sl('CJ', '\\(C_{L_{\\max},TO}\\)', 1.2, 2.6, 0.05)];
+  var P = [sl('wsP', 'Wing loading \\(\\WS\\)', 30, 300, 1, ' kg/m²'), sl('pw', 'Power loading \\(\\PW\\)', 0.05, 0.4, 0.001, ' kW/kg'), sl('CP', '\\(C_{L_{\\max},TO}\\)', 1.2, 2.4, 0.05)];
+  var sH = sl('h', 'Airport altitude', 0, 3000, 100, ' m');
+  var ro = { t: CYL.readout('Takeoff parameter'), s: CYL.readout('Distance'), u: CYL.readout('In US units') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Aircraft' }));
+  panel.appendChild(sel.el);
+  J.concat(P, [sH]).forEach(function (x) { panel.appendChild(x.el); });
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.t.el, ro.s.el, ro.u.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var m = MODES[st.k], jet = st.k === 'jet', sg = MATCH.isa(st.h).sigma;
+    var x = jet ? st.wsJ / (sg * st.CJ * st.tw) : st.wsP / (sg * st.CP * st.pw), y = m.f(x);
+    chart.setAxes({ x: { label: m.x.label, max: Math.max(m.x.max, Math.ceil(x * 1.15 / 100) * 100) }, y: { label: m.y.label, max: Math.max(m.y.max, Math.ceil(y * 1.15 / 100) * 100) } });
+    J.forEach(function (s) { s.el.hidden = !jet; }); P.forEach(function (s) { s.el.hidden = jet; });
+    curve.draw(); guide.set([[x, 0], [x, y], [0, y]]); dot.set([x, y]);
+    ro.t.label.textContent = jet ? 'TOP' : 'TOP\u209a';
+    ro.t.set(Math.round(x) + (jet ? ' kg/m²' : ' kg²/(m² kW)'));
+    ro.s.set(Math.round(y) + ' m' + (jet ? ' field length' : ' ground roll'));
+    ro.u.set('TOP ' + (x / m.us).toFixed(1) + ' ' + m.tops + ', ' + Math.round(y / 0.3048) + ' ft');
+    chart.setAriaLabel((jet ? 'Jet field length' : 'Propeller ground roll') + ' against the takeoff parameter; this aircraft has a TOP of ' + Math.round(x) + ' and needs ' + Math.round(y) + ' m.');
+  }
+  draw();
+});
+
+/* ---------- Figure 4.2: the takeoff constraint ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { s: 1200, C: 1.7, h: 0, dT: 0 }, st = Object.assign({}, BASE), WSL = 250;
+  var chart = AERO.chart(document.getElementById('fig42-stage'), {
+    x: { label: 'Wing loading \\(\\WS\\) (kg/m²)', min: 0, max: 700 }, y: { label: 'Thrust-to-weight ratio \\(\\TW\\)', min: 0, max: 0.8 }, height: 340,
+    ariaLabel: 'The takeoff constraint against wing loading.',
+    legend: [{ label: 'Your takeoff', color: 'accent', line: true }, { label: 'Business jet requirement', color: 'muted', line: true }, { label: 'Landing limit', color: 'r', line: true, dashed: true }]
+  });
+  var area = chart.polyline([], { color: 'accent', width: 0, fill: 'accent', fillOpacity: 0.1, closed: true });
+  chart.fn(function (w) { return MATCH.takeoffTW(w, BASE.s, BASE.C, 1); }, { color: 'muted', width: 1.6 });
+  var line = chart.fn(function () { return 0; }, { color: 'accent', width: 2.8 });
+  chart.vline(WSL, { color: 'r', dashed: true, label: 'landing' });
+  var dot = chart.marker([0, 0], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig42-controls');
+  var sS = CYL.slider({ label: 'Field length \\(s_{TO}\\)', min: 600, max: 3000, step: 10, value: st.s, unit: ' m', color: 'accent', onInput: function (v) { st.s = v; draw(); } });
+  var sC = CYL.slider({ label: '\\(C_{L_{\\max},TO}\\)', min: 1.2, max: 2.6, step: 0.05, value: st.C, color: 'accent', onInput: function (v) { st.C = v; draw(); } });
+  var sH = CYL.slider({ label: 'Airport altitude', min: 0, max: 3000, step: 100, value: st.h, unit: ' m', color: 'good', onInput: function (v) { st.h = v; draw(); } });
+  var sT = CYL.slider({ label: 'Hotter than standard', min: 0, max: 30, step: 1, value: st.dT, unit: ' K', color: 'good', onInput: function (v) { st.dT = v; draw(); } });
+  var reset = CYL.button('Business jet', function () { st = Object.assign({}, BASE); sS.set(st.s, true); sC.set(st.C, true); sH.set(st.h, true); sT.set(st.dT, true); draw(); }, { small: true });
+  var ro = { sg: CYL.readout('\\(\\sigma\\)'), k: CYL.readout('Slope: \\(\\TW\\) per 100 kg/m²'), tw: CYL.readout('\\(\\TW\\) at 250 kg/m²') };
+  var colL = CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Takeoff' }), sS.el, sC.el]);
+  var colR = CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Airport' }), sH.el, sT.el]);
+  panel.appendChild(CYL.el('div', { class: 'ctl-grid' }, [colL, colR]));
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.sg.el, ro.k.el, ro.tw.el]));
+  panel.appendChild(CYL.el('div', { class: 'btn-row' }, [reset]));
+  CYL.renderMath(panel);
+  function draw() {
+    var sg = MATCH.isa(st.h, st.dT).sigma, k = MATCH.takeoffTW(1, st.s, st.C, sg), xm = Math.min(700, 0.8 / k);
+    line.setFn(function (w) { return k * w; });
+    area.set(xm < 700 ? [[0, 0], [xm, 0.8], [0, 0.8]] : [[0, 0], [700, k * 700], [700, 0.8], [0, 0.8]]);
+    dot.set([WSL, k * WSL]);
+    ro.sg.set(sg.toFixed(4)); ro.k.set((100 * k).toFixed(4));
+    ro.tw.set((k * WSL).toFixed(3));
+    chart.setAriaLabel('Takeoff in ' + st.s + ' m with a takeoff lift coefficient of ' + st.C + ' at a density ratio of ' + sg.toFixed(3) + ': the thrust-to-weight ratio must be at least ' + (k * WSL).toFixed(3) + ' at 250 kg/m².');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'A regional jet with \\(\\WS = 550\\ \\text{kg/m}^2\\) and \\(C_{L_{\\max},TO} = 2.0\\) must take off in \\(1800\\ \\text{m}\\) at sea level. What \\(\\TW\\) does it need?',
+    label: '\\(\\TW =\\)', answer: MATCH.takeoffTW(550, 1800, 2.0, 1),
+    hints: ['\\(\\TW = 2.34\\,(W/S)/(s_{TO}\\,\\sigma\\,C_{L_{\\max},TO})\\).', '\\(2.34(550)/(1800 \\times 2.0)\\).'],
+    explain: 'The required thrust is proportional to the wing loading and inversely proportional to the field length.',
+    solution: '\\[ \\TW = \\frac{2.34(550)}{1800(1)(2.0)} = 0.358 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'A light twin with \\(\\WS = 120\\ \\text{kg/m}^2\\), \\(\\PW = 0.18\\ \\text{kW/kg}\\) and \\(C_{L_{\\max},TO} = 1.8\\) takes off from an airport where \\(\\sigma = 0.9\\). Estimate its ground roll.',
+    label: '\\(s_G =\\)', answer: (function () { var t = 120 / (0.9 * 1.8 * 0.18); return 0.503 * t + 3.11e-4 * t * t; })(), unit: 'm',
+    hints: ['\\(\\text{TOP}_P = (W/S)/(\\sigma C_{L_{\\max},TO}\\,P/W)\\).', '\\(\\text{TOP}_P = 411.5\\); then \\(s_G = 0.503\\,\\text{TOP}_P + 3.11 \\times 10^{-4}\\,\\text{TOP}_P^{\\,2}\\).'],
+    explain: 'For a propeller aircraft the takeoff parameter uses the power loading, and the fitted ground roll grows faster than in proportion.',
+    solution: '\\[ \\text{TOP}_P = \\frac{120}{0.9(1.8)(0.18)} = 411.5, \\qquad s_G = 0.503(411.5) + 3.11 \\times 10^{-4}(411.5)^2 = 260\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'mc',
+    prompt: 'Where does the constant 2.34 in \\(s_{TO} = 2.34\\ \\text{TOP}\\) come from?',
+    choices: [
+      { html: 'From integrating the equations of motion of the takeoff', feedback: 'Physics gives the takeoff parameter, the group of variables; it does not give the constant.' },
+      { html: 'From a fit to the certified field lengths of many jet transports', correct: true, feedback: 'Yes: it is a statistical result, valid for aircraft like those in the data, with their scatter.' },
+      { html: 'From the rule that a transport must stop within 60% of the runway', feedback: 'That rule is for landing.' },
+      { html: 'From the 35 ft obstacle height', feedback: 'The obstacle is one of many effects the fitted constant averages over.' }
+    ],
+    explain: 'The takeoff parameter comes from physics; the constant comes from data, together with its scatter and the class of aircraft it applies to.'
+  });
+});
+</script>
+</body>
+</html>
