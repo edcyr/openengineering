@@ -76,15 +76,15 @@ done
 # Standalone courses: a whole course folder with its own home page, navigation and progress (not built from
 # modules), copied without its authoring files and instructor guide, then patched: KaTeX bundled in place of the
 # CDN (the same build as the modules, fonts inlined, so it also works offline), a link back to this site, the
-# license, and a download zip at <site folder>/downloads/<site folder>.zip (deterministic, so it only changes
-# in git when the course does).
+# license, and a download zip for each module at <site folder>/downloads/<site folder>-<module folder>.zip,
+# offered on the module's card on the course home (deterministic, so a zip only changes in git when it must).
 # Each STANDALONE line is "<site folder>|<source folder, relative to the folder above this site>".
 STANDALONE="race-vehicle-dynamics|Ravens Racing/race-vehicle-dynamics-course"
 KATEX="$SITE/ecor1034/curvilinear-motion/assets/vendor/katex"
 
 patch_standalone() {
   python3 - "$1" <<'PY'
-import sys, pathlib, re, zipfile
+import sys, pathlib, re, zipfile, json
 root = pathlib.Path(sys.argv[1])
 
 # KaTeX: CDN links become the bundled copy, relative to each page's data-root
@@ -113,13 +113,26 @@ link = ('// openengineering.ca: link back to the site\'s course list (the site i
         '    h("span", "nav-site__arrow", site, "\\u2190").setAttribute("aria-hidden", "true");\n'
         '    site.appendChild(document.createTextNode("All courses \\u00b7 Open Engineering"));\n    ')
 fill = 'content.forEach((n) => wrap.appendChild(n));'
+# lesson links: a module download sends its other modules' lessons to the site, as absolute URLs in its manifest
+href = 'const href = (l) => (l.file ? `${root}/${l.file}` : `${root}/planned.html?id=${encodeURIComponent(l.id)}`);'
+href_new = ('const href = (l) => (l.file ? (/^https?:/.test(l.file) ? l.file : `${root}/${l.file}`) : `${root}/planned.html?id=${encodeURIComponent(l.id)}`);\n'
+            '  // openengineering.ca: each module\'s download, {module id: [zip, size]}, offered on the course home (empty in a download)\n'
+            '  const DOWNLOADS = {};')
+card = '        if (mod.optional) h("span", "chip chip--optional", foot, "Optional");\n'
+card_dl = ('        // openengineering.ca: download this module for offline use\n'
+           '        const dl = DOWNLOADS[mod.id];\n'
+           '        if (dl) {\n'
+           '          const a = h("a", "btn-sm module-card__dl", card, `Download for offline use (${dl[1]})`);\n'
+           '          a.href = `${root}/downloads/${dl[0]}`;\n'
+           '          a.setAttribute("download", "");\n'
+           '        }\n')
 lic = ('\n    // openengineering.ca: license line under the content of every page\n'
        '    const lic = h("p", wrap.className + " site-license", main, "\\u00a9 2026 Open Engineering \\u00b7 \\u00a9 ProfCyr \\u00b7 ");\n'
        '    const cc = h("a", null, lic, "CC BY-NC-SA 4.0");\n'
        '    cc.href = "https://creativecommons.org/licenses/by-nc-sa/4.0/";\n'
        '    cc.rel = "license";')
-assert s.count(guide) == 1 and s.count(home) == 1 and s.count(fill) == 1, core
-s = s.replace(guide, '').replace(home, link + home).replace(fill, fill + lic)
+assert s.count(guide) == 1 and s.count(home) == 1 and s.count(fill) == 1 and s.count(href) == 1 and s.count(card) == 1, core
+s = s.replace(guide, '').replace(home, link + home).replace(fill, fill + lic).replace(href, href_new).replace(card, card + card_dl)
 core.write_text(s)
 css = root / 'assets/css/course.css'
 css.write_text(css.read_text() + """
@@ -134,19 +147,37 @@ css.write_text(css.read_text() + """
 .nav-site__arrow { color: var(--accent); }
 .site-license { margin-top: 48px; margin-bottom: 0; padding-top: 14px; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text-muted); }
 .site-license a { color: inherit; }
-@media print { .nav-site { display: none !important; } }
+.module-card__dl { align-self: flex-start; margin-top: 4px; text-decoration: none; }
+@media print { .nav-site, .module-card__dl { display: none !important; } }
 """)
 
-# download: everything but the downloads folder, under one top folder, with fixed dates and sorted entries
-z = root / 'downloads' / (root.name + '.zip')
-z.parent.mkdir(exist_ok=True)
-files = sorted(p for p in root.rglob('*') if p.is_file() and 'downloads' not in p.relative_to(root).parts and p.name != '.DS_Store')
-with zipfile.ZipFile(z, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as out:
-    for p in files:
-        info = zipfile.ZipInfo(root.name + '/' + p.relative_to(root).as_posix(), date_time=(2026, 1, 1, 0, 0, 0))
-        info.external_attr = 0o644 << 16
-        info.compress_type = zipfile.ZIP_DEFLATED
-        out.writestr(info, p.read_bytes())
+# downloads: one zip per module, as for the other courses' modules. Each holds the course shell (home page,
+# reference pages, scripts, styles, KaTeX, license) and that module's lessons; its manifest sends links to the other
+# modules' lessons to the site. Fixed dates and sorted entries, so a zip only changes in git when its content does.
+url = 'https://openengineering.ca/' + root.name + '/'
+dl = root / 'downloads'
+dl.mkdir(exist_ok=True)
+for old in dl.glob('*.zip'):
+    old.unlink()
+data = (root / 'assets/js/course-data.js').read_text()
+shell = [p for p in root.rglob('*') if p.is_file() and p.relative_to(root).parts[0] not in ('downloads', 'modules') and p.name != '.DS_Store']
+sizes = {}
+for folder in sorted(p.name for p in (root / 'modules').iterdir() if p.is_dir()):
+    files = shell + [p for p in (root / 'modules' / folder).rglob('*') if p.is_file() and p.name != '.DS_Store']
+    own = {'assets/js/course-data.js': re.sub(r'(\bfile:\s*")(modules/([^/"]+)/)', lambda m: m.group(1) + (m.group(2) if m.group(3) == folder else url + m.group(2)), data),
+           'assets/js/course.js': s}
+    top = root.name + '-' + folder
+    z = dl / (top + '.zip')
+    with zipfile.ZipFile(z, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as out:
+        for p in sorted(files):
+            rel = p.relative_to(root).as_posix()
+            info = zipfile.ZipInfo(top + '/' + rel, date_time=(2026, 1, 1, 0, 0, 0))
+            info.external_attr = 0o644 << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            out.writestr(info, own[rel].encode() if rel in own else p.read_bytes())
+    sizes[folder.split('-')[0]] = [z.name, '%.1f MB' % (z.stat().st_size / 1e6)]
+# the site's copy offers each module's zip on its card on the course home
+core.write_text(s.replace('const DOWNLOADS = {};', 'const DOWNLOADS = ' + json.dumps(sizes) + ';'))
 PY
 }
 echo "$STANDALONE" | while IFS='|' read -r course from; do

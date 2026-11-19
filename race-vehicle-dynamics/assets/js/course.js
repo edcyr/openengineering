@@ -25,7 +25,9 @@
   });
   const byId = (id) => allLessons.find((l) => l.id === id);
   const isAvailable = (l) => l.status === "ready" || l.status === "draft";
-  const href = (l) => (l.file ? `${root}/${l.file}` : `${root}/planned.html?id=${encodeURIComponent(l.id)}`);
+  const href = (l) => (l.file ? (/^https?:/.test(l.file) ? l.file : `${root}/${l.file}`) : `${root}/planned.html?id=${encodeURIComponent(l.id)}`);
+  // openengineering.ca: each module's download, {module id: [zip, size]}, offered on the course home (empty in a download)
+  const DOWNLOADS = {"m00": ["race-vehicle-dynamics-m00-orientation.zip", "0.5 MB"], "m01": ["race-vehicle-dynamics-m01-racing-problem.zip", "0.5 MB"], "m02": ["race-vehicle-dynamics-m02-tires.zip", "0.5 MB"], "m03": ["race-vehicle-dynamics-m03-load-transfer.zip", "0.5 MB"], "m04": ["race-vehicle-dynamics-m04-aerodynamics.zip", "0.5 MB"], "m05": ["race-vehicle-dynamics-m05-steady-state.zip", "0.5 MB"], "m06": ["race-vehicle-dynamics-m06-transient.zip", "0.5 MB"]};
   const rcvdOf = (l) => l.rcvd || l.module.rcvd || [];
   RVD.course = { allLessons, byId, href };
 
@@ -290,6 +292,13 @@
           .textContent = `${ready}/${mod.lessons.length} lessons built`;
         mod.rcvd.forEach((n) => foot.appendChild(rcvdChip(n)));
         if (mod.optional) h("span", "chip chip--optional", foot, "Optional");
+        // openengineering.ca: download this module for offline use
+        const dl = DOWNLOADS[mod.id];
+        if (dl) {
+          const a = h("a", "btn-sm module-card__dl", card, `Download for offline use (${dl[1]})`);
+          a.href = `${root}/downloads/${dl[0]}`;
+          a.setAttribute("download", "");
+        }
       });
       (C.references || []).forEach((ref) => {
         const card = h("article", "module-card module-card--ref", grid);
