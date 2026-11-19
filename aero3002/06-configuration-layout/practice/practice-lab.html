@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Configuration Layout and Fuselage Sizing</title>
+<meta name="description" content="Unlimited randomized problems on configuration layout and fuselage sizing: fuselage statistics, cabin widths and diameters, cabin lengths, exits and cabin crew, tail cones and fuselage lengths, wing and tail placement, fuel tanks and wetted areas, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: fuselages, cabins, tails, fuel tanks and wetted areas, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>cabin-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. cabin-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>(20+20+15+2)*0.0254</code></td><td>\(1.448\)</td></tr>
+          <tr><td><code>1.448+0.084+0.045*1.448</code></td><td>\(1.597\)</td></tr>
+          <tr><td><code>(4*38+40)*0.0254+1</code></td><td>\(5.877\)</td></tr>
+          <tr><td><code>atan(1/3.5)*180/pi</code></td><td>\(15.95\)</td></tr>
+          <tr><td><code>0.54*28^1.5/sqrt(8)*0.12*(1+0.35+0.35^2)/1.35^2</code></td><td>\(2.743\)</td></tr>
+          <tr><td><code>0.5*sqrt(pi*8*0.75/(0.003*5.233))</code></td><td>\(17.33\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Give lengths in meters unless the problem asks for inches; 1&nbsp;in = 0.0254&nbsp;m. <code>sqrt</code>, <code>^</code>, <code>pi</code> and <code>atan</code> all work; <code>atan</code> gives radians, so multiply by <code>180/pi</code> for degrees, and add <code>deg</code> after an angle in degrees inside <code>tan</code>. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>pi*1.597*15.5*(1-2*1.597/15.5)^(2/3)*(1+(1.597/15.5)^2)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var G = 9.81, IN = 0.0254;
+  var KG = '\\ \\text{kg}', M2 = '\\ \\text{m}^2', M3 = '\\ \\text{m}^3', MM = '\\ \\text{m}', INS = '\\ \\text{in}', KGM3 = '\\ \\text{kg/m}^3';
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function upN(v, st) { return Math.ceil(v / st) * st; }                               // a tidy axis maximum in steps of st
+  function nameTitle(d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; }
+  function steps(f, x0, x1) { var o = [], y = f(x0); o.push([x0, y]); for (var x = x0 + 1; x <= x1; x++) { var y2 = f(x); if (y2 !== y) { o.push([x - 0.5, y]); o.push([x - 0.5, y2]); y = y2; } } o.push([x1, y]); return o; }
+
+  /* ================================================================ 2. Generators */
+  /* ---------- 2.1 Fuselage statistics (Lesson 2) ---------- */
+  var WR = { sail: [200, 700, 10], msail: [400, 1000, 10], homemw: [300, 900, 10], homec: [300, 900, 10], ga1: [700, 2500, 10], ga2: [1500, 7000, 50], ag: [1500, 6000, 50],
+    tprop: [8000, 30000, 100], boat: [5000, 40000, 100], trainer: [3000, 9000, 50], fighter: [9000, 30000, 100], cargo: [30000, 150000, 500], jt: [20000, 300000, 1000] };
+  var LONG = AERO.DATA.filter(function (d) { return d.W0 && d.l; });
+  function lowerFirst(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+  function genStat(rng) {
+    var kind = pickW(rng, [['len', 4], ['nsa', 2], ['ratio', 2]]), spec, right, wrong, view;
+    if (kind === 'len' || kind === 'ratio') {
+      var c = rng.pick(LAYOUT.LSTAT), r = WR[c.id];
+      if (kind === 'len') {
+        var W0 = rng.pick(range(r[0], r[1], r[2])), l = c.a * Math.pow(W0, c.C), pw = Math.pow(W0, c.C);
+        spec = { type: 'numeric', prompt: 'Estimate the fuselage length of a new design in the class "' + lowerFirst(c.label) + '", with a takeoff mass of ' + m(g4(W0) + KG) + '. For this class ' + m('a = ' + nn(c.a)) + ' and ' + m('C = ' + nn(c.C)) + ', with the length in meters and the mass in kilograms.', label: '\\(\\lF =\\)', answer: l, unit: 'm' };
+        spec.hints = ['\\(\\lF = a\\Wo^{\\,C}\\).', '\\(' + g4(W0) + '^{' + nn(c.C) + '} = ' + n4(pw) + '\\).'];
+        spec.solution = M('\\lF = ' + nn(c.a) + '(' + g4(W0) + ')^{' + nn(c.C) + '} = ' + nn(c.a) + '(' + n4(pw) + ') = ' + n4(l) + MM);
+        right = { value: typed(l) }; wrong = { value: typed(wrongOf(l, [c.a * Math.pow(W0 * G, c.C), c.a * Math.pow(W0 / 1000, c.C), c.a * W0 * c.C])) };
+        view = { title: 'Length against mass', aria: 'Overall length against takeoff mass for real aircraft, with this class\'s statistical line and this problem marked.',
+          x: { label: 'Takeoff mass \\(\\Wo\\) (kg)', min: 100, max: 500000, log: true }, y: { label: 'Length (m)', min: 2, max: 100, log: true },
+          bg: { list: LONG, x: function (d) { return d.W0; }, y: function (d) { return d.l; }, title: nameTitle },
+          curves: [{ f: function (w) { return c.a * Math.pow(w, c.C); }, color: 'z' }], marker: { at: [W0, l], label: '' },
+          readouts: [{ label: 'Class', tex: '\\text{' + c.label + '}' }, { label: '\\(a,\\ C\\)', tex: nn(c.a) + ',\\ ' + nn(c.C) }, { label: '\\(\\lF\\)', tex: n4(l) + MM }],
+          note: 'The gray points are the overall lengths of Module 1\'s aircraft.' };
+      } else {
+        var k = rng.pick([1.5, 2, 2.5, 3, 4, 5]), f = Math.pow(k, c.C);
+        spec = { type: 'numeric', prompt: 'In the class "' + lowerFirst(c.label) + '" the fuselage length grows as ' + m('\\Wo^{\\,' + nn(c.C) + '}') + '. By what factor is the fuselage of a design ' + nn(k) + ' times as heavy longer, by the statistics?', label: 'Factor', answer: f };
+        spec.hints = ['\\(a\\) cancels: the ratio of the lengths is the ratio of the masses to the power \\(C\\).', '\\(' + nn(k) + '^{' + nn(c.C) + '}\\).'];
+        spec.solution = M('\\frac{l_{F,2}}{l_{F,1}} = \\left(\\frac{W_{0,2}}{W_{0,1}}\\right)^{C} = ' + nn(k) + '^{' + nn(c.C) + '} = ' + n4(f));
+        right = { value: typed(f) }; wrong = { value: typed(wrongOf(f, [k * c.C, k, Math.pow(k, 1 / 3)])) };
+        view = { title: 'Length ratio against mass ratio', aria: 'The fuselage length ratio against the mass ratio for this class, with this problem marked.',
+          x: { label: 'Mass ratio', min: 1, max: 5.5 }, y: { label: 'Length ratio', min: 1, max: upN(Math.pow(5.5, c.C) * 1.05, 0.5) },
+          curves: [{ f: function (x) { return Math.pow(x, c.C); }, color: 'z' }, { f: function (x) { return Math.pow(x, 1 / 3); }, color: 'muted', dashed: true }], marker: { at: [k, f], label: '' },
+          readouts: [{ label: '\\(C\\)', tex: nn(c.C) }, { label: 'Mass ratio', tex: nn(k) }, { label: 'Length ratio', tex: n4(f) }],
+          note: 'The dashed curve is geometric similarity, \\(C = 1/3\\).' };
+      }
+    } else {
+      var n = rng.pick(range(20, 500, 2)), ns = 0.45 * Math.sqrt(n);
+      spec = { type: 'numeric', prompt: 'A new airliner will seat ' + n + ' passengers in economy class. How many seats abreast does the statistic suggest, before rounding to a whole layout?', label: '\\(n_{SA} =\\)', answer: ns };
+      spec.hints = ['\\(n_{SA} \\approx 0.45\\sqrt{n_{\\text{PAX}}}\\).', '\\(\\sqrt{' + n + '} = ' + n4(Math.sqrt(n)) + '\\).'];
+      spec.solution = M('n_{SA} = 0.45\\sqrt{' + n + '} = 0.45(' + n4(Math.sqrt(n)) + ') = ' + n4(ns));
+      spec.solution += '<p>Rounded to a whole layout: ' + Math.round(ns) + ' abreast, with ' + (Math.round(ns) <= 6 ? 'one aisle' : 'two aisles') + '.</p>';
+      right = { value: typed(ns) }; wrong = { value: typed(wrongOf(ns, [0.45 * n, Math.sqrt(n), n / 25])) };
+      view = { title: 'Seats abreast', aria: 'The statistical number of seats abreast against the number of passengers, with this problem marked.',
+        x: { label: 'Passengers \\(n_{\\text{PAX}}\\)', min: 0, max: 520 }, y: { label: '\\(n_{SA}\\)', min: 0, max: 11 },
+        curves: [{ f: function (x) { return 0.45 * Math.sqrt(x); }, color: 'z' }], hline: { y: 6.5, label: 'two aisles above' }, marker: { at: [n, ns], label: '' },
+        readouts: [{ label: '\\(n_{\\text{PAX}}\\)', tex: String(n) }, { label: '\\(n_{SA}\\)', tex: n4(ns) }],
+        note: 'Above six abreast the rules need a second aisle.' };
+    }
+    spec.explain = 'Statistics give a first fuselage length from the takeoff mass alone, and a first number of seats abreast from the passengers.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 The cabin cross-section (Lesson 3) ---------- */
+  var LAYS = [
+    { b: [1, 1], cls: 'business', a: [15, 20] }, { b: [2, 2], cls: 'economy', a: [17, 20] }, { b: [2, 3], cls: 'economy', a: [17, 20] }, { b: [3, 3], cls: 'economy', a: [18, 22] },
+    { b: [2, 2], cls: 'business', a: [18, 24] }, { b: [2, 3, 2], cls: 'economy', a: [18, 21] }, { b: [2, 4, 2], cls: 'economy', a: [18, 21] }, { b: [3, 3, 3], cls: 'economy', a: [18, 21] }, { b: [3, 4, 3], cls: 'economy', a: [18, 21] }
+  ];
+  var WORDS = { 1: 'one seat', 2: 'two seats', 3: 'three seats', 4: 'four seats' };
+  function wallView(dI, dO) {
+    return { title: 'Outer against inner diameter', aria: 'Fuselage outer diameter against inner cabin width, with this problem marked.',
+      x: { label: 'Inner width \\(\\dI\\) (m)', min: 0, max: 7 }, y: { label: 'Outer diameter \\(\\dF\\) (m)', min: 0, max: 7.5 },
+      curves: [{ f: function (x) { return LAYOUT.outer(x); }, color: 'z' }, { f: function (x) { return x; }, color: 'muted', dashed: true }], marker: { at: [dI, dO], label: '' },
+      readouts: [{ label: '\\(\\dI\\)', tex: n4(dI) + MM }, { label: '\\(\\Delta d\\)', tex: n4(LAYOUT.wall(dI)) + MM }, { label: '\\(\\dF\\)', tex: n4(dO) + MM }],
+      note: 'The dashed line is \\(\\dF = \\dI\\): the gap between them is the two walls.' };
+  }
+  function genWidth(rng) {
+    var kind = pickW(rng, [['di', 4], ['do', 3], ['back', 2]]), spec, right, wrong, view;
+    if (kind === 'di') {
+      var L = rng.pick(LAYS), na = LAYOUT.aislesFor(L.b.reduce(function (s, k) { return s + k; }, 0)), aisle = rng.pick(range(L.a[0], L.a[1], 0.5)), gap = rng.pick([0.5, 1, 1, 1.5]);
+      var tab = LAYOUT.SEATS[L.cls], wins = L.b.reduce(function (s, k) { return s + tab[k - 1]; }, 0) + na * aisle + 2 * gap, dI = wins * IN;
+      var desc = L.b.map(function (k) { return k; }).join(' + ');
+      var benchTxt = []; L.b.forEach(function (k) { if (benchTxt.indexOf(k) < 0) benchTxt.push(k); });
+      spec = { type: 'numeric', prompt: 'A cabin is laid out ' + desc + ' abreast in ' + L.cls + ' class, with ' + (na === 1 ? 'one aisle' : na + ' aisles') + ' of ' + m(nn(aisle) + INS) + ' and a ' + m(nn(gap) + INS) + ' gap at each wall. The benches are ' + benchTxt.map(function (k) { return m(nn(tab[k - 1]) + INS) + ' wide for ' + WORDS[k]; }).join(' and ') + '. What is the inner cabin width, in meters?', label: '\\(\\dI =\\)', answer: dI, unit: 'm' };
+      spec.hints = ['Add the benches, the aisles and both gaps, in inches.', 'The total is \\(' + nn(wins) + INS + '\\); 1 in = 0.0254 m.'];
+      spec.solution = M('\\dI = ' + L.b.map(function (k) { return nn(tab[k - 1]); }).join(' + ') + ' + ' + (na > 1 ? na + '(' + nn(aisle) + ')' : nn(aisle)) + ' + 2(' + nn(gap) + ') = ' + nn(wins) + INS) + M('\\dI = ' + nn(wins) + '(0.0254) = ' + n4(dI) + MM);
+      right = { value: typed(dI) }; wrong = { value: typed(wrongOf(dI, [wins, (wins - 2 * gap) * IN, LAYOUT.outer(dI)])) };
+      view = wallView(dI, LAYOUT.outer(dI));
+    } else if (kind === 'do') {
+      var di = rng.pick(range(1.2, 6.5, 0.01)), dO = LAYOUT.outer(di), w = LAYOUT.wall(di);
+      spec = { type: 'numeric', prompt: 'A pressurized cabin is ' + m(nn(di) + MM) + ' wide inside. Estimate the fuselage\'s outer diameter.', label: '\\(\\dF =\\)', answer: dO, unit: 'm' };
+      spec.hints = ['The two walls together: \\(\\Delta d = 0.084 + 0.045\\,\\dI\\) in meters.', '\\(\\Delta d = ' + n4(w) + MM + '\\).'];
+      spec.solution = M('\\Delta d = 0.084 + 0.045(' + nn(di) + ') = ' + n4(w) + MM + ', \\qquad \\dF = ' + nn(di) + ' + ' + n4(w) + ' = ' + n4(dO) + MM);
+      right = { value: typed(dO) }; wrong = { value: typed(wrongOf(dO, [di + w / 2, di + 0.084, di * 1.045])) };
+      view = wallView(di, dO);
+    } else {
+      var dF = rng.pick(range(1.4, 6.8, 0.01)), dI2 = (dF - 0.084) / 1.045;
+      spec = { type: 'numeric', prompt: 'A transport\'s fuselage is ' + m(nn(dF) + MM) + ' in outer diameter. Estimate the width of its cabin inside the walls.', label: '\\(\\dI =\\)', answer: dI2, unit: 'm' };
+      spec.hints = ['\\(\\dF = \\dI + 0.084 + 0.045\\,\\dI = 1.045\\,\\dI + 0.084\\).', 'Solve for \\(\\dI\\).'];
+      spec.solution = M('\\dI = \\frac{\\dF - 0.084}{1.045} = \\frac{' + nn(dF) + ' - 0.084}{1.045} = ' + n4(dI2) + MM);
+      right = { value: typed(dI2) }; wrong = { value: typed(wrongOf(dI2, [dF - 0.084, dF / 1.045, dF - 0.084 - 0.045 * dF * 2])) };
+      view = wallView(dI2, dF);
+    }
+    spec.explain = 'The cabin width is measured across the armrests; the walls add \\(0.084 + 0.045\\,\\dI\\) meters to give the outer diameter.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 The cabin length (Lesson 4) ---------- */
+  function genCabin(rng) {
+    var kind = pickW(rng, [['build', 4], ['rule', 2], ['pitch', 2]]), spec, right, wrong, view;
+    var rows, p, lav, gal, ex, len, base;
+    if (kind === 'build' || kind === 'pitch') {
+      rows = rng.pick(range(3, 40, 1)); p = rng.pick(range(28, 40, 1)); lav = rng.pick([0, 1, 1, 2, 3, 4]); gal = rng.pick([0, 0, 1, 2, 3]); ex = rng.pick(range(0.5, 3, 0.1));
+      base = (40 * lav + 30 * gal) * IN + ex; len = rows * p * IN + base;
+      if (kind === 'build') {
+        spec = { type: 'numeric', prompt: 'A cabin has ' + rows + ' rows at a ' + m(nn(p) + INS) + ' pitch, ' + lav + (lav === 1 ? ' lavatory' : ' lavatories') + ' (40&nbsp;in each), ' + gal + (gal === 1 ? ' galley' : ' galleys') + ' (30&nbsp;in each) and ' + m(nn(ex) + MM) + ' for doors and stowage. How long is it?', label: '\\(l_{\\text{cabin}} =\\)', answer: len, unit: 'm' };
+        spec.hints = ['Add the rows, lavatories and galleys in inches, convert to meters, then add the allowance.', 'The inches add up to \\(' + nn(rows * p + 40 * lav + 30 * gal) + INS + '\\).'];
+        spec.solution = M('l_{\\text{cabin}} = [' + rows + '(' + nn(p) + ') + ' + lav + '(40) + ' + gal + '(30)](0.0254) + ' + nn(ex) + ' = ' + n4(len) + MM);
+        right = { value: typed(len) }; wrong = { value: typed(wrongOf(len, [rows * p * IN, len - ex, rows * p * IN + ex])) };
+      } else {
+        spec = { type: 'numeric', prompt: 'A cabin must be no longer than ' + m(nn(+len.toFixed(2)) + MM) + '. It has ' + rows + ' rows, ' + lav + (lav === 1 ? ' lavatory' : ' lavatories') + ' (40&nbsp;in each), ' + gal + (gal === 1 ? ' galley' : ' galleys') + ' (30&nbsp;in each) and ' + m(nn(ex) + MM) + ' for doors and stowage. What is the largest seat pitch it allows, in inches?', label: '\\(p =\\)', answer: (+len.toFixed(2) - base) / (rows * IN), unit: 'in' };
+        spec.hints = ['The rows have what is left after the other items: \\(l_{\\text{cabin}} - (\\text{lavatories} + \\text{galleys}) - \\text{allowance}\\).', 'Divide that length by the rows, then by 0.0254 for inches.'];
+        var pp = (+len.toFixed(2) - base) / (rows * IN);
+        spec.solution = M('p = \\frac{' + nn(+len.toFixed(2)) + ' - ' + n4(base) + '}{' + rows + '(0.0254)} = ' + n4(pp) + INS);
+        right = { value: typed(pp) }; wrong = { value: typed(wrongOf(pp, [+len.toFixed(2) / (rows * IN), (+len.toFixed(2) - ex) / (rows * IN), pp * IN])) };
+      }
+      view = { title: 'Cabin length against rows', aria: 'Cabin length against the number of rows at this pitch, with this problem marked.',
+        x: { label: 'Rows \\(n_R\\)', min: 0, max: 42 }, y: { label: 'Cabin length (m)', min: 0, max: upN(42 * p * IN + base, 5) },
+        curves: [{ f: function (x) { return x * p * IN + base; }, color: 'z' }, { f: function (x) { return x * 1.0; }, color: 'muted', dashed: true }], marker: { at: [rows, len], label: '' },
+        readouts: [{ label: 'Rows, pitch', tex: rows + ',\\ ' + nn(p) + INS }, { label: 'Other items', tex: n4(base) + MM }, { label: '\\(l_{\\text{cabin}}\\)', tex: n4(len) + MM }],
+        note: 'The dashed line is the quick rule for airliners, 1 m per row.' };
+    } else {
+      var nSA = rng.pick([4, 5, 6, 6, 7, 8, 9, 10]), n = rng.pick(range(nSA * 8, nSA * 45, 1)), nR = Math.ceil(n / nSA), lc = nR * 1.0;
+      spec = { type: 'numeric', prompt: 'An airliner seats ' + n + ' passengers ' + nSA + ' abreast in economy class. Estimate its cabin length with the quick rule for airliners.', label: '\\(l_{\\text{cabin}} =\\)', answer: lc, unit: 'm' };
+      spec.hints = ['The rows: \\(n_R = n_{\\text{PAX}}/n_{SA}\\), rounded up.', 'About 1 m of cabin per row, lavatories, galleys and doors included.'];
+      spec.solution = M('n_R = \\left\\lceil\\frac{' + n + '}{' + nSA + '}\\right\\rceil = ' + nR + ', \\qquad l_{\\text{cabin}} \\approx ' + nR + '(1\\ \\text{m}) = ' + nR + MM);
+      right = { value: typed(lc) }; wrong = { value: typed(wrongOf(lc, [n / nSA * 0.8128, n * 1.0 / 2, nR * 0.81])) };
+      view = { title: 'Cabin length against passengers', aria: 'Cabin length by the quick rule against passengers at this number of seats abreast, with this problem marked.',
+        x: { label: 'Passengers \\(n_{\\text{PAX}}\\)', min: 0, max: upN(nSA * 46, 50) }, y: { label: 'Cabin length (m)', min: 0, max: 50 },
+        lines: [{ pts: steps(function (x) { return Math.ceil(x / nSA); }, 1, upN(nSA * 46, 50)), color: 'z' }], marker: { at: [n, lc], label: '' },
+        readouts: [{ label: '\\(n_{SA}\\)', tex: String(nSA) }, { label: '\\(n_R\\)', tex: String(nR) }, { label: '\\(l_{\\text{cabin}}\\)', tex: n4(lc) + MM }],
+        note: 'Every row adds about a meter, once its share of the other items is counted.' };
+    }
+    spec.explain = 'The rows dominate a cabin\'s length; lavatories, galleys and doors add a few meters more.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Exits, cabin crew and aisles (Lessons 3 and 4) ---------- */
+  function genRules(rng) {
+    var kind = pickW(rng, [['crew', 3], ['typeI', 2], ['typeIII', 2], ['aisle', 2]]), spec, right, wrong, view, n, ans;
+    if (kind === 'crew') {
+      n = rng.pick(range(20, 420, 1)); ans = LAYOUT.attendants(n);
+      spec = { type: 'numeric', prompt: 'Under the European operating rules, what is the minimum number of cabin attendants for an aircraft with ' + n + ' passenger seats?', label: 'Attendants', answer: ans, tol: 0.001 };
+      spec.hints = ['One for 20 to 50 seats, two for 51 to 100.', 'Beyond 100, one more for every 50 seats or part of 50.'];
+      spec.solution = n <= 50 ? '<p>' + n + ' seats is in the band from 20 to 50: one attendant.</p>' : n <= 100 ? '<p>' + n + ' seats is in the band from 51 to 100: two attendants.</p>' :
+        M('2 + \\left\\lceil\\frac{' + n + ' - 100}{50}\\right\\rceil = 2 + ' + (ans - 2) + ' = ' + ans);
+      right = { value: String(ans) }; wrong = { value: String(ans + 1) };
+      view = { title: 'Cabin crew against seats', aria: 'The minimum cabin crew against the number of passenger seats, with this problem marked.',
+        x: { label: 'Passenger seats', min: 0, max: 450 }, y: { label: 'Minimum cabin crew', min: 0, max: 10 },
+        lines: [{ pts: steps(LAYOUT.attendants, 1, 450), color: 'z' }], marker: { at: [n, ans], label: '' },
+        readouts: [{ label: 'Seats', tex: String(n) }, { label: 'Attendants', tex: String(ans) }],
+        note: 'Up to 19 seats no attendant is required.' };
+    } else if (kind === 'typeI' || kind === 'typeIII') {
+      n = rng.pick(kind === 'typeI' ? range(40, 179, 1) : range(10, 179, 1)); var e = LAYOUT.exits(n), k = kind === 'typeI' ? 'I' : 'III'; ans = e[k];
+      spec = { type: 'numeric', prompt: 'A transport has ' + n + ' passenger seats. How many Type ' + k + ' exits does the simplified exit table require on <em>each side</em> of the fuselage?', label: 'Type ' + k + ' exits on each side', answer: ans, tol: 0.001 };
+      spec.hints = ['Find the band of the table that holds ' + n + ' seats.', 'The bands: 1–9, 10–19, 20–39, 40–79, 80–109, 110–139, 140–179.'];
+      var txt = ['A', 'I', 'II', 'III', 'IV'].filter(function (q) { return e[q]; }).map(function (q) { return e[q] + ' Type ' + q; }).join(' and ');
+      spec.solution = '<p>For ' + n + ' seats the table gives ' + txt + ' on each side, so ' + ans + ' Type ' + k + '.</p>';
+      right = { value: String(ans) }; wrong = { value: String(ans + 1) };
+      var tot = function (s) { var q = LAYOUT.exits(s); return q[k]; };
+      view = { title: 'Type ' + k + ' exits against seats', aria: 'Type ' + k + ' exits on each side against passenger seats, with this problem marked.',
+        x: { label: 'Passenger seats', min: 0, max: 180 }, y: { label: 'Type ' + k + ' exits on each side', min: 0, max: 3 },
+        lines: [{ pts: steps(tot, 1, 179), color: 'z' }], marker: { at: [n, ans], label: '' },
+        readouts: [{ label: 'Seats', tex: String(n) }, { label: 'Exits on each side', tex: '\\text{' + txt + '}' }],
+        note: 'Floor-level Type I exits, and overwing Type III exits, step up with the seats.' };
+    } else {
+      n = rng.pick(range(2, 60, 1)); var am = LAYOUT.aisleMin(n), hi = rng.next() < 0.6; ans = hi ? am.high : am.low;
+      spec = { type: 'numeric', prompt: 'A transport has ' + n + ' passenger seats. What is the narrowest aisle the certification rule allows ' + (hi ? 'at 25&nbsp;in and more' : 'less than 25&nbsp;in') + ' above the floor, in inches?', label: 'Aisle width', answer: ans, unit: 'in', tol: 0.001 };
+      spec.hints = ['The limits step up at 10 and at 19 passengers.', 'Below 25 in: 12, 12 and 15 in; at 25 in and above: 15, 20 and 20 in.'];
+      spec.solution = '<p>' + n + ' passengers is in the band ' + (n <= 10 ? '10 or fewer' : n <= 19 ? '11 to 19' : '20 or more') + ': ' + am.low + '&nbsp;in below 25&nbsp;in from the floor and ' + am.high + '&nbsp;in above, so ' + ans + '&nbsp;in.</p>';
+      right = { value: String(ans) }; wrong = { value: String(hi ? am.low : am.high) };
+      view = { title: 'Minimum aisle width', aria: 'The minimum aisle widths below and above 25 inches from the floor against passengers, with this problem marked.',
+        x: { label: 'Passengers', min: 0, max: 62 }, y: { label: 'Minimum aisle width (in)', min: 0, max: 25 },
+        lines: [{ pts: steps(function (s) { return LAYOUT.aisleMin(s).high; }, 1, 62), color: 'z' }, { pts: steps(function (s) { return LAYOUT.aisleMin(s).low; }, 1, 62), color: 'muted', dashed: true }], marker: { at: [n, ans], label: '' },
+        readouts: [{ label: 'Passengers', tex: String(n) }, { label: 'Below, above 25 in', tex: am.low + ',\\ ' + am.high + INS }],
+        note: 'Solid: at 25 in and above; dashed: below 25 in.' };
+    }
+    spec.explain = 'The certification and operating rules set the exits, the aisles and the cabin crew from the number of passengers.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 Nose, tail cone and fuselage (Lesson 5) ---------- */
+  function genFuselage(rng) {
+    var kind = pickW(rng, [['rule', 3], ['rear', 3], ['angle', 2], ['cone', 1]]), spec, right, wrong, view;
+    if (kind === 'rule' || kind === 'rear') {
+      var rear = kind === 'rear', lc = rear ? rng.pick(range(3, 10, 0.05)) : rng.pick(range(8, 60, 0.1)), d = rear ? rng.pick(range(1.3, 2.6, 0.01)) : rng.pick(range(2.2, 6.5, 0.01));
+      var ck = rear ? rng.pick(range(3, 4.5, 0.1)) : 4, kT = rear ? rng.pick(range(3, 4, 0.1)) : 3.5, lF = rear ? ck + lc + kT * d : lc + 4 + 1.6 * d;
+      if (rear) {
+        spec = { type: 'numeric', prompt: 'A business jet with its engines on the tail cone has a ' + m(nn(ck) + MM) + ' cockpit and nose, a ' + m(nn(lc) + MM) + ' cabin and a ' + m(nn(d) + MM) + ' fuselage. Its tail cone is ' + nn(kT) + ' diameters long, and the cabin does not run into it. How long is the fuselage?', label: '\\(\\lF =\\)', answer: lF, unit: 'm' };
+        spec.hints = ['\\(\\lF = l_{\\text{cockpit}} + l_{\\text{cabin}} + l_{TC} - l_{\\text{overlap}}\\), with no overlap.', '\\(l_{TC} = ' + nn(kT) + '(' + nn(d) + ') = ' + n4(kT * d) + MM + '\\).'];
+        spec.solution = M('\\lF = ' + nn(ck) + ' + ' + nn(lc) + ' + ' + nn(kT) + '(' + nn(d) + ') = ' + n4(lF) + MM);
+        right = { value: typed(lF) }; wrong = { value: typed(wrongOf(lF, [lc + 4 + 1.6 * d, ck + lc + (kT - 1.9) * d, ck + lc + kT])) };
+      } else {
+        spec = { type: 'numeric', prompt: 'An airliner has a ' + m(nn(lc) + MM) + ' cabin and a ' + m(nn(d) + MM) + ' fuselage. Estimate its fuselage length with the airliner rule.', label: '\\(\\lF =\\)', answer: lF, unit: 'm' };
+        spec.hints = ['\\(\\lF \\approx l_{\\text{cabin}} + 4\\ \\text{m} + 1.6\\,\\dF\\).', 'The 1.6 diameters are the tail cone, 3.5, less the cabin\'s overlap into it, 1.9.'];
+        spec.solution = M('\\lF = ' + nn(lc) + ' + 4 + 1.6(' + nn(d) + ') = ' + n4(lF) + MM);
+        right = { value: typed(lF) }; wrong = { value: typed(wrongOf(lF, [lc + 4 + 3.5 * d, lc + 1.6 * d, lc + 4 + 1.9 * d])) };
+      }
+      view = { title: 'Fuselage against cabin length', aria: 'Fuselage length against cabin length for this diameter, with and without the cabin overlap, with this problem marked.',
+        x: { label: 'Cabin length (m)', min: 0, max: rear ? 12 : 65 }, y: { label: '\\(\\lF\\) (m)', min: 0, max: rear ? 30 : 100 },
+        curves: [{ f: function (x) { return x + 4 + 1.6 * d; }, color: rear ? 'muted' : 'z', dashed: rear }, { f: function (x) { return x + ck + kT * d; }, color: rear ? 'z' : 'muted', dashed: !rear }], marker: { at: [lc, lF], label: '' },
+        readouts: [{ label: '\\(\\dF\\)', tex: nn(d) + MM }, { label: '\\(l_{\\text{cabin}}\\)', tex: nn(lc) + MM }, { label: '\\(\\lF\\)', tex: n4(lF) + MM }],
+        note: rear ? 'The dashed line is the airliner rule, with the cabin running into the tail cone.' : 'The dashed line has no cabin overlap, as for engines on the tail cone.' };
+    } else if (kind === 'angle') {
+      var k = rng.pick(range(2.5, 4.5, 0.05)), ang = Math.atan(1 / k) * 180 / Math.PI;
+      spec = { type: 'numeric', prompt: 'A tail cone is ' + nn(k) + ' fuselage diameters long. What is its tail angle, in degrees?', label: '\\(\\varphi_{\\text{tail}} =\\)', answer: ang, unit: '°' };
+      spec.hints = ['\\(\\varphi_{\\text{tail}} = \\arctan(\\dF/l_{TC})\\).', '\\(\\dF/l_{TC} = 1/' + nn(k) + '\\); <code>atan</code> gives radians, so multiply by <code>180/pi</code>.'];
+      spec.solution = M('\\varphi_{\\text{tail}} = \\arctan\\frac{1}{' + nn(k) + '} = ' + n4(ang) + '^\\circ');
+      right = { value: typed(ang) }; wrong = { value: typed(wrongOf(ang, [Math.atan(1 / k), Math.atan(k) * 180 / Math.PI, 90 / k])) };
+      view = { title: 'Tail angle', aria: 'The tail angle against the tail cone length in diameters, with this problem marked.',
+        x: { label: '\\(l_{TC}/\\dF\\)', min: 2, max: 5 }, y: { label: '\\(\\varphi_{\\text{tail}}\\) (°)', min: 0, max: 30 },
+        curves: [{ f: function (x) { return Math.atan(1 / x) * 180 / Math.PI; }, color: 'z' }], marker: { at: [k, ang], label: '' },
+        readouts: [{ label: '\\(l_{TC}/\\dF\\)', tex: nn(k) }, { label: '\\(\\varphi_{\\text{tail}}\\)', tex: n4(ang) + '^\\circ' }],
+        note: 'A shorter cone is steeper: more room to rotate, but a greater risk of separated flow.' };
+    } else {
+      var ang2 = rng.pick(range(12, 20, 0.5)), d2 = rng.pick(range(1.4, 6, 0.01)), lt = d2 / Math.tan(ang2 * Math.PI / 180);
+      spec = { type: 'numeric', prompt: 'A fuselage ' + m(nn(d2) + MM) + ' in diameter must be able to rotate ' + m(nn(ang2) + '^\\circ') + ' on the ground. How long may its tail cone be, at most, if its angle is to equal that rotation?', label: '\\(l_{TC} =\\)', answer: lt, unit: 'm' };
+      spec.hints = ['\\(\\tan\\varphi_{\\text{tail}} = \\dF/l_{TC}\\).', '\\(l_{TC} = \\dF/\\tan\\varphi_{\\text{tail}}\\); add <code>deg</code> inside <code>tan</code>.'];
+      spec.solution = M('l_{TC} = \\frac{' + nn(d2) + '}{\\tan ' + nn(ang2) + '^\\circ} = ' + n4(lt) + MM);
+      right = { value: typed(lt) }; wrong = { value: typed(wrongOf(lt, [d2 * Math.tan(ang2 * Math.PI / 180), d2 / Math.sin(ang2 * Math.PI / 180), 3.5 * d2])) };
+      view = { title: 'Tail cone length', aria: 'The longest tail cone against the rotation angle for this diameter, with this problem marked.',
+        x: { label: 'Rotation angle (°)', min: 10, max: 22 }, y: { label: '\\(l_{TC}\\) (m)', min: 0, max: upN(d2 / Math.tan(10 * Math.PI / 180), 5) },
+        curves: [{ f: function (x) { return d2 / Math.tan(x * Math.PI / 180); }, color: 'z' }], marker: { at: [ang2, lt], label: '' },
+        readouts: [{ label: '\\(\\dF\\)', tex: nn(d2) + MM }, { label: 'Angle', tex: nn(ang2) + '^\\circ' }, { label: '\\(l_{TC}\\)', tex: n4(lt) + MM + ' = ' + n4(lt / d2) + '\\,\\dF' }],
+        note: 'A typical tail cone of 3.5 diameters gives 15.9°.' };
+    }
+    spec.explain = 'The fuselage is the cockpit, the cabin and the tail cone, less any overlap of the cabin into the cone; the cone\'s length sets its angle.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Placing the wing and tails (Lesson 6) ---------- */
+  function genTails(rng) {
+    var kind = pickW(rng, [['xac', 2], ['resize', 3], ['ht', 2], ['vt', 2]]), spec, right, wrong, view;
+    if (kind === 'xac') {
+      var lF = rng.pick(range(10, 70, 0.1)), sh = rng.pick([[0.45, 'engines at the rear'], [0.47, 'engines at the rear'], [0.52, 'engines on the wing'], [0.6, 'a propeller in the nose']]), x = (0.92 - sh[0]) * lF;
+      spec = { type: 'numeric', prompt: 'A design with ' + sh[1] + ' has a ' + m(nn(lF) + MM) + ' fuselage and a tail arm of ' + Math.round(sh[0] * 100) + '% of its length. With the tails\' quarter-MAC points at 92% of the length, at what station is the wing\'s aerodynamic center?', label: '\\(x_{ac,W} =\\)', answer: x, unit: 'm' };
+      spec.hints = ['The wing sits one arm ahead of the tails.', '\\(x_{ac,W} \\approx (0.92 - L_t/\\lF)\\,\\lF\\).'];
+      spec.solution = M('x_{ac,W} = (0.92 - ' + nn(sh[0]) + ')(' + nn(lF) + ') = ' + n4(x) + MM);
+      right = { value: typed(x) }; wrong = { value: typed(wrongOf(x, [sh[0] * lF, 0.92 * lF, (0.92 + sh[0]) * lF / 2])) };
+      view = { title: 'Wing station against tail arm', aria: 'The first wing station against the tail arm share for this fuselage, with this problem marked.',
+        x: { label: 'Tail arm, share of \\(\\lF\\)', min: 0.4, max: 0.65 }, y: { label: '\\(x_{ac,W}\\) (m)', min: 0, max: upN(0.52 * lF, 5) },
+        curves: [{ f: function (a) { return (0.92 - a) * lF; }, color: 'z' }], marker: { at: [sh[0], x], label: '' },
+        readouts: [{ label: '\\(\\lF\\)', tex: nn(lF) + MM }, { label: 'Arm', tex: nn(sh[0] * lF) + MM }, { label: '\\(x_{ac,W}\\)', tex: n4(x) + MM }],
+        note: 'A first guess, until the weights and balance of Module 10.' };
+    } else if (kind === 'resize') {
+      var vt = rng.next() < 0.5, S0 = vt ? rng.pick(range(1.5, 60, 0.1)) : rng.pick(range(2, 80, 0.1)), L0 = rng.pick(range(4, 30, 0.01)), L1 = +(L0 * rng.pick(range(0.8, 1.3, 0.01))).toFixed(2);
+      if (Math.abs(L1 - L0) < 0.05) L1 = +(L0 * 1.1).toFixed(2);
+      var S1 = S0 * L0 / L1, nm = vt ? 'vertical' : 'horizontal', sym = vt ? 'S_{VT}' : 'S_{HT}';
+      spec = { type: 'numeric', prompt: 'A ' + nm + ' tail of ' + m(nn(S0) + M2) + ' was sized on an arm of ' + m(nn(L0) + MM) + '. The layout gives an arm of ' + m(nn(L1) + MM) + '. What area keeps the same volume coefficient?', label: '\\(' + sym + ' =\\)', answer: S1, unit: 'm²' };
+      spec.hints = ['For a fixed volume coefficient, the area times the arm stays the same.', '\\(S_{\\text{new}} = S_{\\text{old}}\\,L_{\\text{old}}/L_{\\text{new}}\\).'];
+      spec.solution = M(sym + ' = ' + nn(S0) + '\\,\\frac{' + nn(L0) + '}{' + nn(L1) + '} = ' + n4(S1) + M2);
+      right = { value: typed(S1) }; wrong = { value: typed(wrongOf(S1, [S0 * L1 / L0, S0 * (L0 / L1) * (L0 / L1), S0])) };
+      view = { title: 'Tail area against arm', aria: 'Tail area against arm at a fixed volume coefficient, with this problem marked.',
+        x: { label: 'Arm \\(L\\) (m)', min: 0, max: upN(L0 * 1.6, 5) }, y: { label: '\\(' + sym + '\\) (m²)', min: 0, max: upN(S0 * 2.2, 5) },
+        curves: [{ f: function (L) { return S0 * L0 / L; }, color: 'z' }], marker: { at: [L1, S1], label: '' },
+        readouts: [{ label: 'Old', tex: nn(S0) + M2 + ',\\ ' + nn(L0) + MM }, { label: 'New arm', tex: nn(L1) + MM }, { label: '\\(' + sym + '\\)', tex: n4(S1) + M2 }],
+        note: 'A longer arm needs less tail for the same effect.' };
+    } else {
+      var S = rng.pick(range(15, 400, 1)), A = rng.pick(range(6, 12, 0.1)), lam = rng.pick(range(0.25, 0.6, 0.05)), pf = LAYOUT.planform(S, A, lam), Lt = rng.pick(range(5, 30, 0.1)), ht = kind === 'ht';
+      var c = ht ? rng.pick(range(0.5, 1.1, 0.01)) : rng.pick(range(0.04, 0.09, 0.001)), ref = ht ? +pf.mac.toFixed(3) : +pf.b.toFixed(2), St = c * ref * S / Lt;
+      spec = { type: 'numeric', prompt: 'Size the ' + (ht ? 'horizontal' : 'vertical') + ' tail of a wing with ' + m('S_W = ' + nn(S) + M2) + ' and ' + (ht ? m('\\bar c_W = ' + nn(ref) + MM) : m('b_W = ' + nn(ref) + MM)) + ', with ' + m((ht ? 'c_{HT}' : 'c_{VT}') + ' = ' + nn(c)) + ' and an arm of ' + m(nn(Lt) + MM) + '.', label: ht ? '\\(S_{HT} =\\)' : '\\(S_{VT} =\\)', answer: St, unit: 'm²' };
+      spec.hints = [ht ? '\\(S_{HT} = c_{HT}\\bar c_WS_W/L_{HT}\\).' : '\\(S_{VT} = c_{VT}b_WS_W/L_{VT}\\).', 'The ' + (ht ? 'horizontal tail uses the mean aerodynamic chord' : 'vertical tail uses the span') + '.'];
+      spec.solution = M((ht ? 'S_{HT}' : 'S_{VT}') + ' = \\frac{' + nn(c) + '(' + nn(ref) + ')(' + nn(S) + ')}{' + nn(Lt) + '} = ' + n4(St) + M2);
+      right = { value: typed(St) }; wrong = { value: typed(wrongOf(St, [c * (ht ? pf.b : pf.mac) * S / Lt, c * ref * S * Lt, c * S / Lt])) };
+      view = { title: 'Tail area against arm', aria: 'Tail area against arm for this wing and volume coefficient, with this problem marked.',
+        x: { label: 'Arm \\(L\\) (m)', min: 0, max: upN(Lt * 1.6, 5) }, y: { label: 'Tail area (m²)', min: 0, max: upN(St * 2.2, 5) },
+        curves: [{ f: function (L) { return c * ref * S / L; }, color: 'z' }], marker: { at: [Lt, St], label: '' },
+        readouts: [{ label: ht ? '\\(c_{HT}\\)' : '\\(c_{VT}\\)', tex: nn(c) }, { label: 'Arm', tex: nn(Lt) + MM }, { label: 'Area', tex: n4(St) + M2 }],
+        note: 'Every point of the curve has the same volume coefficient.' };
+    }
+    spec.explain = 'Before the weights are known, the wing goes one tail arm ahead of the tails, and the tails are sized from volume coefficients on that arm.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Fuel volume and wing tanks (Lesson 7) ---------- */
+  function genFuel(rng) {
+    var kind = pickW(rng, [['vol', 2], ['tank', 4], ['fill', 3]]), spec, right, wrong, view;
+    var S = rng.pick(range(15, 400, 1)), A = rng.pick(range(6, 12, 0.1)), lam = rng.pick(range(0.2, 0.6, 0.05)), tc = rng.pick(range(0.1, 0.16, 0.005)), tau = rng.pick([1, 1, 0.9, 0.85, 0.8, 0.75]);
+    var Vt = LAYOUT.tankVolume(S, A, lam, tc, tau), f1 = Math.pow(S, 1.5) / Math.sqrt(A), f2 = (1 + lam * Math.sqrt(tau) + lam * lam * tau) / ((1 + lam) * (1 + lam));
+    var tankView = function (Vf) {
+      return { title: 'Tank volume against thickness', aria: 'Wing tank volume against root thickness ratio for this planform' + (Vf ? ', with the fuel volume needed' : '') + ', with this problem marked.',
+        x: { label: 'Root \\((t/c)_r\\)', min: 0.06, max: 0.2 }, y: { label: 'Volume (m³)', min: 0, max: upN(Math.max(LAYOUT.tankVolume(S, A, lam, 0.2, tau), Vf || 0) * 1.1, 1) },
+        curves: [{ f: function (t) { return LAYOUT.tankVolume(S, A, lam, t, tau); }, color: 'z' }], hline: Vf ? { y: Vf, label: 'fuel needed' } : null, marker: { at: [tc, Vt], label: '' },
+        readouts: [{ label: '\\(S,\\ A,\\ \\lambda\\)', tex: nn(S) + M2 + ',\\ ' + nn(A) + ',\\ ' + nn(lam) }, { label: '\\((t/c)_r,\\ \\tau\\)', tex: nn(tc) + ',\\ ' + nn(tau) }, { label: '\\(V_{\\text{tank}}\\)', tex: n4(Vt) + M3 }],
+        note: 'The tank volume grows in proportion to the root thickness.' };
+    };
+    if (kind === 'vol') {
+      var mf = rng.pick(range(500, 60000, 10)), rho = rng.pick(range(775, 840, 1)), V = mf / rho;
+      spec = { type: 'numeric', prompt: 'A design must carry ' + m(g4(mf) + KG) + ' of jet fuel at ' + m(nn(rho) + KGM3) + '. What volume does it need?', label: '\\(V_f =\\)', answer: V, unit: 'm³' };
+      spec.hints = ['\\(V_f = m_f/\\rho_f\\).', 'Divide the mass in kg by the density in kg/m³.'];
+      spec.solution = M('V_f = \\frac{' + g4(mf) + '}{' + nn(rho) + '} = ' + n4(V) + M3);
+      right = { value: typed(V) }; wrong = { value: typed(wrongOf(V, [mf * rho / 1e6, mf / 1000, rho / mf])) };
+      view = { title: 'Fuel volume against mass', aria: 'Fuel volume against fuel mass at this density, with this problem marked.',
+        x: { label: 'Fuel mass (kg)', min: 0, max: upN(mf * 1.5, 1000) }, y: { label: 'Volume (m³)', min: 0, max: upN(mf * 1.5 / 775, 1) },
+        curves: [{ f: function (x) { return x / rho; }, color: 'z' }], marker: { at: [mf, V], label: '' },
+        readouts: [{ label: '\\(m_f\\)', tex: g4(mf) + KG }, { label: '\\(\\rho_f\\)', tex: nn(rho) + KGM3 }, { label: '\\(V_f\\)', tex: n4(V) + M3 }],
+        note: '1 m³ is 1000 liters.' };
+    } else if (kind === 'tank') {
+      spec = { type: 'numeric', prompt: 'Estimate the fuel tank volume of a wing with ' + m('S = ' + nn(S) + M2) + ', ' + m('A = ' + nn(A)) + ', ' + m('\\lambda = ' + nn(lam)) + ' and a root thickness ratio of ' + nn(tc) + (tau === 1 ? ', the same at the tip' : ', thinning to ' + n4(tc * tau) + ' at the tip') + '.', label: '\\(V_{\\text{tank}} =\\)', answer: Vt, unit: 'm³' };
+      spec.hints = ['\\(V_{\\text{tank}} = 0.54(S^{1.5}/\\sqrt A)(t/c)_r(1 + \\lambda\\sqrt\\tau + \\lambda^2\\tau)/(1 + \\lambda)^2\\), with \\(\\tau = ' + nn(tau) + '\\).', '\\(S^{1.5}/\\sqrt A = ' + n4(f1) + '\\) and the last factor is ' + n4(f2) + '.'];
+      spec.solution = M('V_{\\text{tank}} = 0.54(' + n4(f1) + ')(' + nn(tc) + ')(' + n4(f2) + ') = ' + n4(Vt) + M3);
+      right = { value: typed(Vt) }; wrong = { value: typed(wrongOf(Vt, [0.54 * S * tc / Math.sqrt(A) * f2, 0.54 * f1 * tc, 0.54 * Math.pow(S, 1.5) * Math.sqrt(A) * tc * f2])) };
+      view = tankView(null);
+    } else {
+      var Vf = +(Vt * rng.pick(range(0.6, 1.25, 0.01))).toFixed(2), rho2 = 800, mf2 = Vf * rho2, fill = 100 * Vf / Vt;
+      spec = { type: 'numeric', prompt: 'A wing with ' + m('S = ' + nn(S) + M2) + ', ' + m('A = ' + nn(A)) + ', ' + m('\\lambda = ' + nn(lam)) + ' and ' + m('t/c = ' + nn(tc)) + (tau === 1 ? ' from root to tip' : ' at the root (' + m('\\tau = ' + nn(tau)) + ')') + ' must hold ' + m(g4(mf2) + KG) + ' of fuel at ' + m('800' + KGM3) + '. What percentage of its tank volume does the fuel fill?', label: 'Filled', answer: fill, unit: '%' };
+      spec.hints = ['The fuel is \\(' + g4(mf2) + '/800 = ' + n4(Vf) + M3 + '\\).', 'The tanks hold \\(V_{\\text{tank}} = 0.54(' + n4(f1) + ')(' + nn(tc) + ')(' + n4(f2) + ')\\).'];
+      spec.solution = M('V_f = \\frac{' + g4(mf2) + '}{800} = ' + n4(Vf) + M3 + ', \\qquad V_{\\text{tank}} = ' + n4(Vt) + M3) + M('\\frac{V_f}{V_{\\text{tank}}} = ' + n4(fill) + '\\%') + (fill > 100 ? '<p>Over 100%: the fuel does not fit in the wing.</p>' : '');
+      right = { value: typed(fill) }; wrong = { value: typed(wrongOf(fill, [100 * Vt / Vf, fill / 100, 100 * mf2 / (Vt * 1000)])) };
+      view = tankView(Vf);
+    }
+    spec.explain = 'The fuel volume is its mass over its density; the wing tanks hold about 60% of the wing\'s volume.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Wetted area and L/D (Lesson 8) ---------- */
+  function genWetted(rng) {
+    var kind = pickW(rng, [['fus', 3], ['exp', 2], ['wing', 2], ['ld', 3]]), spec, right, wrong, view;
+    if (kind === 'fus') {
+      var d = rng.pick(range(1.4, 6.5, 0.01)), l = +(d * rng.pick(range(6, 13, 0.1))).toFixed(1), r = l / d, sw = LAYOUT.swetFus(d, l), c1 = Math.pow(1 - 2 / r, 2 / 3), c2 = 1 + 1 / (r * r);
+      spec = { type: 'numeric', prompt: 'A fuselage with a cylindrical middle part is ' + m(nn(l) + MM) + ' long and ' + m(nn(d) + MM) + ' in diameter. Estimate its wetted area.', label: '\\(S_{\\text{wet},F} =\\)', answer: sw, unit: 'm²' };
+      spec.hints = ['\\(S_{\\text{wet},F} = \\pi\\dF\\lF(1 - 2\\dF/\\lF)^{2/3}(1 + \\dF^2/\\lF^2)\\).', '\\(\\lF/\\dF = ' + n4(r) + '\\); \\(\\pi\\dF\\lF = ' + n4(Math.PI * d * l) + M2 + '\\).'];
+      spec.solution = M('S_{\\text{wet},F} = \\pi(' + nn(d) + ')(' + nn(l) + ')(' + n4(c1) + ')(' + n4(c2) + ') = ' + n4(sw) + M2);
+      right = { value: typed(sw) }; wrong = { value: typed(wrongOf(sw, [Math.PI * d * l, Math.PI * d * l * (1 - 2 / r), 3.4 * d * l])) };
+      view = { title: 'Fuselage wetted area', aria: 'Fuselage wetted area against length for this diameter, with a cylinder for comparison, with this problem marked.',
+        x: { label: '\\(\\lF\\) (m)', min: 0, max: upN(l * 1.4, 5) }, y: { label: 'Wetted area (m²)', min: 0, max: upN(Math.PI * d * l * 1.5, 50) },
+        curves: [{ f: function (x) { return x / d >= 4.5 ? LAYOUT.swetFus(d, x) : NaN; }, color: 'z' }, { f: function (x) { return Math.PI * d * x; }, color: 'muted', dashed: true }], marker: { at: [l, sw], label: '' },
+        readouts: [{ label: '\\(\\lF/\\dF\\)', tex: n4(r) }, { label: 'Cylinder \\(\\pi\\dF\\lF\\)', tex: n4(Math.PI * d * l) + M2 }, { label: '\\(S_{\\text{wet},F}\\)', tex: n4(sw) + M2 }],
+        note: 'The dashed line is a cylinder of the same diameter; the curve starts at a fineness ratio of 4.5.' };
+    } else if (kind === 'exp' || kind === 'wing') {
+      var S = rng.pick(range(15, 400, 1)), A = rng.pick(range(6, 12, 0.1)), lam = rng.pick(range(0.2, 0.6, 0.05)), pf = LAYOUT.planform(S, A, lam), dF = +(rng.pick(range(0.09, 0.14, 0.005)) * pf.b).toFixed(2);
+      var cr = +pf.cr.toFixed(2), cs = +LAYOUT.chordAt(pf, dF / 2).toFixed(2), Se = S - dF * (cr + cs) / 2, tc = rng.pick(range(0.09, 0.16, 0.005)), tau = rng.pick([1, 1, 0.8]);
+      var fac = 1 + 0.25 * tc * (1 + tau * lam) / (1 + lam);
+      if (kind === 'exp') {
+        spec = { type: 'numeric', prompt: 'A wing of ' + m('S = ' + nn(S) + M2) + ' passes through a fuselage ' + m(nn(dF) + MM) + ' in diameter. Its root chord is ' + m(nn(cr) + MM) + ' and its chord at the fuselage side ' + m(nn(cs) + MM) + '. What is its exposed area?', label: '\\(S_{\\text{exp}} =\\)', answer: Se, unit: 'm²' };
+        spec.hints = ['The part inside the fuselage is nearly a trapezoid as wide as the fuselage.', 'Its area is \\(\\dF(c_r + c_{\\text{side}})/2 = ' + n4(dF * (cr + cs) / 2) + M2 + '\\).'];
+        spec.solution = M('S_{\\text{exp}} = ' + nn(S) + ' - ' + nn(dF) + '\\,\\frac{' + nn(cr) + ' + ' + nn(cs) + '}{2} = ' + n4(Se) + M2);
+        right = { value: typed(Se) }; wrong = { value: typed(wrongOf(Se, [S - dF * cr, S - dF * (cr + cs), S])) };
+      } else {
+        var swW = 2 * Se * fac;
+        spec = { type: 'numeric', prompt: 'A wing has an exposed area of ' + m(n4(Se) + M2) + ', a taper ratio of ' + nn(lam) + ' and a root thickness ratio of ' + nn(tc) + (tau === 1 ? ', the same at the tip' : ', with ' + m('\\tau = ' + nn(tau)) + ' from root to tip') + '. Estimate its wetted area.', label: '\\(S_{\\text{wet}} =\\)', answer: swW, unit: 'm²' };
+        spec.hints = ['\\(S_{\\text{wet}} = 2S_{\\text{exp}}[1 + 0.25(t/c)_r(1 + \\tau\\lambda)/(1 + \\lambda)]\\).', 'The bracket is ' + n4(fac) + '.'];
+        spec.solution = M('S_{\\text{wet}} = 2(' + n4(Se) + ')(' + n4(fac) + ') = ' + n4(swW) + M2);
+        right = { value: typed(swW) }; wrong = { value: typed(wrongOf(swW, [Se * fac, 2 * Se, 2 * S * fac])) };
+      }
+      var yv = kind === 'exp' ? Se : 2 * Se * fac, xv = kind === 'exp' ? S : Se;
+      view = kind === 'exp' ? { title: 'Exposed against reference area', aria: 'Exposed wing area against the reference area for this fuselage, with this problem marked.',
+        x: { label: 'Reference area \\(S\\) (m²)', min: 0, max: upN(S * 1.5, 10) }, y: { label: '\\(S_{\\text{exp}}\\) (m²)', min: 0, max: upN(S * 1.5, 10) },
+        curves: [{ f: function (x) { return x; }, color: 'muted', dashed: true }, { f: function (x) { return x - dF * (cr + cs) / 2; }, color: 'z' }], marker: { at: [xv, yv], label: '' },
+        readouts: [{ label: 'Inside the fuselage', tex: n4(dF * (cr + cs) / 2) + M2 }, { label: '\\(S_{\\text{exp}}\\)', tex: n4(Se) + M2 }, { label: 'Share exposed', tex: n4(100 * Se / S) + '\\%' }],
+        note: 'The dashed line would be a wing with nothing hidden inside the fuselage.' } :
+        { title: 'Wetted against exposed area', aria: 'Wing wetted area against exposed area at this thickness, with this problem marked.',
+          x: { label: '\\(S_{\\text{exp}}\\) (m²)', min: 0, max: upN(Se * 1.5, 10) }, y: { label: '\\(S_{\\text{wet}}\\) (m²)', min: 0, max: upN(Se * 3.3, 10) },
+          curves: [{ f: function (x) { return 2 * x * fac; }, color: 'z' }, { f: function (x) { return 2 * x; }, color: 'muted', dashed: true }], marker: { at: [xv, yv], label: '' },
+          readouts: [{ label: 'Bracket', tex: n4(fac) }, { label: '\\(S_{\\text{exp}}\\)', tex: n4(Se) + M2 }, { label: '\\(S_{\\text{wet}}\\)', tex: n4(2 * Se * fac) + M2 }],
+          note: 'The dashed line is exactly twice the exposed area: a section with no thickness.' };
+    } else {
+      var A2 = rng.pick(range(5, 12, 0.1)), e = rng.pick(range(0.7, 0.9, 0.01)), C = rng.pick(LAYOUT.CFE.filter(function (q) { return q.id !== 'sst'; })), rr = rng.pick(range(3.5, 7.5, 0.01)), CD0 = C.cfe * rr, LD = LAYOUT.ldMax(A2, e, C.cfe, rr);
+      spec = { type: 'numeric', prompt: 'A layout of the type "' + lowerFirst(C.label) + '" (' + m('C_{fe} = ' + nn(C.cfe)) + ') has ' + m('A = ' + nn(A2)) + ' and ' + m('\\Swet/\\Sref = ' + nn(rr)) + '. With ' + m('e = ' + nn(e)) + ', what is its ' + m('\\LDmax') + '?', label: '\\(\\LDmax =\\)', answer: LD };
+      spec.hints = ['\\(\\CDz = C_{fe}\\Swet/\\Sref = ' + n4(CD0) + '\\).', '\\(\\LDmax = \\tfrac12\\sqrt{\\pi Ae/\\CDz}\\).'];
+      spec.solution = M('\\CDz = ' + nn(C.cfe) + '(' + nn(rr) + ') = ' + n4(CD0) + ', \\qquad \\LDmax = \\frac12\\sqrt{\\frac{\\pi(' + nn(A2) + ')(' + nn(e) + ')}{' + n4(CD0) + '}} = ' + n4(LD));
+      right = { value: typed(LD) }; wrong = { value: typed(wrongOf(LD, [Math.sqrt(Math.PI * A2 * e / CD0), 0.5 * Math.PI * A2 * e / CD0, 0.5 * Math.sqrt(Math.PI * A2 * e / C.cfe)])) };
+      view = { title: '\\(\\LDmax\\) against wetted-area ratio', aria: 'Maximum lift-to-drag ratio against wetted-area ratio for this aspect ratio, Oswald factor and skin friction, with this problem marked.',
+        x: { label: '\\(\\Swet/\\Sref\\)', min: 2, max: 9 }, y: { label: '\\(\\LDmax\\)', min: 0, max: upN(LAYOUT.ldMax(A2, e, C.cfe, 2) * 1.05, 5) },
+        curves: [{ f: function (x) { return LAYOUT.ldMax(A2, e, C.cfe, x); }, color: 'z' }], marker: { at: [rr, LD], label: '' },
+        readouts: [{ label: '\\(C_{fe}\\)', tex: nn(C.cfe) }, { label: '\\(\\CDz\\)', tex: n4(CD0) }, { label: '\\(\\LDmax\\)', tex: n4(LD) }],
+        note: 'Less wetted area per unit of wing area means a higher lift-to-drag ratio.' };
+    }
+    spec.explain = 'The layout\'s dimensions give the wetted areas, and the wetted-area ratio gives the zero-lift drag and \\(\\LDmax\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-layout.html', 'From Numbers to a Layout'), l02: L(2, '02-fuselage-length.html', 'Fuselage Length and Fineness'),
+    l03: L(3, '03-cross-section.html', 'The Cabin Cross-Section'), l04: L(4, '04-cabin-length.html', 'The Cabin Length'),
+    l05: L(5, '05-nose-and-tail.html', 'Nose, Tail Cone and Fuselage'), l06: L(6, '06-wing-and-tails.html', 'Placing the Wing and Tails'),
+    l07: L(7, '07-engines-and-fuel.html', 'Engines and Fuel'), l08: L(8, '08-wetted-area.html', 'Wetted Area and the Refined Estimate')
+  };
+  var CATS = [
+    { id: 'stat', label: 'Fuselage statistics', gen: genStat, lessons: [LES.l02] },
+    { id: 'width', label: 'Cabin width and diameter', gen: genWidth, lessons: [LES.l03] },
+    { id: 'cabin', label: 'Cabin length', gen: genCabin, lessons: [LES.l04] },
+    { id: 'rules', label: 'Exits, crew and aisles', gen: genRules, lessons: [LES.l03, LES.l04] },
+    { id: 'fuselage', label: 'Tail cone and fuselage length', gen: genFuselage, lessons: [LES.l05] },
+    { id: 'tails', label: 'Wing and tail placement', gen: genTails, lessons: [LES.l06] },
+    { id: 'fuel', label: 'Fuel and tanks', gen: genFuel, lessons: [LES.l07] },
+    { id: 'wetted', label: 'Wetted area and L/D', gen: genWetted, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like range-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

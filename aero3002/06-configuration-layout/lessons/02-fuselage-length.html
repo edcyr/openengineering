@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuselage Length and Fineness · Configuration Layout and Fuselage Sizing</title>
+<meta name="description" content="A first fuselage length from takeoff weight statistics by class, checked against real aircraft; the fineness ratio and the drag of slender bodies; and how the number of seats abreast trades fuselage length against diameter.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 30 min</p>
+    <h1>Fuselage Length and Fineness</h1>
+    <p class="lede">Before anyone draws a seat, statistics give a first fuselage length from the takeoff weight alone. The estimate is good for most classes and poor for some, and the business jet is one of the poor ones. This lesson uses the statistics, checks them against real aircraft, and looks at the shape behind the length: the fineness ratio, and the choice of seats abreast that sets it.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Estimate a fuselage length from the takeoff weight and the class of aircraft.</li>
+      <li>Explain why the estimate fits some designs well and others badly.</li>
+      <li>Define the fineness ratio and explain how it trades skin friction against pressure drag.</li>
+      <li>Explain how the number of seats abreast sets the fuselage's length, diameter and wetted area.</li>
+    </ul>
+  </section>
+
+  <section id="stats">
+    <h2>Fuselage length from statistics</h2>
+    <p>Within a class, bigger aircraft have longer fuselages, and the trend is well described by a power law of the takeoff weight:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Statistical fuselage length</p>
+      \[ \lF = a\,\Wo^{\,C} \]
+      <p>\(\lF\) in meters, \(\Wo\) in kilograms; \(a\) and \(C\) depend on the class.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Fuselage length against takeoff weight (source: Raymer, Table 6.3, in SI units; check the values against the edition you use)</caption>
+        <thead><tr><th scope="col">Class</th><th scope="col">\(a\)</th><th scope="col">\(C\)</th><th scope="col">\(\lF\) at 7000&nbsp;<span class="u">kg (m)</span></th></tr></thead>
+        <tbody id="t63-rows"></tbody>
+      </table>
+    </div>
+    <p>The exponent says how the length grows with size. For the small classes, \(C \approx 0.23\): an aircraft twice as heavy is only 17% longer, because a light aircraft's fuselage is set by its pilot and a few passengers, and extra weight goes into fuel, engine and structure. For transports and sailplanes, \(C\) is about 0.43 to 0.5: twice the weight is 35 to 41% more length, close to what geometric similarity gives (\(C = 1/3\) if every dimension scales together) and more, because big transports grow longer faster than they grow wider.</p>
+    <div class="example">
+      <p class="example-title">Example 2.1 — The business jet's statistical length</p>
+      <p>The table has no class for business jets. Estimate the business jet's fuselage length (\(\Wo = 6943\ \text{kg}\)) as a jet transport and as a jet trainer, and compare it with the Cessna Citation CJ3 Gen2, a light business jet of similar size: 6291&nbsp;kg at takeoff and 15.6&nbsp;m long.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \text{Jet transport: } \lF = 0.287(6943)^{0.43} = 12.9\ \text{m} \]
+          \[ \text{Jet trainer: } \lF = 0.333(6943)^{0.41} = 12.5\ \text{m} \]
+          <p>Both classes give about 12.5 to 13&nbsp;m, almost 3&nbsp;m short of the CJ3. The jet-transport line was fitted to airliners, whose fuselages are mostly cabin; a business jet of this weight carries only 8 or 9 passengers, but its fuselage also holds the engines' mounts, a long tail cone and a cockpit as long as an airliner's. Module 4 guessed 14&nbsp;m. The statistics are a starting point, and Lessons 3 to 5 replace them with a fuselage drawn around the cabin.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig21-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig21-stage"></div>
+        <div class="viz-controls" id="fig21-controls"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> Overall length against takeoff weight for the aircraft of Module 1's data, on logarithmic scales, with the statistical line of each class in the table (gray) and the chosen class in blue. Overall length includes the tail surfaces, so it is slightly more than the fuselage length. Choose a class and a takeoff weight to read its length; the diamond is the CJ3 Gen2. Hover over a point to name the aircraft.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 2.2 — A jet transport</p>
+      <p>The Boeing 737-200 in Module 1's data weighs 53&nbsp;300&nbsp;kg at takeoff and is 30.5&nbsp;m long. What does the jet-transport line give?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \lF = 0.287(53\,300)^{0.43} = 30.9\ \text{m} \]
+          <p>Within 2% of the real aircraft. For the class the line was fitted to, the statistics are good enough to start a layout and to check one.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="fineness">
+    <h2>The fineness ratio</h2>
+    <p>The <strong>fineness ratio</strong> of a fuselage is its length divided by its diameter, \(\lF/\dF\). It measures how slender the body is, and it decides how the body's zero-lift drag divides between two causes:</p>
+    <ul>
+      <li><strong>Skin friction</strong> grows with the wetted area. For a given volume, a long thin body has more surface than a short fat one.</li>
+      <li><strong>Pressure drag</strong> comes from the flow separating behind a body that closes too abruptly. A short fat body has a steep afterbody and a large wake; a slender one closes gently.</li>
+    </ul>
+    <p>A common empirical fit for subsonic bodies combines the two in a <strong>form factor</strong>, the drag of the body divided by the skin friction of its wetted area:</p>
+    \[ FF = 1 + \frac{60}{(\lF/\dF)^3} + \frac{\lF/\dF}{400} \]
+    <p>For bodies of the same shape and the same volume \(V\), the wetted area grows as \(V^{2/3}(\lF/\dF)^{1/3}\), so the drag grows as \(FF\,(\lF/\dF)^{1/3}\). The table shows the result, relative to its minimum:</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Zero-lift drag of subsonic bodies of the same volume, against their fineness ratio</caption>
+        <thead><tr><th scope="col">\(\lF/\dF\)</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">8</th><th scope="col">10</th><th scope="col">12</th><th scope="col">14</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Form factor \(FF\)</th><td>3.23</td><td>1.95</td><td>1.49</td><td>1.29</td><td>1.14</td><td>1.09</td><td>1.07</td><td>1.06</td></tr>
+          <tr><th scope="row">Relative drag</th><td>2.05</td><td>1.36</td><td>1.12</td><td>1.03</td><td>1.00</td><td>1.03</td><td>1.07</td><td>1.12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The minimum is near a fineness ratio of 8, and it is flat: anywhere from 6 to 10 costs less than 4% more drag. Below 5 the pressure drag climbs fast. That is why transports and business jets have fineness ratios of about 8 to 11, and why short, fat fuselages are rare outside aircraft built for bulky cargo.</p>
+    <p>A transport's fuselage is not designed for a volume, though. Its diameter is fixed by the seats across the cabin, and its length by the rows. The fineness ratio is the outcome of one decision: how many seats abreast.</p>
+  </section>
+
+  <section id="abreast">
+    <h2>Seats abreast</h2>
+    <p>For a given number of passengers, more seats abreast make a wider, shorter fuselage; fewer make a narrower, longer one. Lessons 3 and 4 give the rules for the width and the length; Figure 2.2 uses them in advance to show the trade. The fuselage's wetted area has a broad minimum, but every extra aisle (after six seats abreast, and again after twelve) adds width without adding seats, and makes a step up.</p>
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> The wetted area of a fuselage for a given number of economy passengers, against the number of seats abreast, with one aisle up to six seats abreast and two above. The cabin width uses Lesson 3's economy seat and aisle widths (a bench of four taken as 80&nbsp;in), and the length allows 1&nbsp;m of cabin per row (Lesson 4) and Lesson 5's nose and tail. Layouts with a fineness ratio under 4.5, where the wetted-area formula does not apply, are left out. The dashed line is the statistical number of seats abreast.</figcaption>
+    </figure>
+    <p>Real transports follow a simple statistic for the number of seats abreast in economy class:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Seats abreast (economy)</p>
+      \[ n_{SA} \approx 0.45\sqrt{n_{\text{PAX}}} \]
+      <p>Rounded to a whole layout: 150 passengers give 5.5, so 6 abreast with one aisle.</p>
+    </div>
+    <p>The statistic sits near the wetted-area minimum up to about 200 passengers, then above it. Big aircraft go wider than drag alone would choose because of limits on the length: a long fuselage needs taller landing gear to rotate at takeoff without striking its tail (Lesson 5), must fit the airport's gates and taxiways, takes longer to board and evacuate through one aisle, and is heavier to make stiff in bending.</p>
+    <aside class="callout note">
+      <p class="callout-title">The business jet's choice</p>
+      <p>With 8 passengers, the statistic gives \(0.45\sqrt8 = 1.3\) seats abreast. Light business jets seat one passenger on each side of a center aisle, two abreast in all, so that every seat is a window seat beside the aisle. The cabin is then as narrow as two seats and an aisle allow, and the length follows from the rows; Lessons 3 and 4 size both.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A first fuselage length is \(\lF = a\Wo^{C}\), with \(a\) and \(C\) by class; it fits airliners within a few percent.</li>
+      <li>For the business jet the classes give 12.5 to 13&nbsp;m, short of the 15.6&nbsp;m of a real light jet of its weight: a layout is needed.</li>
+      <li>The fineness ratio \(\lF/\dF\) trades skin friction against pressure drag; for a fixed volume the drag is least near 8, and is nearly flat from 6 to 10.</li>
+      <li>For a transport the seats abreast set the fineness ratio; statistically \(n_{SA} \approx 0.45\sqrt{n_{\text{PAX}}}\).</li>
+      <li>Next, <a href="03-cross-section.html">Lesson 3</a> draws the business jet's cabin cross-section and finds its diameter.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Table 6.3 (from LAYOUT.LSTAT) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('t63-rows');
+  LAYOUT.LSTAT.forEach(function (c) {
+    tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: c.label }), CYL.el('td', { text: c.a.toFixed(3) }), CYL.el('td', { text: c.C.toFixed(2) }), CYL.el('td', { text: LAYOUT.lengthStat(c.id, 7000).toFixed(1) })]));
+  });
+});
+
+/* ---------- Figure 2.1: length against takeoff weight ---------- */
+CYL.ready(function () {
+  'use strict';
+  var GROUPS = [
+    { id: 'jt', label: 'Jet transports', color: 't', shape: 'circle', test: function (a) { return a.era === 'jettransport'; } },
+    { id: 'fighter', label: 'Jet fighters', color: 'r', shape: 'tri', test: function (a) { return a.era === 'jetfighter'; } },
+    { id: 'tprop', label: 'Turboprops', color: 'warn', shape: 'square', test: function (a) { return a.eng === 'turboprop'; } },
+    { id: 'ga', label: 'General aviation (piston)', color: 'good', shape: 'diamond', test: function (a) { return a.role === 'ga' && a.eng === 'piston'; } },
+    { id: 'older', label: 'Earlier aircraft', color: 'muted', shape: 'circle', test: function () { return true; } }
+  ];
+  function groupOf(a) { for (var i = 0; i < GROUPS.length; i++) if (GROUPS[i].test(a)) return GROUPS[i]; return GROUPS[GROUPS.length - 1]; }
+  var D = AERO.DATA.filter(function (a) { return a.W0 && a.l; }).map(function (a) { return { a: a, g: groupOf(a) }; });
+  var CJ3 = { W0: 6291, l: 15.6 };
+  var st = { cls: 'jt', W0: 6943 };
+  var chart = AERO.chart(document.getElementById('fig21-stage'), {
+    x: { label: 'Takeoff weight \\(\\Wo\\) (kg)', min: 300, max: 500000, log: true }, y: { label: 'Length (m)', min: 4, max: 100, log: true }, height: 360,
+    ariaLabel: 'Overall length against takeoff weight on logarithmic scales, with statistical lines by class.',
+    legend: GROUPS.map(function (g) { return { label: g.label, color: g.color, shape: g.shape }; }).concat([{ label: 'Chosen class', color: 'accent', line: true }])
+  });
+  LAYOUT.LSTAT.forEach(function (c) { chart.fn(function (w) { return c.a * Math.pow(w, c.C); }, { color: 'muted', width: 1, samples: 60 }); });
+  var line = chart.fn(function (w) { var c = cls(); return c.a * Math.pow(w, c.C); }, { color: 'accent', width: 2.8, samples: 80 });
+  chart.points(D, { x: function (d) { return d.a.W0; }, y: function (d) { return d.a.l; }, color: function (d) { return d.g.color; }, shape: function (d) { return d.g.shape; }, r: 4,
+    title: function (d) { var c = cls(), est = c.a * Math.pow(d.a.W0, c.C); return '<strong>' + CYL.escapeHtml(d.a.name) + '</strong> (' + d.a.year + ')<br>' + Math.round(d.a.W0).toLocaleString('en-US') + ' kg, ' + d.a.l.toFixed(1) + ' m<br>' + CYL.escapeHtml(c.label) + ' line: ' + est.toFixed(1) + ' m'; } });
+  chart.points([CJ3], { x: function (d) { return d.W0; }, y: function (d) { return d.l; }, color: 'ink', shape: 'diamond', r: 6, title: function () { return '<strong>Cessna Citation CJ3 Gen2</strong><br>6291 kg, 15.6 m'; } });
+  var mk = chart.marker([st.W0, 10], { color: 'accent', r: 6 });
+  function cls() { return LAYOUT.LSTAT.filter(function (c) { return c.id === st.cls; })[0]; }
+  var panel = document.getElementById('fig21-controls');
+  var sel = CYL.select({ label: 'Class', value: st.cls, options: LAYOUT.LSTAT.map(function (c) { return { value: c.id, label: c.label }; }), onChange: function (v) { st.cls = v; draw(); } });
+  var sW = CYL.slider({ label: 'Takeoff weight \\(\\Wo\\)', min: Math.log10(300), max: Math.log10(400000), step: 0.005, value: Math.log10(st.W0), color: 'accent',
+    format: function (v) { var w = Math.pow(10, v); return (w < 10000 ? Math.round(w) : Math.round(w / 100) * 100).toLocaleString('en-US') + ' kg'; },
+    onInput: function (v) { st.W0 = Math.pow(10, v); draw(); } });
+  var reset = CYL.button('Business jet', function () { st.W0 = 6943; st.cls = 'jt'; sel.set('jt', true); sW.set(Math.log10(6943), true); draw(); }, { small: true });
+  var ro = { c: CYL.readout('\\(a\\) and \\(C\\)'), l: CYL.readout('\\(\\lF\\) at your \\(\\Wo\\)'), j: CYL.readout('Class members in the data') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Statistics' }));
+  [sel.el, sW.el, reset, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.c.el, ro.l.el, ro.j.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  var NOTE = { jt: 'jet transports (violet)', fighter: 'jet fighters (orange)', tprop: 'turboprops (brown); this class is for twins', ga1: 'piston general aviation (green)', ga2: 'piston general aviation (green)', trainer: 'none' };
+  function draw() {
+    var c = cls(), l = c.a * Math.pow(st.W0, c.C);
+    line.draw(); mk.set([st.W0, l]);
+    ro.c.set(c.a.toFixed(3) + ' and ' + c.C.toFixed(2));
+    ro.l.set(l.toFixed(1) + ' m');
+    ro.j.set(NOTE[c.id] || 'none');
+    chart.setAriaLabel('Overall length against takeoff weight on logarithmic scales. The ' + c.label.toLowerCase() + ' line gives ' + l.toFixed(1) + ' meters at ' + Math.round(st.W0) + ' kilograms. The CJ3 Gen2, at 6291 kilograms, is 15.6 meters long.');
+  }
+  draw();
+});
+
+/* ---------- Figure 2.2: seats abreast against wetted area ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BENCH = { 2: [1, 1], 3: [1, 2], 4: [2, 2], 5: [2, 3], 6: [3, 3], 7: [2, 3, 2], 8: [2, 4, 2], 9: [3, 3, 3], 10: [3, 4, 3] };
+  var st = { n: 150, k: 6 };
+  function fus(n, k) {
+    var aisles = LAYOUT.aislesFor(k), dI = LAYOUT.innerWidth(BENCH[k], aisles, aisles === 1 ? 19 : 20, 1, 'economy', null), d = LAYOUT.outer(dI);
+    var rows = Math.ceil(n / k), lF = LAYOUT.fuselageLength({ lCockpit: 4, lCabin: rows * 1.0, d: d, kTail: 3.5, kOver: 1.9 });
+    return { k: k, aisles: aisles, d: d, rows: rows, lF: lF, f: lF / d, sw: LAYOUT.swetFus(d, lF), ok: lF / d >= 4.5 && rows >= 2 };
+  }
+  function all() { var o = []; for (var k = 2; k <= 10; k++) { var q = fus(st.n, k); if (q.ok) o.push(q); } return o; }
+  var chart = AERO.chart(document.getElementById('fig22-stage'), {
+    x: { label: 'Seats abreast \\(n_{SA}\\)', min: 1.5, max: 10.5, ticks: [2, 3, 4, 5, 6, 7, 8, 9, 10] }, y: { label: 'Fuselage wetted area (m²)', min: 0, max: 600 }, height: 330,
+    ariaLabel: 'Fuselage wetted area against seats abreast.',
+    legend: [{ label: 'One aisle', color: 'accent' }, { label: 'Two aisles', color: 't', shape: 'square' }, { label: 'Your layout', color: 'r', shape: 'diamond' }, { label: '\\(0.45\\sqrt{n_{\\text{PAX}}}\\)', color: 'muted', line: true, dashed: true }]
+  });
+  var vl = chart.vline(5.5, { color: 'muted', dashed: true });
+  var pl = chart.polyline([], { color: 'muted', width: 1.4 });
+  var pts = chart.points([], { x: function (q) { return q.k; }, y: function (q) { return q.sw; }, color: function (q) { return q.aisles === 1 ? 'accent' : 't'; }, shape: function (q) { return q.aisles === 1 ? 'circle' : 'square'; }, r: 5,
+    title: function (q) { return '<strong>' + q.k + ' abreast</strong>, ' + q.aisles + (q.aisles === 1 ? ' aisle' : ' aisles') + '<br>' + q.rows + ' rows; \\(\\dF\\) ' + q.d.toFixed(2) + ' m, \\(\\lF\\) ' + q.lF.toFixed(1) + ' m<br>fineness ' + q.f.toFixed(1) + ', wetted area ' + Math.round(q.sw) + ' m²'; } });
+  var mk = chart.marker([6, 0], { color: 'r', r: 7, shape: 'diamond' });
+  var panel = document.getElementById('fig22-controls');
+  var sN = CYL.slider({ label: 'Passengers \\(n_{\\text{PAX}}\\)', min: 20, max: 500, step: 2, value: st.n, color: 'accent', onInput: function (v) { st.n = v; draw(); } });
+  var sK = CYL.slider({ label: 'Your seats abreast', min: 2, max: 10, step: 1, value: st.k, color: 'r', onInput: function (v) { st.k = v; draw(); } });
+  var ro = { s: CYL.readout('Statistical \\(n_{SA}\\)'), b: CYL.readout('Least wetted area'), y: CYL.readout('Yours: \\(\\dF\\), \\(\\lF\\), fineness'), w: CYL.readout('Yours: wetted area') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Cabin' }));
+  [sN.el, sK.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.s.el, ro.b.el, ro.y.el, ro.w.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var A = all(), ns = 0.45 * Math.sqrt(st.n), best = A.reduce(function (p, q) { return !p || q.sw < p.sw ? q : p; }, null), me = fus(st.n, st.k);
+    var ymax = Math.max(100, Math.ceil(Math.max.apply(null, A.map(function (q) { return q.sw; }).concat([me.sw])) * 1.15 / 100) * 100);
+    chart.setAxes({ y: { label: 'Fuselage wetted area (m²)', min: 0, max: ymax, log: false } });
+    vl.set(ns); pl.set(A.map(function (q) { return [q.k, q.sw]; })); pts.set(A);
+    mk.set(me.ok ? [me.k, me.sw] : null);
+    ro.s.set(ns.toFixed(2));
+    ro.b.set(best ? best.k + ' abreast, ' + Math.round(best.sw) + ' m²' : '–');
+    ro.y.set(me.d.toFixed(2) + ' m, ' + me.lF.toFixed(1) + ' m, ' + me.f.toFixed(1) + (me.ok ? '' : ' (too short)'));
+    ro.w.set(me.ok ? Math.round(me.sw) + ' m²' + (best ? ' (+' + Math.round(100 * (me.sw / best.sw - 1)) + '%)' : '') : 'fineness under 4.5');
+    chart.setAriaLabel('For ' + st.n + ' passengers the fuselage wetted area is least at ' + (best ? best.k + ' seats abreast, ' + Math.round(best.sw) + ' square meters' : 'no valid layout') + '; the statistic gives ' + ns.toFixed(1) + ' seats abreast. Your layout, ' + st.k + ' abreast, has a fuselage ' + me.lF.toFixed(1) + ' meters long and ' + me.d.toFixed(2) + ' meters in diameter.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1',
+    type: 'numeric',
+    prompt: 'Estimate the fuselage length of a single-engine general-aviation aircraft of \\(\\Wo = 1200\\ \\text{kg}\\) (\\(a = 1.600\\), \\(C = 0.23\\)).',
+    label: '\\(\\lF =\\)', answer: 1.6 * Math.pow(1200, 0.23), unit: 'm',
+    hints: ['\\(\\lF = a\\Wo^{C}\\) with \\(\\Wo\\) in kilograms.', '\\(1200^{0.23} = 5.11\\).'],
+    explain: 'The small exponent means light aircraft all have similar fuselage lengths: their size is set by the people in them.',
+    solution: '\\[ \\lF = 1.600(1200)^{0.23} = 1.600(5.11) = 8.17\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2',
+    type: 'mc',
+    prompt: 'A new airliner will seat 300 passengers in economy class. What layout does the statistic for seats abreast suggest?',
+    choices: [
+      { html: '8 abreast with two aisles', correct: true, feedback: 'Yes: \\(0.45\\sqrt{300} = 7.8\\), so 8 abreast; above 6 abreast the rules require a second aisle.' },
+      { html: '6 abreast with one aisle', feedback: 'That suits about 150 to 200 passengers; at 300 the fuselage would be very long.' },
+      { html: '8 abreast with one aisle', feedback: 'No more than three seats may sit between an aisle and a wall or another aisle, so 8 abreast needs two aisles.' },
+      { html: '10 abreast with two aisles', feedback: '\\(0.45\\sqrt{300} = 7.8\\): ten abreast is a layout for 450 to 500 passengers.' }
+    ],
+    explain: '\\(n_{SA} \\approx 0.45\\sqrt{n_{\\text{PAX}}}\\), rounded to a whole layout, with one aisle up to 6 abreast and two up to 12.'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3',
+    type: 'mc',
+    prompt: 'Figure 2.2 shows that 6 abreast gives about the least fuselage wetted area even for 400 passengers. Why do airliners of that size use 9 or 10 abreast instead?',
+    choices: [
+      { html: 'A 6-abreast fuselage for 400 passengers would be about 77&nbsp;m long: too long to rotate, park, board and stiffen', correct: true, feedback: 'Yes: the length limits, not the drag, set the layout of large aircraft.' },
+      { html: 'Wider fuselages have less skin friction per square meter', feedback: 'The friction per square meter hardly depends on the width; the total depends on the wetted area.' },
+      { html: 'The fineness ratio of a 6-abreast fuselage would be below 4.5', feedback: 'The opposite: it would be very slender, about 20.' },
+      { html: 'The certification rules forbid more than 50 rows', feedback: 'There is no such rule; the limits are practical ones.' }
+    ],
+    explain: 'The wetted-area minimum is broad, so the practical limits on length decide: rotation, airports, boarding and evacuation, and bending stiffness.'
+  });
+});
+</script>
+</body>
+</html>

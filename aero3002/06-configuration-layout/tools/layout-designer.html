@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layout Designer · Configuration Layout and Fuselage Sizing</title>
+<meta name="description" content="A configuration layout tool: enter the cabin, fuselage, wing, tails, engines and fuel of a transport and see its three-view, cabin cross-section and cabin plan to scale, with the fuselage size, tail areas, fuel volume, wetted areas, maximum lift-to-drag ratio and the certification checks. Presets include the module's business jet and three illustrative transports.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .ld-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px; }
+  @media (max-width: 719.98px) { .ld-pair { grid-template-columns: minmax(0, 1fr); } }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table td.l, .sc-table th.l { text-align: left; }
+  .sc-warn { color: var(--c-bad); font-weight: 700; }
+  .sc-ok { color: var(--c-good); font-weight: 700; }
+</style>
+</head>
+<body data-page="layout" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Configuration layout</p>
+    <h1>Layout Designer</h1>
+    <p class="lede">The whole module on one page: lay out a transport's cabin, close the fuselage around it, place the wing, tails and engines, and check the fuel. The drawings update as you type, and the results give the fuselage size, the tail areas, the fuel volume, the wetted areas and the refined \(\LDmax\), with the certification and layout checks of the lessons.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="ld-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="ld-presets" role="group" aria-labelledby="ld-presets-label"></div>
+    <div class="sc-grid" id="ld-grid"></div>
+    <p class="small muted" id="ld-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="ld-totals"></div>
+    <figure class="figure wide" aria-labelledby="ld-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="ld-stage1"></div>
+      </div>
+      <figcaption id="ld-fig1-cap"><strong>Figure T.1</strong> The three-view, to scale: the side view (top left), half of the top view under it and the front view on the right. Fuselage gray, wing teal, horizontal tail blue, vertical tail violet, nacelles darker gray; the dashed box is the cabin and the dots are the quarter-MAC points of the wing and tails.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="ld-fig2-cap">
+      <div class="ld-pair">
+        <div class="viz stacked"><div class="viz-stage" id="ld-stage2"></div></div>
+        <div class="viz stacked"><div class="viz-stage" id="ld-stage3"></div></div>
+      </div>
+      <figcaption id="ld-fig2-cap"><strong>Figure T.2</strong> The cabin cross-section, looking forward, and the cabin plan from above, nose to the left, to scale: seats teal, aisle green, lavatories violet, galleys brown, and the allowance for doors and stowage dashed.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="ld-table">
+        <caption>Components and wetted areas</caption>
+        <thead><tr><th scope="col">Component</th><th scope="col" class="l">Size</th><th scope="col">\(\Swet\) <span class="u">(m²)</span></th><th scope="col">Share</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="ld-checks">
+        <caption>Checks</caption>
+        <thead><tr><th scope="col">Check</th><th scope="col" class="l">Value</th><th scope="col" class="l">Result</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="ld-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Cabin width (Lesson 3): the seat benches (the seat width times the seats, or the economy, business or first-class bench widths when the seat width is 0), the aisles and two wall gaps, \(\dI\). Wall: \(\Delta d = 0.084 + 0.045\,\dI\) in meters, \(\dF = \dI + \Delta d\). The floor is drawn \(0.42\,\dI\) below the axis for small cabins, rising to \(0.12\,\dI\) for large ones.</li>
+      <li>Cabin length (Lesson 4): rows times pitch, plus 40&nbsp;in per lavatory and 30&nbsp;in per galley, plus the allowance for doors and stowage. Exits on each side by CS/FAR 25.807 (simplified); cabin crew one per 50 seats above 19.</li>
+      <li>Fuselage (Lesson 5): \(\lF = l_{\text{cockpit}} + l_{\text{cabin}} + (k_{TC} - k_{\text{overlap}})\,\dF\), rounded up to the next 0.1&nbsp;m; tail angle \(\arctan(1/k_{TC})\).</li>
+      <li>Wing and tails (Lesson 6): the wing's quarter-MAC at the chosen share of \(\lF\); both tail arms the chosen share of \(\lF\), so the tails' quarter-MAC points sit one arm behind the wing's. \(S_{HT} = c_{HT}\bar c_WS_W/L_{HT}\) and \(S_{VT} = c_{VT}b_WS_W/L_{VT}\). A T-tail's horizontal surface sits on the fin's tip, and its area is found on its own, longer arm.</li>
+      <li>Fuel (Lesson 7): \(V_f = m_f/\rho_f\) against the wing tank volume \(0.54(S^{1.5}/\sqrt A)(t/c)_r(1 + \lambda\sqrt\tau + \lambda^2\tau)/(1 + \lambda)^2\).</li>
+      <li>Wetted areas and \(\LDmax\) (Lesson 8): the fuselage formula for a cylindrical middle part (valid for fineness ratios of 4.5 or more), the wing's exposed area outside the fuselage, the tails' whole areas, nacelles as cylinders; \(\LDmax = \tfrac12\sqrt{\pi Ae/(C_{fe}\Swet/\Sref)}\).</li>
+      <li>The drawings are schematic: the nose, tail cone and nacelle shapes are drawn from the lengths above, not designed. Engines are drawn in pairs on the rear fuselage or the wing, or as one propeller in the nose. The business jet preset is the module's; the others are illustrative designs, not real types. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var IN = LAYOUT.IN;
+  var BENCH = { '1': [1], '2': [2], '1+1': [1, 1], '1+2': [1, 2], '2+2': [2, 2], '2+3': [2, 3], '3+3': [3, 3], '2+3+2': [2, 3, 2], '2+4+2': [2, 4, 2], '3+3+3': [3, 3, 3], '3+4+3': [3, 4, 3] };
+  var IDS = ['bizjet', 'commuter', 'tprop', 'narrow'];
+  // the flat input state; keys map onto LAYOUT's layout spec in spec()
+  function flat(p) {
+    var c = p.cabin, f = p.fus, w = p.wing, t = p.tail, e = p.eng, b = c.benches.join('+');
+    return { W0: p.W0, ff: p.fuelFrac, rho: p.rhoF, Cfe: p.Cfe, e: p.e,
+      bench: b, aisleIn: c.aisleIn, seatIn: c.seatIn || 0, cls: c.cls || 'economy', gapIn: c.gapIn, rows: c.rows, pitchIn: c.pitchIn, lav: c.lav, galley: c.galley, extra: c.extra,
+      lCockpit: f.lCockpit, kNose: f.kNose, kTail: f.kTail, kOver: f.kOver,
+      S: w.S, A: w.A, lam: w.lam, sweep: w.sweep, tc: w.tc, tau: w.tau, pos: w.pos, dih: w.dihedral, xw: Math.round(w.xFrac * 1000) / 10,
+      cHT: t.cHT, cVT: t.cVT, arm: Math.round(t.armFrac * 1000) / 10, tee: t.tee ? 'yes' : 'no', hA: t.hA, hLam: t.hLam, hSweep: t.hSweep, vA: t.vA, vLam: t.vLam, vSweep: t.vSweep, ttc: t.tc,
+      eng: e.kind, D: e.D || 0, l: e.l || 0, ex: e.kind === 'rear' ? Math.round((e.xFrac || 0.75) * 100) : Math.round((e.yFrac || 0.34) * 100), prop: e.prop || 0 };
+  }
+  function spec() {
+    var b = BENCH[st.bench] || [1, 1], nSA = b.reduce(function (a, k) { return a + k; }, 0), aisles = b.length === 1 ? 0 : LAYOUT.aislesFor(nSA);
+    var kind = st.eng;
+    return { W0: st.W0, fuelFrac: st.ff, rhoF: st.rho, Cfe: st.Cfe, e: st.e,
+      cabin: { benches: b, aisles: aisles, aisleIn: aisles ? st.aisleIn : 0, seatIn: st.seatIn || 0, cls: st.cls, gapIn: st.gapIn, rows: st.rows, pitchIn: st.pitchIn, lav: st.lav, galley: st.galley, extra: st.extra },
+      fus: { lCockpit: st.lCockpit, kNose: st.kNose, kTail: st.kTail, kOver: st.kOver, round: 0.1 },
+      wing: { S: st.S, A: st.A, lam: st.lam, sweep: st.sweep, tc: st.tc, tau: st.tau, pos: st.pos, dihedral: st.dih, xFrac: st.xw / 100 },
+      tail: { cHT: st.cHT, cVT: st.cVT, armFrac: st.arm / 100, tee: st.tee === 'yes', hA: st.hA, hLam: st.hLam, hSweep: st.hSweep, vA: st.vA, vLam: st.vLam, vSweep: st.vSweep, tc: st.ttc },
+      eng: kind === 'rear' ? { kind: 'rear', n: 2, D: st.D, l: st.l, xFrac: st.ex / 100, prop: 0 } : kind === 'wing' ? { kind: 'wing', n: 2, D: st.D, l: st.l, yFrac: st.ex / 100, prop: st.prop || 0 } :
+        kind === 'nose' ? { kind: 'nose', n: 1, D: 0, l: 0, prop: st.prop || 1.9 } : { kind: 'none', n: 0, D: 0, l: 0 } };
+  }
+  var KEY = 'layout:inputs';
+  var BASE = flat(LAYOUT.preset('bizjet'));
+  var st = Object.assign({}, BASE, CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('ld-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options) { return { k: k, label: label, type: 'sel', options: options }; }
+  var BOXES = [
+    { t: 'Aircraft and fuel', f: [num('W0', 'Takeoff mass \\(\\Wo\\) (kg)'), num('ff', 'Fuel fraction \\(\\Wf/\\Wo\\)'), num('rho', 'Fuel density (kg/m³)'), num('Cfe', '\\(C_{fe}\\)'), num('e', 'Oswald factor \\(e\\)')] },
+    { t: 'Cabin cross-section', f: [opt('bench', 'Seats abreast', Object.keys(BENCH).map(function (k) { return [k, k === '1' ? '1 (no aisle)' : k === '2' ? '2 side by side (no aisle)' : k]; })), num('seatIn', 'Seat width (in; 0: bench table)'), opt('cls', 'Bench table', [['economy', 'Economy'], ['business', 'Business'], ['first', 'First']]), num('aisleIn', 'Aisle width (in)'), num('gapIn', 'Gap at the wall (in)')] },
+    { t: 'Cabin length', f: [num('rows', 'Rows', 1), num('pitchIn', 'Seat pitch (in)'), num('lav', 'Lavatories', 1), num('galley', 'Galleys', 1), num('extra', 'Doors and stowage (m)')] },
+    { t: 'Fuselage', f: [num('lCockpit', 'Cockpit and nose (m)'), num('kNose', 'Nose to full diameter (\\(\\dF\\))'), num('kTail', 'Tail cone \\(l_{TC}/\\dF\\)'), num('kOver', 'Cabin overlap (\\(\\dF\\))')] },
+    { t: 'Wing', f: [num('S', 'Area \\(S\\) (m²)'), num('A', 'Aspect ratio \\(A\\)'), num('lam', 'Taper ratio \\(\\lambda\\)'), num('sweep', 'Quarter-chord sweep (°)'), num('tc', 'Root \\(t/c\\)'), num('tau', 'Thickness taper \\(\\tau\\)'), opt('pos', 'Position', [['low', 'Low'], ['mid', 'Mid'], ['high', 'High']]), num('dih', 'Dihedral (°)'), num('xw', '\\(\\bar c/4\\) station (% of \\(\\lF\\))')] },
+    { t: 'Tails', f: [num('cHT', '\\(c_{HT}\\)'), num('cVT', '\\(c_{VT}\\)'), num('arm', 'Arm (% of \\(\\lF\\))'), opt('tee', 'T-tail', [['no', 'No'], ['yes', 'Yes']]), num('hA', 'Horizontal \\(A\\)'), num('hLam', 'Horizontal \\(\\lambda\\)'), num('hSweep', 'Horizontal sweep (°)'), num('vA', 'Vertical \\(A\\)'), num('vLam', 'Vertical \\(\\lambda\\)'), num('vSweep', 'Vertical sweep (°)'), num('ttc', 'Tail \\(t/c\\)')] },
+    { t: 'Engines', f: [opt('eng', 'Arrangement', [['rear', 'Two on the rear fuselage'], ['wing', 'Two on the wing'], ['nose', 'One propeller in the nose'], ['none', 'None drawn']]), num('D', 'Nacelle diameter (m)'), num('l', 'Nacelle length (m)'), num('ex', 'Rear: center (% of \\(\\lF\\)); wing: station (% of half span)'), num('prop', 'Propeller diameter (m; 0: jet)')] }
+  ];
+  function ok(k, v) {
+    var ints = { rows: [1, 80], lav: [0, 12], galley: [0, 8] };
+    if (ints[k]) return Math.round(v) === v && v >= ints[k][0] && v <= ints[k][1];
+    var R = { W0: [200, 600000], ff: [0.01, 0.6], rho: [600, 900], Cfe: [0.001, 0.01], e: [0.4, 1], seatIn: [0, 40], aisleIn: [0, 40], gapIn: [0, 6], pitchIn: [24, 80], extra: [0, 12],
+      lCockpit: [0.5, 10], kNose: [0.5, 3], kTail: [1.5, 6], kOver: [0, 3], S: [5, 900], A: [2, 25], lam: [0.1, 1], sweep: [-20, 45], tc: [0.05, 0.25], tau: [0.4, 1], dih: [-10, 10], xw: [20, 70],
+      cHT: [0.2, 1.5], cVT: [0.01, 0.15], arm: [25, 70], hA: [2, 8], hLam: [0.2, 1], hSweep: [-10, 50], vA: [0.6, 3], vLam: [0.2, 1], vSweep: [0, 60], ttc: [0.06, 0.18], D: [0, 5], l: [0, 10], ex: [10, 95], prop: [0, 7] };
+    return !R[k] || (v >= R[k][0] && v <= R[k][1]);
+  }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' });
+    bx.f.forEach(function (q) {
+      var id = 'ld-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () { st[q.k] = el.value; save(); update(); });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); } });
+      }
+      inputs[q.k] = el;
+      f.appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t }), f]));
+  });
+  CYL.renderMath(grid);
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = st[k]; }); }
+  var pre = document.getElementById('ld-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var p = LAYOUT.preset(id), b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: p.label });
+    b.addEventListener('click', function () { st = flat(LAYOUT.preset(id)); save(); fill(); update(); document.getElementById('ld-msg').textContent = 'Loaded: ' + p.label + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+
+  /* ---------- drawings ---------- */
+  var p1 = CYL2D.plane(document.getElementById('ld-stage1'), { xRange: [0, 30], yRange: [-10, 4], grid: 'none', axes: false, ticks: false, maxHeight: 600, ariaLabel: 'Three-view drawing of the layout.' });
+  var p2 = CYL2D.plane(document.getElementById('ld-stage2'), { xRange: [-1, 1], yRange: [-1, 1], grid: 'none', axes: false, ticks: false, maxHeight: 320, ariaLabel: 'Cabin cross-section.' });
+  var p3 = CYL2D.plane(document.getElementById('ld-stage3'), { xRange: [0, 6], yRange: [-1, 1], grid: 'none', axes: false, ticks: false, maxHeight: 320, ariaLabel: 'Cabin plan.' });
+  var g1 = p1.group(), g1l = p1.group(), g2 = p2.group(), g3 = p3.group(), L1 = null;
+  function fit1() { if (!L1) return; var s = 20; for (var i = 0; i < 4; i++) { p1.setRange([L1.xRange[0] - 6 / s, L1.xRange[1] + 6 / s], [L1.yRange[0] - 6 / s, L1.yRange[1] + 6 / s]); s = p1.getView().scale || s; } }
+
+  /* ---------- results ---------- */
+  var R;
+  function f1(v) { return (v + 1e-9).toFixed(1); } function f2(v) { return (v + 1e-9).toFixed(2); }   // 7.285 shows as 7.29, as in the lessons
+  function exitText(e) { var p = []; ['A', 'I', 'II', 'III', 'IV'].forEach(function (k) { if (e[k]) p.push(e[k] + ' \u00d7 Type ' + k); }); return p.join(', '); }
+  function compute() {
+    var sp = spec(), r = LAYOUT.evaluate(sp), G = r.G, c = sp.cabin;
+    r.K = LAYOUT.checkCabin(c); r.C = LAYOUT.crossSection(c); r.P = LAYOUT.cabinPlan(c);
+    r.exits = LAYOUT.exits(r.pax); r.crew = LAYOUT.attendants(r.pax); r.tailAngle = LAYOUT.tailAngle(sp.fus.kTail);
+    r.fill = r.vFuel / r.vTank;
+    var w = G.wing, h = G.ht, v = G.vt;
+    r.wingLE = w.xLE; r.wingTE = w.xLE + w.pf.cr;
+    r.tailEnd = Math.max(h.xLE + h.pf.cr, v.xLE + v.cr);
+    r.checks = [
+      ['Aisle width at the armrests (25.815)', c.aisles ? c.aisleIn + ' in; ' + r.K.aisleMin.low + ' in below 25 in, ' + r.K.aisleMin.high + ' in above' : 'no aisle', !c.aisles || r.K.aisleOK],
+      ['Aisles for the seats abreast (25.817)', r.K.nSA + ' abreast, ' + c.aisles + (c.aisles === 1 ? ' aisle' : ' aisles') + '; ' + r.K.aislesNeeded + ' needed', c.benches.length === 1 ? r.K.nSA <= 3 || c.aisles >= r.K.aislesNeeded : r.K.aislesOK],
+      ['Aisle height', f2(r.C.aisleHeight) + ' m (' + Math.round(r.C.aisleHeight / IN) + ' in)', null],
+      ['Exits on each side (25.807, simplified)', exitText(r.exits), null],
+      ['Minimum cabin crew', r.crew ? String(r.crew) : 'none', null],
+      ['Fineness ratio, 4.5 or more for the wetted-area formula', f2(r.fineness), r.fineness >= 4.5],
+      ['Tail angle', f1(r.tailAngle) + '°', null],
+      ['Wing root against the cabin (FS ' + f2(G.cabin0) + ' to ' + f2(G.cabin1) + ')', 'FS ' + f2(r.wingLE) + ' to ' + f2(r.wingTE), r.wingLE >= G.cabin0 - 0.3 && r.wingTE <= G.cabin1 + 0.3],
+      ['Tails on the fuselage (ends at FS ' + f2(r.lF) + ')', 'roots end at FS ' + f2(r.tailEnd), r.tailEnd <= r.lF + 0.25],
+      ['Fuel in the wing', f2(r.vFuel) + ' of ' + f2(r.vTank) + ' m³ (' + Math.round(100 * r.fill) + '%)', r.fill <= 1]
+    ];
+    if (sp.eng.kind === 'rear') r.checks.push(['Nacelle inlet behind the cabin', 'inlet FS ' + f2(G.eng.x - G.eng.l / 2) + ', cabin ends FS ' + f2(G.cabin1), G.eng.x - G.eng.l / 2 >= G.cabin1]);
+    return r;
+  }
+  function update() {
+    R = compute();
+    var G = R.G, sp = R.sp;
+    Object.keys(chips).forEach(function (id) { var p = flat(LAYOUT.preset(id)), on = Object.keys(p).every(function (k) { return String(p[k]) === String(st[k]); }); chips[id].setAttribute('aria-pressed', String(on)); });
+    inputs.cls.disabled = !!st.seatIn; inputs.aisleIn.disabled = (BENCH[st.bench] || []).length === 1;
+    inputs.D.disabled = inputs.l.disabled = st.eng === 'nose' || st.eng === 'none'; inputs.ex.disabled = st.eng === 'nose' || st.eng === 'none'; inputs.prop.disabled = st.eng === 'rear' || st.eng === 'none';
+    // tiles
+    var T = [['Seats', String(R.pax)], ['\\(\\dF\\)', f2(R.d) + ' m'], ['\\(\\lF\\)', f1(R.lF) + ' m'], ['Fineness', f1(R.fineness)], ['\\(S_{HT}\\), \\(S_{VT}\\)', f2(R.SHT) + ', ' + f2(R.SVT) + ' m²'], ['Tanks filled', Math.round(100 * R.fill) + '%', R.fill > 1], ['\\(\\Swet/\\Sref\\)', f2(R.ratio)], ['\\(\\LDmax\\)', f2(R.LD)]];
+    var tot = document.getElementById('ld-totals'); tot.innerHTML = '';
+    T.forEach(function (t) { tot.appendChild(CYL.el('div', { class: 'sc-tile' + (t[2] ? ' warn' : '') }, [CYL.el('p', { class: 'lab', html: t[0] }), CYL.el('p', { class: 'val', text: t[1] })])); });
+    CYL.renderMath(tot);
+    // three-view
+    g1.clear(); g1l.clear();
+    L1 = LAYOUT.threeView(p1, g1, G);
+    var w = G.wing, h = G.ht, v = G.vt;
+    [L1.S(R.xAcW, w.z), L1.S(h.xAc, h.z), L1.S(v.xAc, v.z0 + v.zmac), L1.T(R.xAcW, w.pf.ymac), L1.T(h.xAc, h.pf.ymac)].forEach(function (p) { g1l.point(p, { color: 'ink', r: 3.5 }); });
+    fit1();
+    p1.svg.setAttribute('aria-label', 'Three-view drawing: fuselage ' + f1(R.lF) + ' m long and ' + f2(R.d) + ' m in diameter, wing of ' + sp.wing.S + ' square meters and ' + f2(R.wpf.b) + ' m span, ' + (sp.tail.tee ? 'T-tail' : 'conventional tail') + ', engines: ' + sp.eng.kind + '.');
+    // cross-section and plan
+    g2.clear(); LAYOUT.drawSection(g2, R.C); var rO = R.C.dO / 2; p2.setRange([-rO * 1.06, rO * 1.06], [-rO * 1.06, rO * 1.06]);
+    p2.svg.setAttribute('aria-label', 'Cabin cross-section: ' + R.K.nSA + ' abreast, inner diameter ' + R.C.dI.toFixed(3) + ' m, outer ' + R.C.dO.toFixed(3) + ' m.');
+    g3.clear(); LAYOUT.drawCabinPlan(g3, R.P); var pad = 0.03 * R.P.L; p3.setRange([-pad, R.P.L + pad], [-R.C.dI / 2 - pad, R.C.dI / 2 + pad]);
+    p3.svg.setAttribute('aria-label', 'Cabin plan: ' + R.pax + ' seats in ' + sp.cabin.rows + ' rows, cabin ' + R.lCabin.toFixed(2) + ' m long.');
+    // tables
+    var S = R.swet, rows = [
+      ['Fuselage', f1(R.lF) + ' \u00d7 ' + f2(R.d) + ' m', S.fus],
+      ['Wing', 'exposed ' + f2(R.sExp) + ' of ' + sp.wing.S + ' m², b ' + f2(R.wpf.b) + ' m', S.wing],
+      ['Horizontal tail', f2(R.SHT) + ' m², arm ' + f2(R.LHT) + ' m', S.ht],
+      ['Vertical tail', f2(R.SVT) + ' m², arm ' + f2(R.LVT) + ' m', S.vt],
+      ['Nacelles', S.nac ? '2 \u00d7 ' + f2(sp.eng.D) + ' \u00d7 ' + f2(sp.eng.l) + ' m' : 'none', S.nac]
+    ];
+    var tb = document.querySelector('#ld-table tbody'); tb.innerHTML = '';
+    rows.forEach(function (q) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: q[0] }), CYL.el('td', { class: 'l', text: q[1] }), CYL.el('td', { text: f1(q[2]) }), CYL.el('td', { text: Math.round(100 * q[2] / S.total) + '%' })])); });
+    var tf = document.querySelector('#ld-table tfoot'); tf.innerHTML = '';
+    tf.appendChild(CYL.el('tr', null, [CYL.el('th', { scope: 'row', text: 'Total' }), CYL.el('td', { class: 'l', text: '\u03a3 / S = ' + f2(R.ratio) + ', CD0 = ' + (sp.Cfe * R.ratio).toFixed(4) }), CYL.el('td', { text: f1(S.total) }), CYL.el('td', { text: '100%' })]));
+    var tc = document.querySelector('#ld-checks tbody'); tc.innerHTML = '';
+    R.checks.forEach(function (q) { tc.appendChild(CYL.el('tr', null, [CYL.el('td', { text: q[0] }), CYL.el('td', { class: 'l', text: q[1] }), CYL.el('td', { class: 'l' + (q[2] === false ? ' sc-warn' : q[2] ? ' sc-ok' : ''), text: q[2] === false ? 'check' : q[2] ? 'meets' : '\u2013' })])); });
+  }
+  document.getElementById('ld-csv').addEventListener('click', function () {
+    var sp = R.sp, lines = ['quantity,value,unit'];
+    function add(k, v, u) { lines.push('"' + k + '",' + v + ',' + (u || '')); }
+    Object.keys(st).forEach(function (k) { add('input ' + k, typeof st[k] === 'number' ? st[k] : '"' + st[k] + '"', ''); });
+    add('seats', R.pax); add('inner diameter', R.dI.toFixed(4), 'm'); add('outer diameter', R.d.toFixed(4), 'm'); add('cabin length', R.lCabin.toFixed(4), 'm');
+    add('fuselage length (calculated)', R.lFcalc.toFixed(4), 'm'); add('fuselage length (rounded)', R.lF.toFixed(1), 'm'); add('fineness ratio', R.fineness.toFixed(3));
+    add('wing span', R.wpf.b.toFixed(4), 'm'); add('wing MAC', R.wpf.mac.toFixed(4), 'm'); add('wing quarter-MAC station', R.xAcW.toFixed(4), 'm'); add('horizontal tail arm', R.LHT.toFixed(4), 'm'); add('vertical tail arm', R.LVT.toFixed(4), 'm');
+    add('S_HT', R.SHT.toFixed(4), 'm2'); add('S_VT', R.SVT.toFixed(4), 'm2'); add('fuel volume', R.vFuel.toFixed(4), 'm3'); add('tank volume', R.vTank.toFixed(4), 'm3');
+    ['fus', 'wing', 'ht', 'vt', 'nac', 'total'].forEach(function (k) { add('Swet ' + k, R.swet[k].toFixed(3), 'm2'); });
+    add('Swet/Sref', R.ratio.toFixed(4)); add('CD0', (sp.Cfe * R.ratio).toFixed(5)); add('(L/D)max', R.LD.toFixed(3));
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob), a = CYL.el('a', { href: url, download: 'layout.csv' });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    document.getElementById('ld-msg').textContent = 'Downloaded layout.csv.';
+  });
+  fill(); update();
+  var lastW = p1.el.clientWidth;
+  if (window.ResizeObserver) new ResizeObserver(function () { var wd = p1.el.clientWidth; if (Math.abs(wd - lastW) > 1) { lastW = wd; fit1(); } }).observe(p1.el);
+  window.__layout = { compute: compute, state: function () { return st; }, load: function (id) { st = flat(LAYOUT.preset(id)); fill(); update(); return R; }, result: function () { return R; } };   // for QA scripts
+});
+</script>
+</body>
+</html>
