@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engine Sizer · Propulsion Selection and Integration</title>
+<meta name="description" content="An engine sizing tool: choose a certified base engine, scale it to the thrust or power the aircraft needs, and see the rubber engine's size and weight, its nacelle, the cruise thrust and fuel flow, the inlet capture area or the propeller's tip Mach number, and the thrust lapse check. Presets include the module's business jet, a regional turboprop and a narrow-body airliner.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/propulsion.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table td.l, .sc-table th.l { text-align: left; }
+  .sc-warn { color: var(--c-bad); font-weight: 700; }
+  .sc-ok { color: var(--c-good); font-weight: 700; }
+  .sc-box[hidden] { display: none; }
+</style>
+</head>
+<body data-page="engine" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Propulsion</p>
+    <h1>Engine Sizer</h1>
+    <p class="lede">The module on one page: choose a certified engine to start from, scale it to the thrust or power your aircraft needs, and see the rubber engine's size and weight, its nacelle, what it burns in cruise, the air its inlet captures or its propeller's tip speed, and whether the thrust is still there at altitude.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="es-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="es-presets" role="group" aria-labelledby="es-presets-label"></div>
+    <div class="sc-grid" id="es-grid"></div>
+    <p class="small muted" id="es-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="es-totals"></div>
+    <figure class="figure wide" aria-labelledby="es-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="es-stage1"></div>
+      </div>
+      <figcaption id="es-fig1-cap"><strong>Figure T.1</strong> The base engine (gray, dashed) and the rubber engine (blue), side by side to the same scale, as schematic outlines with the overall length and height; for a turbofan the nacelle allowance is drawn around the rubber engine (dashed), and for a turboprop the propeller disk is drawn to scale at the front.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="es-table">
+        <caption>Engine and installation</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col">Base engine</th><th scope="col">Rubber engine</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="es-cruise">
+        <caption>Cruise, per engine unless stated</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col" class="l">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="es-checks">
+        <caption>Checks</caption>
+        <thead><tr><th scope="col">Check</th><th scope="col" class="l">Value</th><th scope="col" class="l">Result</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="es-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Requirement (Lesson 3): a turbofan's take-off thrust per engine \(T = (\TW)\,\Wo g/N\); a turboprop's take-off power per engine \(P = (P/W)\,\Wo/N\), with \(P/W\) in kW/kg.</li>
+      <li>Rubber engine (Lesson 3): \(SF = T/T_{\text{base}}\) (or \(P/P_{\text{base}}\)); length \(\propto SF^{0.4}\), height or diameter \(\propto SF^{0.5}\), weight \(\propto SF^{1.1}\). The exponents are for small changes: a scale factor outside 0.8 to 1.25 is flagged. Turboprops are scaled by power with the same exponents, an assumption.</li>
+      <li>Nacelle (Lesson 4): diameter and length as multiples of the rubber engine's height and length (1.1 and 1.2 by default, an allowance to be replaced by a nacelle design); wetted area \(\pi D_n l_n\) each.</li>
+      <li>Cruise (Lessons 1 and 2): thrust per engine \(\beta\Wo g/(N\,L/D)\). A turbofan's fuel flow is \(c_T T\); its mass flow \(\dot m = T/(V_j - V)\) for the chosen jet velocity, its propulsive efficiency \(2/(1 + V_j/V)\), and its capture area \(A_0 = \dot m/(\rho V)\) (Lesson 5). A turboprop's shaft power is \(TV/\eta_p\), and its fuel flow \(c_P P\).</li>
+      <li>Thrust at altitude (Lessons 2 and 8): the take-off thrust times the lapse \(\alpha = \sigma\) and times the high-bypass correlation \(\delta_0(1 - 0.49\sqrt M)\), against the cruise thrust (level flight, no climb margin).</li>
+      <li>Propeller (Lesson 6): helical tip Mach \(\sqrt{(\pi Dn)^2 + V^2}/a\) in cruise, the largest diameter for the tip-Mach limit, and the ideal (actuator-disk) static thrust \((2\rho AP^2)^{1/3}\) at sea level and cruise efficiency.</li>
+      <li>Engine data are from EASA type-certificate data sheets (see Lesson 3). The business jet preset is the module's; the turboprop and airliner presets are illustrative, not real types. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var G = ENGINE.G;
+  var PRESETS = {
+    bizjet: { label: 'Business jet (FJ44-3A)', kind: 'fan', W0: 6943, N: 2, tw: 0.31, pw: 0.18, base: 'fj44-3a', kD: 1.1, kL: 1.2, h: 12, M: 0.8, LD: 14.6, beta: 0.9555, cT: 18.4, cP: 0.304, etaP: 0.8, Vj: 350, D: 3.9, rpm: 1000, Mt: 0.85 },
+    tprop: { label: 'Regional turboprop (PW127M)', kind: 'prop', W0: 23000, N: 2, tw: 0.3, pw: 0.17835, base: 'pw127m', kD: 1.1, kL: 1.2, h: 7, M: 0.45, LD: 16, beta: 0.97, cT: 18.4, cP: 0.304, etaP: 0.8, Vj: 350, D: 3.9, rpm: 1000, Mt: 0.85 },
+    narrow: { label: 'Narrow-body (CFM56-5B4)', kind: 'fan', W0: 73500, N: 2, tw: 0.31, pw: 0.18, base: 'cfm56-5b4', kD: 1.1, kL: 1.2, h: 11, M: 0.78, LD: 16, beta: 0.97, cT: 14.2, cP: 0.304, etaP: 0.8, Vj: 300, D: 3.9, rpm: 1000, Mt: 0.85 }
+  };
+  var IDS = Object.keys(PRESETS);
+  function copy(o) { var r = {}; Object.keys(o).forEach(function (k) { if (k !== 'label') r[k] = o[k]; }); return r; }
+  var KEY = 'sizer:inputs';
+  var st = Object.assign(copy(PRESETS.bizjet), CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+  function engines(kind) { return ENGINE.DB.filter(function (e) { return !e.rerate && (kind === 'prop' ? e.type === 'turboprop' : e.type === 'turbofan'); }); }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('es-grid'), inputs = {}, boxes = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { id: 'air', t: 'Aircraft', f: [opt('kind', 'Engine type', [['fan', 'Turbofan'], ['prop', 'Turboprop']]), num('W0', 'Takeoff mass \\(\\Wo\\) (kg)'), num('N', 'Engines \\(N\\)', 1), num('tw', 'Takeoff \\(\\TW\\)'), num('pw', 'Takeoff \\(P/W\\) (kW/kg)')] },
+    { id: 'eng', t: 'Base engine and nacelle', f: [opt('base', 'Base engine', [], true), num('kD', 'Nacelle diameter / engine height'), num('kL', 'Nacelle length / engine length')] },
+    { id: 'cr', t: 'Cruise', f: [num('h', 'Altitude (km)'), num('M', 'Mach number'), num('LD', 'Cruise \\(L/D\\)'), num('beta', 'Weight fraction \\(\\beta\\)'), num('cT', '\\(c_T\\) (mg/(N s))'), num('Vj', 'Jet velocity \\(V_j\\) (m/s)'), num('cP', '\\(c_P\\) (kg/(kW h))'), num('etaP', 'Propeller \\(\\eta_p\\)')] },
+    { id: 'pr', t: 'Propeller', f: [num('D', 'Diameter \\(D\\) (m)'), num('rpm', 'Cruise speed (rpm)'), num('Mt', 'Tip Mach limit')] }
+  ];
+  function ok(k, v) {
+    if (k === 'N') return Math.round(v) === v && v >= 1 && v <= 8;
+    var R = { W0: [300, 600000], tw: [0.05, 1.5], pw: [0.02, 0.6], kD: [1, 1.6], kL: [1, 2], h: [0, 18], M: [0.1, 0.95], LD: [3, 30], beta: [0.5, 1], cT: [5, 40], Vj: [50, 1500], cP: [0.1, 0.6], etaP: [0.4, 0.95], D: [0.5, 7], rpm: [300, 4000], Mt: [0.6, 1.2] };
+    return !R[k] || (v >= R[k][0] && v <= R[k][1]);
+  }
+  function setBaseOptions() {
+    var el = inputs.base, list = engines(st.kind);
+    el.innerHTML = '';
+    list.forEach(function (e) { el.appendChild(CYL.el('option', { value: e.id, text: e.name + ' (' + (e.type === 'turboprop' ? e.P + ' kW' : e.T.toFixed(2) + ' kN') + ')' })); });
+    if (!list.some(function (e) { return e.id === st.base; })) st.base = list[0].id;
+    el.value = st.base;
+  }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'es-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () { st[q.k] = el.value; if (q.k === 'kind') setBaseOptions(); save(); update(); });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    boxes[bx.id] = CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f]));
+    grid.appendChild(boxes[bx.id]);
+  });
+  CYL.renderMath(grid);
+  function fill() { setBaseOptions(); Object.keys(inputs).forEach(function (k) { if (k !== 'base') inputs[k].value = st[k]; }); }
+  var pre = document.getElementById('es-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: PRESETS[id].label });
+    b.addEventListener('click', function () { st = copy(PRESETS[id]); save(); fill(); update(); document.getElementById('es-msg').textContent = 'Loaded: ' + PRESETS[id].label + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+
+  /* ---------- drawing ---------- */
+  var plane = CYL2D.plane(document.getElementById('es-stage1'), { xRange: [0, 4], yRange: [-1, 1], grid: 'none', axes: false, ticks: false, maxHeight: 360, ariaLabel: 'Base and rubber engine outlines to scale.' });
+  var g = plane.group(), gl = plane.group(), box = null;
+  function outline(L, H, x0, prop) {   // side view: a turbofan's fan case, core cowl and nozzle; a turboprop's gearbox nose and casing
+    var r = H / 2;
+    if (prop) return [[x0, 0.35 * r], [x0 + 0.12 * L, r], [x0 + 0.85 * L, r], [x0 + L, 0.6 * r], [x0 + L, -0.6 * r], [x0 + 0.85 * L, -r], [x0 + 0.12 * L, -r], [x0, -0.35 * r]];
+    return [[x0, 0.86 * r], [x0 + 0.04 * L, r], [x0 + 0.55 * L, r], [x0 + 0.78 * L, 0.62 * r], [x0 + L, 0.42 * r], [x0 + L, -0.42 * r], [x0 + 0.78 * L, -0.62 * r], [x0 + 0.55 * L, -r], [x0 + 0.04 * L, -r], [x0, -0.86 * r]];
+  }
+  function fit() { if (!box) return; var s = 60; for (var i = 0; i < 4; i++) { plane.setRange([box[0] - 8 / s, box[1] + 106 / s], [box[2] - 26 / s, box[3] + 8 / s]); s = plane.getView().scale || s; } }
+
+  /* ---------- results ---------- */
+  var R;
+  function f1(v) { return (v + 1e-9).toFixed(1); } function f2(v) { return (v + 1e-9).toFixed(2); } function f3(v) { return (v + 1e-9).toFixed(3); }
+  function compute() {
+    var b = ENGINE.byId(st.base), prop = st.kind === 'prop', r = { prop: prop, base: b };
+    if (!b || (b.type === 'turboprop') !== prop) { st.base = engines(st.kind)[0].id; b = r.base = ENGINE.byId(st.base); }
+    r.req = prop ? st.pw * st.W0 / st.N : st.tw * st.W0 * G / st.N / 1000;   // kW or kN per engine
+    r.E = ENGINE.rubber(b, r.req);
+    r.Wpair = st.N * r.E.W; r.share = r.Wpair / st.W0;
+    var a = ENGINE.isa(st.h * 1000); r.atm = a; r.V = st.M * a.a;
+    r.Tcr = st.beta * st.W0 * G / (st.N * st.LD);   // N per engine
+    if (prop) {
+      r.Pcr = r.Tcr * r.V / st.etaP / 1000;            // kW
+      r.ff = st.cP * r.Pcr;                             // kg/h per engine
+      r.Pshare = r.Pcr / r.req;
+      r.tip = ENGINE.tipMach(st.D, st.rpm, r.V, a.a); r.Dmax = ENGINE.maxDiameter(st.rpm, r.V, a.a, st.Mt);
+      var s0 = ENGINE.isa(0); r.T0 = Math.cbrt(2 * s0.rho * Math.PI * st.D * st.D / 4 * Math.pow(r.req * 1000, 2));
+      r.act = ENGINE.actuator(r.Pcr * 1000, st.D, r.V, a.rho);
+      r.Dn = r.Ln = r.Swn = NaN;
+    } else {
+      r.ff = ENGINE.fuelFlow(st.cT, r.Tcr) * 3600;
+      r.md = st.Vj > r.V ? r.Tcr / (st.Vj - r.V) : NaN; r.etaP = st.Vj > r.V ? ENGINE.etaP(r.V, st.Vj) : NaN;
+      r.A0 = ENGINE.captureArea(r.md, a.rho, r.V); r.d0 = Math.sqrt(4 * r.A0 / Math.PI);
+      r.aS = ENGINE.lapseSigma(st.h * 1000); r.aH = ENGINE.lapseHB(st.h * 1000, st.M);
+      r.TavS = r.req * 1000 * r.aS; r.TavH = r.req * 1000 * r.aH;
+      r.Dn = st.kD * r.E.H; r.Ln = st.kL * r.E.L; r.Swn = Math.PI * r.Dn * r.Ln;
+    }
+    r.ffTot = st.N * r.ff;
+    r.checks = [['Scale factor within 0.8 to 1.25', f3(r.E.SF), r.E.SF >= 0.8 && r.E.SF <= 1.25]];
+    if (prop) {
+      r.checks.push(['Cruise tip Mach within ' + st.Mt, f3(r.tip) + ' (largest diameter ' + f2(r.Dmax) + ' m)', r.tip <= st.Mt]);
+      r.checks.push(['Cruise power within the take-off rating', Math.round(100 * r.Pshare) + '% of ' + Math.round(r.req) + ' kW', r.Pshare <= 1]);
+    } else {
+      r.checks.push(['Cruise thrust with \u03b1 = \u03c3', Math.round(r.TavS) + ' N available, ' + Math.round(r.Tcr) + ' N needed', r.TavS >= r.Tcr]);
+      r.checks.push(['Cruise thrust with the high-bypass correlation', Math.round(r.TavH) + ' N available, ' + Math.round(r.Tcr) + ' N needed', r.TavH >= r.Tcr]);
+      r.checks.push(['Jet faster than the aircraft', 'V_j ' + st.Vj + ' m/s, V ' + f1(r.V) + ' m/s', st.Vj > r.V]);
+    }
+    return r;
+  }
+  function update() {
+    R = compute();
+    var b = R.base, E = R.E, prop = R.prop;
+    Object.keys(chips).forEach(function (id) { var p = copy(PRESETS[id]), on = Object.keys(p).every(function (k) { return String(p[k]) === String(st[k]); }); chips[id].setAttribute('aria-pressed', String(on)); });
+    inputs.tw.disabled = prop; inputs.pw.disabled = !prop; inputs.kD.disabled = inputs.kL.disabled = prop;
+    inputs.cT.disabled = inputs.Vj.disabled = prop; inputs.cP.disabled = inputs.etaP.disabled = !prop;
+    boxes.pr.hidden = !prop;
+    // tiles
+    var T = [[prop ? 'Power per engine' : 'Thrust per engine', prop ? Math.round(R.req) + ' kW' : f2(R.req) + ' kN'], ['Scale factor', f3(E.SF), E.SF < 0.8 || E.SF > 1.25], ['Engine length', f2(E.L) + ' m'], [prop ? 'Engine width' : 'Engine height', f2(E.H) + ' m'],
+      ['Engine weight', f1(E.W) + ' kg'], ['All engines, ' + f1(100 * R.share) + '% of \\(\\Wo\\)', Math.round(R.Wpair) + ' kg'], ['Cruise fuel, total', Math.round(R.ffTot) + ' kg/h']];
+    if (prop) T.push(['Cruise tip Mach', f3(R.tip), R.tip > st.Mt]); else T.push(['Nacelle \\(D_n\\), \\(l_n\\) (m)', f2(R.Dn) + ', ' + f2(R.Ln)]);
+    var tot = document.getElementById('es-totals'); tot.innerHTML = '';
+    T.forEach(function (t) { tot.appendChild(CYL.el('div', { class: 'sc-tile' + (t[2] ? ' warn' : '') }, [CYL.el('p', { class: 'lab', html: t[0] }), CYL.el('p', { class: 'val', text: t[1] })])); });
+    CYL.renderMath(tot);
+    // drawing: base left (dashed), rubber right (solid), same scale
+    g.clear(); gl.clear();
+    var gap = 0.35 * Math.max(b.L, E.L), x1 = b.L + gap + (prop ? 0 : (st.kL - 1) * E.L / 2), yb, Hm;
+    g.polyline(outline(b.L, b.H, 0, prop), { color: 'muted', width: 1.6, closed: true, dashed: true });
+    g.polyline(outline(E.L, E.H, x1, prop), { color: 'accent', width: 2.2, closed: true, fill: 'accent', fillOpacity: 0.12 });
+    var top = Math.max(b.H, E.H) / 2, bot = -top, right = x1 + E.L;
+    if (prop) {
+      g.line([-0.02 * b.L, st.D / 2], [-0.02 * b.L, -st.D / 2], { color: 'muted', width: 1.6, dashed: true });
+      g.line([x1 - 0.02 * E.L, st.D / 2], [x1 - 0.02 * E.L, -st.D / 2], { color: 'accent', width: 2.4 });
+      top = st.D / 2; bot = -st.D / 2;
+    } else {
+      var n0 = x1 - (st.kL - 1) * E.L / 2, n1 = n0 + R.Ln, rn = R.Dn / 2;
+      g.polyline([[n0, 0.9 * rn], [n0 + 0.05 * R.Ln, rn], [n1 - 0.25 * R.Ln, rn], [n1, 0.7 * rn], [n1, -0.7 * rn], [n1 - 0.25 * R.Ln, -rn], [n0 + 0.05 * R.Ln, -rn], [n0, -0.9 * rn]], { color: 'ink', width: 1.2, closed: true, dashed: true });
+      top = Math.max(top, rn); bot = -top; right = Math.max(right, n1);
+    }
+    Hm = top - bot; yb = bot - 0.06 * Hm;
+    gl.label([b.L / 2, yb], b.name, { tex: false, anchor: 's', offset: [0, 2], color: 'muted' });
+    gl.line([x1, yb], [x1 + E.L, yb], { color: 'accent', width: 1.2, arrow: 'both' });
+    gl.label([x1 + E.L / 2, yb], 'L = ' + f2(E.L) + '\\ \\text{m}', { anchor: 's', offset: [0, 2], color: 'accent', background: true });
+    var xr = right + 0.04 * (right);
+    gl.line([xr, -E.H / 2], [xr, E.H / 2], { color: 'accent', width: 1.2, arrow: 'both' });
+    gl.label([xr, 0], (prop ? 'w' : 'H') + ' = ' + f2(E.H) + '\\ \\text{m}', { anchor: 'e', offset: [4, 0], color: 'accent', background: true });
+    box = [Math.min(0, -0.02 * b.L), xr, yb, top]; fit();
+    plane.svg.setAttribute('aria-label', 'The ' + b.name + ' and the rubber engine scaled by ' + f3(E.SF) + ': ' + f2(E.L) + ' m long and ' + f2(E.H) + ' m ' + (prop ? 'wide' : 'high') + ', ' + f1(E.W) + ' kg.');
+    // tables
+    var rows = [
+      [prop ? 'Take-off power (kW)' : 'Take-off thrust (kN)', prop ? String(b.P) : f2(b.T), prop ? String(Math.round(R.req)) : f2(R.req)],
+      ['Length (m)', f3(b.L), f3(E.L)], [prop ? 'Width (m)' : 'Height (m)', f3(b.H), f3(E.H)], ['Dry weight (kg)', f1(b.W), f1(E.W)],
+      [prop ? 'Power-to-weight (kW/kg)' : 'Thrust-to-weight', prop ? f2(b.P / b.W) : f2(b.T * 1000 / (b.W * G)), prop ? f2(R.req / E.W) : f2(R.req * 1000 / (E.W * G))]
+    ];
+    if (!prop) rows.push(['Nacelle diameter and length (m)', '\u2013', f2(R.Dn) + ', ' + f2(R.Ln)], ['Nacelle wetted area, each (m²)', '\u2013', f2(R.Swn)]);
+    rows.push(['Data sheet', b.tcds, '']);
+    var tb = document.querySelector('#es-table tbody'); tb.innerHTML = '';
+    rows.forEach(function (q) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: q[0] }), CYL.el('td', { text: q[1] }), CYL.el('td', { text: q[2] })])); });
+    var a = R.atm, cr = [['Altitude, density, speed of sound', f1(st.h) + ' km, ' + a.rho.toFixed(4) + ' kg/m³, ' + f1(a.a) + ' m/s'], ['Flight speed', f1(R.V) + ' m/s (' + Math.round(R.V * 3.6) + ' km/h)'], ['Cruise thrust', Math.round(R.Tcr) + ' N']];
+    if (prop) cr.push(['Shaft power', Math.round(R.Pcr) + ' kW, ' + Math.round(100 * R.Pshare) + '% of take-off'], ['Fuel flow', Math.round(R.ff) + ' kg/h; ' + Math.round(R.ffTot) + ' kg/h in all'], ['Helical tip Mach, largest diameter', f3(R.tip) + ', ' + f2(R.Dmax) + ' m'], ['Ideal static thrust at take-off power, sea level', f1(R.T0 / 1000) + ' kN'], ['Ideal efficiency in cruise', f3(R.act.eta)]);
+    else cr.push(['Fuel flow', Math.round(R.ff) + ' kg/h; ' + Math.round(R.ffTot) + ' kg/h in all'], ['Mass flow and propulsive efficiency', f1(R.md) + ' kg/s, ' + f3(R.etaP)], ['Capture area and its diameter', f3(R.A0) + ' m², ' + f3(R.d0) + ' m'], ['Lapse: \u03c3 and the correlation', f3(R.aS) + ', ' + f3(R.aH)]);
+    var tc = document.querySelector('#es-cruise tbody'); tc.innerHTML = '';
+    cr.forEach(function (q) { tc.appendChild(CYL.el('tr', null, [CYL.el('td', { text: q[0] }), CYL.el('td', { class: 'l', text: q[1] })])); });
+    var tk = document.querySelector('#es-checks tbody'); tk.innerHTML = '';
+    R.checks.forEach(function (q) { tk.appendChild(CYL.el('tr', null, [CYL.el('td', { text: q[0] }), CYL.el('td', { class: 'l', text: q[1] }), CYL.el('td', { class: 'l' + (q[2] === false ? ' sc-warn' : q[2] ? ' sc-ok' : ''), text: q[2] === false ? 'check' : q[2] ? 'meets' : '\u2013' })])); });
+  }
+  document.getElementById('es-csv').addEventListener('click', function () {
+    var lines = ['quantity,value,unit'], E = R.E;
+    function add(k, v, u) { lines.push('"' + k + '",' + v + ',' + (u || '')); }
+    Object.keys(st).forEach(function (k) { add('input ' + k, typeof st[k] === 'number' ? st[k] : '"' + st[k] + '"', ''); });
+    add('base engine', '"' + R.base.name + '"'); add(R.prop ? 'power per engine' : 'thrust per engine', R.req.toFixed(4), R.prop ? 'kW' : 'kN'); add('scale factor', E.SF.toFixed(4));
+    add('engine length', E.L.toFixed(4), 'm'); add(R.prop ? 'engine width' : 'engine height', E.H.toFixed(4), 'm'); add('engine weight', E.W.toFixed(2), 'kg'); add('all engines', R.Wpair.toFixed(2), 'kg');
+    if (!R.prop) { add('nacelle diameter', R.Dn.toFixed(4), 'm'); add('nacelle length', R.Ln.toFixed(4), 'm'); add('nacelle wetted area each', R.Swn.toFixed(4), 'm2'); }
+    add('cruise speed', R.V.toFixed(3), 'm/s'); add('cruise thrust per engine', R.Tcr.toFixed(2), 'N'); add('fuel flow per engine', R.ff.toFixed(2), 'kg/h'); add('fuel flow total', R.ffTot.toFixed(2), 'kg/h');
+    if (R.prop) { add('cruise shaft power', R.Pcr.toFixed(2), 'kW'); add('helical tip Mach', R.tip.toFixed(4)); add('largest diameter', R.Dmax.toFixed(4), 'm'); add('ideal static thrust', (R.T0 / 1000).toFixed(3), 'kN'); add('ideal cruise efficiency', R.act.eta.toFixed(4)); }
+    else { add('mass flow', R.md.toFixed(3), 'kg/s'); add('propulsive efficiency', R.etaP.toFixed(4)); add('capture area', R.A0.toFixed(4), 'm2'); add('lapse sigma', R.aS.toFixed(4)); add('lapse correlation', R.aH.toFixed(4)); add('cruise thrust available sigma', R.TavS.toFixed(1), 'N'); add('cruise thrust available correlation', R.TavH.toFixed(1), 'N'); }
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }), url = URL.createObjectURL(blob), a = CYL.el('a', { href: url, download: 'engine.csv' });
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    document.getElementById('es-msg').textContent = 'Downloaded engine.csv.';
+  });
+  fill(); update();
+  var lastW = plane.el.clientWidth;
+  if (window.ResizeObserver) new ResizeObserver(function () { var wd = plane.el.clientWidth; if (Math.abs(wd - lastW) > 1) { lastW = wd; fit(); } }).observe(plane.el);
+  window.__engine = { compute: compute, state: function () { return st; }, load: function (id) { st = copy(PRESETS[id]); fill(); update(); return R; }, set: function (o) { Object.assign(st, o); fill(); update(); return R; }, result: function () { return R; } };   // for QA scripts
+});
+</script>
+</body>
+</html>

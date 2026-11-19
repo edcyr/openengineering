@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Fuel System · Propulsion Selection and Integration</title>
+<meta name="description" content="Aviation fuels and their densities and energy, where the tanks go, a geometric estimate of the wing box's volume checked against the statistical formula, allowances for unusable fuel and expansion, the feed system, and the fuel's effect on the balance.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/propulsion.js"></script>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 30 min</p>
+    <h1>The Fuel System</h1>
+    <p class="lede">Module 6 checked the business jet's fuel against a statistical estimate of its wing's tank volume and found room to spare. Now the wing has a layout, with spars where the structure will put them, and the tank can be measured instead of estimated. This lesson compares fuels, measures the wing box, and lays out the system that keeps the engines fed.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compare aviation fuels by density and energy, and the volume each needs for a mission.</li>
+      <li>Describe the kinds of tanks and where they go.</li>
+      <li>Estimate a wing box's tank volume from its geometry, and allow for unusable fuel and expansion.</li>
+      <li>Describe the feed system, and how burning fuel moves the center of gravity.</li>
+    </ul>
+  </section>
+
+  <section id="fuels">
+    <h2>Fuels</h2>
+    <p>Turbine engines burn kerosene: Jet A in North America and Jet A-1, with a lower freezing point, elsewhere; piston engines burn aviation gasoline. Sustainable aviation fuels, made from waste oils, crops or captured carbon, are blended into kerosene and burned in the same engines. Hydrogen holds almost three times the energy of kerosene per kilogram, but even as a liquid at −253&nbsp;°C it is about eleven times less dense.</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Typical fuel properties (densities vary a few percent with temperature and batch)</caption>
+        <thead><tr><th scope="col">Fuel</th><th scope="col">Density <span class="u">(kg/m³)</span></th><th scope="col">Heating value <span class="u">(MJ/kg)</span></th><th scope="col">Energy per volume <span class="u">(MJ/L)</span></th></tr></thead>
+        <tbody id="fuel-rows"></tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 7.1 — The business jet on hydrogen</p>
+      <p>The business jet carries 1991&nbsp;kg of Jet A-1 (43.2&nbsp;MJ/kg, 800&nbsp;kg/m³). What mass and volume of liquid hydrogen (120&nbsp;MJ/kg, 70.8&nbsp;kg/m³) hold the same energy?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ E = 1991(43.2) = 86\,000\ \text{MJ} \]
+          \[ m_{H_2} = \frac{86\,000}{120} = 717\ \text{kg} \]
+          \[ V_{H_2} = \frac{717}{70.8} = 10.1\ \text{m}^3 \]
+          <p>A third of the mass, but four times the volume of the kerosene's 2.49&nbsp;m³, and in tanks that must stay at −253&nbsp;°C: thick, round, insulated tanks that cannot go in a thin wing. A hydrogen business jet would carry its fuel in the fuselage, and grow longer to do it.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="tanks">
+    <h2>Where the fuel goes</h2>
+    <ul>
+      <li><strong>Integral wing tanks</strong> use the sealed wing box itself, between the front and rear spars, as the tank. They are light, keep the fuel near the center of gravity, and relieve the wing's bending in flight.</li>
+      <li>A <strong>center tank</strong> uses the wing box where it crosses the fuselage. On a low wing it sits under the cabin floor.</li>
+      <li><strong>Fuselage and tail tanks</strong> add range, and some airliners pump fuel to a tail tank in cruise to move the center of gravity aft and reduce the trim drag.</li>
+      <li><strong>Bladder tanks</strong>, flexible bags inside a cavity, suit structures that cannot be sealed, and military aircraft that need self-sealing tanks.</li>
+    </ul>
+    <p>Not all the volume is usable. The tanks stop short of the wing tips, which hold the vent and surge tanks and need protection from lightning; the landing gear bays and the moving surfaces take space; some fuel is trapped at the bottom of every tank, and some space is left for the fuel to expand on a hot day. This module allows 3% of the tank volume for the unusable fuel and the expansion space together.</p>
+    <p>Module 6's tank formula is a statistical fit to transport wings. With a layout, the wing box can be measured instead: between the spars, whose positions the structure sets, with a depth a little less than the airfoil's maximum thickness:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Geometric wing-box volume</p>
+      \[ V_{\text{box}} = 2\int_{d/2}^{\eta\,b/2} \left(x_{rs} - x_{fs}\right) c(y)\cdot k\,t(y)\,dy \]
+      <p>Spars at chord fractions \(x_{fs}\) and \(x_{rs}\); box depth \(k \approx 0.9\) of the local thickness \(t(y) = (t/c)\,c(y)\); from the fuselage side to a share \(\eta\) of the half span; plus the center section across the fuselage if it is a tank.</p>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> The business jet's half wing from above, to scale, with the front and rear spars and the tank between them (brown), and the center tank under the fuselage (dashed). Move the spars and the tank's outboard end, and switch the center tank; the readouts compare the usable volume with the fuel and with Module 6's statistical estimate.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 7.2 — Does the business jet's fuel fit, measured?</p>
+      <p>Put the business jet's spars at 15% and 60% of the chord, run the tanks to 85% of the half span, and take \(k = 0.9\). The integral gives 2.05&nbsp;m³ for the two wings, and the center section across the 1.597&nbsp;m fuselage at the root chord of 2.772&nbsp;m adds \(1.597(0.45)(2.772)(0.9)(0.12)(2.772) = 0.60\ \text{m}^3\). Does the mission's 2.49&nbsp;m³ fit?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The wings alone hold 2.05&nbsp;m³: not enough. With the center tank:</p>
+          \[ V = 2.05 + 0.60 = 2.65\ \text{m}^3 \]
+          \[ V_{\text{usable}} = 0.97(2.65) = 2.57\ \text{m}^3 \]
+          \[ \frac{2.49}{2.57} = 0.97 \]
+          <p>The fuel fits, with 3% to spare, but only with the center tank. The statistical formula's 2.74&nbsp;m³ overstates this wing's outboard tanks by a third. A light business jet's thin wing is tight; the CJ3 carries 2.66&nbsp;m³ of usable fuel in a wing of similar size.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="system">
+    <h2>The fuel system</h2>
+    <p>Each engine normally draws from its own tank through boost pumps, with a <strong>crossfeed</strong> valve that lets either tank feed either engine, to balance the wings or to feed both engines from one side after a failure. Vents keep the tanks near outside pressure as the aircraft climbs and descends; the fuel cools the engine oil on the way to the engine; and single-point pressure refueling fills every tank from one connector in a few minutes. Transports whose maximum landing weight is far below their takeoff weight may need a fuel jettison system, so that they can return and land soon after takeoff; light jets, whose landing weight is close to their takeoff weight, do not.</p>
+    <p>Burning fuel moves the center of gravity. Fuel in the wing box sits close to it, so the balance changes little through the flight, which is a further reason to keep the fuel there. A fuselage or tail tank moves the center of gravity as it empties, and the order in which the tanks are used is then part of the design. Module 10 works out the business jet's balance as its fuel burns.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Kerosene: about 800&nbsp;kg/m³ and 43&nbsp;MJ/kg; liquid hydrogen has nearly three times the energy per kilogram but needs four times the volume.</li>
+      <li>Fuel goes in the sealed wing box first: light, near the center of gravity, and relieving the wing's bending.</li>
+      <li>Measured between the spars, the business jet's wings hold 2.05&nbsp;m³; with the center tank, 2.57&nbsp;m³ usable, enough for its 2.49&nbsp;m³.</li>
+      <li>Allow for unusable fuel and expansion (3% here); feed each engine from its own tank, with crossfeed.</li>
+      <li>Next, <a href="08-engine-in-design.html">Lesson 8</a> puts the engines back into the design and runs the loop again.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Fuel table (from ENGINE.FUELS) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('fuel-rows');
+  ENGINE.FUELS.forEach(function (f) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: f.label }), CYL.el('td', { text: String(f.rho) }), CYL.el('td', { text: f.h.toFixed(1) }), CYL.el('td', { text: (f.rho * f.h / 1000).toFixed(1) })])); });
+});
+
+/* ---------- Figure 7.1: the wing box and its tank ---------- */
+CYL.ready(function () {
+  'use strict';
+  var R = LAYOUT.evaluate(LAYOUT.preset('bizjet')), G = R.G, w = G.wing, pf = w.pf, half = pf.b / 2, d = R.d, VF = 1991 / 800, VSTAT = R.vTank;
+  var BASE = { fs: 15, rs: 60, eta: 85, center: true }, st = Object.assign({}, BASE);
+  var plane = CYL2D.plane(document.getElementById('fig71-stage'), { xRange: [-0.5, 9], yRange: [-7, 0], grid: 'none', axes: false, ticks: false, maxHeight: 420, ariaLabel: 'Half wing with its tank.' });
+  var g = plane.group();
+  function xle(y) { return w.xLE + y * w.t; }
+  function c(y) { return LAYOUT.chordAt(pf, y); }
+  function P(x, y) { return [y, w.xLE - x]; }                 // top view, nose up: span across, stations down
+  var xAft = Math.max(xle(half) + pf.ct, w.xLE + pf.cr + 1);
+  function fit() { var s = 30; for (var i = 0; i < 4; i++) { plane.setRange([-6 / s, half + 80 / s], [w.xLE - xAft - 22 / s, 1 + 6 / s]); s = plane.getView().scale || s; } }
+  var panel = document.getElementById('fig71-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var S = { fs: sl('fs', 'Front spar', 8, 30, 1, '% of chord', 'warn'), rs: sl('rs', 'Rear spar', 50, 75, 1, '% of chord', 'warn'), eta: sl('eta', 'Tank to', 60, 95, 1, '% of half span', 'warn') };
+  var tC = CYL.toggle({ label: 'Center tank', value: st.center, onChange: function (v) { st.center = v; draw(); } });
+  var reset = CYL.button('Example 7.2', function () { st = Object.assign({}, BASE); Object.keys(S).forEach(function (k) { S[k].set(st[k], true); }); tC.set(true, true); draw(); }, { small: true });
+  var ro = { w: CYL.readout('Wings, both'), c: CYL.readout('Center tank'), u: CYL.readout('Usable (97%)'), f: CYL.readout('Fuel needed, filled'), s: CYL.readout('Module 6’s statistical estimate') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Wing box' }));
+  [S.fs.el, S.rs.el, S.eta.el, CYL.el('div', { class: 'chip-row' }, [tC.el, reset]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.w.el, ro.c.el, ro.u.el, ro.f.el, ro.s.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var o = { S: 28, A: 8, lam: 0.35, tc: 0.12, d: d, fs: st.fs / 100, rs: st.rs / 100, eta: st.eta / 100, withCenter: st.center }, B = ENGINE.wingBox(o), usable = 0.97 * B.total, fill = VF / usable;
+    g.clear();
+    var y1 = st.eta / 100 * half, yr = d / 2;
+    function sp(f, y) { return P(xle(y) + f * c(y), y); }
+    g.polyline([P(w.xLE - 1, 0), P(w.xLE - 1, yr), P(w.xLE + pf.cr + 1, yr), P(w.xLE + pf.cr + 1, 0)], { color: 'surface', width: 1.4, fill: 'surface', fillOpacity: 0.16 });
+    g.polyline([P(w.xLE, yr), P(xle(half), half), P(xle(half) + pf.ct, half), P(w.xLE + pf.cr, yr)], { color: 'accent', width: 1.8, fill: 'accent', fillOpacity: 0.1 });
+    g.polyline([sp(o.fs, yr), sp(o.fs, y1), sp(o.rs, y1), sp(o.rs, yr)], { color: 'warn', width: 1.6, closed: true, fill: 'warn', fillOpacity: 0.25 });
+    if (st.center) g.polyline([sp(o.fs, 0), sp(o.fs, yr), sp(o.rs, yr), sp(o.rs, 0)], { color: 'warn', width: 1.4, closed: true, dashed: true, fill: 'warn', fillOpacity: 0.12 });
+    g.line(sp(o.fs, 0), sp(o.fs, half), { color: 'ink', width: 1.4 });
+    g.line(sp(o.rs, 0), sp(o.rs, half), { color: 'ink', width: 1.4 });
+    g.label(sp(o.fs, half), 'Front spar', { tex: false, anchor: 'ne', offset: [2, 0] });
+    g.label(sp(o.rs, half), 'Rear spar', { tex: false, anchor: 'se', offset: [2, 0] });
+    var ym = (yr + y1) / 2;
+    g.label(sp((o.fs + o.rs) / 2, ym), 'Tank', { tex: false, anchor: 'c', background: true });
+    fit();
+    ro.w.set(B.wing.toFixed(2) + ' m³');
+    ro.c.set(st.center ? B.center.toFixed(2) + ' m³' : 'not used');
+    ro.u.set(usable.toFixed(2) + ' m³');
+    ro.f.set(VF.toFixed(2) + ' m³, ' + Math.round(100 * fill) + '%' + (fill > 1 ? ': does not fit' : ''));
+    ro.f.el.classList.toggle('readout-warn', fill > 1);
+    ro.s.set(VSTAT.toFixed(2) + ' m³ (no center tank)');
+    plane.svg.setAttribute('aria-label', 'Half wing from above with spars at ' + st.fs + ' and ' + st.rs + ' percent of the chord and the tank to ' + st.eta + ' percent of the half span: the usable volume is ' + usable.toFixed(2) + ' cubic meters against ' + VF.toFixed(2) + ' needed.');
+  }
+  draw();
+  var lastW = plane.el.clientWidth;
+  if (window.ResizeObserver) new ResizeObserver(function () { var wd = plane.el.clientWidth; if (Math.abs(wd - lastW) > 1) { lastW = wd; fit(); } }).observe(plane.el);
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'numeric',
+    prompt: 'A wing box measures 18.0&nbsp;m³. With 3% of the volume allowed for unusable fuel and expansion, how many kilograms of Jet A-1 at 800&nbsp;kg/m³ can it carry?',
+    label: '\\(m_f =\\)', answer: 0.97 * 18 * 800, unit: 'kg',
+    hints: ['The usable volume is 97% of the box.', 'Multiply the usable volume by the density.'],
+    explain: 'The tank\'s whole volume is never usable: some fuel is trapped, and some space is left for expansion.',
+    solution: '\\[ m_f = 0.97(18.0)(800) = 13\\,970\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'numeric',
+    prompt: 'A regional aircraft needs 4000&nbsp;kg of Jet A-1 (43.2&nbsp;MJ/kg) for its mission. What volume of liquid hydrogen (120&nbsp;MJ/kg, 70.8&nbsp;kg/m³) holds the same energy?',
+    label: '\\(V_{H_2} =\\)', answer: 4000 * 43.2 / 120 / 70.8, unit: 'm³',
+    hints: ['Find the energy, then the hydrogen\'s mass.', 'Divide the mass by the density.'],
+    explain: 'Hydrogen saves mass but needs about four times the volume of kerosene for the same energy.',
+    solution: '\\[ m_{H_2} = \\frac{4000(43.2)}{120} = 1440\\ \\text{kg}, \\qquad V_{H_2} = \\frac{1440}{70.8} = 20.3\\ \\text{m}^3 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'mc',
+    prompt: 'Which is not a reason to carry the fuel in the wing box?',
+    choices: [
+      { html: 'Fuel in the wing makes the wing stiffer in torsion', correct: true, feedback: 'Right: the fuel adds no stiffness. The wing box is already a sealed structure; that is why it can be a tank.' },
+      { html: 'The fuel\'s weight along the span relieves the wing\'s bending in flight', feedback: 'That is a reason: the lift and the fuel\'s weight act in opposite directions along the span.' },
+      { html: 'The fuel sits close to the center of gravity, so burning it moves the balance little', feedback: 'That is a reason: the wing is placed near the center of gravity.' },
+      { html: 'The sealed wing box serves as the tank, with no extra structure', feedback: 'That is a reason: integral tanks are the lightest kind.' }
+    ],
+    explain: 'Integral wing tanks are light, relieve the wing\'s bending and keep the fuel near the center of gravity.'
+  });
+});
+</script>
+</body>
+</html>

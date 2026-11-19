@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thrust, Fuel Flow and Altitude · Propulsion Selection and Integration</title>
+<meta name="description" content="Fuel flow from the thrust-specific fuel consumption, how ram drag makes a turbofan lose thrust with speed, how the thrust falls with altitude, flat ratings, installation losses, and what a better thrust lapse does to the business jet's ceiling.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/propulsion.js"></script>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 35 min</p>
+    <h1>Thrust, Fuel Flow and Altitude</h1>
+    <p class="lede">An engine's thrust on a test stand at sea level is the number on its data sheet. In flight it gives less: the air it swallows is thinner, and it arrives already moving. Module 5 corrected for this with the simplest possible rule, thrust in proportion to the air density. This lesson shows where that rule comes from, where it falls short, and what it means for the business jet's ceiling.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Find an engine's fuel flow from its thrust-specific fuel consumption.</li>
+      <li>Explain how ram drag makes a turbofan's thrust fall with flight speed.</li>
+      <li>Estimate the thrust lapse with altitude and Mach number, and judge Module 5's \(\alpha = \sigma\).</li>
+      <li>Explain flat ratings and installation losses.</li>
+    </ul>
+  </section>
+
+  <section id="fuel">
+    <h2>Fuel flow</h2>
+    <p>The thrust-specific fuel consumption \(c_T\) is the fuel burned per second for each newton of thrust. Module 3 gave it for the business jet as the Breguet constant \(C\), in reciprocal hours; the two are the same quantity in different units:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Fuel flow</p>
+      \[ \dot m_f = c_T\,T, \qquad c_T\ [\text{mg/(N s)}] = 28.33\,C\ [\text{h}^{-1}] \]
+    </div>
+    <div class="example">
+      <p class="example-title">Example 2.1 — The business jet's cruise fuel</p>
+      <p>The business jet cruises at \(C = 0.65\ \text{h}^{-1}\) with a total thrust of \(4458\ \text{N}\) (Lesson 1). Find its fuel flow, and the fuel for 4600&nbsp;km at 850&nbsp;km/h.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ c_T = 28.33(0.65) = 18.4\ \text{mg/(N s)} \]
+          \[ \dot m_f = 18.4 \times 10^{-6}(4458) = 0.0821\ \text{kg/s} = 295\ \text{kg/h} \]
+          \[ t = \frac{4600}{850} = 5.41\ \text{h}, \qquad m_f = 295(5.41) = 1599\ \text{kg} \]
+          <p>About 1600&nbsp;kg for the cruise alone. Module 3's 1991&nbsp;kg also covers the climb, descent, loiter and reserves.</p>
+        </div>
+      </details>
+    </div>
+    <p>The thrust in cruise is only a fraction of the takeoff rating: here about 2.2&nbsp;kN per engine against 10.6&nbsp;kN on the ground. Most of that difference is the lapse with altitude and speed, which is the subject of the rest of this lesson.</p>
+  </section>
+
+  <section id="ram">
+    <h2>Thrust and flight speed</h2>
+    <p>From Lesson 1, \(T = \dot m V_j - \dot m V\). The gross thrust \(\dot m V_j\) depends on the engine; the ram drag \(\dot m V\) grows with the flight speed. If the mass flow and jet velocity stayed fixed, the thrust would fall in a straight line, to zero when the aircraft reached the jet velocity:</p>
+    \[ \frac{T}{T_0} = 1 - \frac{V}{V_j} \]
+    <p>A turbojet, with a fast jet, hardly notices the ram drag at takeoff speeds. A high-bypass turbofan, whose jet is slow, loses a good share of its thrust before it even leaves the runway. In a real engine the ram pressure also pushes more air in as the speed rises, which offsets part of the loss, but the trend remains: the higher the bypass ratio, the faster the thrust falls with speed.</p>
+    <figure class="figure wide" aria-labelledby="fig21-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig21-stage"></div>
+        <div class="viz-controls" id="fig21-controls"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> The net thrust of two engines with the same static thrust, against the flight speed, at fixed mass flow and jet velocity: the fast-jet engine (orange) and the slow-jet engine (violet). The dashed lines are their ram drag. A simple model that leaves out the ram compression of a real inlet; it shows the trend, not engine data.</figcaption>
+    </figure>
+  </section>
+
+  <section id="altitude">
+    <h2>Thrust and altitude</h2>
+    <p>At a given rotor speed, an engine swallows a volume of air per second, so its mass flow, and with it the thrust, falls with the air density. That is Module 5's thrust lapse:</p>
+    \[ \alpha = \frac{T}{T_0} \approx \sigma = \frac{\rho}{\rho_0} \]
+    <p>It ignores the flight speed, which matters in two opposite ways: ram compression packs more air into the inlet, and ram drag takes thrust away. For high-bypass turbofans at full throttle, a widely used correlation combines them through the total pressure the inlet sees:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Thrust lapse of a high-bypass turbofan</p>
+      \[ \alpha = \delta_0\left(1 - 0.49\sqrt M\right), \qquad \delta_0 = \frac{p}{p_0}\left(1 + 0.2M^2\right)^{3.5} \]
+      <p>\(p/p_0\) is the static-pressure ratio of the standard atmosphere. The correlation holds below the engine's flat-rating temperature, which covers the climb and cruise.</p>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> The thrust lapse against altitude: Module 5's \(\alpha = \sigma\) (gray, dashed) and the high-bypass correlation at the chosen Mach number (blue). The dot is the business jet's cruise and ceiling, at Mach 0.80 and 12&nbsp;km.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 2.2 — The business jet's ceiling, again</p>
+      <p>Module 5 sized the business jet for a 300&nbsp;ft/min climb at Mach 0.80 and 12&nbsp;km, which needed \(\TWo = 0.308\) with \(\alpha = \sigma = 0.2537\). What takeoff \(\TW\) would the same climb need with the high-bypass correlation? Compare it with the Citation CJ3 Gen2's \(\TW = 0.406\) (two FJ44-3A of 12.54&nbsp;kN at 6291&nbsp;kg).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The thrust the climb needs at 12&nbsp;km does not change: \(0.308(0.2537) = 0.0781\) of the takeoff weight. Only the lapse does:</p>
+          \[ \delta_0 = \frac{19\,330}{101\,325}\left(1 + 0.2(0.8)^2\right)^{3.5} = 0.2908 \]
+          \[ \alpha = 0.2908\left(1 - 0.49\sqrt{0.8}\right) = 0.163 \]
+          \[ \TWo = \frac{0.0781}{0.163} = 0.478 \]
+          <p>Half as much thrust again. The business jet's engines have a moderate bypass ratio, so the truth lies between the two estimates; the CJ3's 0.406 sits there too. A real design uses the engine maker's performance data, its <strong>engine deck</strong>, for every flight condition. Lesson 8 returns to what this means for the business jet.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="ratings">
+    <h2>Flat ratings and installation losses</h2>
+    <p>On a hot day the air is thin and an engine would give less thrust, but certified engines are <strong>flat rated</strong>: the control holds the takeoff thrust constant up to an ambient temperature, using the margin the turbine has on a cool day. The FJ44-3A's data sheet, for example, gives its 12.54&nbsp;kN of takeoff thrust up to 26.1&nbsp;°C; the CFM56-5B holds its rating up to 30&nbsp;°C. Above that temperature the thrust falls, which is one reason hot-day takeoffs are long (Module 5).</p>
+    <p>The data-sheet thrust is also <strong>uninstalled</strong>: measured on a test stand with an ideal inlet and nothing taken from the engine. On the aircraft the inlet loses some pressure, the nozzle and nacelle add drag, and the systems take bleed air and shaft power for the cabin pressure, anti-icing and electrical power. The installed thrust is a few percent lower, and the installed fuel consumption a few percent higher; conceptual design often takes both as a fixed allowance until the installation is known.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Fuel flow \(\dot m_f = c_T T\), with \(c_T\) in mg/(N s) equal to \(28.33\,C\) in h\(^{-1}\).</li>
+      <li>Ram drag \(\dot m V\) makes the thrust fall with speed, fastest for high-bypass engines with slow jets.</li>
+      <li>\(\alpha = \sigma\) is a first estimate; for high-bypass turbofans, \(\alpha = \delta_0(1 - 0.49\sqrt M)\) gives 0.163 at the business jet's cruise, against \(\sigma = 0.254\).</li>
+      <li>Engines are flat rated to a temperature; installed thrust is a few percent below the data sheet's.</li>
+      <li>Next, <a href="03-rubber-engine.html">Lesson 3</a> finds a real engine for the business jet and scales it to the thrust it needs.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 2.1: thrust against flight speed for a fast and a slow jet ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { T0: 10.6, va: 600, vb: 300 }, st = Object.assign({}, BASE);
+  var chart = AERO.chart(document.getElementById('fig21-stage'), {
+    x: { label: 'Flight speed \\(V\\) (m/s)', min: 0, max: 300 }, y: { label: 'Thrust (kN)', min: 0, max: 12 }, height: 320,
+    ariaLabel: 'Net thrust and ram drag against flight speed for a fast-jet and a slow-jet engine.',
+    legend: [{ label: 'Fast jet, net', color: 'r', line: true }, { label: 'Slow jet, net', color: 't', line: true }, { label: 'Ram drag', color: 'muted', line: true, dashed: true }]
+  });
+  function net(vj) { return function (V) { return st.T0 * (1 - V / vj); }; }
+  function ram(vj) { return function (V) { return st.T0 * V / vj; }; }
+  var cA = chart.fn(net(st.va), { color: 'r', width: 2.6 }), cB = chart.fn(net(st.vb), { color: 't', width: 2.6 });
+  var rA = chart.fn(ram(st.va), { color: 'r', width: 1.4, dashed: true }), rB = chart.fn(ram(st.vb), { color: 't', width: 1.4, dashed: true });
+  var vl = chart.vline(60, { color: 'muted', dashed: true });
+  var panel = document.getElementById('fig21-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var S = { T0: sl('T0', 'Static thrust \\(T_0\\)', 2, 12, 0.1, ' kN', 'good'), va: sl('va', 'Fast jet \\(V_j\\)', 350, 900, 10, ' m/s', 'r'), vb: sl('vb', 'Slow jet \\(V_j\\)', 150, 450, 10, ' m/s', 't'),
+    vt: CYL.slider({ label: 'Speed to read off', min: 0, max: 300, step: 1, value: 60, unit: ' m/s', color: 'muted', onInput: function (v) { st.vt = v; draw(); } }) };
+  st.vt = 60;
+  var ro = { a: CYL.readout('Fast jet: \\(\\dot m\\), \\(T/T_0\\)'), b: CYL.readout('Slow jet: \\(\\dot m\\), \\(T/T_0\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Two engines' }));
+  [S.T0.el, S.va.el, S.vb.el, S.vt.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.b.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    chart.setAxes({ y: { label: 'Thrust (kN)', min: 0, max: Math.ceil(st.T0 * 1.15), log: false } });
+    cA.setFn(net(st.va)); cB.setFn(net(st.vb)); rA.setFn(ram(st.va)); rB.setFn(ram(st.vb)); vl.set(st.vt);
+    ro.a.set((st.T0 * 1000 / st.va).toFixed(1) + ' kg/s, ' + Math.max(0, 1 - st.vt / st.va).toFixed(3));
+    ro.b.set((st.T0 * 1000 / st.vb).toFixed(1) + ' kg/s, ' + Math.max(0, 1 - st.vt / st.vb).toFixed(3));
+    chart.setAriaLabel('At ' + st.vt + ' meters per second the fast-jet engine keeps ' + Math.round(100 * Math.max(0, 1 - st.vt / st.va)) + ' percent of its static thrust and the slow-jet engine ' + Math.round(100 * Math.max(0, 1 - st.vt / st.vb)) + ' percent.');
+  }
+  draw();
+});
+
+/* ---------- Figure 2.2: thrust lapse against altitude ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { M: 0.8 };
+  var chart = AERO.chart(document.getElementById('fig22-stage'), {
+    x: { label: 'Altitude (km)', min: 0, max: 14 }, y: { label: 'Thrust lapse \\(\\alpha = T/T_0\\)', min: 0, max: 1.1 }, height: 320,
+    ariaLabel: 'Thrust lapse against altitude.',
+    legend: [{ label: '\\(\\alpha = \\sigma\\)', color: 'muted', line: true, dashed: true }, { label: 'High-bypass correlation', color: 'accent', line: true }, { label: 'Business jet cruise', color: 'accent' }]
+  });
+  chart.fn(function (h) { return ENGINE.lapseSigma(h * 1000); }, { color: 'muted', width: 2, dashed: true });
+  var c = chart.fn(function (h) { return ENGINE.lapseHB(h * 1000, st.M); }, { color: 'accent', width: 2.8 });
+  var mk = chart.marker([12, ENGINE.lapseHB(12000, 0.8)], { color: 'accent', r: 6 });
+  var panel = document.getElementById('fig22-controls');
+  var sM = CYL.slider({ label: 'Mach number \\(M\\)', min: 0, max: 0.9, step: 0.01, value: st.M, color: 'accent', onInput: function (v) { st.M = v; draw(); } });
+  var sH = CYL.slider({ label: 'Altitude to read off', min: 0, max: 14, step: 0.5, value: 12, unit: ' km', color: 'muted', onInput: function (v) { st.h = v; draw(); } });
+  st.h = 12;
+  var ro = { s: CYL.readout('\\(\\sigma\\)'), d: CYL.readout('\\(\\delta_0\\)'), a: CYL.readout('Correlation \\(\\alpha\\)'), r: CYL.readout('Ratio to \\(\\sigma\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Flight condition' }));
+  [sM.el, sH.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.s.el, ro.d.el, ro.a.el, ro.r.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    c.draw();
+    var s = ENGINE.isa(st.h * 1000), a = ENGINE.lapseHB(st.h * 1000, st.M), d0 = s.delta * Math.pow(1 + 0.2 * st.M * st.M, 3.5);
+    mk.set([st.h, a]);
+    ro.s.set(s.sigma.toFixed(4)); ro.d.set(d0.toFixed(4)); ro.a.set(a.toFixed(3)); ro.r.set((a / s.sigma).toFixed(2));
+    chart.setAriaLabel('At Mach ' + st.M + ' and ' + st.h + ' km the correlation gives a thrust lapse of ' + a.toFixed(3) + ', against a density ratio of ' + s.sigma.toFixed(3) + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1',
+    type: 'numeric',
+    prompt: 'An airliner\'s two engines give \\(45\\ \\text{kN}\\) in all in cruise, at \\(c_T = 15.5\\ \\text{mg/(N s)}\\). What is the fuel flow, in kg/h?',
+    label: '\\(\\dot m_f =\\)', answer: 15.5e-6 * 45000 * 3600, unit: 'kg/h',
+    hints: ['\\(\\dot m_f = c_T T\\), with \\(c_T\\) in kg/(N s).', 'Multiply kg/s by 3600 for kg/h.'],
+    explain: 'The fuel flow is the thrust times the fuel burned per newton per second.',
+    solution: '\\[ \\dot m_f = 15.5 \\times 10^{-6}(45\\,000) = 0.698\\ \\text{kg/s} = 2511\\ \\text{kg/h} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2',
+    type: 'numeric',
+    prompt: 'At 11&nbsp;km, \\(p/p_0 = 0.2234\\). With the high-bypass correlation, what is the thrust lapse at Mach 0.78?',
+    label: '\\(\\alpha =\\)', answer: 0.2234 * Math.pow(1 + 0.2 * 0.78 * 0.78, 3.5) * (1 - 0.49 * Math.sqrt(0.78)),
+    hints: ['\\(\\delta_0 = (p/p_0)(1 + 0.2M^2)^{3.5}\\).', '\\(\\alpha = \\delta_0(1 - 0.49\\sqrt M)\\).'],
+    explain: 'The ram compression raises the total pressure the engine sees; the ram drag takes some of it back.',
+    solution: '\\[ \\delta_0 = 0.2234(1.1217)^{3.5} = 0.3339, \\qquad \\alpha = 0.3339(1 - 0.49\\sqrt{0.78}) = 0.189 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3',
+    type: 'mc',
+    prompt: 'An engine\'s data sheet gives its takeoff thrust "at 26.1&nbsp;°C". What does that mean?',
+    choices: [
+      { html: 'The engine is flat rated: it holds that takeoff thrust on days up to 26.1&nbsp;°C, and gives less on hotter days', correct: true, feedback: 'Yes: the control uses the turbine\'s margin on cooler days to hold the thrust constant.' },
+      { html: 'The thrust was measured on one test day at 26.1&nbsp;°C, and falls on cooler days', feedback: 'On cooler days the engine could give more; the rating is held constant up to that temperature.' },
+      { html: 'The engine must not be operated above 26.1&nbsp;°C', feedback: 'It can be; its thrust then falls below the rating.' },
+      { html: 'The thrust is given at the turbine inlet temperature of 26.1&nbsp;°C', feedback: 'Turbine temperatures are well over 1000&nbsp;°C; 26.1&nbsp;°C is the outside air.' }
+    ],
+    explain: 'Flat rating holds the takeoff thrust constant up to an ambient temperature, the engine\'s flat-rating temperature.'
+  });
+});
+</script>
+</body>
+</html>

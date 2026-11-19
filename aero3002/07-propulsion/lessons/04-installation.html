@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nacelles and Installation · Propulsion Selection and Integration</title>
+<meta name="description" content="Wrapping the engine in a nacelle, hanging it on the aircraft, keeping a burst rotor away from people and fuel, and the yawing moment of a failed engine, with the business jet's nacelles sized from its rubber engines.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/propulsion.js"></script>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 30 min</p>
+    <h1>Nacelles and Installation</h1>
+    <p class="lede">An engine on a test stand is a bare machine. On the aircraft it needs an inlet in front, a nozzle behind, a smooth cowling around it, a pylon to carry it, and room around it for maintenance, fire protection and the debris of a failure. This lesson wraps the business jet's rubber engines in nacelles, replaces Module 6's placeholders, and looks at what an engine failure does to the aircraft's balance.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Estimate a nacelle's size from the engine's, and its wetted area.</li>
+      <li>Describe what the pylon, the cowling and the installation must provide.</li>
+      <li>Explain the rotor-burst zones and how they constrain the engine's position.</li>
+      <li>Compute the yawing moment of a failed engine for rear-mounted and wing-mounted engines.</li>
+    </ul>
+  </section>
+
+  <section id="nacelle">
+    <h2>From engine to nacelle</h2>
+    <p>The nacelle is everything around the engine: the inlet lip and diffuser ahead of the fan, the cowling around the casing and accessories, and the exhaust nozzle. Its size follows the engine's. For a first layout this module takes a nacelle about 10% larger in diameter than the engine's overall height and 20% longer than the engine, enough for the inlet, the cowl and the nozzle, and checks the result against similar aircraft:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">A first nacelle, and its wetted area</p>
+      \[ D_n \approx 1.1\,H_{\text{eng}}, \qquad l_n \approx 1.2\,L_{\text{eng}}, \qquad S_{\text{wet},n} \approx \pi D_n l_n \]
+      <p>The wetted area is that of a cylinder of the nacelle's diameter and length, as in Module 6; the curved inlet and nozzle make the real one slightly smaller.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.1 — The business jet's nacelles</p>
+      <p>The rubber engines of Lesson 3 are 1.475&nbsp;m long and 0.725&nbsp;m high. Size the nacelles and their wetted area, and compare them with Module 6's placeholders of 0.8&nbsp;m by 2.4&nbsp;m. What does the change do to the wetted area of the whole aircraft (146.5&nbsp;m²) and to \(\LDmax\) (\(A = 8\), \(e = 0.75\), \(C_{fe} = 0.0030\), \(S = 28\ \text{m}^2\))?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ D_n = 1.1(0.725) = 0.797\ \text{m}, \qquad l_n = 1.2(1.475) = 1.770\ \text{m} \]
+          <p>For the two nacelles together:</p>
+          \[ 2\pi(0.797)(1.770) = 8.87\ \text{m}^2, \qquad \text{against } 2\pi(0.8)(2.4) = 12.06\ \text{m}^2 \]
+          \[ \Swet = 146.5 - 12.06 + 8.87 = 143.3\ \text{m}^2 \]
+          \[ \frac{\Swet}{\Sref} = 5.12 \]
+          \[ \LDmax = \frac12\sqrt{\frac{\pi(8)(0.75)}{0.0030(5.12)}} = 17.5 \]
+          <p>The diameter of the placeholder was about right; its length was too generous. The real engines are short, and the aircraft gains 1% in \(\LDmax\).</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> The business jet's three-view with nacelles sized from its rubber engines, or with Module 6's placeholders. Change the thrust per engine to scale the engines, and move the nacelles along the tail cone; the readouts give the nacelle's size and position, the clearances to the cabin and the horizontal tail, and the wetted area and \(\LDmax\) of the whole aircraft.</figcaption>
+    </figure>
+  </section>
+
+  <section id="installation">
+    <h2>The installation</h2>
+    <ul>
+      <li>The <strong>pylon</strong> carries the engine's weight, thrust and gyroscopic loads into the structure, through mounts that let the hot casing expand. It also carries the fuel, electrical, bleed-air and control lines, and it must hold the engine through the loads of a fan blade coming off.</li>
+      <li>The <strong>cowling</strong> opens wide for maintenance: mechanics must reach the accessories, change the engine in a few hours, and inspect the fan and the hot section. Engines on the tail cone are high off the ground, which keeps out runway debris but needs platforms to reach them.</li>
+      <li>The nacelle is a <strong>fire zone</strong>, with fire detectors, extinguishers and fire walls between the engine and the pylon.</li>
+      <li>The engine needs <strong>clearances</strong>: from the fuselage, so the flow between them does not choke and the noise stays outside the cabin; from the ground for a wing-mounted engine; and from the wing's wake at high angles of attack for a rear-mounted one (Lesson 5).</li>
+    </ul>
+  </section>
+
+  <section id="burst">
+    <h2>Rotor burst</h2>
+    <p>A fan, compressor or turbine disc spins with enormous energy, and a disc that breaks sends fragments out at high speed, mostly within a narrow band of angles around the plane of the rotor. The casing contains a lost blade but cannot contain a disc. The certification rules therefore ask the designer to place the engines so that fragments in these zones do not hit the passengers, the fuel tanks, both sets of flight controls or both engines.</p>
+    <p>For the business jet this is one more reason to put the engines behind the cabin's rear pressure bulkhead, at FS&nbsp;10.7&nbsp;m and aft, where the planes of the rotors cross only the tail cone. On aircraft with engines on the wing, the rotor planes cross the fuselage, and designers keep seats, tanks and critical lines out of the narrow band, or protect them.</p>
+  </section>
+
+  <section id="yaw">
+    <h2>An engine failure and the yawing moment</h2>
+    <p>When one engine fails, the other pushes off the centerline, and the drag of the failed engine adds to the turn. The yawing moment is about the thrust times its lateral offset, \(N \approx T_{\text{eng}}\,y_e\). The rudder must balance it at the lowest speed at which the aircraft can be controlled, the minimum control speed, which sets the size of the fin and rudder (Module 11).</p>
+    <div class="example">
+      <p class="example-title">Example 4.2 — Rear engines against wing engines</p>
+      <p>The business jet's engines give 10.56&nbsp;kN each, with their thrust lines 1.26&nbsp;m from the centerline. Compare the yawing moment with that of engines under the wing at 34% of the half span (\(b = 14.97\ \text{m}\)).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ N = 10.56(1.26) = 13.3\ \text{kN m} \]
+          \[ y_e = 0.34\,\frac{14.97}{2} = 2.54\ \text{m} \]
+          \[ N = 10.56(2.54) = 26.9\ \text{kN m} \]
+          <p>Twice the moment for engines on the wing: the fin and rudder would have to be larger, or the minimum control speed higher. This is one of the reasons most business jets carry their engines on the tail cone.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> The yawing moment of a failed engine, seen from above: the live engine's thrust (green), its offset from the centerline, and the moment that turns the nose toward the failed engine (red), which the rudder must balance. Move the engine from the tail cone out along the wing. The failed engine's drag, which adds to the moment, is left out.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A first nacelle is about 10% larger in diameter and 20% longer than the engine; its wetted area is about \(\pi D_n l_n\).</li>
+      <li>The business jet's nacelles: 0.80&nbsp;m by 1.77&nbsp;m, 8.87&nbsp;m² for the pair; the aircraft's \(\Swet/\Sref\) falls to 5.12 and \(\LDmax\) rises to 17.5.</li>
+      <li>Pylons, cowlings, fire zones and clearances all take space; rotor-burst zones must miss the cabin, tanks and critical systems.</li>
+      <li>A failed engine yaws the aircraft with \(N \approx T_{\text{eng}}\,y_e\): rear engines halve the moment of wing engines.</li>
+      <li>Next, <a href="05-inlets-nozzles.html">Lesson 5</a> sizes the inlet that feeds the engine and the nozzle that ends it.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 4.1: the business jet with sized nacelles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var B = ENGINE.byId('fj44-3a'), BASE = { T: 10.56, x: 75, sized: true }, st = Object.assign({}, BASE);
+  var plane = CYL2D.plane(document.getElementById('fig41-stage'), { xRange: [0, 30], yRange: [-10, 4], grid: 'none', axes: false, ticks: false, maxHeight: 520, ariaLabel: 'Three-view of the business jet with its nacelles.' });
+  var g = plane.group(), L;
+  var panel = document.getElementById('fig41-controls');
+  var tS = CYL.toggle({ label: 'Sized nacelles', value: st.sized, onChange: function (v) { st.sized = v; draw(); } });
+  var sT = CYL.slider({ label: 'Thrust per engine', min: 8, max: 14, step: 0.01, value: st.T, unit: ' kN', color: 'good', onInput: function (v) { st.T = v; draw(); } });
+  var sX = CYL.slider({ label: 'Nacelle center, share of \\(\\lF\\)', min: 66, max: 82, step: 0.5, value: st.x, unit: '%', color: 'muted', onInput: function (v) { st.x = v; draw(); } });
+  var reset = CYL.button('Business jet', function () { st = Object.assign({}, BASE); tS.set(true, true); sT.set(st.T, true); sX.set(st.x, true); draw(); }, { small: true });
+  var ro = { n: CYL.readout('Nacelle \\(D_n\\) and \\(l_n\\)'), p: CYL.readout('Nacelle from FS to FS'), c: CYL.readout('Clearances: cabin end, tail'), s: CYL.readout('Nacelles \\(\\Swet\\), aircraft \\(\\Swet/\\Sref\\)'), l: CYL.readout('\\(\\LDmax\\)') };
+  var colL = CYL.el('div', null, [CYL.el('p', { class: 'viz-title', text: 'Engines' }), CYL.el('div', { class: 'chip-row' }, [tS.el, reset]), sT.el, sX.el]);
+  panel.appendChild(CYL.el('div', { class: 'ctl-grid' }, [colL]));
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.n.el, ro.p.el, ro.c.el, ro.s.el, ro.l.el]));
+  CYL.renderMath(panel);
+  function fit() { var s = 20; for (var i = 0; i < 4; i++) { plane.setRange([L.xRange[0] - 6 / s, L.xRange[1] + 6 / s], [L.yRange[0] - 6 / s, L.yRange[1] + 6 / s]); s = plane.getView().scale || s; } }
+  function f2(v) { return (v + 1e-9).toFixed(2); }
+  function draw() {
+    var R0 = ENGINE.rubber(B, st.T), sp = LAYOUT.preset('bizjet');
+    sp.eng.D = st.sized ? 1.1 * R0.H : 0.8; sp.eng.l = st.sized ? 1.2 * R0.L : 2.4; sp.eng.xFrac = st.x / 100;
+    var R = LAYOUT.evaluate(sp), G = R.G, e = G.eng, x0 = e.x - e.l / 2, x1 = e.x + e.l / 2, htLE = G.ht.xLE;
+    g.clear(); L = LAYOUT.threeView(plane, g, G); fit();
+    ro.n.set(f2(e.D) + ' m and ' + f2(e.l) + ' m' + (st.sized ? '' : ' (placeholder)'));
+    ro.p.set('FS ' + f2(x0) + ' to ' + f2(x1) + ' m');
+    var cc = x0 - G.cabin1, ct = htLE - x1;
+    ro.c.set(f2(cc) + ' m, ' + f2(ct) + ' m');
+    ro.c.el.classList.toggle('readout-warn', cc < 0 || ct < 0);
+    ro.s.set((R.swet.nac / 2).toFixed(2) + ' m² each, ' + R.ratio.toFixed(3));
+    ro.l.set(R.LD.toFixed(2));
+    plane.svg.setAttribute('aria-label', 'Three-view of the business jet with nacelles ' + f2(e.D) + ' m in diameter and ' + f2(e.l) + ' m long, from station ' + f2(x0) + ' to ' + f2(x1) + ' m; the maximum lift-to-drag ratio is ' + R.LD.toFixed(2) + '.');
+  }
+  draw();
+  var lastW = plane.el.clientWidth;
+  if (window.ResizeObserver) new ResizeObserver(function () { var w = plane.el.clientWidth; if (Math.abs(w - lastW) > 1) { lastW = w; fit(); } }).observe(plane.el);
+});
+
+/* ---------- Figure 4.2: the yawing moment of a failed engine ---------- */
+CYL.ready(function () {
+  'use strict';
+  var R = LAYOUT.evaluate(LAYOUT.preset('bizjet')), G = R.G, half = R.wpf.b / 2, Y0 = 1.255;
+  var sp0 = LAYOUT.preset('bizjet'); sp0.eng = { kind: 'none', n: 0, D: 0, l: 0 };
+  var G0 = LAYOUT.evaluate(sp0).G;                 // the airframe without engines: this figure draws them itself
+  var BASE = { y: Y0, T: 10.56 }, st = Object.assign({}, BASE);
+  var plane = CYL2D.plane(document.getElementById('fig42-stage'), { xRange: [-1, 17], yRange: [-8, 8], grid: 'none', axes: false, ticks: false, maxHeight: 380, ariaLabel: 'Top view of the business jet with one engine failed.' });
+  var gA = plane.group(), gE = plane.group();
+  LAYOUT.drawTop(gA, G0, {});
+  var panel = document.getElementById('fig42-controls');
+  var sY = CYL.slider({ label: 'Engine offset \\(y_e\\)', min: 1, max: 0.8 * half, step: 0.01, value: st.y, unit: ' m', color: 'good', onInput: function (v) { st.y = v; draw(); } });
+  var sT = CYL.slider({ label: 'Thrust per engine', min: 8, max: 14, step: 0.01, value: st.T, unit: ' kN', color: 'good', onInput: function (v) { st.T = v; draw(); } });
+  var row = CYL.el('div', { class: 'chip-row' });
+  [['Tail cone', Y0], ['Wing, 34% span', 0.34 * half]].forEach(function (q) { var b = CYL.button(q[0], function () { st.y = q[1]; sY.set(st.y, true); draw(); }, { small: true }); row.appendChild(b); });
+  var ro = { n: CYL.readout('Yawing moment \\(N\\)'), r: CYL.readout('Against the tail-cone engine') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Failed engine' }));
+  [sY.el, sT.el, row, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.n.el, ro.r.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    gE.clear();
+    var onWing = st.y > G.r + 1.0, x = onWing ? G.wing.xLE + st.y * G.wing.t - 0.6 : G.eng.x, y = st.y, l = G.eng.l, D = G.eng.D;
+    [1, -1].forEach(function (s) {
+      gE.polyline([[x - l / 2, s * y - D / 2], [x + l / 2, s * y - D / 2], [x + l / 2, s * y + D / 2], [x - l / 2, s * y + D / 2]], { color: s > 0 ? 'muted' : 'good', width: 1.6, closed: true, fill: s > 0 ? 'bad' : 'good', fillOpacity: s > 0 ? 0.15 : 0.25 });
+    });
+    gE.label([x, y], '\\times', { anchor: 'c', color: 'bad' });
+    gE.line([x + l / 2 + 2.6, -y], [x + l / 2 - 0.2, -y], { color: 'good', width: 3, arrow: 'end' });
+    gE.label([x + l / 2 + 2.6, -y], 'T', { anchor: 'e', offset: [4, 0], color: 'good', background: true });
+    gE.line([x - l / 2 - 0.5, 0], [x - l / 2 - 0.5, -y], { color: 'ink', width: 1.2, arrow: 'both' });
+    gE.label([x - l / 2 - 0.5, -y / 2], 'y_e', { anchor: 'w', offset: [-4, 0], background: true });
+    gE.arc({ center: [R.xAcW, 0], r: 2.2, theta0: Math.PI * 1.35, theta1: Math.PI * 0.65, color: 'r', width: 2, arrow: true, label: 'N' });   // the nose yaws toward the failed engine: clockwise here
+    var N = st.T * st.y;
+    ro.n.set(N.toFixed(1) + ' kN m');
+    ro.r.set((st.y / Y0).toFixed(2) + ' times');
+    plane.svg.setAttribute('aria-label', 'Top view with the left engine failed: the right engine, ' + st.y.toFixed(2) + ' m from the centerline, gives ' + st.T.toFixed(2) + ' kN and a yawing moment of ' + N.toFixed(1) + ' kN m.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'An airliner\'s engine is 3.2&nbsp;m long and 2.1&nbsp;m high. With the first-estimate nacelle of this lesson, what is the wetted area of one nacelle?',
+    label: '\\(S_{\\text{wet},n} =\\)', answer: Math.PI * 1.1 * 2.1 * 1.2 * 3.2, unit: 'm²',
+    hints: ['\\(D_n = 1.1H\\), \\(l_n = 1.2L\\).', '\\(S_{\\text{wet},n} \\approx \\pi D_n l_n\\).'],
+    explain: 'A nacelle is a little larger than its engine; its wetted area is about that of a cylinder.',
+    solution: '\\[ D_n = 2.31\\ \\text{m}, \\qquad l_n = 3.84\\ \\text{m}, \\qquad S_{\\text{wet},n} = \\pi(2.31)(3.84) = 27.9\\ \\text{m}^2 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'A twin has engines of 120&nbsp;kN each under its wing, 5.8&nbsp;m from the centerline. What yawing moment must the rudder balance when one fails, ignoring the failed engine\'s drag?',
+    label: '\\(N =\\)', answer: 120 * 5.8, unit: 'kN m',
+    hints: ['\\(N \\approx T_{\\text{eng}}\\,y_e\\).'],
+    explain: 'The live engine pushes off the centerline; the moment grows with its offset.',
+    solution: '\\[ N = 120(5.8) = 696\\ \\text{kN m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'mc',
+    prompt: 'Why must the designer know the planes of an engine\'s rotors when placing it?',
+    choices: [
+      { html: 'A disc that breaks throws fragments mostly in a narrow band around its plane, which must miss the passengers, tanks and critical systems', correct: true, feedback: 'Yes: the casing contains a lost blade, but not a burst disc.' },
+      { html: 'The rotors\' plane sets the engine\'s thrust line', feedback: 'The thrust line follows the engine\'s axis, not the planes of its rotors.' },
+      { html: 'The noise of the rotors is heard only in their plane', feedback: 'Noise spreads in all directions; burst fragments are the concern here.' },
+      { html: 'The rotors\' plane must be vertical for the engine to be certified', feedback: 'There is no such rule; engines are often tilted slightly.' }
+    ],
+    explain: 'Rotor-burst zones are bands around the planes of the discs; the layout keeps people, fuel and redundant systems out of them, or protects them.'
+  });
+});
+</script>
+</body>
+</html>

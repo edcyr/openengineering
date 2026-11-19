@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propellers · Propulsion Selection and Integration</title>
+<meta name="description" content="The propeller as an actuator disk: thrust, induced velocity and ideal efficiency from momentum theory, the static thrust, why large slow propellers are efficient, the tip Mach number that limits their diameter, blades, and clearances to the ground and the airframe.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/propulsion.js"></script>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 35 min</p>
+    <h1>Propellers</h1>
+    <p class="lede">A propeller is the extreme of Lesson 1's rule: it moves a very large mass of air a little faster, so it is the most efficient way to make thrust at low speeds. The business jet does not need one, but regional transports, commuters, trainers and light aircraft do. This lesson treats the propeller as a disk that speeds up the air, finds its thrust and efficiency, and shows what limits its size.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Find a propeller's thrust and ideal efficiency from momentum theory.</li>
+      <li>Explain why a large, lightly loaded propeller is efficient.</li>
+      <li>Compute the helical tip Mach number and the diameter it allows.</li>
+      <li>State the clearances a propeller needs from the ground and the airframe.</li>
+    </ul>
+  </section>
+
+  <section id="disk">
+    <h2>The propeller as an actuator disk</h2>
+    <p>Momentum theory replaces the blades by a thin disk of area \(A = \pi D^2/4\) that adds a pressure jump to the air passing through it. The air speeds up by an <strong>induced velocity</strong> \(v_i\) at the disk and by \(2v_i\) far behind it. Applying the momentum and energy equations to the streamtube through the disk gives:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Actuator-disk thrust, power and efficiency</p>
+      \[ T = 2\rho A\,v_i\,(V + v_i), \qquad P = T\,(V + v_i), \qquad \eta_i = \frac{TV}{P} = \frac{V}{V + v_i} \]
+      <p>\(P\) the shaft power; \(\eta_i\) the ideal efficiency, which a real propeller does not reach because of blade drag, swirl and tip losses.</p>
+    </div>
+    <p>For a given thrust, a larger disk needs a smaller induced velocity, so less of the power is wasted in the slipstream: the efficiency rises as the <strong>disk loading</strong> \(T/A\) falls. At zero speed the efficiency is zero by definition, but the thrust is not; for a given power the static thrust is</p>
+    \[ T_{\text{static}} = \left(2\rho A P^2\right)^{1/3} \]
+    <div class="example">
+      <p class="example-title">Example 6.1 — A regional turboprop's propeller</p>
+      <p>A turboprop of 2051&nbsp;kW (the PW127M's maximum take-off power) turns a propeller 3.9&nbsp;m in diameter. Find the ideal static thrust at sea level, and the ideal thrust and efficiency at 100&nbsp;m/s.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ A = \frac{\pi(3.9)^2}{4} = 11.95\ \text{m}^2 \]
+          \[ T_{\text{static}} = \left[2(1.225)(11.95)(2.051 \times 10^6)^2\right]^{1/3} = 49.7\ \text{kN} \]
+          <p>At 100&nbsp;m/s, solve \(P = 2\rho A v_i(V + v_i)^2\) for the induced velocity:</p>
+          \[ v_i = 6.2\ \text{m/s}, \qquad T = \frac{P}{V + v_i} = \frac{2.051 \times 10^6}{106.2} = 19.3\ \text{kN}, \qquad \eta_i = \frac{100}{106.2} = 0.94 \]
+          <p>Real propellers reach about 80 to 88% in cruise, and much less than the ideal static thrust. The thrust falls steeply with speed at constant power: \(T = \eta P/V\).</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> The ideal thrust (blue) and ideal efficiency (green) of a propeller against flight speed, from momentum theory, for the chosen shaft power, diameter and altitude. A larger diameter lowers the disk loading and raises both, until the tip Mach number limits it (Figure 6.2).</figcaption>
+    </figure>
+  </section>
+
+  <section id="tip">
+    <h2>The tip Mach number</h2>
+    <p>A blade tip moves around the disk at \(V_t = \pi D n\), with \(n\) the rotational speed in revolutions per second, while the aircraft carries it forward at \(V\). It meets the air at the <strong>helical tip speed</strong>:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Helical tip Mach number</p>
+      \[ M_{\text{tip}} = \frac{\sqrt{(\pi D n)^2 + V^2}}{a} \]
+      <p>Above about 0.85 to 0.9 the tips lose efficiency and grow very noisy, as the flow over them approaches the speed of sound.</p>
+    </div>
+    <p>The tip Mach number is what caps the diameter, and it is why propellers lose out above about 650&nbsp;km/h: at high flight speed the forward component alone uses up most of the allowance. Turboprops therefore turn their propellers slowly, through a reduction gearbox, and often slower still in cruise than at takeoff. More blades let a propeller absorb more power without a larger diameter, at the cost of weight and complexity: regional turboprops use four to six blades.</p>
+    <div class="example">
+      <p class="example-title">Example 6.2 — Turning the propeller slower in cruise</p>
+      <p>The 3.9&nbsp;m propeller of Example 6.1 turns at 1200&nbsp;rpm. Find its helical tip Mach number in cruise at 510&nbsp;km/h and 7&nbsp;km (\(a = 312.3\ \text{m/s}\)), and again at 1000&nbsp;rpm.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ V = \frac{510}{3.6} = 141.7\ \text{m/s} \]
+          \[ V_t = \pi(3.9)\frac{1200}{60} = 245.0\ \text{m/s} \]
+          \[ M_{\text{tip}} = \frac{\sqrt{245.0^2 + 141.7^2}}{312.3} = 0.906 \]
+          \[ \text{At 1000 rpm: } V_t = 204.2\ \text{m/s}, \qquad M_{\text{tip}} = \frac{\sqrt{204.2^2 + 141.7^2}}{312.3} = 0.796 \]
+          <p>Too fast at 1200&nbsp;rpm; comfortable at 1000. Turboprops cruise at a lower propeller speed for exactly this reason, which also makes the cabin quieter.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig62-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig62-stage"></div>
+        <div class="viz-controls" id="fig62-controls"></div>
+      </div>
+      <figcaption id="fig62-cap"><strong>Figure 6.2</strong> The helical tip Mach number against the propeller's diameter, for the chosen rotational speed, flight speed and altitude, with the chosen limit (dashed). The largest diameter the limit allows is marked.</figcaption>
+    </figure>
+  </section>
+
+  <section id="clearance">
+    <h2>Placing the propeller</h2>
+    <p>The certification rules for transports (CS/FAR 25.925) ask for at least 7&nbsp;in of ground clearance with the nose-wheel landing gear compressed and the aircraft in its most adverse attitude, and at least 1&nbsp;in of radial clearance between the blade tips and the structure, with more where vibration calls for it. In practice the gaps to the fuselage are much larger, for noise. A <strong>tractor</strong> propeller, ahead of the engine, works in clean air; a <strong>pusher</strong>, behind, works in the wake of the wing and fuselage, which makes it noisier and less efficient but frees the nose and cleans the wing. And as Module 6 noted, no passenger should sit in the propeller's plane.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Actuator disk: \(T = 2\rho Av_i(V + v_i)\), \(P = T(V + v_i)\), \(\eta_i = V/(V + v_i)\); static thrust \((2\rho AP^2)^{1/3}\).</li>
+      <li>A larger, lightly loaded disk is more efficient; real propellers reach about 0.8 to 0.88 in cruise.</li>
+      <li>The helical tip Mach number \(\sqrt{(\pi Dn)^2 + V^2}/a\) must stay below about 0.85 to 0.9: it caps the diameter and the flight speed.</li>
+      <li>Clearances: 7&nbsp;in to the ground, 1&nbsp;in to the structure at least (25.925); no seats in the propeller's plane.</li>
+      <li>Next, <a href="07-fuel-system.html">Lesson 7</a> lays out the fuel system that feeds the engines.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 6.1: ideal thrust and efficiency against speed ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { P: 2051, D: 3.9, h: 0 }, st = Object.assign({}, BASE);
+  function rho() { return ENGINE.isa(st.h * 1000).rho; }
+  var chart = AERO.chart(document.getElementById('fig61-stage'), {
+    x: { label: 'Flight speed \\(V\\) (m/s)', min: 0, max: 200 }, y: { label: 'Thrust (kN) and efficiency (%)', min: 0, max: 100 }, height: 330,
+    ariaLabel: 'Ideal propeller thrust and efficiency against flight speed.',
+    legend: [{ label: 'Ideal thrust (kN)', color: 'z', line: true }, { label: 'Ideal efficiency (%)', color: 'good', line: true }, { label: 'At your speed', color: 'z' }]
+  });
+  var cT = chart.fn(function (V) { return ENGINE.actuator(st.P * 1000, st.D, V, rho()).T / 1000; }, { color: 'z', width: 2.6, samples: 120 });
+  var cE = chart.fn(function (V) { return V > 0 ? 100 * ENGINE.actuator(st.P * 1000, st.D, V, rho()).eta : NaN; }, { color: 'good', width: 2.6, samples: 120 });
+  var mT = chart.marker([100, 20], { color: 'z', r: 6 }), mE = chart.marker([100, 90], { color: 'good', r: 6, ring: false });
+  var panel = document.getElementById('fig61-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var S = { P: sl('P', 'Shaft power \\(P\\)', 100, 4000, 1, ' kW', 'good'), D: sl('D', 'Diameter \\(D\\)', 1.5, 6, 0.05, ' m', 'z'), h: sl('h', 'Altitude', 0, 8, 0.5, ' km', 't'),
+    V: CYL.slider({ label: 'Your speed \\(V\\)', min: 0, max: 200, step: 1, value: 100, unit: ' m/s', color: 't', onInput: function (v) { st.V = v; draw(); } }) };
+  st.V = 100;
+  var reset = CYL.button('Example 6.1', function () { st = Object.assign({}, BASE, { V: 100 }); ['P', 'D', 'h', 'V'].forEach(function (k) { S[k].set(st[k], true); }); draw(); }, { small: true });
+  var ro = { s: CYL.readout('Static thrust'), t: CYL.readout('Thrust and \\(v_i\\) at your speed'), e: CYL.readout('\\(\\eta_i\\) at your speed'), dl: CYL.readout('Disk loading at your speed') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Propeller' }));
+  [S.P.el, S.D.el, S.h.el, S.V.el, reset, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.s.el, ro.t.el, ro.e.el, ro.dl.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var r = rho(), s0 = ENGINE.actuator(st.P * 1000, st.D, 0, r), a = ENGINE.actuator(st.P * 1000, st.D, st.V, r), ymax = Math.max(100, Math.ceil(s0.T / 1000 * 1.1 / 20) * 20);
+    chart.setAxes({ y: { label: 'Thrust (kN) and efficiency (%)', min: 0, max: ymax, log: false } });
+    cT.draw(); cE.draw();
+    mT.set([st.V, a.T / 1000]); mE.set(st.V > 0 ? [st.V, 100 * a.eta] : null);
+    ro.s.set((s0.T / 1000).toFixed(1) + ' kN');
+    ro.t.set((a.T / 1000).toFixed(1) + ' kN, ' + a.vi.toFixed(1) + ' m/s');
+    ro.e.set(st.V > 0 ? a.eta.toFixed(3) : '0 (static)');
+    ro.dl.set(Math.round(a.T / a.A) + ' N/m²');
+    chart.setAriaLabel('A ' + st.P + ' kW propeller of ' + st.D + ' m gives ' + (s0.T / 1000).toFixed(1) + ' kN static and ' + (a.T / 1000).toFixed(1) + ' kN at ' + st.V + ' m/s, with an ideal efficiency of ' + a.eta.toFixed(2) + '.');
+  }
+  draw();
+});
+
+/* ---------- Figure 6.2: helical tip Mach number against diameter ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { rpm: 1200, V: 510, h: 7, Mt: 0.85 }, st = Object.assign({}, BASE);
+  function a() { return ENGINE.isa(st.h * 1000).a; }
+  var chart = AERO.chart(document.getElementById('fig62-stage'), {
+    x: { label: 'Diameter \\(D\\) (m)', min: 1, max: 6 }, y: { label: 'Helical tip Mach number', min: 0, max: 1.4 }, height: 320,
+    ariaLabel: 'Helical tip Mach number against propeller diameter.',
+    legend: [{ label: '\\(M_{\\text{tip}}\\)', color: 'accent', line: true }, { label: 'Limit', color: 'r', line: true, dashed: true }, { label: 'Largest diameter', color: 'r' }]
+  });
+  var c = chart.fn(function (D) { return ENGINE.tipMach(D, st.rpm, st.V / 3.6, a()); }, { color: 'accent', width: 2.6 });
+  var lim = chart.hline(st.Mt, { color: 'r', dashed: true });
+  var mk = chart.marker([3.5, 0.85], { color: 'r', r: 6 });
+  var panel = document.getElementById('fig62-controls');
+  function sl(k, label, min, max, step, unit, color) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit, color: color, onInput: function (v) { st[k] = v; draw(); } }); }
+  var S = { rpm: sl('rpm', 'Propeller speed', 600, 3000, 10, ' rpm', 'accent'), V: sl('V', 'Flight speed', 0, 750, 5, ' km/h', 't'), h: sl('h', 'Altitude', 0, 10, 0.5, ' km', 't'), Mt: sl('Mt', 'Tip Mach limit', 0.7, 0.95, 0.01, '', 'r') };
+  var reset = CYL.button('Example 6.2', function () { st = Object.assign({}, BASE); Object.keys(S).forEach(function (k) { S[k].set(st[k], true); }); draw(); }, { small: true });
+  var ro = { d: CYL.readout('Largest diameter'), m: CYL.readout('\\(M_{\\text{tip}}\\) at 3.9 m'), v: CYL.readout('Forward share of the limit, \\(V/(M_{\\lim} a)\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Propeller' }));
+  [S.rpm.el, S.V.el, S.h.el, S.Mt.el, reset, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.d.el, ro.m.el, ro.v.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var sa = a(), dmax = ENGINE.maxDiameter(st.rpm, st.V / 3.6, sa, st.Mt);
+    c.draw(); lim.set(st.Mt);
+    mk.set(dmax >= 1 && dmax <= 6 ? [dmax, st.Mt] : null);
+    ro.d.set(dmax > 0 ? dmax.toFixed(2) + ' m' : 'none: the forward speed alone exceeds the limit');
+    ro.m.set(ENGINE.tipMach(3.9, st.rpm, st.V / 3.6, sa).toFixed(3));
+    ro.v.set((st.V / 3.6 / (st.Mt * sa)).toFixed(2));
+    chart.setAriaLabel('At ' + st.rpm + ' rpm, ' + st.V + ' km/h and ' + st.h + ' km, a tip Mach limit of ' + st.Mt + ' allows a diameter of ' + (dmax > 0 ? dmax.toFixed(2) + ' m' : 'nothing') + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1',
+    type: 'numeric',
+    prompt: 'A light aircraft\'s engine gives \\(130\\ \\text{kW}\\) to a propeller 1.9&nbsp;m in diameter. What is the ideal static thrust at sea level?',
+    label: '\\(T_{\\text{static}} =\\)', answer: Math.pow(2 * 1.225 * Math.PI * 1.9 * 1.9 / 4 * 130000 * 130000, 1 / 3), unit: 'N',
+    hints: ['\\(A = \\pi D^2/4 = 2.835\\ \\text{m}^2\\).', '\\(T_{\\text{static}} = (2\\rho AP^2)^{1/3}\\), with \\(P\\) in watts.'],
+    explain: 'With no forward speed, all the power goes into the slipstream; a larger disk turns it into more thrust.',
+    solution: '\\[ T_{\\text{static}} = \\left[2(1.225)(2.835)(130\\,000)^2\\right]^{1/3} = 4896\\ \\text{N} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2',
+    type: 'numeric',
+    prompt: 'A propeller 2.0&nbsp;m in diameter turns at 2400&nbsp;rpm at \\(70\\ \\text{m/s}\\) and sea level (\\(a = 340.3\\ \\text{m/s}\\)). What is its helical tip Mach number?',
+    label: '\\(M_{\\text{tip}} =\\)', answer: Math.sqrt(Math.pow(Math.PI * 2 * 40, 2) + 70 * 70) / 340.3,
+    hints: ['\\(V_t = \\pi Dn\\), with \\(n = 2400/60 = 40\\ \\text{rev/s}\\).', '\\(M_{\\text{tip}} = \\sqrt{V_t^2 + V^2}/a\\).'],
+    explain: 'The tip meets the air at the vector sum of its rotational and forward speeds.',
+    solution: '\\[ V_t = \\pi(2.0)(40) = 251.3\\ \\text{m/s}, \\qquad M_{\\text{tip}} = \\frac{\\sqrt{251.3^2 + 70^2}}{340.3} = 0.767 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3',
+    type: 'mc',
+    prompt: 'Momentum theory says a larger propeller is more efficient. What stops designers from simply fitting larger propellers?',
+    choices: [
+      { html: 'The tip Mach number, the ground and fuselage clearances, and the weight of the propeller and its gearbox', correct: true, feedback: 'Yes: at a given rotational speed the tips go faster as the diameter grows, and the propeller must fit on the aircraft.' },
+      { html: 'A larger propeller gives less static thrust', feedback: 'The opposite: the static thrust grows with the disk area.' },
+      { html: 'The ideal efficiency falls with diameter at high speed', feedback: 'The ideal efficiency rises as the disk loading falls, at any speed.' },
+      { html: 'Certification rules limit propellers to 4&nbsp;m', feedback: 'There is no such limit; the rules set clearances, not a diameter.' }
+    ],
+    explain: 'The disk loading favors large propellers; the tip Mach number, clearances and weight cap them.'
+  });
+});
+</script>
+</body>
+</html>
