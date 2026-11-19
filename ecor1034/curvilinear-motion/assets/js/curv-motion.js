@@ -152,22 +152,27 @@
     sample();
     var ghost = p.polyline([], { color: 'muted', width: 1.5, dashed: true });
     var trace = p.polyline([], { color: 'accent', width: 3 });
+    // Every label is placed automatically (CYL2D labelAuto) so it clears the arrows, the particle, the other
+    // labels and the plot edge as the arrows turn and shrink; labelSide / labelAnchor give the first choice and
+    // labelPriority the order (v and a first, then the unit vectors, the components, C and rho).
     var gCircle = p.group();
     var circle = gCircle.circle({ center: [0, 0], r: 1, color: 'muted', width: 1.4, dashed: true });
-    var centerDot = gCircle.point([0, 0], { color: 'muted', r: 3, label: 'C', labelAnchor: 'se' });
-    var radius = gCircle.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true, label: '\\rho', labelSide: 'left' });
+    var centerDot = gCircle.point([0, 0], { color: 'muted', r: 3, label: 'C', labelAnchor: 'se', labelAuto: true, labelPriority: 2 });
+    var radius = gCircle.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true, label: '\\rho', labelSide: 'left', labelAuto: true, labelPriority: 1, labelOptional: true });
     var gFrame = p.group();
-    var eT = gFrame.line([0, 0], [0, 0], { color: 't', width: 2.25, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left' });
-    var eN = gFrame.line([0, 0], [0, 0], { color: 'n', width: 2.25, arrow: true, label: '\\en', labelAt: 1, labelSide: 'right' });
+    var eT = gFrame.line([0, 0], [0, 0], { color: 't', width: 2.25, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left', labelAuto: true, labelPriority: 6 });
+    var eN = gFrame.line([0, 0], [0, 0], { color: 'n', width: 2.25, arrow: true, label: '\\en', labelAt: 1, labelSide: 'right', labelAuto: true, labelPriority: 6 });
     var gComp = p.group();
-    var cVx = gComp.line([0, 0], [0, 0], { color: 'x', width: 2, arrow: true, dashed: true, label: 'v_x', labelSide: 'right' });
-    var cVy = gComp.line([0, 0], [0, 0], { color: 'y', width: 2, arrow: true, dashed: true, label: 'v_y', labelSide: 'right' });
-    var cAx = gComp.line([0, 0], [0, 0], { color: 'x', width: 2.25, arrow: true, label: 'a_x', labelSide: 'right' });
-    var cAy = gComp.line([0, 0], [0, 0], { color: 'y', width: 2.25, arrow: true, label: 'a_y', labelSide: 'right' });
-    var cAt = gComp.line([0, 0], [0, 0], { color: 't', width: 2.25, arrow: true, label: 'a_t', labelSide: 'left' });
-    var cAn = gComp.line([0, 0], [0, 0], { color: 'n', width: 2.25, arrow: true, label: 'a_n', labelSide: 'left' });
-    var vArrow = p.line([0, 0], [0, 0], { color: 'good', width: 3.25, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
-    var aArrow = p.line([0, 0], [0, 0], { color: 'bad', width: 3.25, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right' });
+    var CO = { labelAuto: true, labelPriority: 4 };
+    var cVx = gComp.line([0, 0], [0, 0], Object.assign({ color: 'x', width: 2, arrow: true, dashed: true, label: 'v_x', labelSide: 'right' }, CO));
+    var cVy = gComp.line([0, 0], [0, 0], Object.assign({ color: 'y', width: 2, arrow: true, dashed: true, label: 'v_y', labelSide: 'right' }, CO));
+    var cAx = gComp.line([0, 0], [0, 0], Object.assign({ color: 'x', width: 2.25, arrow: true, label: 'a_x', labelSide: 'right' }, CO));
+    var cAy = gComp.line([0, 0], [0, 0], Object.assign({ color: 'y', width: 2.25, arrow: true, label: 'a_y', labelSide: 'right' }, CO));
+    var cAt = gComp.line([0, 0], [0, 0], Object.assign({ color: 't', width: 2.25, arrow: true, label: 'a_t', labelSide: 'left' }, CO));
+    var cAn = gComp.line([0, 0], [0, 0], Object.assign({ color: 'n', width: 2.25, arrow: true, label: 'a_n', labelSide: 'left' }, CO));
+    [[cVx, 'v_x'], [cVy, 'v_y'], [cAx, 'a_x'], [cAy, 'a_y'], [cAt, 'a_t'], [cAn, 'a_n']].forEach(function (c) { c[0]._tex = c[1]; });
+    var vArrow = p.line([0, 0], [0, 0], { color: 'good', width: 3.25, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left', labelAuto: true, labelPriority: 10 });
+    var aArrow = p.line([0, 0], [0, 0], { color: 'bad', width: 3.25, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right', labelAuto: true, labelPriority: 9 });
 
     function nearest(q) {
       var best = 0, bd = Infinity;
@@ -179,7 +184,7 @@
     }
     var dragT = null;
     var dot = p.point([val(m.x, t), val(m.y, t)], {
-      color: 'point', r: 6, label: o.pointLabel || null, labelAnchor: 'nw', bounds: false,
+      color: 'point', r: 6, label: o.pointLabel || null, labelAnchor: 'nw', labelAuto: true, labelPriority: 8, bounds: false,
       draggable: !!o.draggable,
       ariaLabel: 'Particle',
       snap: function (q) { var i = nearest(q); dragT = samples[i][2]; return [samples[i][0], samples[i][1]]; },
@@ -195,13 +200,19 @@
 
     /* ----- scales ----- */
     var kV = o.vScale || 1, kA = o.aScale || 1;
+    var dec = { t: 2, x: 2, v: 2, a: 2, rho: 2 };   // fixed decimals of the live values for this motion (no jumping)
     function autoScales() {
-      var mv = 0, ma = 0;
+      var mv = 0, ma = 0, mx = 0, mr = 0;
       for (var i = 0; i <= 80; i++) {
         var s = CURV.state(m, t0 + (t1 - t0) * i / 80);
         if (isFinite(s.v)) mv = Math.max(mv, s.v);
         if (isFinite(s.a)) ma = Math.max(ma, s.a);
+        if (isFinite(s.x) && isFinite(s.y)) mx = Math.max(mx, Math.abs(s.x), Math.abs(s.y));
+        if (isFinite(s.rho) && s.rho < 1e3) mr = Math.max(mr, s.rho);
       }
+      dec = { t: CYL.decimalsFor(Math.max(Math.abs(t0), Math.abs(t1)), 3), x: CYL.decimalsFor(mx, 3), v: CYL.decimalsFor(mv, 3),
+        a: CYL.decimalsFor(ma, 3), rho: CYL.decimalsFor(mr, 3) };
+      if (readoutEls) Object.keys(readoutEls).forEach(function (k) { if (readoutEls[k].resetWidth) readoutEls[k].resetWidth(); });
       if (!o.vScale) kV = CURV.niceScale(mv, o.arrowMax * span);
       if (!o.aScale) kA = CURV.niceScale(ma, o.arrowMax * span);
     }
@@ -369,6 +380,26 @@
     /* ----- redraw ----- */
     var cur = null;
     function add(P, d, k) { return [P[0] + d[0] * k, P[1] + d[1] * k]; }
+    // Components c1 (P -> Q) and c2 (Q -> T) of the vector P -> T: each label's first choice is the side away
+    // from the third corner (outside the triangle). Collinear (one component zero): keep the current side.
+    function sideAway(h, a, b, c) {
+      var cr = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+      var L2 = Math.max((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]), (c[0] - a[0]) * (c[0] - a[0]) + (c[1] - a[1]) * (c[1] - a[1]));
+      if (!(Math.abs(cr) > 1e-6 * L2)) return;
+      var side = cr > 0 ? 'right' : 'left';                // c is on the left of a -> b: label on the right
+      if (h._side !== side) { h._side = side; h.setLabelOptions({ labelSide: side }); }
+    }
+    // A component too short to show its arrowhead (under 12 px) loses its label, which could not say which
+    // arrow it names (the value is in the live readouts).
+    function stub(h, a, b) {
+      var s = Math.hypot(b[0] - a[0], b[1] - a[1]) * p.getView().scale < 12;
+      if (h._stub !== s) { h._stub = s; h.setLabel(s ? '' : h._tex); }
+    }
+    function pair(h1, h2, P, Q, T) {
+      sideAway(h1, P, Q, T); sideAway(h2, Q, T, P);
+      stub(h1, P, Q); stub(h2, Q, T);
+      h1.set(P, Q); h2.set(Q, T);
+    }
     function sync() {
       var s = cur = CURV.state(m, t);
       var P = [s.x, s.y];
@@ -379,18 +410,19 @@
       var V = [s.vx / kV, s.vy / kV], A = [s.ax / kA, s.ay / kA];
       vArrow.set(P, add(P, V, 1)); vArrow.setVisible(show.v && s.v > EPS);
       aArrow.set(P, add(P, A, 1)); aArrow.setVisible(show.a && s.a > EPS);
-      // components, drawn tip to tail from the particle
+      // components, drawn tip to tail from the particle; each label is first tried outside the triangle that
+      // the two components make with their vector
       var tiny = span * 2e-3;
       var cv = show.v && show.comps === 'xy' && s.v > EPS;
-      if (cv) { cVx.set(P, [P[0] + V[0], P[1]]); cVy.set([P[0] + V[0], P[1]], add(P, V, 1)); }
+      if (cv) { pair(cVx, cVy, P, [P[0] + V[0], P[1]], add(P, V, 1)); }
       cVx.setVisible(cv && Math.abs(V[0]) > tiny); cVy.setVisible(cv && Math.abs(V[1]) > tiny);
       var cxy = show.a && show.comps === 'xy' && s.a > EPS;
-      if (cxy) { cAx.set(P, [P[0] + A[0], P[1]]); cAy.set([P[0] + A[0], P[1]], add(P, A, 1)); }
+      if (cxy) { pair(cAx, cAy, P, [P[0] + A[0], P[1]], add(P, A, 1)); }
       cAx.setVisible(cxy && Math.abs(A[0]) > tiny); cAy.setVisible(cxy && Math.abs(A[1]) > tiny);
       var cnt = show.a && show.comps === 'nt' && s.a > EPS && !!s.et;
       if (cnt) {
         var Q = add(P, s.et, s.at / kA);
-        cAt.set(P, Q); cAn.set(Q, add(Q, s.en, s.an / kA));
+        pair(cAt, cAn, P, Q, add(Q, s.en, s.an / kA));
       }
       cAt.setVisible(cnt && Math.abs(s.at / kA) > tiny); cAn.setVisible(cnt && Math.abs(s.an / kA) > tiny);
       // unit vectors
@@ -414,15 +446,16 @@
     function updateReadouts(s) {
       function R(k, v) { if (readoutEls[k]) readoutEls[k].set(v); }
       function u(unit) { return cards ? '' : ' ' + unit; }   // on a card the unit is in the card title
-      R('t', f4(s.t) + ' ' + o.timeUnit);
-      R('pos', '(' + f4(s.x) + ', ' + f4(s.y) + ') ' + U);
-      R('v', f4(s.v) + u(UV));
-      R('vx', f4(s.vx) + u(UV)); R('vy', f4(s.vy) + u(UV));
-      R('a', f4(s.a) + u(UV + '\u00b2'));
-      R('ax', f4(s.ax) + u(UV + '\u00b2')); R('ay', f4(s.ay) + u(UV + '\u00b2'));
-      R('at', f4(s.at) + u(UV + '\u00b2')); R('an', f4(s.an) + u(UV + '\u00b2'));
-      R('rho', !(s.v > 1e-6) ? '\u2014 (at rest)' : isFinite(s.rho) && s.rho < 1e6 ? f4(s.rho) + ' ' + U : '\u221e (straight)');
-      R('psi', isFinite(s.psi) ? CYL.fmt(s.psi * 180 / Math.PI, 4) + '\u00b0' : '\u2014');
+      function F(x, d) { return CYL.fmtFixed(Math.abs(x) < 1e-6 ? 0 : x, d); }   // fixed decimals: the panel does not jump
+      R('t', F(s.t, dec.t) + ' ' + o.timeUnit);
+      R('pos', '(' + F(s.x, dec.x) + ', ' + F(s.y, dec.x) + ') ' + U);
+      R('v', F(s.v, dec.v) + u(UV));
+      R('vx', F(s.vx, dec.v) + u(UV)); R('vy', F(s.vy, dec.v) + u(UV));
+      R('a', F(s.a, dec.a) + u(UV + '\u00b2'));
+      R('ax', F(s.ax, dec.a) + u(UV + '\u00b2')); R('ay', F(s.ay, dec.a) + u(UV + '\u00b2'));
+      R('at', F(s.at, dec.a) + u(UV + '\u00b2')); R('an', F(s.an, dec.a) + u(UV + '\u00b2'));
+      R('rho', !(s.v > 1e-6) ? '\u2014 (at rest)' : isFinite(s.rho) && s.rho < 1e6 ? F(s.rho, dec.rho) + ' ' + U : '\u221e (straight)');
+      R('psi', isFinite(s.psi) ? F(s.psi * 180 / Math.PI, 1) + '\u00b0' : '\u2014');
     }
     var noteKey = null;
     function syncNote() {   // rewritten only when a scale changes (it holds rendered math)

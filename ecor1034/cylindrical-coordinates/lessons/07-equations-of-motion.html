@@ -99,14 +99,14 @@
           <line class="arr fr" x1="181" y1="168.7" x2="133" y2="196.4"/>
           <path class="frf" d="M126.1 200.4 l9.7 -0.6 l-4 -6.9 z"/>
           <text class="c-r" x="128" y="222">T</text>
-          <!-- N along u_θ -->
-          <line class="arr ft" x1="187.5" y1="145.4" x2="160" y2="97.8"/>
-          <path class="ftf" d="M156 90.9 l0.6 9.7 l6.9 -4 z"/>
-          <text class="c-t" x="138" y="96">N</text>
-          <!-- W down -->
-          <line class="arr fw" x1="196" y1="170" x2="196" y2="232"/>
-          <path class="fwf" d="M196 240 l-4.5 -9 h9 z"/>
-          <text x="204" y="236">W</text><text class="up" x="222" y="236">=</text><text x="236" y="236">mg</text>
+          <!-- N along u_θ: a push, so the arrowhead ends on the collar's face (the −u_θ side) -->
+          <line class="arr ft" x1="228" y1="215.4" x2="204.5" y2="174.7"/>
+          <path class="ftf" d="M200.5 167.8 L208 172.7 L201 176.7 z"/>
+          <text class="c-t" x="232" y="232">N</text>
+          <!-- W down: the arrowhead ends at the center of gravity -->
+          <line class="arr fw" x1="196" y1="94" x2="196" y2="151"/>
+          <path class="fwf" d="M196 160 l-4.5 -9 h9 z"/>
+          <text x="131" y="112">W</text><text class="up" x="149" y="112">=</text><text x="163" y="112">mg</text>
           <!-- unit vectors legend at P -->
           <line class="thin fr" x1="250" y1="160" x2="284.6" y2="140"/>
           <path class="frf" d="M290.8 136.4 l-9.4 2.4 l4 6.9 z"/>
@@ -311,7 +311,9 @@ CYL.ready(function () {
   panel.appendChild(info);
   sim = simulate();
   var FS = 0.04;                       // m of arrow per N (set in rebuild)
-  var fSpring = null, fRod = null;
+  // Free-body convention: a pull (stretched spring) starts with its tail at the collar; a push (compressed spring,
+  // the rod's N) ends with its arrowhead on the collar's dot (endGap: the dot's radius).
+  var fPull = null, fPush = null, fRod = null;
   var fig = POLAR.figure({
     stage: document.getElementById('fig72-stage'), controls: panel, readoutsEl: document.getElementById('fig72-readouts'),
     motion: sim.m, t0: 0, t1: sim.T, t: 0, speed: 1, loop: false, mass: M,
@@ -321,15 +323,20 @@ CYL.ready(function () {
     toggles: ['v', 'a', 'trace'],
     readouts: ['t', 'r', 'rd', 'rdd', 'ar', 'at', 'Fr', 'Ft'],
     onUpdate: function (s, f) {
-      if (!fSpring) {
-        fSpring = f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3, arrow: true, label: 'F_s', labelAt: 1, labelSide: 'right' });
-        fRod = f.overlay.line([0, 0], [0, 0], { color: 't', width: 3, arrow: true, label: 'N', labelAt: 1, labelSide: 'left' });
+      if (!fPull) {
+        fPull = f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3, arrow: true, label: 'F_s', labelAt: 1, labelSide: 'right' });
+        fPush = f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3, arrow: true, label: 'F_s', labelAt: 0, labelSide: 'right', endGap: 7.5 });
+        fRod = f.overlay.line([0, 0], [0, 0], { color: 't', width: 3, arrow: true, label: 'N', labelAt: 0, labelSide: 'left', endGap: 7.5 });
       }
       var Fs = -st.k * (s.r - R0), N = M * s.at, P = [s.x, s.y];
-      fSpring.set(P, [P[0] + FS * Fs * s.ur[0], P[1] + FS * Fs * s.ur[1]]);
-      fRod.set(P, [P[0] + FS * N * s.ut[0], P[1] + FS * N * s.ut[1]]);
-      fSpring.setVisible(Math.abs(Fs) * FS > 0.02);
-      fRod.setVisible(Math.abs(N) * FS > 0.02);
+      var Sv = [FS * Fs * s.ur[0], FS * Fs * s.ur[1]], Nv = [FS * N * s.ut[0], FS * N * s.ut[1]];
+      fPull.set(P, [P[0] + Sv[0], P[1] + Sv[1]]);
+      fPush.set([P[0] - Sv[0], P[1] - Sv[1]], P);
+      fRod.set([P[0] - Nv[0], P[1] - Nv[1]], P);
+      // an arrow shorter than P's dot plus its arrowhead (15 px) is hidden, with its label
+      fPull.setVisible(Fs < 0 && Math.abs(Fs) * FS * f.plane.getView().scale > 15);
+      fPush.setVisible(Fs > 0 && Math.abs(Fs) * FS * f.plane.getView().scale > 15);
+      fRod.setVisible(Math.abs(N) * FS * f.plane.getView().scale > 15);
     },
     aria: 'Top view of a rod spinning about the origin at a constant rate, with a collar joined to the hub by a spring. The collar moves out and in along the rod as it turns, tracing a looping path. An orange arrow at the collar is the spring force along the rod; a violet arrow is the push of the rod across it.'
   });
@@ -369,7 +376,7 @@ CYL.ready(function () {
   var roN = CYL.readout('\\(N = mg\\cos\\theta\\)', { color: 't' });
   var roMin = CYL.readout('Cord taut all round if \\(\\dot\\theta \\ge \\sqrt{g/r}\\)');
   var warn = CYL.el('p', { class: 'mf-warn', text: 'T < 0 here: the cord cannot push, so it goes slack.' });
-  warn.hidden = true;
+  warn.style.visibility = 'hidden';   // keeps its space, so the panel does not jump when it appears
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Arm in a vertical plane' }));
   panel.appendChild(sR.el);
   panel.appendChild(sW.el);
@@ -392,21 +399,24 @@ CYL.ready(function () {
     onUpdate: function (s, f) {
       if (!arrows) {
         arrows = {
-          W: f.overlay.line([0, 0], [0, 0], { color: 'ink', width: 3, arrow: true, label: 'W', labelAt: 1, labelSide: 'right' }),
+          // free-body convention: the weight's arrowhead ends at the collar (its center of gravity), the cord's
+          // tension starts with its tail there, and the arm's push N ends with its arrowhead on the collar
+          W: f.overlay.line([0, 0], [0, 0], { color: 'ink', width: 3, arrow: true, label: 'W', labelAt: 0, labelSide: 'right', endGap: 7.5 }),
           T: f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3, arrow: true, label: 'T', labelAt: 1, labelSide: 'left' }),
-          N: f.overlay.line([0, 0], [0, 0], { color: 't', width: 3, arrow: true, label: 'N', labelAt: 1, labelSide: 'left' })
+          N: f.overlay.line([0, 0], [0, 0], { color: 't', width: 3, arrow: true, label: 'N', labelAt: 0, labelSide: 'left', endGap: 7.5 })
         };
       }
       var P = [s.x, s.y], W = M * G;
       var T = M * st.r * st.w * st.w - W * Math.sin(s.th), N = W * Math.cos(s.th);
-      arrows.W.set(P, [P[0], P[1] - FS * W]);
+      arrows.W.set([P[0], P[1] + FS * W], P);
       arrows.T.set(P, [P[0] - FS * T * s.ur[0], P[1] - FS * T * s.ur[1]]);   // −T u_r: toward O when T > 0
-      arrows.N.set(P, [P[0] + FS * N * s.ut[0], P[1] + FS * N * s.ut[1]]);
-      arrows.T.setVisible(Math.abs(T) * FS > 0.02);
-      arrows.N.setVisible(Math.abs(N) * FS > 0.02);
-      roT.set(CYL.fmt(T, 4) + ' N');
-      roN.set(CYL.fmt(N, 4) + ' N');
-      warn.hidden = T >= 0;
+      arrows.N.set([P[0] - FS * N * s.ut[0], P[1] - FS * N * s.ut[1]], P);
+      // an arrow shorter than P's dot plus its arrowhead (15 px) is hidden, with its label
+      arrows.T.setVisible(Math.abs(T) * FS * f.plane.getView().scale > 15);
+      arrows.N.setVisible(Math.abs(N) * FS * f.plane.getView().scale > 15);
+      roT.set(CYL.fmtFixed(T, 2) + ' N');
+      roN.set(CYL.fmtFixed(N, 2) + ' N');
+      warn.style.visibility = T >= 0 ? 'hidden' : 'visible';
     },
     aria: 'A vertical plane with y up. An arm pivoted at the origin O turns at a constant rate and carries a collar P at a fixed radius on a circular path. At P, arrows show the weight (down), the cord tension toward O and the push of the arm perpendicular to it.'
   });

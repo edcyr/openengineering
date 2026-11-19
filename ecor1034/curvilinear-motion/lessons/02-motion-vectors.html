@@ -199,11 +199,12 @@ CYL.ready(function () {
   for (var i = 0; i <= 200; i++) { var tt = 5.1 * i / 200; path.push([X(tt), Y(tt)]); }
   p.polyline(path, { color: 'muted', width: 2, dashed: true });
   var arcPart = p.polyline([], { color: 'accent', width: 3.5 });
-  var chord = p.line([0, 0], [1, 1], { color: 'ink', width: 2.5, arrow: true, label: '\\Delta\\rvec', labelAt: 0.8, labelSide: 'left' });
-  var vAvg = p.line([0, 0], [1, 1], { color: 'good', width: 2.5, arrow: true, dashed: true, label: '\\vvec_\\text{avg}', labelAt: 0.6, labelSide: 'right' });
-  var vTrue = p.line([0, 0], [1, 1], { color: 'good', width: 3.25, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
-  var P = p.point([0, 0], { color: 'point', r: 6, label: 'P', labelAnchor: 'nw' });
-  var P2 = p.point([0, 0], { color: 'point', r: 5, hollow: true, label: "P'", labelAnchor: 'ne' });
+  // labels placed automatically (they crowd together when the interval is short)
+  var chord = p.line([0, 0], [1, 1], { color: 'ink', width: 2.5, arrow: true, label: '\\Delta\\rvec', labelAt: 0.8, labelSide: 'left', labelAuto: true, labelPriority: 2 });
+  var vAvg = p.line([0, 0], [1, 1], { color: 'good', width: 2.5, arrow: true, dashed: true, label: '\\vvec_\\text{avg}', labelAt: 0.6, labelSide: 'right', labelAuto: true, labelPriority: 3 });
+  var vTrue = p.line([0, 0], [1, 1], { color: 'good', width: 3.25, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left', labelAuto: true, labelPriority: 4 });
+  var P = p.point([0, 0], { color: 'point', r: 6, label: 'P', labelAnchor: 'nw', labelAuto: true, labelPriority: 6 });
+  var P2 = p.point([0, 0], { color: 'point', r: 5, hollow: true, label: "P'", labelAnchor: 'ne', labelAuto: true, labelPriority: 5 });
   var panel = document.getElementById('fig21-controls');
   var sT = CYL.slider({ label: 'Time \\(t\\)', min: 0, max: 3, step: 0.05, value: state.t, unit: 's', onInput: function (v) { state.t = v; schedule(); } });
   var sD = CYL.slider({ label: 'Interval \\(\\Delta t\\)', min: 0.02, max: 2, step: 0.02, value: state.dt, unit: 's', onInput: function (v) { state.dt = v; schedule(); } });
@@ -228,14 +229,16 @@ CYL.ready(function () {
     for (var i = 0; i <= 40; i++) { var s = t + state.dt * i / 40; pts.push([X(s), Y(s)]); }
     arcPart.set(pts);
     chord.set(A, B);
+    // a chord shorter than its label cannot carry it (and P' then sits on P, with its own label)
+    chord.setLabel(Math.hypot(B[0] - A[0], B[1] - A[1]) * p.getView().scale >= 26 ? '\\Delta\\rvec' : '');
     var av = [(B[0] - A[0]) / state.dt, (B[1] - A[1]) / state.dt], v = [VX(t), VY(t)];
     vAvg.set(A, [A[0] + av[0] * K, A[1] + av[1] * K]);
     vTrue.set(A, [A[0] + v[0] * K, A[1] + v[1] * K]);
     var ch = Math.hypot(B[0] - A[0], B[1] - A[1]), s = arc(t, t2);
-    roChord.set(CYL.fmt(ch, 4) + ' m'); roArc.set(CYL.fmt(s, 4) + ' m'); roRatio.set(CYL.fmtFixed(ch / s, 4));
+    roChord.set(CYL.fmtFixed(ch, 3) + ' m'); roArc.set(CYL.fmtFixed(s, 3) + ' m'); roRatio.set(CYL.fmtFixed(ch / s, 4));
     roAvg.set(vecTxt(av[0], av[1])); roV.set(vecTxt(v[0], v[1]));
     var ang = Math.abs(CYL.math.angleDiff(Math.atan2(av[1], av[0]), Math.atan2(v[1], v[0]))) * 180 / Math.PI;
-    roAng.set(CYL.fmt(ang, 3) + '\u00b0');
+    roAng.set(CYL.fmtFixed(ang, 1) + '\u00b0');
   }
   var schedule = CYL.throttleRAF(update);
   update();
@@ -255,9 +258,9 @@ CYL.ready(function () {
   var hp = [];
   for (var i = 0; i <= 120; i++) { var th = 2 * Math.PI * i / 120; hp.push([-3 * Math.sin(th), 2 * Math.cos(th)]); }
   h.polyline(hp, { color: 'muted', width: 1.5, dashed: true });
-  var hv = h.line([0, 0], [1, 0], { color: 'good', width: 3, arrow: true, label: '\\vvec', labelSide: 'left' });
-  var ha = h.line([0, 0], [1, 0], { color: 'bad', width: 3, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right' });
-  h.point([0, 0], { color: 'muted', r: 3, label: 'O_v', labelAnchor: 'sw' });
+  var hv = h.line([0, 0], [1, 0], { color: 'good', width: 3, arrow: true, label: '\\vvec', labelSide: 'left', labelAuto: true, labelPriority: 2 });
+  var ha = h.line([0, 0], [1, 0], { color: 'bad', width: 3, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right', labelAuto: true, labelPriority: 3 });
+  h.point([0, 0], { color: 'muted', r: 3, label: 'O_v', labelAnchor: 'sw', labelAuto: true, labelPriority: 1 });
   var KA = 0.5;
   CURV.figure({
     stage: document.getElementById('fig22-stage'), controls: panel,

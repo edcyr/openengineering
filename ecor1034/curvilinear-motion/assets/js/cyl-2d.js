@@ -32,6 +32,12 @@
  *                                                       -> .set([x,y]), .get(), .el, .setLabel(tex), .focus()
  *   p.line(a, b, {color:'ink', width:2, dashed:false, arrow:false|true|'end'|'start'|'both', opacity,
  *                 label, labelAt:0.5, labelSide:'right'|'left', labelGap:7})          -> .set(a, b), .get()
+ *        Points and lines also take labelAuto:false, labelPriority:0 and labelOptional:false. With labelAuto the
+ *        label is placed automatically where it clears other labels, the plot edge, arrows, points, curves and
+ *        the axes (the given labelSide / labelAnchor is the first choice; see "automatic label placement" in the
+ *        code); an optional auto label is left out when every place for it is on an arrow.
+ *        Both handles have .setLabelOptions({labelSide, labelAt, labelAnchor, labelOffset, labelGap, labelAuto,
+ *        labelPriority}) to change these later (e.g. every animation frame).
  *   p.polyline(points, {color:'ink', width:2, closed:false, fill:null, fillOpacity:0.15, dashed, arrow})
  *                                                                                       -> .set(points)
  *   p.arc({center:[0,0], r, theta0, theta1, color:'t', width:2, arrow:true, rPx (radius in px instead of r),
@@ -447,6 +453,7 @@
 
     var markers = {};
     var items = [];
+    var chrome = { boxes: [], segs: [] };
     var destroyed = false;
     var interactive = false;
     var L = { W: 480, H: 480, s: 1, cx: 0, cy: 0, vx0: -1, vx1: 1, vy0: -1, vy1: 1 };
@@ -827,6 +834,187 @@
         var tm = S('path', { d: marks, fill: 'none', 'stroke-width': 1, 'class': 'cyl2d-tickmarks' }, gAxes);
         tm.style.stroke = axisColor;
       }
+      // What the axes occupy, for the automatic placement of item labels (labelAuto): kept tick and axis/angle
+      // label boxes, and the two axis lines.
+      chrome.boxes = xt.concat(yt).filter(function (x) { return x.ok && x.el.parentNode; }).map(function (x) { return x.box; })
+        .concat(axisBoxes().filter(Boolean), angleBoxes);
+      chrome.segs = o.axes ? [[[xStart, ay], [W - 1, ay]], [[ax, yStart], [ax, 1]]] : [];
+    }
+
+    // ---- automatic label placement (opt in per point or line: labelAuto:true, labelPriority:n)
+    // An auto label tries a short list of positions around its item and keeps the one that clears the most. For
+    // an arrow labelled at its tip: the preferred side (labelSide), the diagonal toward the tip, beyond the tip,
+    // the other diagonal and side, then behind; for a label part-way along an arrow: either side at labelAt, then
+    // at 35 % and 65 % of the length, then beyond the tip; for a point: its labelAnchor, then the other seven
+    // directions, nearest first. In order of cost it avoids: the plot edge, labels already placed (fixed labels,
+    // then auto labels by labelPriority, highest first), arrows and points, then curves, tick labels and axes.
+    // It runs once after a batch of changes (a microtask), so an animation frame is laid out once.
+    var autoCount = 0, autoQ = false;
+    var LABEL_KEYS = ['labelSide', 'labelAt', 'labelAnchor', 'labelOffset', 'labelGap', 'labelAuto', 'labelPriority', 'labelOptional'];
+    function setAuto(it, op) {
+      var on = !!op.labelAuto;
+      if (on && !it.auto) autoCount++;
+      else if (!on && it.auto) autoCount--;
+      it.auto = on; it.prio = num(op.labelPriority, 0); it.optional = !!op.labelOptional;
+    }
+    function mergeLabelOpts(it, op, obj) {
+      if (!obj || typeof obj !== 'object') return;
+      for (var i = 0; i < LABEL_KEYS.length; i++) if (hasOwn.call(obj, LABEL_KEYS[i])) op[LABEL_KEYS[i]] = obj[LABEL_KEYS[i]];
+      setAuto(it, op);
+    }
+    function queueAuto() {
+      if (autoQ || destroyed) return;
+      autoQ = true;
+      var run = function () {
+        autoQ = false;
+        try { autoLayout(); } catch (e) { report('label layout failed: ' + (e && e.message ? e.message : e)); }
+      };
+      if (typeof global.queueMicrotask === 'function') global.queueMicrotask(run);
+      else if (global.Promise) global.Promise.resolve().then(run);
+      else global.setTimeout(run, 0);
+    }
+    function shownItem(it) {
+      if (!it.visible || !it.ok || it.removed) return false;
+      for (var g = it.group; g; g = g.parent) if (g.api && g.api.visible === false) return false;
+      return true;
+    }
+    // Does segment a-b pass within m px of box [x0, y0, x1, y1]? (Liang–Barsky clip)
+    function segBox(a, b, box, m) {
+      var x0 = box[0] - m, y0 = box[1] - m, x1 = box[2] + m, y1 = box[3] + m;
+      var dx = b[0] - a[0], dy = b[1] - a[1], t0 = 0, t1 = 1;
+      var P = [-dx, dx, -dy, dy], Q = [a[0] - x0, x1 - a[0], a[1] - y0, y1 - a[1]];
+      for (var i = 0; i < 4; i++) {
+        if (P[i] === 0) { if (Q[i] < 0) return false; continue; }
+        var r = Q[i] / P[i];
+        if (P[i] < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; }
+      }
+      return true;
+    }
+    function diskBox(c, r, box) {
+      var dx = c[0] - clamp(c[0], box[0], box[2]), dy = c[1] - clamp(c[1], box[1], box[3]);
+      return dx * dx + dy * dy <= r * r;
+    }
+    function overlapArea(a, b, m) {
+      var w = Math.min(a[2], b[2]) - Math.max(a[0], b[0]) + m, h = Math.min(a[3], b[3]) - Math.max(a[1], b[1]) + m;
+      return w > 0 && h > 0 ? w * h : 0;
+    }
+    function softHit(it, box) {
+      if (it.ring) {
+        var C = it.ring[0], R = it.ring[1];
+        var dx = Math.max(box[0] - C[0], 0, C[0] - box[2]), dy = Math.max(box[1] - C[1], 0, C[1] - box[3]);
+        var far = Math.max(Math.hypot(box[0] - C[0], box[1] - C[1]), Math.hypot(box[2] - C[0], box[1] - C[1]),
+          Math.hypot(box[0] - C[0], box[3] - C[1]), Math.hypot(box[2] - C[0], box[3] - C[1]));
+        return Math.hypot(dx, dy) <= R + 1 && far >= R - 1;
+      }
+      for (var r = 0; r < it.runs.length; r++) {
+        var run = it.runs[r], bb = it.bbs[r];
+        if (bb[2] < box[0] - 2 || bb[0] > box[2] + 2 || bb[3] < box[1] - 2 || bb[1] > box[3] + 2) continue;
+        for (var i = 1; i < run.length; i++) if (segBox(run[i - 1], run[i], box, 1)) return true;
+      }
+      return false;
+    }
+    function autoLayout() {
+      if (destroyed || !autoCount || !L.measured) return;
+      var W = L.W, Hh = L.H, autos = [], lines = [], disks = [], soft = [], fixed = [], i, j;
+      for (i = 0; i < items.length; i++) {
+        var it = items[i];
+        if (!shownItem(it)) continue;
+        if (it.kind === 'line' && it.seg) lines.push(it);
+        else if (it.kind === 'point' && it.q) disks.push(it);
+        else if ((it.runs && it.runs.length) || it.ring) soft.push(it);
+        if (it.lab && !it.lab.el._cyl2dOff && it.lab.text) (it.auto ? autos : fixed).push(it);
+      }
+      if (!autos.length) return;
+      soft.forEach(function (s) {
+        s.bbs = (s.runs || []).map(function (run) {
+          var b = [Infinity, Infinity, -Infinity, -Infinity];
+          run.forEach(function (q) { b[0] = Math.min(b[0], q[0]); b[1] = Math.min(b[1], q[1]); b[2] = Math.max(b[2], q[0]); b[3] = Math.max(b[3], q[1]); });
+          return b;
+        });
+      });
+      // Reads, in one layout pass: the sizes of the auto labels and the boxes of the labels that stay put.
+      var ob = overlay.getBoundingClientRect();
+      if (!(ob.width > 0)) return;
+      var k = W / ob.width, placed = [];
+      fixed.forEach(function (f) {
+        var r = f.lab.el.getBoundingClientRect();
+        if (r.width > 0) placed.push([(r.left - ob.left) * k, (r.top - ob.top) * k, (r.right - ob.left) * k, (r.bottom - ob.top) * k]);
+      });
+      autos.forEach(function (a) { if (a.optional && a.lab.el.style.display === 'none') a.lab.el.style.display = ''; });
+      autos.forEach(function (a) { a.lw = a.lab.el.offsetWidth; a.lh = a.lab.el.offsetHeight; });
+      autos = autos.filter(function (a) { return a.lw > 0 && a.lh > 0; });
+      autos.sort(function (a, b) { return b.prio - a.prio || items.indexOf(a) - items.indexOf(b); });
+      function candidates(it) {
+        var out = [], seen = {};
+        function push(x, y, anchor, gap, t) {
+          var key = (t === undefined ? '' : t.toFixed(2)) + anchor;   // independent of position, for stability in animations
+          if (seen[key]) return;
+          seen[key] = 1;
+          out.push({ x: x, y: y, anchor: anchor, gap: gap, key: key });
+        }
+        if (it.kind === 'point') {
+          var order = ['e', 'ne', 'n', 'nw', 'w', 'sw', 's', 'se'], p0 = order.indexOf(anchorKey(it.labAnchor));
+          if (p0 < 0) p0 = 1;
+          [0, 1, -1, 2, -2, 3, -3, 4].forEach(function (d) { push(it.q[0], it.q[1], order[(p0 + d + 8) % 8], it.labGap); });
+          return out;
+        }
+        var A = it.seg[0], B = it.seg[1], len = Math.hypot(B[0] - A[0], B[1] - A[1]);
+        var ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len, nx = -uy * it.labSide, ny = ux * it.labSide;
+        function add(t, dx, dy, extra) {
+          push(A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t, dirAnchor(dx, dy), it.labGap + (extra || 0), t);
+        }
+        if (it.labAt > 0.999) {
+          add(1, nx, ny); add(1, nx + ux, ny + uy); add(1, ux, uy, 2); add(1, ux - nx, uy - ny); add(1, -nx, -ny);
+          add(1, nx - ux, ny - uy); add(1, -nx - ux, -ny - uy);
+        } else {
+          var t0 = it.labAt;
+          add(t0, nx, ny); add(t0, -nx, -ny);
+          [0.35, 0.65].forEach(function (t) { if (Math.abs(t - t0) > 0.1) add(t, nx, ny); });
+          [0.35, 0.65].forEach(function (t) { if (Math.abs(t - t0) > 0.1) add(t, -nx, -ny); });
+          add(1, ux, uy, 2); add(1, nx + ux, ny + uy); add(1, ux - nx, uy - ny);
+        }
+        return out;
+      }
+      function cost(it, box) {
+        var v = 0, out = Math.max(0, 2 - box[0]) + Math.max(0, box[2] - (W - 2)) + Math.max(0, 2 - box[1]) + Math.max(0, box[3] - (Hh - 2));
+        if (out > 0) v += 1e5 + 1e3 * out;
+        for (j = 0; j < placed.length; j++) { var a = overlapArea(box, placed[j], 1); if (a) v += 2e4 + 50 * a; }
+        for (j = 0; j < lines.length; j++) {
+          var ln = lines[j];
+          if (ln === it) continue;
+          var hit = segBox(ln.seg[0], ln.seg[1], box, 2 + ln.w / 2);
+          if (!hit && ln.head) {
+            var hl = arrowLen(ln.w), A = ln.seg[0], B = ln.seg[1], d = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1;
+            hit = diskBox([B[0] - (B[0] - A[0]) / d * 0.45 * hl, B[1] - (B[1] - A[1]) / d * 0.45 * hl], 0.45 * hl + 1.5, box);
+          }
+          if (hit) v += ln.st.arrow ? 900 : 300;
+        }
+        for (j = 0; j < disks.length; j++) if (disks[j] !== it && diskBox(disks[j].q, disks[j].rpx + 2.5, box)) v += 700;
+        for (j = 0; j < soft.length; j++) if (softHit(soft[j], box)) v += 120;
+        for (j = 0; j < chrome.boxes.length; j++) if (overlapArea(box, chrome.boxes[j], 1)) v += 150;
+        for (j = 0; j < chrome.segs.length; j++) if (segBox(chrome.segs[j][0], chrome.segs[j][1], box, 1)) v += 60;
+        return v;
+      }
+      autos.forEach(function (it) {
+        var off = it.labOffset, ox = off ? num(off[0], 0) : 0, oy = off ? num(off[1], 0) : 0, best = null;
+        candidates(it).forEach(function (c, idx) {
+          var b = labelBox(c.x, c.y, c.anchor, c.gap, it.lw, it.lh);
+          b = [b[0] + ox, b[1] + oy, b[2] + ox, b[3] + oy];
+          var v = cost(it, b) + 25 * idx - (c.key === it.autoKey ? 40 : 0);
+          if (!best || v < best.v) best = { c: c, b: b, v: v };
+        });
+        if (!best) return;
+        it.autoKey = best.c.key;
+        // An optional label (labelOptional) with no place clear of the arrows is left out.
+        if (it.optional && best.v >= 900) { it.lab.el.style.display = 'none'; return; }
+        // No position fits inside (an arrow running off the plot): slide the label back in along the edge, by
+        // at most 120 px. A point outside the plot keeps its label outside (clipped) too.
+        var b = best.b, dx = b[0] < 2 ? 2 - b[0] : b[2] > W - 2 ? W - 2 - b[2] : 0, dy = b[1] < 2 ? 2 - b[1] : b[3] > Hh - 2 ? Hh - 2 - b[3] : 0;
+        var inside = it.kind !== 'point' || (it.q[0] >= 0 && it.q[0] <= W && it.q[1] >= 0 && it.q[1] <= Hh);
+        if (!inside || Math.abs(dx) > 120 || Math.abs(dy) > 120) dx = dy = 0;
+        placed.push([b[0] + dx, b[1] + dy, b[2] + dx, b[3] + dy]);
+        placeLabel(it.lab, best.c.x, best.c.y, best.c.anchor, dx || dy ? [ox + dx, oy + dy] : off, best.c.gap, W, Hh);
+      });
     }
 
     // ---- items
@@ -842,6 +1030,7 @@
       if (it.removed) return;
       try { it.render(); } catch (e) { it.ok = false; report(it.kind + ' render failed: ' + (e && e.message ? e.message : e)); }
       applyVis(it);
+      if (autoCount) queueAuto();   // any change can move an obstacle of an auto-placed label
     }
     function addItem(it, grp) {
       it.group = grp || null;
@@ -851,7 +1040,7 @@
       if (grp) grp.items.push(it);
       var h = it.handle;
       h.kind = it.kind;
-      h.setVisible = function (v) { it.visible = v !== false; applyVis(it); return h; };
+      h.setVisible = function (v) { it.visible = v !== false; applyVis(it); if (autoCount) queueAuto(); return h; };
       h.remove = function () { removeItem(it); };
       h.setColor = function (c) { it.st.color = c; renderItem(it); return h; };
       renderItem(it);
@@ -860,6 +1049,7 @@
     function removeItem(it) {
       if (!it || it.removed) return;
       it.removed = true;
+      if (it.auto) { it.auto = false; autoCount--; }
       if (it.cleanup) { try { it.cleanup(); } catch (e) { /* ignore */ } }
       it.nodes.forEach(detach);
       var i = items.indexOf(it);
@@ -912,7 +1102,7 @@
 
     // point ----------------------------------------------------------------
     function pointImpl(grp, pos, op) {
-      op = op && typeof op === 'object' ? op : {};
+      op = op && typeof op === 'object' ? Object.assign({}, op) : {};   // a private copy: setLabelOptions() changes it
       var drag = !!op.draggable;
       var st = { pos: toPt(pos) || [NaN, NaN], color: op.color, r: clamp(posNum(op.r, 5), 0.5, 60), label: op.label, hollow: !!op.hollow };
       var g = S('g', { 'class': 'cyl2d-point' + (drag ? ' is-draggable draggable' : '') }, pointParent(grp));
@@ -929,9 +1119,11 @@
         if (!lab && st.label !== undefined && st.label !== null && st.label !== '') {
           lab = newLabel(grp, op.labelClass, op.labelBackground);
           it.nodes.push(lab.el);
+          it.lab = lab;
         }
       }
       ensureLabel();
+      setAuto(it, op);
       function describe(p) {
         if (typeof op.ariaFormat === 'function') {
           var t = callUser(op.ariaFormat, [p.slice()], 'point ariaFormat');
@@ -965,6 +1157,7 @@
         if (drag) updateAria();
         if (!it.ok) return;
         var q = toPx(p);
+        it.q = q; it.rpx = st.r; it.labGap = st.r + 3; it.labAnchor = op.labelAnchor || 'ne'; it.labOffset = op.labelOffset;
         g.setAttribute('transform', 'translate(' + rd(q[0]) + ' ' + rd(q[1]) + ')');
         if (lab) {
           var has = st.label !== undefined && st.label !== null && st.label !== '';
@@ -979,6 +1172,7 @@
       h.set = function (p) { st.pos = toPt(p) || [NaN, NaN]; renderItem(it); return h; };
       h.get = function () { return st.pos.slice(); };
       h.setLabel = function (tex) { st.label = tex; ensureLabel(); renderItem(it); return h; };
+      h.setLabelOptions = function (obj) { mergeLabelOpts(it, op, obj); renderItem(it); return h; };
       h.focus = function () { try { g.focus({ preventScroll: true }); } catch (e) { try { g.focus(); } catch (e2) { /* ignore */ } } };
 
       if (drag) {
@@ -1088,7 +1282,7 @@
 
     // line -----------------------------------------------------------------
     function lineImpl(grp, a, b, op) {
-      op = op && typeof op === 'object' ? op : {};
+      op = op && typeof op === 'object' ? Object.assign({}, op) : {};   // a private copy: setLabelOptions() changes it
       var st = { a: toPt(a), b: toPt(b), color: op.color, width: posNum(op.width, 2), dashed: op.dashed, arrow: op.arrow,
         opacity: op.opacity, label: op.label };
       var path = S('path', { 'class': 'cyl2d-line', fill: 'none' }, contentParent(grp));
@@ -1097,9 +1291,10 @@
       var it = { kind: 'line', st: st, nodes: [path], handle: h };
       var lab = null;
       function ensureLabel() {
-        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') { lab = newLabel(grp, op.labelClass, op.labelBackground); it.nodes.push(lab.el); }
+        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') { lab = newLabel(grp, op.labelClass, op.labelBackground); it.nodes.push(lab.el); it.lab = lab; }
       }
       ensureLabel();
+      setAuto(it, op);
       it.render = function () {
         var ok = okPt(st.a) && okPt(st.b), A, B;
         if (ok) { A = toPx(st.a); B = toPx(st.b); ok = Math.hypot(B[0] - A[0], B[1] - A[1]) > 0.05; }
@@ -1108,6 +1303,7 @@
         var c = paint(st.color, 'ink');
         styleStroke(path, c, st.width, st.dashed, st.opacity);
         strokeRun(path, [A, B], c, st.width, st.arrow);
+        it.seg = [A, B]; it.w = st.width; it.head = arrowFlags(st.arrow).e && polyLen([A, B]) > ARROW_BACK * arrowLen(st.width) * 1.5;
         if (lab) {
           var has = st.label !== undefined && st.label !== null && st.label !== '';
           lab.el._cyl2dOff = !has;
@@ -1120,7 +1316,8 @@
             var nx = -uy * side, ny = ux * side;
             lab.el.style.color = paint(op.labelColor !== undefined ? op.labelColor : st.color, 'ink');
             setLabelContent(lab, st.label, op.labelTex !== false);
-            placeLabel(lab, mx, my, dirAnchor(nx, ny), op.labelOffset, num(op.labelGap, 7) + st.width / 2, L.W, L.H);
+            it.labAt = t; it.labSide = side; it.labGap = num(op.labelGap, 7) + st.width / 2; it.labOffset = op.labelOffset;
+            placeLabel(lab, mx, my, dirAnchor(nx, ny), op.labelOffset, it.labGap, L.W, L.H);
           }
         }
       };
@@ -1132,6 +1329,7 @@
       };
       h.get = function () { return [st.a ? st.a.slice() : null, st.b ? st.b.slice() : null]; };
       h.setLabel = function (tex) { st.label = tex; ensureLabel(); renderItem(it); return h; };
+      h.setLabelOptions = function (obj) { mergeLabelOpts(it, op, obj); renderItem(it); return h; };
       return addItem(it, grp);
     }
 
@@ -1145,6 +1343,7 @@
       var it = { kind: 'polyline', st: st, nodes: [path], handle: h };
       it.render = function () {
         var runs = pxRuns(st.pts);
+        it.runs = runs;
         var c = paint(st.color, 'ink');
         styleStroke(path, c, st.width, st.dashed, st.opacity);
         styleFill(path, st.fill, c, st.fillOpacity, 0.15);
@@ -1169,7 +1368,7 @@
       var it = { kind: 'arc', st: st, nodes: [path], handle: h };
       var lab = null;
       function ensureLabel() {
-        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') { lab = newLabel(grp, op.labelClass, op.labelBackground); it.nodes.push(lab.el); }
+        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') { lab = newLabel(grp, op.labelClass, op.labelBackground); it.nodes.push(lab.el); it.lab = lab; }
       }
       ensureLabel();
       it.render = function () {
@@ -1189,6 +1388,7 @@
           pts.push([C[0] + rpx * Math.cos(a), C[1] - rpx * Math.sin(a)]);
         }
         var w = posNum(st.width, 2), c = paint(st.color, 't');
+        it.runs = [pts];
         styleStroke(path, c, w, st.dashed, st.opacity);
         strokeRun(path, pts, c, w, st.arrow === undefined ? true : st.arrow);
         if (lab) {
@@ -1223,6 +1423,7 @@
         it.ok = okPt(c0) && rpx > 0.05;
         if (!it.ok) return;
         var C = toPx(c0), w = Math.max(0, num(st.width, 2)), c = paint(st.color, 'ink');
+        it.ring = [C, rpx];
         el.setAttribute('cx', String(rd(C[0])));
         el.setAttribute('cy', String(rd(C[1])));
         el.setAttribute('r', String(rd(Math.min(rpx, BIG))));
@@ -1278,7 +1479,7 @@
       var st = { pos: toPt(pos), text: tex, color: op.color, anchor: op.anchor || 'c', offset: op.offset, isTex: op.tex !== false };
       var lb = newLabel(grp, op.className, op.background);
       var h = { el: lb.el };
-      var it = { kind: 'label', st: st, nodes: [lb.el], handle: h };
+      var it = { kind: 'label', st: st, nodes: [lb.el], handle: h, lab: lb };
       it.render = function () {
         var has = st.text !== undefined && st.text !== null && st.text !== '';
         it.ok = okPt(st.pos) && has;
@@ -1330,6 +1531,7 @@
         var d = runsD(runs);
         if (!d) return;
         it.ok = true;
+        it.runs = runs;
         styleStroke(path, paint(st.color, 'accent'), st.width, st.dashed, st.opacity);
         path.setAttribute('d', d);
       };
@@ -1369,6 +1571,7 @@
         var d = runsD(runs);
         if (!d) return;
         it.ok = true;
+        it.runs = runs;
         styleStroke(path, paint(st.color, 'accent'), st.width, st.dashed, st.opacity);
         path.setAttribute('d', d);
       };
@@ -1430,6 +1633,7 @@
         g.visible = v !== false;
         var d = g.visible ? '' : 'none';
         grp.content.style.display = d; grp.points.style.display = d; grp.labels.style.display = d;
+        if (autoCount) queueAuto();
         return g;
       };
       g.clear = function () { clearGroup(grp); return g; };

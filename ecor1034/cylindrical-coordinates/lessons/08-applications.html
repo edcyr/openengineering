@@ -225,8 +225,9 @@ CYL.ready(function () {
     onUpdate: function (s, f) {
       if (!arrows) {
         arrows = {
-          N: f.overlay.line([0, 0], [0, 0], { color: 'accent', width: 3.25, arrow: true, label: '\\mathbf{N}', labelAt: 1, labelSide: 'right' }),
-          F: f.overlay.line([0, 0], [0, 0], { color: 't', width: 3.25, arrow: true, label: 'F', labelAt: 1, labelSide: 'left' })
+          // both are pushes (free-body convention): each arrowhead ends on the pin, the label sits at the tail
+          N: f.overlay.line([0, 0], [0, 0], { color: 'accent', width: 3.25, arrow: true, label: '\\mathbf{N}', labelAt: 0, labelSide: 'right', endGap: 7.5 }),
+          F: f.overlay.line([0, 0], [0, 0], { color: 't', width: 3.25, arrow: true, label: 'F', labelAt: 0, labelSide: 'left', endGap: 7.5 })
         };
       }
       var P = [s.x, s.y], sp = Math.sin(s.psi), cp = Math.cos(s.psi);
@@ -234,13 +235,14 @@ CYL.ready(function () {
       var n = [-sp * s.ur[0] + cp * s.ut[0], -sp * s.ur[1] + cp * s.ut[1]];
       var ok = isFinite(N) && isFinite(F);
       if (ok) {
-        arrows.N.set(P, [P[0] + FS * N * n[0], P[1] + FS * N * n[1]]);
-        arrows.F.set(P, [P[0] + FS * F * s.ut[0], P[1] + FS * F * s.ut[1]]);
+        arrows.N.set([P[0] - FS * N * n[0], P[1] - FS * N * n[1]], P);
+        arrows.F.set([P[0] - FS * F * s.ut[0], P[1] - FS * F * s.ut[1]], P);
       }
-      arrows.N.setVisible(ok && Math.abs(N) * FS > 0.02);
-      arrows.F.setVisible(ok && Math.abs(F) * FS > 0.02);
-      roN.set(ok ? CYL.fmt(N, 4) + ' N' : '\u2014');
-      roF.set(ok ? CYL.fmt(F, 4) + ' N' : '\u2014');
+      // an arrow shorter than P's dot plus its arrowhead (15 px) is hidden, with its label
+      arrows.N.setVisible(ok && Math.abs(N) * FS * f.plane.getView().scale > 15);
+      arrows.F.setVisible(ok && Math.abs(F) * FS * f.plane.getView().scale > 15);
+      roN.set(ok ? CYL.fmtFixed(N, 2) + ' N' : '\u2014');
+      roF.set(ok ? CYL.fmtFixed(F, 2) + ' N' : '\u2014');
     },
     aria: 'Top view of a fixed groove, drawn wide and gray, and a slotted arm pivoted at the origin O that pushes a pin P along it. At P a violet arrow shows the force of the arm, perpendicular to the arm, and a teal arrow the force of the groove, perpendicular to the path. Dashed lines show the extended radial line and the tangent, with the angle psi between them.'
   });
@@ -258,7 +260,7 @@ CYL.ready(function () {
       maxF = Math.max(maxF, Math.abs(N), Math.abs(F));
     }
     FS = maxF > 1e-9 ? 0.45 * P.R / maxF : 0.3;
-    note.textContent = 'Force arrows: 1 m on the grid is ' + CYL.fmt(1 / FS, 3) + ' N. Pin mass 0.4 kg.';
+    note.textContent = 'Force arrows: 1 m on the grid is ' + CYL.fmt(1 / FS) + ' N. Pin mass 0.4 kg.';
     fig.setMotion(m, 0, curT1, u * curT1);
   }
   rebuild(true);
@@ -309,8 +311,9 @@ CYL.ready(function () {
       if (!cord) cord = f.overlay.line([0, 0], [0, 0], { color: 'r', width: 3.25, arrow: true, label: 'T', labelAt: 1, labelSide: 'right' });
       var T = M * (s.r * s.thd * s.thd - s.rdd), P = [s.x, s.y];
       cord.set(P, [P[0] - FS * T * s.ur[0], P[1] - FS * T * s.ur[1]]);
-      roH.set(CYL.fmt(s.r * s.r * s.thd, 4) + ' m\u00b2/s');
-      roT.set(CYL.fmt(T, 4) + ' N');
+      cord.setVisible(Math.abs(T) * FS * f.plane.getView().scale > 15);   // hidden (with its label) while shorter than the dot and its head
+      roH.set(CYL.fmtFixed(s.r * s.r * s.thd, 3) + ' m\u00b2/s');
+      roT.set(CYL.fmtFixed(T, 2) + ' N');
     },
     aria: 'Top view of a puck on a frictionless table, tied to a cord that runs to a hole at the origin O. As the cord is pulled in, the puck spirals inward, turning faster and faster. An orange arrow from the puck toward O shows the cord tension, and a green arrow its velocity.'
   });
@@ -318,7 +321,7 @@ CYL.ready(function () {
     var M1 = motion(), h = R1 * R1 * st.w1;
     var Tmax = M * h * h / Math.pow(st.c > 1e-9 ? RMIN : R1, 3);
     FS = 0.55 / Tmax;
-    note.textContent = 'Force arrow: 1 m on the grid is ' + CYL.fmt(1 / FS, 3) + ' N. Puck mass 0.3 kg; the motion stops at r = 0.25 m.';
+    note.textContent = 'Force arrow: 1 m on the grid is ' + CYL.fmt(1 / FS) + ' N. Puck mass 0.3 kg; the motion stops at r = 0.25 m.';
     fig.setMotion(M1.m, 0, M1.T, 0);
   }
   rebuild();

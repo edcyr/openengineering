@@ -197,10 +197,12 @@ CYL.ready(function () {
   var PI = Math.PI;
   var st = { r: 3, th: PI / 3, snap: true };
   var p = CYL2D.plane(document.getElementById('fig21-stage'), {
-    xRange: [-4.5, 4.5], yRange: [-4.5, 4.5], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 440,
+    xRange: [-4.5, 4.5], yRange: [-4.5, 4.5], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 440, declutter: true,
     ariaLabel: 'A polar grid with the origin O. A draggable point P is joined to O by an orange segment of length r; a violet arc from the positive x-axis shows the angle theta. A gray leg along the x-axis and a dashed olive leg parallel to the y-axis show the rectangular coordinates x and y.'
   });
-  var xLeg = p.line([0, 0], [1, 0], { color: 'x', width: 3, label: 'x', labelSide: 'right' });
+  // the x leg runs from O; its label sits above the axis (clear of the tick numbers), out past the θ arc
+  var xLegs = [p.line([0, 0], [1, 0], { color: 'x', width: 3, label: 'x', labelSide: 'left', labelAt: 0.7 }),     // x > 0
+    p.line([0, 0], [-1, 0], { color: 'x', width: 3, label: 'x', labelSide: 'right', labelAt: 0.7 })];             // x < 0
   var yLeg = p.line([1, 0], [1, 1], { color: 'y', width: 2.5, dashed: true, label: 'y', labelSide: 'right' });
   var seg = p.line([0, 0], [1, 1], { color: 'r', width: 3, label: 'r', labelSide: 'left' });
   var arc = p.arc({ center: [0, 0], rPx: 34, theta0: 0, theta1: st.th, color: 't', width: 2, arrow: true, label: '\\theta' });
@@ -242,9 +244,9 @@ CYL.ready(function () {
     if (Math.abs(y) < 1e-9) y = 0;
     if (moveP) P.set([x, y]);
     seg.set([0, 0], [x, y]);
-    xLeg.set([0, 0], [x, 0]); yLeg.set([x, 0], [x, y]);
-    xLeg.setVisible(Math.abs(x) > 0.05); yLeg.setVisible(Math.abs(y) > 0.05);
-    arc.set({ theta1: st.r < 1e-9 || st.th < 1e-6 ? NaN : st.th });
+    xLegs[0].set([0, 0], [x, 0]); xLegs[1].set([0, 0], [x, 0]); yLeg.set([x, 0], [x, y]);
+    xLegs[0].setVisible(x > 0.05); xLegs[1].setVisible(x < -0.05); yLeg.setVisible(Math.abs(y) > 0.05);
+    arc.set({ theta1: st.r < 1e-9 || st.th < 1e-6 ? NaN : st.th, rPx: Math.max(34, Math.min(64, 0.8 * st.r * p.getView().scale, 34 / Math.max(st.th, 1e-6))) });   // wider for a small θ (inside P)
     roPol.set('(' + CYL.fmtTex(st.r, 3) + '\\ \\text{m},\\ ' + CYL.fmtTex(st.th * 180 / PI, 4) + '^\\circ)', { tex: true });
     roCart.set('(' + CYL.fmtTex(x, 3) + ',\\ ' + CYL.fmtTex(y, 3) + ')\\ \\text{m}', { tex: true });
     var q = (Math.abs(x) < 1e-9 || Math.abs(y) < 1e-9) ? 'on an axis' : x > 0 ? (y > 0 ? 'I' : 'IV') : (y > 0 ? 'II' : 'III');
@@ -265,9 +267,11 @@ CYL.ready(function () {
   var P = v.cylPoint({ r: st.r, theta: st.th, z: st.z, label: 'P' });
   var gVec = v.group();
   var big = { width: 0.03, headLength: 0.18, headRadius: 0.07 };
-  var aR = v.arrow([0, 0, 0], [1, 0, 0], Object.assign({ color: 'r', label: 'r\\,\\er', parent: gVec }, big));
-  var aZ = v.arrow([1, 0, 0], [1, 0, 1], Object.assign({ color: 'z', label: 'z\\,\\ez', parent: gVec }, big));
-  var aP = v.arrow([0, 0, 0], [1, 0, 1], Object.assign({ color: 'accent', label: '\\rvec_P', parent: gVec }, big));
+  // each label beside the middle of its arrow, outside the triangle O, P', P
+  var cur = { P: [0, 0, 0], F: [0, 0, 0] };
+  var aR = v.arrow([0, 0, 0], [1, 0, 0], Object.assign({ color: 'r', label: 'r\\,\\er', parent: gVec, labelAt: 0.5, labelAway: function () { return cur.P; } }, big));
+  var aZ = v.arrow([1, 0, 0], [1, 0, 1], Object.assign({ color: 'z', label: 'z\\,\\ez', parent: gVec, labelAt: 0.5, labelAway: [0, 0, 0] }, big));
+  var aP = v.arrow([0, 0, 0], [1, 0, 1], Object.assign({ color: 'accent', label: '\\rvec_P', parent: gVec, labelAt: 0.5, labelAway: function () { return cur.F; } }, big));
   gVec.visible = false;
   var panel = document.getElementById('fig22-controls');
   function set(k) { return function (x) { st[k] = x; draw(); }; }
@@ -289,11 +293,12 @@ CYL.ready(function () {
   function draw() {
     var c = Math.cos(st.th), s = Math.sin(st.th), x = st.r * c, y = st.r * s;
     P.set({ r: st.r, theta: st.th, z: st.z });
+    cur.P = [x, y, st.z]; cur.F = [x, y, 0];
     aR.set([0, 0, 0], [x, y, 0]); aZ.set([x, y, 0], [x, y, st.z]); aP.set([0, 0, 0], [x, y, st.z]);
     aR.visible = st.r > 0.05; aZ.visible = st.z > 0.05;
     roCyl.set('(' + CYL.fmtTex(st.r, 3) + ',\\ ' + tf(CYL.angleTex(st.th, { deg: false })) + ',\\ ' + CYL.fmtTex(st.z, 3) + ')', { tex: true });
     roCart.set('(' + CYL.fmtTex(x, 3) + ',\\ ' + CYL.fmtTex(y, 3) + ',\\ ' + CYL.fmtTex(st.z, 3) + ')', { tex: true });
-    roMag.set(CYL.fmt(Math.sqrt(st.r * st.r + st.z * st.z), 4) + ' m');
+    roMag.set(CYL.fmtFixed(Math.sqrt(st.r * st.r + st.z * st.z), 2) + ' m');
     v.render();
   }
   draw();

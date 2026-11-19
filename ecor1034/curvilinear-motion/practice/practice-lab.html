@@ -1022,9 +1022,13 @@
       items.forEach(function (it) {
         if (it.k !== 'vec' || Math.hypot(it._b[0] - it._a[0], it._b[1] - it._a[1]) < span * 2e-3) return;
         var big = it.color === 'good' || it.color === 'bad';
-        plane.line(it._a, it._b, { color: it.color, width: big ? 3.25 : 2.25, arrow: true, label: it.label, labelAt: big ? 1 : 0.5, labelSide: it.color === 'bad' ? 'right' : 'left', dashed: !!it.dashed });
+        // a component too short for its arrowhead (under 12 px) is not labelled; the readouts give its value
+        var stub = !big && Math.hypot(it._b[0] - it._a[0], it._b[1] - it._a[1]) * plane.getView().scale < 12;
+        // labels placed automatically, clear of the other arrows, labels and the plot edge
+        plane.line(it._a, it._b, { color: it.color, width: big ? 3.25 : 2.25, arrow: true, label: stub ? null : it.label, labelAt: big ? 1 : 0.5, labelSide: it.color === 'bad' ? 'right' : 'left', dashed: !!it.dashed,
+          labelAuto: true, labelPriority: big ? 3 : 1 });
       });
-      items.forEach(function (it) { if (it.k === 'pt') plane.point(it.at, { color: it.muted ? 'muted' : 'point', r: it.muted ? 3.5 : 6, label: it.label || null, labelAnchor: 'nw' }); });
+      items.forEach(function (it) { if (it.k === 'pt') plane.point(it.at, { color: it.muted ? 'muted' : 'point', r: it.muted ? 3.5 : 6, label: it.label || null, labelAnchor: 'nw', labelAuto: true, labelPriority: 2 }); });
       panel.innerHTML = '';
       panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
       var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });

@@ -183,7 +183,7 @@ CYL.ready(function () {
   var PI = Math.PI;
   var st = { r: 2.5, th: PI / 4, compR: false, compT: false };
   var p = CYL2D.plane(document.getElementById('fig31-stage'), {
-    xRange: [-4, 4], yRange: [-4, 4], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 440,
+    xRange: [-4, 4], yRange: [-4, 4], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 440, declutter: true,
     ariaLabel: 'Top view with a polar grid. The fixed unit vectors i and j are drawn at the origin O. A draggable point P carries the unit vector u_r, pointing away from O, and u_theta, perpendicular to it in the direction of increasing theta. Optional dashed legs show their i and j components.'
   });
   p.line([0, 0], [1, 0], { color: 'x', width: 2.5, arrow: true, label: '\\ihat', labelAt: 1, labelSide: 'right' });
@@ -199,7 +199,7 @@ CYL.ready(function () {
   var uR = p.line([0, 0], [1, 0], { color: 'r', width: 3, arrow: true, label: '\\er', labelAt: 1, labelSide: 'right' });
   var uT = p.line([0, 0], [0, 1], { color: 't', width: 3, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left' });
   var P = p.point([0, 0], {
-    color: 'point', r: 7, label: 'P', labelAnchor: 'sw', draggable: true, ariaLabel: 'Point P',
+    color: 'point', r: 7, label: 'P', labelAnchor: 'sw', labelPriority: 10, draggable: true, ariaLabel: 'Point P',   // P's label yields to the vector labels
     snap: function (q) {
       var rr = Math.max(0.5, Math.min(3, Math.hypot(q[0], q[1]))), a = Math.atan2(q[1], q[0]);
       return [rr * Math.cos(a), rr * Math.sin(a)];
@@ -229,7 +229,7 @@ CYL.ready(function () {
     var c = Math.cos(st.th), s = Math.sin(st.th), P0 = [st.r * c, st.r * s];
     if (moveP) P.set(P0);
     guide.set([0, 0], P0);
-    arc.set({ theta1: st.th < 1e-6 ? NaN : st.th });
+    arc.set({ theta1: st.th < 1e-6 ? NaN : st.th, rPx: Math.max(30, Math.min(64, 0.6 * Math.hypot(P0[0], P0[1]) * p.getView().scale, 32 / Math.max(st.th, 1e-6))) });   // wider for a small θ (inside P)
     var R = [P0[0] + c, P0[1] + s], T = [P0[0] - s, P0[1] + c];
     uR.set(P0, R); uT.set(P0, T);
     rx.set(P0, [P0[0] + c, P0[1]]); ry.set([P0[0] + c, P0[1]], R);
@@ -299,7 +299,7 @@ CYL.ready(function () {
   var state = { th: PI / 6, dth: 2 * PI / 9 };
 
   var p = CYL2D.plane(stage, {
-    xRange: [-1.45, 1.45], yRange: [-1.45, 1.45], grid: 'none', ticks: false,
+    xRange: [-1.45, 1.45], yRange: [-1.45, 1.45], grid: 'none', ticks: false, declutter: true,
     ariaLabel: 'The unit circle with the unit vectors u_r and u_theta drawn from the origin at an angle theta (solid) ' +
       'and at theta plus delta theta (dashed). Two more arrows join the tips of each pair: the change in u_r points along u_theta, ' +
       'and the change in u_theta points along minus u_r.'
@@ -343,7 +343,7 @@ CYL.ready(function () {
     var mag = 2 * Math.sin(state.dth / 2);
     roD.set(CYL.fmtFixed(mag, 4));
     roRatio.set(CYL.fmtFixed(mag / state.dth, 4));
-    roAng.set(CYL.fmt(state.dth / 2 * 180 / PI, 3) + '\u00b0');
+    roAng.set(CYL.fmtFixed(state.dth / 2 * 180 / PI, 1) + '\u00b0');
   }
   var schedule = CYL.throttleRAF(update);
   update();
@@ -356,18 +356,18 @@ CYL.ready(function () {
   var st = { Fx: 30, Fy: 40, th: PI / 3 };
   var R0 = 2.2, K = 1 / 25;               // P sits at r = 2.2 on the grid; 25 N of force per grid unit
   var p = CYL2D.plane(document.getElementById('fig34-stage'), {
-    xRange: [-4.6, 4.6], yRange: [-4.6, 4.6], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 460,
+    xRange: [-4.6, 4.6], yRange: [-4.6, 4.6], grid: 'polar', polarStep: { r: 1, thetaDeg: 30 }, maxHeight: 460, declutter: true,
     ariaLabel: 'Top view. The particle P is at radius 2.2 at the angle theta. A teal force arrow F acts at P. Its radial component F_r u_r (dashed orange) and transverse component F_theta u_theta (dashed violet) are drawn tip to tail from P and add up to F. Short solid arrows at P show the directions of u_r and u_theta.'
   });
   p.point([0, 0], { color: 'ink', r: 3.5, label: 'O', labelAnchor: 'sw' });
   var guide = p.line([0, 0], [1, 1], { color: 'muted', width: 1.25, dashed: true });
   var arc = p.arc({ center: [0, 0], rPx: 30, theta0: 0, theta1: st.th, color: 't', width: 1.75, arrow: true, label: '\\theta' });
-  var uR = p.line([0, 0], [1, 0], { color: 'r', width: 2, arrow: true, label: '\\er', labelAt: 1, labelSide: 'right', opacity: 0.8 });
-  var uT = p.line([0, 0], [0, 1], { color: 't', width: 2, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left', opacity: 0.8 });
-  var cR = p.line([0, 0], [1, 0], { color: 'r', width: 2.5, dashed: true, arrow: true, label: 'F_r\\,\\er', labelSide: 'right' });
-  var cT = p.line([0, 0], [1, 0], { color: 't', width: 2.5, dashed: true, arrow: true, label: 'F_\\theta\\,\\et', labelSide: 'right' });
-  var F = p.line([0, 0], [1, 0], { color: 'accent', width: 3.5, arrow: true, label: '\\Fvec', labelAt: 1, labelSide: 'left' });
-  var P = p.point([0, 0], { color: 'point', r: 6, label: 'P', labelAnchor: 'sw' });
+  var uR = p.line([0, 0], [1, 0], { color: 'r', width: 2, arrow: true, label: '\\er', labelAt: 1, labelSide: 'right', opacity: 0.8, labelPriority: 18 });
+  var uT = p.line([0, 0], [0, 1], { color: 't', width: 2, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left', opacity: 0.8, labelPriority: 18 });
+  var cR = p.line([0, 0], [1, 0], { color: 'r', width: 2.5, dashed: true, arrow: true, label: 'F_r\\,\\er', labelSide: 'right', labelPriority: 25 });
+  var cT = p.line([0, 0], [1, 0], { color: 't', width: 2.5, dashed: true, arrow: true, label: 'F_\\theta\\,\\et', labelSide: 'right', labelPriority: 25 });
+  var F = p.line([0, 0], [1, 0], { color: 'accent', width: 3.5, arrow: true, label: '\\Fvec', labelAt: 1, labelSide: 'left', labelPriority: 30 });
+  var P = p.point([0, 0], { color: 'point', r: 6, label: 'P', labelAnchor: 'sw', labelPriority: 10 });
   var panel = document.getElementById('fig34-controls');
   var sFx = CYL.slider({ label: '\\(F_x\\)', min: -50, max: 50, step: 1, value: st.Fx, color: 'x', unit: 'N', onInput: function (v) { st.Fx = v; draw(); } });
   var sFy = CYL.slider({ label: '\\(F_y\\)', min: -50, max: 50, step: 1, value: st.Fy, color: 'y', unit: 'N', onInput: function (v) { st.Fy = v; draw(); } });
@@ -390,15 +390,15 @@ CYL.ready(function () {
     var Fr = st.Fx * c + st.Fy * s, Ft = -st.Fx * s + st.Fy * c;
     P.set(P0);
     guide.set([0, 0], P0);
-    arc.set({ theta1: st.th < 1e-6 ? NaN : st.th });
+    arc.set({ theta1: st.th < 1e-6 ? NaN : st.th, rPx: Math.max(30, Math.min(64, 0.6 * Math.hypot(P0[0], P0[1]) * p.getView().scale, 32 / Math.max(st.th, 1e-6))) });   // wider for a small θ (inside P)
     uR.set(P0, [P0[0] + 0.7 * c, P0[1] + 0.7 * s]);
     uT.set(P0, [P0[0] - 0.7 * s, P0[1] + 0.7 * c]);
     var Q = [P0[0] + K * Fr * c, P0[1] + K * Fr * s], E = [P0[0] + K * st.Fx, P0[1] + K * st.Fy];
     cR.set(P0, Q); cT.set(Q, E); F.set(P0, E);
     cR.setVisible(Math.abs(Fr) > 0.5); cT.setVisible(Math.abs(Ft) > 0.5); F.setVisible(Math.hypot(st.Fx, st.Fy) > 0.5);
-    roR.set(CYL.fmt(Fr, 4) + ' N');
-    roT.set(CYL.fmt(Ft, 4) + ' N');
-    roM.set(CYL.fmt(Math.hypot(st.Fx, st.Fy), 4) + ' N');
+    roR.set(CYL.fmtFixed(Fr, 2) + ' N');
+    roT.set(CYL.fmtFixed(Ft, 2) + ' N');
+    roM.set(CYL.fmtFixed(Math.hypot(st.Fx, st.Fy), 2) + ' N');
   }
   draw();
 });

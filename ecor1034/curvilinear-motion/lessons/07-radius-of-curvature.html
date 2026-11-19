@@ -172,20 +172,22 @@ CYL.ready(function () {
       d2: function (x) { return (0.75 * x * x - 1.5) * Math.exp(-x * x / 4); } }
   };
   var XR = [-5, 5], st = { key: 'hump', x: 1.2 };
+  var XP = [-4, 4];   // where the point can go: its u_t and u_n (and their labels) stay inside the plot
   var p = CYL2D.plane(document.getElementById('fig71-stage'), {
     xRange: XR, yRange: [-3.2, 4.4], grid: 'cartesian', gridStep: 1, height: 400,
     ariaLabel: 'A curve y = f(x) with a draggable point on it. A dashed osculating circle touches the curve at the point; its center C is on the concave side. Unit vectors u_t (along the curve) and u_n (toward C) are drawn at the point.'
   });
   var curve = p.fn(CURVES[st.key].f, { color: 'accent', width: 3, domain: XR });
   var circ = p.circle({ center: [0, 0], r: 1, color: 'muted', width: 1.4, dashed: true });
-  var rad = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true, label: '\\rho', labelSide: 'left' });
-  var C = p.point([0, 0], { color: 'muted', r: 3.5, label: 'C', labelAnchor: 'se' });
-  var eT = p.line([0, 0], [0, 0], { color: 't', width: 2.5, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left' });
-  var eN = p.line([0, 0], [0, 0], { color: 'n', width: 2.5, arrow: true, label: '\\en', labelAt: 1, labelSide: 'right' });
+  // labels placed automatically, clear of each other, the arrows and the curves
+  var rad = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true, label: '\\rho', labelSide: 'left', labelAuto: true, labelPriority: 1, labelOptional: true });
+  var C = p.point([0, 0], { color: 'muted', r: 3.5, label: 'C', labelAnchor: 'se', labelAuto: true, labelPriority: 2 });
+  var eT = p.line([0, 0], [0, 0], { color: 't', width: 2.5, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left', labelAuto: true, labelPriority: 3 });
+  var eN = p.line([0, 0], [0, 0], { color: 'n', width: 2.5, arrow: true, label: '\\en', labelAt: 1, labelSide: 'right', labelAuto: true, labelPriority: 3 });
   var P = p.point([0, 0], {
     color: 'point', r: 6.5, draggable: true, bounds: false, ariaLabel: 'Point on the curve',
-    snap: function (q) { var x = Math.max(XR[0], Math.min(XR[1], q[0])); return [x, CURVES[st.key].f(x)]; },
-    keyMove: function (pos, d) { var x = Math.max(XR[0], Math.min(XR[1], st.x + 0.05 * ((d[0] || d[1]) > 0 ? 1 : -1))); return [x, CURVES[st.key].f(x)]; },
+    snap: function (q) { var x = Math.max(XP[0], Math.min(XP[1], q[0])); return [x, CURVES[st.key].f(x)]; },
+    keyMove: function (pos, d) { var x = Math.max(XP[0], Math.min(XP[1], st.x + 0.05 * ((d[0] || d[1]) > 0 ? 1 : -1))); return [x, CURVES[st.key].f(x)]; },
     ariaFormat: function () { return 'x = ' + CYL.fmt(st.x, 3); },
     onDrag: function (q) { st.x = q[0]; sX.set(st.x, true); schedule(); }
   });
@@ -195,7 +197,7 @@ CYL.ready(function () {
     options: Object.keys(CURVES).map(function (k) { return { value: k, label: CURVES[k].text }; }),
     onChange: function (k) { st.key = k; curve.setFn(CURVES[k].f); schedule(); }
   });
-  var sX = CYL.slider({ label: 'Position \\(x\\)', min: XR[0], max: XR[1], step: 0.05, value: st.x, unit: 'm', onInput: function (v) { st.x = v; schedule(); } });
+  var sX = CYL.slider({ label: 'Position \\(x\\)', min: XP[0], max: XP[1], step: 0.05, value: st.x, unit: 'm', onInput: function (v) { st.x = v; schedule(); } });
   var ro = {
     d1: CYL.readout('Slope \\(y\'\\)'), d2: CYL.readout('\\(y\'\'\\)'), rho: CYL.readout('\\(\\rho = (1 + y\'^2)^{3/2}/|y\'\'|\\)'), side: CYL.readout('Center of curvature')
   };
@@ -219,8 +221,8 @@ CYL.ready(function () {
       circ.set({ center: cc, r: rho }); C.set(cc); rad.set(cc, [x, y]);
     }
     circ.setVisible(okC); C.setVisible(okC); rad.setVisible(okC);
-    ro.d1.set(CYL.fmt(m, 4)); ro.d2.set(CYL.fmt(k, 4) + ' m\u207b\u00b9');
-    ro.rho.set(isFinite(rho) ? CYL.fmt(rho, 4) + ' m' : '\u221e (inflection)');
+    ro.d1.set(CYL.fmtFixed(m, 3)); ro.d2.set(CYL.fmtFixed(k, 3) + ' m\u207b\u00b9');
+    ro.rho.set(isFinite(rho) ? CYL.fmtFixed(rho, 2) + ' m' : '\u221e (inflection)');
     ro.side.set(Math.abs(k) < 1e-9 ? 'none (straight here)' : k > 0 ? 'above the curve' : 'below the curve');
   }
   var schedule = CYL.throttleRAF(update);

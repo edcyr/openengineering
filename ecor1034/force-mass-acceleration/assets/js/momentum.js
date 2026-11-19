@@ -81,7 +81,12 @@
  *     decorate(plane, fig), scenery(group, fig) (drawn under the bodies whenever the scenery is redrawn; use
  *     fig.toPlane), onUpdate(state, fig), speed, loop, autoplay, playback, t0
  *   controller: {plane, run(), state(), t(), setT(t), play(), pause(), reset(), setSpec(spec), update(), duration(), chart(), destroy(),
+ *     shown(key) -> whether that layer ('v', 'forces', …) is on,
  *     toPlane(s, h) -> the plane point at distance s along the track and h above it, in the current view}
+ *   Labels: friction's sits on the track's side of its tip; a push's, pull's or spring's on the far side; an arrow that
+ *   runs off the figure keeps its label inside the view; the weight is never drawn shorter than it takes to clear the
+ *   top of the body; the body's letter sits beside its middle, away from a face a push, pull or spring acts on; and a
+ *   distance mark's label is hidden (its tick stays) where friction's label or the normal force would cover it.
  *   setSpec(spec, keepT, track) follows a new spec.theta unless the track's theta fixes the slope; track merges into
  *   opts.track (a new origin, say).
  */
@@ -690,7 +695,7 @@
       var f = clamp(v / hi, -1, 1) * 50;
       r.bar.style.left = (f >= 0 ? 50 : 50 + f) + '%';
       r.bar.style.width = Math.max(0.4, Math.abs(f)) + '%';
-      r.val.textContent = fmt(Math.abs(v) < 5e-4 * hi ? 0 : v, 3) + ' ' + unit;
+      r.val.textContent = CYL.fmtScale(Math.abs(v) < 5e-4 * hi ? 0 : v, hi, 3) + ' ' + unit;   // fixed decimals: no jumping
     }
     return api;
   };
@@ -756,8 +761,10 @@
     draws.forEach(function (d) { hMax = Math.max(hMax, d.h); });
     var hatchGap = Math.max(0.12, xspan / 60), hatchLen = Math.max(0.08, xspan / 90), wallGap = Math.max(0.1, hMax / 4);
     function niceStep(raw) { var m = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), q = raw / m; return (q <= 1 ? 1 : q <= 2 ? 2 : q <= 5 ? 5 : 10) * m; }
+    var marks = [];                                  // distance marks: {pt (on the ground), h (label)}; see declutterMarks()
     function drawScenery() {                         // the ground, walls and spring mounts; redrawn as the view follows a body
       gScene.clear();
+      marks = [];
       if (o.scenery) { try { o.scenery(gScene, fig); } catch (e) { report('figure: scenery failed: ' + e.message); } }
       var a = s0 + cam, b = s1 + cam;
       if (tk.ground !== false) {
@@ -770,7 +777,7 @@
           var stp = niceStep(xspan / 5);
           for (var m = Math.ceil(a / stp) * stp; m <= b; m += stp) {
             gScene.line(P(m, 0), P(m, -2.2 * hatchLen), { color: 'ink', width: 1.4 });
-            gScene.label(P(m, -2.2 * hatchLen), CYL.fmt(m, 4) + ' m', { tex: false, color: 'muted', anchor: 's', offset: [0, 1] });
+            marks.push({ pt: P(m, -2.2 * hatchLen), h: gScene.label(P(m, -2.2 * hatchLen), CYL.fmt(m, 4) + ' m', { tex: false, color: 'muted', anchor: 's', offset: [0, 1] }) });
           }
         }
       }
@@ -807,13 +814,18 @@
       }
       h.label = gBody.label([0, 0], b.label, { tex: true, color: 'ink' });
       h.v = gArr.line([0, 0], [0, 0], { color: 'good', width: 3, arrow: true, label: 'v_' + b.label, labelAt: 1, labelSide: 'left' });
+      // Every frame sync() sets each force's labelSide (friction on the track's side; a push, pull or spring on the far
+      // side) and labelAt (moved along the arrow when its free end leaves the view), with .setLabelOptions.
+      var FO = {
+        W: { color: 'z', width: 2.6, arrow: true, label: 'W', labelAt: 0, labelSide: 'right', anchor: 'end' },
+        N: { color: 'ink', width: 2.6, arrow: true, label: 'N', labelAt: 0, labelSide: 'right', anchor: 'end' },
+        Ff: { color: 'r', width: 4.2, arrow: true, label: 'F_f', labelAt: 1, labelSide: 'left' },
+        P: { color: 'warn', width: 2.6, arrow: true, label: 'P', labelAt: d.pull ? 1 : 0, labelSide: 'left', anchor: d.pull ? 'start' : 'end' },
+        Fs: { color: 't', width: 2.6, arrow: true, label: 'F_s', labelAt: 0.5, labelSide: 'left', labelGap: 15, anchor: 'end' }   // beside the spring's middle, clear of its coils
+      };
       var F = {};
-      F.W = gArr.line([0, 0], [0, 0], { color: 'z', width: 2.6, arrow: true, label: 'W', labelAt: 0, labelSide: 'right', anchor: 'end' });
-      F.N = gArr.line([0, 0], [0, 0], { color: 'ink', width: 2.6, arrow: true, label: 'N', labelAt: 0, labelSide: 'right', anchor: 'end' });
-      F.Ff = gArr.line([0, 0], [0, 0], { color: 'r', width: 4.2, arrow: true, label: 'F_f', labelAt: 1, labelSide: 'left' });
-      F.P = gArr.line([0, 0], [0, 0], { color: 'warn', width: 2.6, arrow: true, label: 'P', labelAt: d.pull ? 1 : 0, labelSide: d.pull ? 'right' : 'left', anchor: d.pull ? 'start' : 'end' });
-      F.Fs = gArr.line([0, 0], [0, 0], { color: 't', width: 2.6, arrow: true, label: 'F_s', labelAt: 0, labelSide: 'left', anchor: 'end' });
-      h.F = F;
+      Object.keys(FO).forEach(function (k) { FO[k].labelAt0 = FO[k].labelAt; F[k] = gArr.line([0, 0], [0, 0], FO[k]); });
+      h.F = F; h.FO = FO;
       h.imp = gArr.line([0, 0], [0, 0], { color: 'bad', width: 3.4, arrow: true, label: 'F', labelAt: 0, labelSide: 'left', anchor: 'end' });
       return h;
     });
@@ -899,6 +911,13 @@
       return ['Impulse on \\(' + L + '\\) so far', null, function (s) { var q = 0; for (var key in s.I) q += s.I[key][i]; return q; }, 'N·s'];
     }
     function netF(s, i) { return s.F.P[i] + s.F.W[i] + s.F.Ff[i] + s.F.Fs[i]; }
+    function roScales() {                 // each readout's largest value over the run fixes its decimals
+      Object.keys(ro).forEach(function (k) {
+        var m = 0;
+        for (var q = 0; q <= 120; q++) { var v = ro[k].def[2](run.at(run.duration * q / 120)); if (isFinite(v)) m = Math.max(m, Math.abs(v)); }
+        ro[k].scale = m; ro[k].h.resetWidth();
+      });
+    }
     function rescaleBars() {
       if (fledger) {
         var fj = fledger.body, flo = 0, fhi = 0;
@@ -922,12 +941,55 @@
         ledger.setScale(lo * 1.04, hi * 1.04 + 1e-9);
       }
     }
-    rescaleBars();
+    rescaleBars(); roScales();
 
     var t = clamp(num(o.t0, 0), 0, run.duration), state = null;
     function add(a, b, k) { return [a[0] + b[0] * k, a[1] + b[1] * k]; }
     var tv = [ct, st0], nv = [-st0, ct];
     var lastCam = 0;
+    // Where the body's letter goes: beside the middle of the body, just below it (the weight's arrowhead ends at the
+    // middle, from above; friction runs along the bottom face), on the side no push, pull or spring acts on; failing
+    // that, near the top of the side the weight does not come in from.
+    function letterAt(C, b, d, pf, sf) {
+      var busy = {};
+      if (o.forces.indexOf('P') >= 0 && Math.abs(pf) > EPS) busy[(pf >= 0) === !d.pull ? -1 : 1] = true;   // a push ends on, a pull starts from, that face
+      if (o.forces.indexOf('Fs') >= 0 && Math.abs(sf) > EPS) busy[sf >= 0 ? -1 : 1] = true;
+      var sc = p.getView().scale || 50, side = !busy[1] ? 1 : !busy[-1] ? -1 : 0;
+      var du = Math.min(0.3 * b.w, Math.max(0.22 * b.w, 11 / sc)), dv = -0.08 * d.h;
+      if (side) du *= side;
+      else { du *= st0 > 0.05 ? -1 : 1; dv = 0.28 * d.h; }
+      return [C[0] + du * tv[0] + dv * nv[0], C[1] + du * tv[1] + dv * nv[1]];
+    }
+    // The fraction along an arrow A -> B where its label goes: t0 (its free end) if that is in view, else the nearest
+    // point toward the other end that is, so a long arrow that runs off the figure keeps its label.
+    function labelInView(A, B, t0) {
+      var v = p.getView(), m = 28 / (v.scale || 1);          // room for a label beside that point
+      var x0 = Math.min(v.x[0], v.x[1]) + m, x1 = Math.max(v.x[0], v.x[1]) - m, y0 = Math.min(v.y[0], v.y[1]) + m, y1 = Math.max(v.y[0], v.y[1]) - m;
+      function inside(t) { var x = A[0] + (B[0] - A[0]) * t, y = A[1] + (B[1] - A[1]) * t; return x >= x0 && x <= x1 && y >= y0 && y <= y1; }
+      if (!(x1 > x0 && y1 > y0) || inside(t0)) return t0;
+      var dt = t0 < 0.5 ? 0.02 : -0.02;
+      for (var k = 1; k <= 40; k++) { var t = t0 + k * dt; if (t < 0 || t > 1) break; if (inside(t)) return t; }
+      return t0;
+    }
+    // A distance mark's label is hidden (its tick stays) where friction's label or the normal force would cover it.
+    function declutterMarks() {
+      marks.forEach(function (mk) {
+        var q = p.toPx(mk.pt), top = q[1] + 5, hide = false;     // the label's top middle (px); it is about 17 px tall
+        bodyH.forEach(function (h) {
+          var e = h.ends || {};
+          if (e.Ff) {                                   // friction's label hangs below its tip
+            var f = p.toPx(e.Ff[1]);
+            if (Math.abs(f[0] - q[0]) < 30 && f[1] + 30 > top && f[1] + 8 < top + 17) hide = true;
+          }
+          if (e.N) {                                    // the normal force's shaft, and its label right of its tail
+            var a = p.toPx(e.N[0]), dx = q[0] - a[0];
+            if (Math.abs(dx) < 18 && a[1] > top + 2) hide = true;
+            if (a[1] > top - 12 && a[1] < top + 30 && dx > -8 && dx < 44) hide = true;
+          }
+        });
+        mk.h.setVisible(!hide);
+      });
+    }
     function sync() {
       state = run.at(t);
       var s = state;
@@ -947,7 +1009,8 @@
           h.w2.set({ center: P(x + 0.28 * b.w, wr), r: wr });
           C = P(x, (y0 + d.h) / 2);
         } else h.body.set([P(x - hw, 0), P(x + hw, 0), P(x + hw, d.h), P(x - hw, d.h)]);
-        h.label.set(show.forces && d.shape !== 'ball' ? [C[0] - 0.27 * b.w * ct, C[1] - 0.27 * b.w * st0] : C);
+        var pf = s.F.P[i], pn = s.F.Pn[i], pm = Math.hypot(pf, pn), sf = s.F.Fs[i], ff = s.F.Ff[i];
+        h.label.set(show.forces && d.shape !== 'ball' ? letterAt(C, b, d, pf, sf) : C);
         // velocity above the body
         var v = s.v[i], vl = v * vScale, cap = 0.3 * xspan;
         if (Math.abs(vl) > cap) vl = sgn(vl) * cap;
@@ -955,31 +1018,39 @@
         if (Math.abs(vl) > 1e-4) {
           var a0 = P(x, d.h + (0.12 + 0.09 * i) * yspan), a1 = add(a0, tv, vl);
           if (th === 0) a1[0] = clamp(a1[0], o.xRange[0] + 0.02 * xspan, o.xRange[1] - 0.02 * xspan);
+          h.v.setLabelOptions({ labelOffset: [a1[0] >= a0[0] ? 9 : -9, 0] }, true);   // ahead of the tip, clear of the weight's shaft at the tail
           h.v.set(a0, a1);
         }
         // forces, free-body style
         var on = show.forces;
         function arrow(key, dirv, mag, at, tail) {
-          var hh = h.F[key], L = Math.min(0.45 * yspan, Math.abs(mag) * fScale);
+          var hh = h.F[key], op = h.FO[key], L = Math.min(0.45 * yspan, Math.abs(mag) * fScale);
           var vis = on && o.forces.indexOf(key) >= 0 && L > 1e-5;
           hh.setVisible(vis);
+          h.ends[key] = null;
           if (!vis) return;
-          if (tail) { var Lf = Math.max(L, 0.06 * span); hh.set(at, add(at, dirv, Lf)); return; }
-          hh.set(add(at, dirv, -L), at);
+          var along = dirv[0] * tv[0] + dirv[1] * tv[1], lo = {};
+          if (key === 'Ff') lo.labelSide = along >= 0 ? 'right' : 'left';                    // on the track's side, clear of the body
+          else if (key === 'P' || key === 'Fs') lo.labelSide = along >= 0 ? 'left' : 'right';  // on the side away from the track
+          // the weight's tail (and its label) always clears the top of the body, however small the weight is drawn
+          if (key === 'W') L = Math.max(L, (d.shape === 'ball' ? b.w / 2 : d.h / 2) / Math.max(0.5, Math.abs(ct)) + 0.05 * span);
+          var A = tail ? at : add(at, dirv, -L), B = tail ? add(at, dirv, Math.max(L, 0.06 * span)) : at;
+          lo.labelAt = labelInView(A, B, op.labelAt0);
+          h.ends[key] = [A, B];
+          hh.setLabelOptions(lo, true).set(A, B);
         }
+        h.ends = {};
         var bottom = P(x, 0);
         arrow('W', [0, -1], b.m * run.g, C);
         arrow('N', nv, s.F.N[i], bottom);
-        var ff = s.F.Ff[i];
         arrow('Ff', [tv[0] * sgn(ff), tv[1] * sgn(ff)], b.mu > 0 || b.muS > 0 ? ff : 0, bottom, true);
-        var pf = s.F.P[i], pn = s.F.Pn[i], pm = Math.hypot(pf, pn);
         var pd = pm > EPS ? [(tv[0] * pf + nv[0] * pn) / pm, (tv[1] * pf + nv[1] * pn) / pm] : tv;
         if (d.pull) arrow('P', pd, pm, pf >= 0 ? P(x + hw, d.h / 2) : P(x - hw, d.h / 2), true);
         else arrow('P', pd, pm, pf >= 0 ? P(x - hw, d.h / 2) : P(x + hw, d.h / 2));
-        var sf = s.F.Fs[i];
         arrow('Fs', [tv[0] * sgn(sf), tv[1] * sgn(sf)], sf, sf >= 0 ? P(x - hw, d.h / 2) : P(x + hw, d.h / 2));
         h.imp.setVisible(false);
       });
+      if (marks.length) declutterMarks();
       // impact forces: equal and opposite pushes, shown for a moment after each impact
       if (show.impulse) {
         run.events.forEach(function (ev) {
@@ -1029,7 +1100,7 @@
       }
       Object.keys(ro).forEach(function (k) {
         var v = ro[k].def[2](s);
-        ro[k].h.set(isFinite(v) ? CYL.fmt(Math.abs(v) < 5e-7 ? 0 : v, 4) + ' ' + ro[k].def[3] : '—');
+        ro[k].h.set(isFinite(v) ? CYL.fmtScale(Math.abs(v) < 5e-7 ? 0 : v, ro[k].scale, 3) + ' ' + ro[k].def[3] : '—');
       });
       if (cursor) cursor.set(t);
       if (o.onUpdate) { try { o.onUpdate(s, fig); } catch (e) { report('figure: onUpdate failed: ' + e.message); } }
@@ -1092,10 +1163,11 @@
       spec = sp; run = MOMENTUM.line(sp);
       if (track) Object.assign(tk, track);
       th = tk.theta != null ? tk.theta : num(sp.theta, 0); ct = Math.cos(th); st0 = Math.sin(th); tv = [ct, st0]; nv = [-st0, ct];
-      buildMounts(); autoScales(); rescaleBars(); drawChart();
+      buildMounts(); autoScales(); rescaleBars(); roScales(); drawChart();
       pl.refresh(keepT);
       return fig;
     };
+    fig.shown = function (k) { return !!show[k]; };
     fig.setShow = function (k, v) { show[k] = !!v; if (ctl[k] && ctl[k].set) ctl[k].set(!!v, true); sync(); return fig; };
     if (panel) CYL.renderMath(panel);
 

@@ -191,7 +191,7 @@ CYL.ready(function () {
   var car = top.polyline([], { closed: true, color: 'ink', width: 1.4, fill: 'accent', fillOpacity: 0.55 });
   var fT = FMA.force(top, { color: 'r', label: 'F_f', labelSide: 'left', minLength: 0.18 });
   var vT = top.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
-  var skidTxt = top.label([2.0, -1.76], '', { tex: false, color: 'bad', anchor: 'n' });
+  var skidTxt = top.label([2.6, -0.98], '', { tex: false, color: 'bad', anchor: 'c' });   // above the skid, clear of the car and its arrows
   // the rear view: free-body diagram = kinetic diagram
   var rear = CYL2D.plane(stage, { xRange: [-0.2, 8.8], yRange: [-1.8, 2.0], grid: 'none', axes: false, maxHeight: 270,
     ariaLabel: 'Rear view of the car in the curve. Left, its free-body diagram: the weight down to the center of gravity, the road’s normal force up on the bottom, and friction along the road toward the center of the curve. Right, its kinetic diagram: m v squared over rho toward the center.' });
@@ -206,8 +206,8 @@ CYL.ready(function () {
   rear.circle({ center: RA.center(), r: 0.04, color: 'z', fill: 'z', fillOpacity: 1 });
   rear.circle({ center: RK.center(), r: 0.04, color: 'bad', fill: 'bad', fillOpacity: 1 });
   var rW = FMA.force(rear, { color: 'z', label: 'W' }), rN = FMA.force(rear, { color: 'ink', label: 'N', labelSide: 'right' });
-  var rF = FMA.force(rear, { color: 'r', label: 'F_f', labelSide: 'right', minLength: 0.25 });
-  var rMA = FMA.force(rear, { color: 'bad', label: 'mv^2/\\rho', mode: 'tail', width: 3.2, labelSide: 'right' });
+  var rF = FMA.force(rear, { color: 'r', label: 'F_f', labelSide: 'beyond', labelOffset: [0, -12], minLength: 0.25 });   // past its tip, above the road
+  var rMA = FMA.force(rear, { color: 'bad', label: 'mv^2/\\rho', mode: 'tail', width: 3.2, labelSide: 'right', labelGap: 26 });   // above the block
   var eq = FMA.equals(rear, [4.4, 0.35]);
   rear.label([2.0, -1.62], 'Free-body diagram', { tex: false, color: 'muted' });
   rear.label([6.8, -1.62], 'Kinetic diagram', { tex: false, color: 'muted' });
@@ -228,8 +228,8 @@ CYL.ready(function () {
     else tEnd = (2 + Math.PI) * st.rho / v;
     bars.setScale(Math.max(need, have) * 1.05);
     bars.set({ need: need, have: have });
-    roAn.set(CYL.fmt(v * v / st.rho, 3) + '\u00a0m/s\u00b2');
-    roVm.set(CYL.fmt(Math.sqrt(st.mu * G * st.rho) * 3.6, 3) + '\u00a0km/h');
+    roAn.set(CYL.fmtFixed(v * v / st.rho, 2) + '\u00a0m/s\u00b2');
+    roVm.set(CYL.fmtFixed(Math.sqrt(st.mu * G * st.rho) * 3.6, 1) + '\u00a0km/h');
     // rear view, in the curve
     var K = 1.05 / (M * G), c = RA.center();
     rW.set(c, [0, -1], M * G * K);
@@ -309,7 +309,7 @@ CYL.ready(function () {
   pf.circle({ center: FB, r: BR, color: 'ink', width: 1.4, fill: 'accent', fillOpacity: 0.5 });
   pf.circle({ center: KB, r: BR, color: 'ink', width: 1.4, fill: 'accent', fillOpacity: 0.5 });
   pf.circle({ center: FB, r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 }); pf.circle({ center: KB, r: 0.035, color: 'bad', fill: 'bad', fillOpacity: 1 });
-  var fW = FMA.force(pf, { color: 'z', label: 'mg', labelSide: 'left' }), fT = FMA.force(pf, { color: 'muted', label: 'T', labelSide: 'left' }), fK = FMA.force(pf, { color: 'bad', label: 'mv^2/\\rho', mode: 'tail', width: 3.2, labelSide: 'left' });
+  var fW = FMA.force(pf, { color: 'z', label: 'mg', labelSide: 'left' }), fT = FMA.force(pf, { color: 'muted', label: 'T', labelSide: 'left' }), fK = FMA.force(pf, { color: 'bad', label: 'mv^2/\\rho', mode: 'tail', width: 3.2, labelSide: 'left', labelGap: 20 });
   var aF = pf.arc({ center: FB, r: 0.5, theta0: Math.PI / 2, theta1: Math.PI / 2 + 0.5, color: 'muted', width: 1, arrow: false });
   var aFL = pf.label([0, 0], '\\theta', { color: 'muted' });
   FMA.equals(pf, [7.4, 1.45]);
@@ -332,19 +332,21 @@ CYL.ready(function () {
     var right = [PV[0] + rx, yb];
     ghost.set(PV, right);
     arcT.set({ center: PV, r: 0.55, theta0: -Math.PI / 2, theta1: -Math.PI / 2 + th });
-    thL.set([PV[0] + 0.78 * Math.sin(th / 2), PV[1] - 0.78 * Math.cos(th / 2)]);
+    var lt = th < 0.45 ? th + 0.22 : th / 2;                 // a narrow angle's label goes just outside it
+    thL.set([PV[0] + 0.78 * Math.sin(lt), PV[1] - 0.78 * Math.cos(lt)]);
     rhoL.set([PV[0], yb - F * rx - 0.14], [right[0], yb - F * rx - 0.14]);
     // the diagrams, per unit weight
     var K = 0.85, T = 1 / c, u = [-s, c];
     fW.set(FB, [0, -1], K);
     fT.set([FB[0] + u[0] * BR, FB[1] + u[1] * BR], u, T * K);
     aF.set({ center: FB, r: 0.55, theta0: Math.PI / 2, theta1: Math.PI / 2 + th });
-    aFL.set([FB[0] - 0.8 * Math.sin(th / 2), FB[1] + 0.8 * Math.cos(th / 2)]);
+    var lf = th < 0.26 ? th + 0.17 : th / 2, rf = th < 0.26 ? 0.65 : 0.8;
+    aFL.set([FB[0] - rf * Math.sin(lf), FB[1] + rf * Math.cos(lf)]);
     fK.set(KB, [-1, 0], Math.tan(th) * K);
     var v = Math.sqrt(G * LR * s * Math.tan(th));
     tau = 2 * Math.PI * Math.sqrt(LR * c / G);
-    roT.set(CYL.fmt(T, 3)); roV.set(CYL.fmt(v, 3) + '\u00a0m/s'); roA.set(CYL.fmt(G * Math.tan(th), 3) + '\u00a0m/s\u00b2');
-    roR.set(CYL.fmt(LR * s, 3) + '\u00a0m'); roP.set(CYL.fmt(tau, 3) + '\u00a0s');
+    roT.set(CYL.fmtFixed(T, 3)); roV.set(CYL.fmtFixed(v, 2) + '\u00a0m/s'); roA.set(CYL.fmtFixed(G * Math.tan(th), 2) + '\u00a0m/s\u00b2');
+    roR.set(CYL.fmtFixed(LR * s, 2) + '\u00a0m'); roP.set(CYL.fmtFixed(tau, 2) + '\u00a0s');
     if (pl) pl.refresh(true); else draw(0);
   }
   function draw(t) {

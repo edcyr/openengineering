@@ -33,7 +33,9 @@
  *     guide: false | {width, color} (draw the whole path as a fixed channel, under everything),
  *     arm: null | {length, width} (a slotted arm from O through the particle, turning with θ),
  *     mass: null (kg; enables the ΣF readouts Fr, Ft, Fz, F = m·a), pointLabel:'P', originLabel:'O',
- *     scaleNote:true (the "Arrows are to scale" line under the controls),
+ *     scaleNote:true (the "Arrows are to scale" line under the controls), declutter:true (CYL2D label declutter:
+ *     a label whose spot is taken moves to a free one; priorities v and a 30, P 25, components and page overlay
+ *     arrows 20, u_r and u_θ 18, θ and ψ 15, O 14, r 12),
  *     decorate(plane): fixed scenery drawn first, onUpdate(state, fig): called after every redraw.
  *   controller: {plane, el, state(), t(), setT(t), play(), pause(), reset(), isPlaying(), setMotion(motion, t0, t1, t),
  *     setRange(xr, yr), setShow(key, value), setScales(vScale, aScale), scales(), update(), destroy(), readoutEls}
@@ -227,33 +229,49 @@
       panel.appendChild(grid);
     }
     function u(unit) { return cards ? '' : '\u00a0' + unit; }   // on a card the unit is in the card title
+    // Live values keep a fixed number of decimals for the whole motion, so the panel never jumps while it plays:
+    // calibrate(m, t0, t1) samples the motion and gives each kind of quantity about 3 significant figures.
+    var dec = { t: 2, x: 3, th: 3, v: 3, w: 3, a: 3, al: 3, f: 2 };
+    function F(x, d) { return CYL.fmtFixed(Math.abs(x) < 1e-6 ? 0 : x, d); }
+    function calibrate(m, t0, t1) {
+      var mx = 0, mth = 0, mv = 0, mw = 0, ma = 0, mal = 0, A = Math.abs;
+      for (var i = 0; i <= 120; i++) {
+        var s = POLAR.state(m, t0 + (t1 - t0) * i / 120), M = function (a, b) { return isFinite(b) ? Math.max(a, A(b)) : a; };
+        mx = M(M(M(M(mx, s.r), s.z), s.x), s.y); mth = M(mth, s.th);
+        mv = [s.rd, s.zd, s.vr, s.vt, s.vz, s.vx, s.vy, s.v].reduce(M, mv); mw = M(mw, s.thd);
+        ma = [s.rdd, s.ar, s.at, s.az, s.ax, s.ay, s.a, s.rddTerm, s.cent, s.ang, s.cor].reduce(M, ma); mal = M(mal, s.thdd);
+      }
+      var D = CYL.decimalsFor;
+      dec = { t: D(Math.max(A(t0), A(t1)), 3), x: D(mx, 3), th: D(mth, 3), v: D(mv, 3), w: D(mw, 3), a: D(ma, 3), al: D(mal, 3), f: D((o.mass || 1) * ma, 3) };
+      Object.keys(els).forEach(function (k) { if (els[k].resetWidth) els[k].resetWidth(); });
+    }
     function set(s) {
       function R(k, v) { if (els[k]) els[k].set(v); }
-      R('t', f4(s.t) + '\u00a0' + o.timeUnit);
-      R('r', f4(s.r) + '\u00a0' + U);
-      R('th', f4(s.th) + '\u00a0rad (' + deg(s.th) + ')');
-      R('z', f4(s.z) + '\u00a0' + U);
-      R('pos', '(' + f4(s.x) + ', ' + f4(s.y) + ')\u00a0' + U);
-      R('rd', f4(s.rd) + '\u00a0' + UV);
-      R('thd', f4(s.thd) + '\u00a0rad/' + o.timeUnit);
-      R('zd', f4(s.zd) + '\u00a0' + UV);
-      R('rdd', f4(s.rdd) + '\u00a0' + UA);
-      R('thdd', f4(s.thdd) + '\u00a0rad/' + o.timeUnit + '\u00b2');
-      R('psi', isFinite(s.psi) ? deg(s.psi) : '\u2014');
-      R('vr', f4(s.vr) + u(UV)); R('vt', f4(s.vt) + u(UV)); R('vz', f4(s.vz) + u(UV));
-      R('vx', f4(s.vx) + u(UV)); R('vy', f4(s.vy) + u(UV));
-      R('v', f4(s.v) + u(UV));
-      R('ar', f4(s.ar) + u(UA)); R('ar_rdd', f4(s.rddTerm) + u(UA)); R('ar_cent', f4(s.cent) + u(UA));
-      R('at', f4(s.at) + u(UA)); R('at_ang', f4(s.ang) + u(UA)); R('at_cor', f4(s.cor) + u(UA));
-      R('az', f4(s.az) + u(UA)); R('ax', f4(s.ax) + u(UA)); R('ay', f4(s.ay) + u(UA));
-      R('a', f4(s.a) + u(UA));
+      R('t', F(s.t, dec.t) + '\u00a0' + o.timeUnit);
+      R('r', F(s.r, dec.x) + '\u00a0' + U);
+      R('th', F(s.th, dec.th) + '\u00a0rad (' + F(s.th * 180 / PI, 1) + '\u00b0' + ')');
+      R('z', F(s.z, dec.x) + '\u00a0' + U);
+      R('pos', '(' + F(s.x, dec.x) + ', ' + F(s.y, dec.x) + ')\u00a0' + U);
+      R('rd', F(s.rd, dec.v) + '\u00a0' + UV);
+      R('thd', F(s.thd, dec.w) + '\u00a0rad/' + o.timeUnit);
+      R('zd', F(s.zd, dec.v) + '\u00a0' + UV);
+      R('rdd', F(s.rdd, dec.a) + '\u00a0' + UA);
+      R('thdd', F(s.thdd, dec.al) + '\u00a0rad/' + o.timeUnit + '\u00b2');
+      R('psi', isFinite(s.psi) ? F(s.psi * 180 / PI, 1) + '\u00b0' : '\u2014');
+      R('vr', F(s.vr, dec.v) + u(UV)); R('vt', F(s.vt, dec.v) + u(UV)); R('vz', F(s.vz, dec.v) + u(UV));
+      R('vx', F(s.vx, dec.v) + u(UV)); R('vy', F(s.vy, dec.v) + u(UV));
+      R('v', F(s.v, dec.v) + u(UV));
+      R('ar', F(s.ar, dec.a) + u(UA)); R('ar_rdd', F(s.rddTerm, dec.a) + u(UA)); R('ar_cent', F(s.cent, dec.a) + u(UA));
+      R('at', F(s.at, dec.a) + u(UA)); R('at_ang', F(s.ang, dec.a) + u(UA)); R('at_cor', F(s.cor, dec.a) + u(UA));
+      R('az', F(s.az, dec.a) + u(UA)); R('ax', F(s.ax, dec.a) + u(UA)); R('ay', F(s.ay, dec.a) + u(UA));
+      R('a', F(s.a, dec.a) + u(UA));
       if (o.mass) {
         var m = o.mass;
-        R('Fr', f4(m * s.ar) + u('N')); R('Ft', f4(m * s.at) + u('N')); R('Fz', f4(m * s.az) + u('N'));
-        R('F', f4(m * s.a) + u('N'));
+        R('Fr', F(m * s.ar, dec.f) + u('N')); R('Ft', F(m * s.at, dec.f) + u('N')); R('Fz', F(m * s.az, dec.f) + u('N'));
+        R('F', F(m * s.a, dec.f) + u('N'));
       }
     }
-    return { els: els, set: set };
+    return { els: els, set: set, calibrate: calibrate };
   }
 
   /* ------------------------------------------------------------------ transport (shared)
@@ -392,7 +410,8 @@
     var curH = baseHeight();
     var planeOpts = {
       xRange: o.xRange, yRange: o.yRange, grid: o.grid, gridStep: o.gridStep || null,
-      axisLabels: o.axisLabels, ariaLabel: o.aria, maxHeight: o.maxHeight || 480, height: curH
+      axisLabels: o.axisLabels, ariaLabel: o.aria, maxHeight: o.maxHeight || 480, height: curH,
+      declutter: o.declutter !== false          // labels step aside when their own spot is taken (CYL2D)
     };
     if (o.polarStep) planeOpts.polarStep = o.polarStep;
     if (o.polarMax) planeOpts.polarMax = o.polarMax;
@@ -416,24 +435,25 @@
     var ghost = p.polyline([], { color: 'muted', width: 1.5, dashed: true });
     var trace = p.polyline([], { color: 'accent', width: 3 });
     var gRad = p.group();
-    var radial = gRad.line([0, 0], [1, 0], { color: 'r', width: 2, label: 'r', labelSide: 'left', labelAt: 0.3 });   // off-center: a often ends mid-way
+    var radial = gRad.line([0, 0], [1, 0], { color: 'r', width: 2, label: 'r', labelSide: 'left', labelAt: 0.3, labelPriority: 12 });   // off-center: a often ends mid-way
     var thArc = gRad.arc({ center: [0, 0], rPx: 30, theta0: 0, theta1: 0.5, color: 't', width: 1.75, arrow: true, label: '\\theta' });
     var gPsi = p.group();
     var extLine = gPsi.line([0, 0], [1, 0], { color: 'muted', width: 1.25, dashed: true });
     var tanLine = gPsi.line([0, 0], [1, 0], { color: 'muted', width: 1.25, dashed: true });
     var psiArc = gPsi.arc({ center: [0, 0], rPx: 26, theta0: 0, theta1: 0.5, color: 'warn', width: 1.75, arrow: false, label: '\\psi' });
     var gFrame = p.group();
-    var eR = gFrame.line([0, 0], [1, 0], { color: 'r', width: 2.25, arrow: true, label: '\\er', labelAt: 1, labelSide: 'right' });
-    var eT = gFrame.line([0, 0], [0, 1], { color: 't', width: 2.25, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left' });
+    var eR = gFrame.line([0, 0], [1, 0], { color: 'r', width: 2.25, arrow: true, label: '\\er', labelAt: 1, labelSide: 'right', labelPriority: 18 });
+    var eT = gFrame.line([0, 0], [0, 1], { color: 't', width: 2.25, arrow: true, label: '\\et', labelAt: 1, labelSide: 'left', labelPriority: 18 });
     var gComp = p.group();
     var cV1 = gComp.line([0, 0], [0, 0], { color: 'r', width: 2, arrow: true, dashed: true, label: 'v_r', labelSide: 'right' });
     var cV2 = gComp.line([0, 0], [0, 0], { color: 't', width: 2, arrow: true, dashed: true, label: 'v_\\theta', labelSide: 'right' });
     var cA1 = gComp.line([0, 0], [0, 0], { color: 'r', width: 2.25, arrow: true, label: 'a_r', labelSide: 'left' });
     var cA2 = gComp.line([0, 0], [0, 0], { color: 't', width: 2.25, arrow: true, label: 'a_\\theta', labelSide: 'left' });
-    var vArrow = p.line([0, 0], [0, 0], { color: 'good', width: 3.25, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
-    var aArrow = p.line([0, 0], [0, 0], { color: 'bad', width: 3.25, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right' });
+    var vArrow = p.line([0, 0], [0, 0], { color: 'good', width: 3.25, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left', labelPriority: 30 });
+    var aArrow = p.line([0, 0], [0, 0], { color: 'bad', width: 3.25, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right', labelPriority: 30 });
     var overlay = p.group();                   // for pages: forces and other arrows drawn in onUpdate
-    if (o.originLabel) p.point([0, 0], { color: 'ink', r: 3.5, label: o.originLabel, labelAnchor: 'sw' });
+    // P and O can sit on any side of their dot: P's label is placed after v and a, O's after every arrow (declutter)
+    if (o.originLabel) p.point([0, 0], { color: 'ink', r: 3.5, label: o.originLabel, labelAnchor: 'sw', labelPriority: 14 });
 
     function nearest(q) {
       var best = 0, bd = Infinity;
@@ -445,7 +465,7 @@
     }
     var dragT = null;
     var dot = p.point([val(m.r, t) * Math.cos(val(m.th, t)), val(m.r, t) * Math.sin(val(m.th, t))], {
-      color: 'point', r: 6, label: o.pointLabel || null, labelAnchor: 'ne', bounds: false,
+      color: 'point', r: 6, label: o.pointLabel || null, labelAnchor: 'ne', labelPriority: 25, bounds: false,
       draggable: !!o.draggable,
       ariaLabel: 'Particle',
       snap: function (q) { var i = nearest(q); dragT = samples[i][2]; return [samples[i][0], samples[i][1]]; },
@@ -469,8 +489,10 @@
         if (isFinite(s.v)) mv = Math.max(mv, Math.hypot(s.vr, s.vt));
         if (isFinite(s.a)) ma = Math.max(ma, Math.hypot(s.ar, s.at));
       }
+      if (ma < 1e-6 * Math.max(1, mv)) ma = 0;   // numerical-derivative noise (a straight line at constant speed)
       if (!o.vScale) kV = POLAR.niceScale(mv, o.arrowMax * span);
       if (!o.aScale) kA = POLAR.niceScale(ma, o.arrowMax * span);
+      if (ro) ro.calibrate(m, t0, t1);   // fixed decimals for this motion
     }
     autoScales();
 
@@ -506,6 +528,7 @@
       }
     }
     var ro = makeReadouts(o, panel);
+    ro.calibrate(m, t0, t1);
     if (panel && o.scaleNote !== false) panel.appendChild(scaleNote);
 
     /* ----- transport ----- */
@@ -548,7 +571,8 @@
       if (okR) {
         radial.set([0, 0], P);
         var thw = s.th > -PI && s.th < 0 ? s.th : CYL.math.wrap2pi(s.th);   // a small negative θ is drawn clockwise
-        thArc.set({ theta0: 0, theta1: Math.abs(thw) < 1e-6 ? NaN : thw });
+        // a small angle gets a wider arc (up to 64 px), so the arc and its arrowhead stay readable
+        thArc.set({ theta0: 0, theta1: Math.abs(thw) < 1e-6 ? NaN : thw, rPx: Math.max(30, Math.min(64, 0.7 * s.r * p.getView().scale, 32 / Math.max(1e-6, Math.abs(thw)))) });
       }
       gRad.setVisible(okR);
       // tangent angle ψ: from the extended radial line to the tangent (in the r-θ plane)
@@ -581,10 +605,16 @@
         compMode = lab[0];
         var xy = compMode === 'x';
         cV1.setColor(xy ? 'x' : 'r'); cV2.setColor(xy ? 'y' : 't'); cA1.setColor(xy ? 'x' : 'r'); cA2.setColor(xy ? 'y' : 't');
-        if (cV1.setLabel) { cV1.setLabel(xy ? 'v_x' : 'v_r'); cV2.setLabel(xy ? 'v_y' : 'v_\\theta'); cA1.setLabel(xy ? 'a_x' : 'a_r'); cA2.setLabel(xy ? 'a_y' : 'a_\\theta'); }
       }
       cV1.setVisible(cv && Math.hypot(d1v[0], d1v[1]) > tiny); cV2.setVisible(cv && Math.hypot(d2v[0], d2v[1]) > tiny);
       cA1.setVisible(ca && Math.hypot(d1a[0], d1a[1]) > tiny); cA2.setVisible(ca && Math.hypot(d2a[0], d2a[1]) > tiny);
+      // a component shorter than its own arrowhead (hidden under P, say) keeps its arrow but loses its label, which
+      // would otherwise float beside P naming nothing visible
+      var px = p.getView().scale;
+      [[cV1, d1v], [cV2, d2v], [cA1, d1a], [cA2, d2a]].forEach(function (q, i) {
+        var want = Math.hypot(q[1][0], q[1][1]) * px >= 12 ? compLabels[compMode === 'x' ? 1 : 0][i] : '';
+        if (q[0]._lab !== want) { q[0]._lab = want; q[0].setLabel(want); }
+      });
       tr.syncSlider();
       tr.syncPlay();
       ro.set(s);
@@ -592,6 +622,7 @@
       if (typeof o.onUpdate === 'function') { try { o.onUpdate(s, api); } catch (e) { CYL.error('POLAR.figure onUpdate failed:', e); } }
     }
     var compMode = 'r';
+    var compLabels = [['v_r', 'v_\\theta', 'a_r', 'a_\\theta'], ['v_x', 'v_y', 'a_x', 'a_y']];
     var noteKey = null;
     function syncNote() {   // rewritten only when a scale changes (it holds rendered math)
       var key = kV + '|' + kA;
@@ -696,8 +727,16 @@
     var P0 = pos(t);
     var dot = v.point(P0, { color: 'point', size: 0.075 });
     var gVC = v.group(), gAC = v.group(), gFr = v.group();
-    var vc = ['r', 't', 'z'].map(function (c, i) { return v.arrow(P0, P0, arrowOpts(THIN3, c, ['v_r', 'v_\\theta', 'v_z'][i], gVC)); });
-    var ac = ['r', 't', 'z'].map(function (c, i) { return v.arrow(P0, P0, arrowOpts(THIN3, c, ['a_r', 'a_\\theta', 'a_z'][i], gAC)); });
+    // component labels sit beside the middle of each arrow, on the side away from the middle of its chain (outside
+    // the tip-to-tail polygon), so they do not pile up at the tip of v or a
+    var mid = { v: P0, a: P0 };
+    function comp(key, c, label, grp) {
+      var op = arrowOpts(THIN3, c, label, grp);
+      op.labelAt = 0.5; op.labelAway = function () { return mid[key]; };
+      return v.arrow(P0, P0, op);
+    }
+    var vc = ['r', 't', 'z'].map(function (c, i) { return comp('v', c, ['v_r', 'v_\\theta', 'v_z'][i], gVC); });
+    var ac = ['r', 't', 'z'].map(function (c, i) { return comp('a', c, ['a_r', 'a_\\theta', 'a_z'][i], gAC); });
     var fr = ['r', 't', 'z'].map(function (c, i) { return v.arrow(P0, P0, arrowOpts(THIN3, c, ['\\er', '\\et', '\\ez'][i], gFr)); });
     var vArrow = v.arrow(P0, P0, arrowOpts(BIG3, 'good', '\\vvec'));
     var aArrow = v.arrow(P0, P0, arrowOpts(BIG3, 'bad', '\\avec'));
@@ -713,6 +752,7 @@
       }
       if (!o.vScale) kV = POLAR.niceScale(mv, o.arrowMax);
       if (!o.aScale) kA = POLAR.niceScale(ma, o.arrowMax);
+      if (ro) ro.calibrate(m, t0, t1);   // fixed decimals for this motion
     }
     autoScales();
 
@@ -739,6 +779,7 @@
       }
     }
     var ro = makeReadouts(o, panel);
+    ro.calibrate(m, t0, t1);
     if (panel) panel.appendChild(scaleNote);
 
     var tr = makeTransport({
@@ -763,10 +804,12 @@
       }
       vArrow.set(P, tip(P, sv, s.vr, s.vt, s.vz));
       aArrow.set(P, tip(P, sa, s.ar, s.at, s.az));
-      var V1 = tip(P, sv, s.vr, 0, 0), V2 = tip(V1, sv, 0, s.vt, 0);
-      vc[0].set(P, V1); vc[1].set(V1, V2); vc[2].set(V2, tip(V2, sv, 0, 0, s.vz));
-      var A1 = tip(P, sa, s.ar, 0, 0), A2 = tip(A1, sa, 0, s.at, 0);
-      ac[0].set(P, A1); ac[1].set(A1, A2); ac[2].set(A2, tip(A2, sa, 0, 0, s.az));
+      var V1 = tip(P, sv, s.vr, 0, 0), V2 = tip(V1, sv, 0, s.vt, 0), V3 = tip(V2, sv, 0, 0, s.vz);
+      var A1 = tip(P, sa, s.ar, 0, 0), A2 = tip(A1, sa, 0, s.at, 0), A3 = tip(A2, sa, 0, 0, s.az);
+      function avg(a, b, c2, d) { return [(a[0] + b[0] + c2[0] + d[0]) / 4, (a[1] + b[1] + c2[1] + d[1]) / 4, (a[2] + b[2] + c2[2] + d[2]) / 4]; }
+      mid.v = avg(P, V1, V2, V3); mid.a = avg(P, A1, A2, A3);
+      vc[0].set(P, V1); vc[1].set(V1, V2); vc[2].set(V2, V3);
+      ac[0].set(P, A1); ac[1].set(A1, A2); ac[2].set(A2, A3);
       var L = 0.32 * o.extent;
       fr[0].set(P, tip(P, L, 1, 0, 0)); fr[1].set(P, tip(P, L, 0, 1, 0)); fr[2].set(P, tip(P, L, 0, 0, 1));
       rGuide.setPoints([[0, 0, s.z], P]);

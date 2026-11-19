@@ -213,7 +213,7 @@
   }
   function fled(o) {                                       // sum of forces = m a, starting from zero
     return ledger({ title: o.title || 'Forces along the motion', aria: o.aria || 'The forces along the motion, added bar by bar, land on the mass times the acceleration.',
-      start: ['0', 0], items: o.items, end: [o.end[0], o.end[1]], readouts: o.readouts, note: o.note });
+      unit: o.unit, start: ['0', 0], items: o.items, end: [o.end[0], o.end[1]], readouts: o.readouts, note: o.note });
   }
   function area(o) {
     return { kind: 'area', title: o.title, aria: o.aria, x: o.x, y: o.y, pts: o.pts, from: o.from, to: o.to, color: o.color || 'warn', readouts: o.readouts, note: o.note };
@@ -587,7 +587,7 @@
       spec.hints = ['Friction supplies the whole normal acceleration: \\(F_f = mv^2/\\rho\\).', 'It can be at most \\(\\mu_s N = \\mu_s mg\\).'];
       spec.solution = M('m\\frac{v^2}{\\rho} = \\mu_s mg \\quad\\Rightarrow\\quad v_{\\max} = \\sqrt{\\mu_s g\\rho} = \\sqrt{' + nn(muS) + '(9.81)(' + nn(rho) + ')} = ' + n4(vm) + MS) + '<p>That is \\(' + n4(vm * 3.6) + '\\ \\text{km/h}\\), whatever the car\u2019s mass.</p>';
       right = vm; wrong = wrongOf(vm, [muS * G * rho, Math.sqrt(G * rho), Math.sqrt(muS * G * rho) * 3.6]);
-      view = fled({ title: 'Forces toward the center, per kg', items: [['F_f/m', muS * G, 'r']], end: ['v^2/\\rho', muS * G], readouts: [ro('\\(a_n = \\mu_s g\\)', n4(muS * G) + AU), ro('\\(v_{\\max}\\)', n4(vm) + MS)], note: 'At \\(v_{\\max}\\), friction is at its limit.' });
+      view = fled({ unit: 'N/kg', title: 'Forces toward the center, per kg', items: [['F_f/m', muS * G, 'r']], end: ['v^2/\\rho', muS * G], readouts: [ro('\\(a_n = \\mu_s g\\)', n4(muS * G) + AU), ro('\\(v_{\\max}\\)', n4(vm) + MS)], note: 'At \\(v_{\\max}\\), friction is at its limit.' });
       spec.explain = '\\(v_{\\max} = \\sqrt{\\mu_s g\\rho}\\).';
       return done(spec, view, right, wrong);
     }
@@ -609,7 +609,7 @@
       spec.hints = ['Friction must supply \\(mv^2/\\rho\\), and it can be at most \\(\\mu_s mg\\).', 'So \\(\\mu_s \\ge v^2/(g\\rho)\\), with \\(v\\) in m/s.'];
       spec.solution = M('\\mu_s = \\frac{v^2}{g\\rho} = \\frac{' + n4(v) + '^2}{9.81(' + nn(rho) + ')} = ' + n4(mu0));
       right = mu0; wrong = wrongOf(mu0, [kmh * kmh / (G * rho), v / (G * rho), v * v / rho]);
-      view = fled({ title: 'Forces toward the center, per kg', items: [['F_f/m', an, 'r']], end: ['v^2/\\rho', an], readouts: [ro('\\(v^2/\\rho\\)', n4(an) + AU), ro('\\(\\mu_s\\)', n4(mu0))], note: 'The mass cancels.' });
+      view = fled({ unit: 'N/kg', title: 'Forces toward the center, per kg', items: [['F_f/m', an, 'r']], end: ['v^2/\\rho', an], readouts: [ro('\\(v^2/\\rho\\)', n4(an) + AU), ro('\\(\\mu_s\\)', n4(mu0))], note: 'The mass cancels.' });
       spec.explain = '\\(\\mu_s \\ge v^2/g\\rho\\).';
       return done(spec, view, right, wrong);
     }
@@ -619,7 +619,7 @@
       spec.hints = ['Friction supplies both components: \\(ma_t\\) along the road and \\(mv^2/\\rho\\) across it.', 'The total, \\(m\\sqrt{a_t^2 + a_n^2}\\), must be at most \\(\\mu_s mg\\).'];
       spec.solution = M('a_n = \\frac{' + n4(v) + '^2}{' + nn(rho) + '} = ' + n4(an) + AU + '\\qquad a = \\sqrt{' + nn(at) + '^2 + ' + n4(an) + '^2} = ' + n4(atot) + AU + '\\qquad \\mu_s = \\frac{a}{g} = ' + n4(mu1));
       right = mu1; wrong = wrongOf(mu1, [an / G, (at + an) / G, at / G]);
-      view = fled({ title: 'Friction per kg, at its limit', items: [['F_f/m', atot, 'r']], end: ['\\sqrt{a_t^2 + a_n^2}', atot], readouts: [ro('\\(a_t\\)', nn(at) + AU), ro('\\(a_n\\)', n4(an) + AU), ro('\\(\\mu_s = a/g\\)', n4(mu1))],
+      view = fled({ unit: 'N/kg', title: 'Friction per kg, at its limit', items: [['F_f/m', atot, 'r']], end: ['\\sqrt{a_t^2 + a_n^2}', atot], readouts: [ro('\\(a_t\\)', nn(at) + AU), ro('\\(a_n\\)', n4(an) + AU), ro('\\(\\mu_s = a/g\\)', n4(mu1))],
         note: 'Speeding up uses some of the grip the curve needs.' });
       spec.explain = 'Total friction \\(= m\\sqrt{a_t^2 + a_n^2} \\le \\mu_s N\\).';
       return done(spec, view, right, wrong);
@@ -648,7 +648,7 @@
       spec.hints = ['With no friction: \\(N\\cos\\theta = mg\\) vertically and \\(N\\sin\\theta = mv^2/\\rho\\) toward the center.', 'Divide: \\(\\tan\\theta = v^2/(g\\rho)\\).'];
       spec.solution = M('v_0 = \\sqrt{g\\rho\\tan\\theta} = \\sqrt{9.81(' + nn(rho) + ')\\tan ' + nn(th) + DEG + '} = ' + n4(v0) + MS) + '<p>That is \\(' + n4(v0 * 3.6) + '\\ \\text{km/h}\\).</p>';
       right = v0; wrong = wrongOf(v0, [Math.sqrt(G * rho * sn(th)), Math.sqrt(G * rho), G * rho * tn(th)]);
-      view = fled({ title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', G * tn(th), 'ink']], end: ['v^2/\\rho', G * tn(th)], readouts: [ro('\\(N/m = g/\\cos\\theta\\)', n4(G / cs(th)) + AU), ro('\\(v_0\\)', n4(v0) + MS)], note: 'The tilted normal force does all the turning.' });
+      view = fled({ unit: 'N/kg', title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', G * tn(th), 'ink']], end: ['v^2/\\rho', G * tn(th)], readouts: [ro('\\(N/m = g/\\cos\\theta\\)', n4(G / cs(th)) + AU), ro('\\(v_0\\)', n4(v0) + MS)], note: 'The tilted normal force does all the turning.' });
       spec.explain = '\\(v_0 = \\sqrt{g\\rho\\tan\\theta}\\).';
       return done(spec, view, right, wrong);
     }
@@ -658,7 +658,7 @@
       spec.hints = ['\\(\\tan\\theta = v^2/(g\\rho)\\), with \\(v\\) in m/s.', 'Convert: divide km/h by 3.6.'];
       spec.solution = M('\\tan\\theta = \\frac{' + n4(v) + '^2}{9.81(' + nn(rho) + ')} = ' + n4(v * v / (G * rho)) + '\\quad\\Rightarrow\\quad \\theta = ' + n4(ang) + DEG);
       right = ang; wrong = wrongOf(ang, [Math.atan(kmh * kmh / (G * rho)) / D2R, Math.asin(Math.min(1, v * v / (G * rho))) / D2R, Math.atan(v / (G * rho)) / D2R]);
-      view = fled({ title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', v * v / rho, 'ink']], end: ['v^2/\\rho', v * v / rho], readouts: [ro('\\(v^2/\\rho\\)', n4(v * v / rho) + AU), ro('\\(\\theta\\)', n4(ang) + '^\\circ')], note: 'Faster design speeds or tighter curves need steeper banks.' });
+      view = fled({ unit: 'N/kg', title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', v * v / rho, 'ink']], end: ['v^2/\\rho', v * v / rho], readouts: [ro('\\(v^2/\\rho\\)', n4(v * v / rho) + AU), ro('\\(\\theta\\)', n4(ang) + '^\\circ')], note: 'Faster design speeds or tighter curves need steeper banks.' });
       spec.explain = '\\(\\tan\\theta = v^2/g\\rho\\).';
       return done(spec, view, right, wrong);
     }
@@ -668,7 +668,7 @@
       spec.hints = ['Too fast, the car tends to slide up the bank, so friction acts down the bank, at its limit \\(\\mu_s N\\).', 'Vertical: \\(N\\cos\\theta - \\mu_s N\\sin\\theta = mg\\). Toward the center: \\(N\\sin\\theta + \\mu_s N\\cos\\theta = mv^2/\\rho\\). Divide.'];
       spec.solution = M('v_{\\max} = \\sqrt{g\\rho\\,\\frac{\\sin\\theta + \\mu_s\\cos\\theta}{\\cos\\theta - \\mu_s\\sin\\theta}} = \\sqrt{9.81(' + nn(rho) + ')\\frac{' + n4(sn(th) + mu * cs(th)) + '}{' + n4(dn) + '}} = ' + n4(vx) + MS);
       right = vx; wrong = wrongOf(vx, [Math.sqrt(G * rho * tn(th)), Math.sqrt(G * rho * (tn(th) + mu)), Math.sqrt(mu * G * rho)]);
-      view = fled({ title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', (G / dn) * sn(th), 'ink'], ['F_f\\cos\\theta/m', (G / dn) * mu * cs(th), 'r']], end: ['v^2/\\rho', vx * vx / rho],
+      view = fled({ unit: 'N/kg', title: 'Forces toward the center, per kg', items: [['N\\sin\\theta/m', (G / dn) * sn(th), 'ink'], ['F_f\\cos\\theta/m', (G / dn) * mu * cs(th), 'r']], end: ['v^2/\\rho', vx * vx / rho],
         readouts: [ro('\\(N/m\\)', n4(G / dn) + AU), ro('Design speed \\(v_0\\)', n4(Math.sqrt(G * rho * tn(th))) + MS), ro('\\(v_{\\max}\\)', n4(vx) + MS)], note: 'Above the design speed, friction acts down the bank and helps turn the car.' });
       spec.explain = 'At \\(v_{\\max}\\), friction is at its limit, pointing down the bank.';
       return done(spec, view, right, wrong);
@@ -685,7 +685,7 @@
         spec.solution = leave ? M('v = \\sqrt{g\\rho} = \\sqrt{9.81(' + nn(rc) + ')} = ' + n4(vl) + MS) + '<p>That is \\(' + n4(vl * 3.6) + '\\ \\text{km/h}\\).</p>'
           : M('N = m\\left(g - \\frac{v^2}{\\rho}\\right) = ' + nn(mass) + '\\left(9.81 - \\frac{' + n4(v2) + '^2}{' + nn(rc) + '}\\right) = ' + n4(N) + NU);
         right = leave ? vl : N; wrong = leave ? wrongOf(vl, [G * rc, Math.sqrt(2 * G * rc), Math.sqrt(rc / G)]) : wrongOf(N, [mass * (G + an), mass * G, mass * an]);
-        view = leave ? fled({ title: 'Forces toward the center (down), per kg, as it leaves', items: [['g', G, 'z']], end: ['v^2/\\rho', G], readouts: [ro('\\(N\\)', '0' + NU), ro('Leaves the road at', n4(vl) + MS)], note: 'At the speed of leaving, the weight alone supplies \\(mv^2/\\rho\\).' })
+        view = leave ? fled({ unit: 'N/kg', title: 'Forces toward the center (down), per kg, as it leaves', items: [['g', G, 'z']], end: ['v^2/\\rho', G], readouts: [ro('\\(N\\)', '0' + NU), ro('Leaves the road at', n4(vl) + MS)], note: 'At the speed of leaving, the weight alone supplies \\(mv^2/\\rho\\).' })
           : fled({ title: 'Forces toward the center (down)', items: [['W', mass * G, 'z'], ['N', -N, 'ink']], end: ['mv^2/\\rho', mass * an],
             readouts: [ro('\\(v^2/\\rho\\)', n4(an) + AU), ro('\\(N\\)', n4(N) + NU), ro('Leaves the road at', n4(vl) + MS)], note: 'The faster the car, the less the road needs to push.' });
         spec.explain = 'Crest: \\(N = m(g - v^2/\\rho)\\).';
@@ -718,7 +718,7 @@
     spec.hints = ['At the top: \\(' + (cord ? 'T' : 'N') + ' + mg = mv^2/r\\), and it must be that \\(' + (cord ? 'T' : 'N') + ' \\ge 0\\), so \\(v_{\\text{top}}^2 \\ge gr\\).', what === 'vtop' ? 'Set the push (or pull) to zero.' : 'The tangential equation gives \\(v_{\\text{top}}^2 = v_b^2 - 4gr\\).'];
     spec.solution = what === 'vtop' ? M('v_{\\text{top}} = \\sqrt{gr} = \\sqrt{9.81(' + nn(r) + ')} = ' + n4(vtop) + MS) : M('v_b^2 = v_{\\text{top}}^2 + 4gr \\ge 5gr \\quad\\Rightarrow\\quad v_b = \\sqrt{5(9.81)(' + nn(r) + ')} = ' + n4(vb) + MS);
     right = what === 'vtop' ? vtop : vb; wrong = what === 'vtop' ? wrongOf(vtop, [G * r, Math.sqrt(2 * G * r), Math.sqrt(5 * G * r)]) : wrongOf(vb, [Math.sqrt(4 * G * r), Math.sqrt(G * r), Math.sqrt(2 * G * r)]);
-    view = fled({ title: 'At the top, per kg, toward the center', items: [['g', G, 'z']], end: ['v_{\\text{top}}^2/r', G], readouts: [ro('\\(v_{\\text{top}}\\)', n4(vtop) + MS), ro('\\(v_b\\)', n4(vb) + MS)], note: 'At the least speed, the weight alone supplies the normal acceleration at the top.' });
+    view = fled({ unit: 'N/kg', title: 'At the top, per kg, toward the center', items: [['g', G, 'z']], end: ['v_{\\text{top}}^2/r', G], readouts: [ro('\\(v_{\\text{top}}\\)', n4(vtop) + MS), ro('\\(v_b\\)', n4(vb) + MS)], note: 'At the least speed, the weight alone supplies the normal acceleration at the top.' });
     spec.explain = 'Top: \\(v^2/r \\ge g\\); bottom: \\(v_b \\ge \\sqrt{5gr}\\).';
     return done(spec, view, right, wrong);
   }
@@ -745,7 +745,7 @@
       spec.hints = ['The whole train: the couplings are internal, so \\(F = (m_L + ' + n + 'm_c)a\\).', 'Cut at that coupling: it pulls the ' + (n - k + 1) + ' car' + (n - k + 1 > 1 ? 's' : '') + ' behind it, and nothing else does.'];
       spec.solution = M('a = \\frac{' + nn(Ft) + '}{' + nn(ML + n * mc) + '} = ' + n4(at) + AU + '\\qquad T = ' + (n - k + 1) + '(' + nn(mc) + ')(' + n4(at) + ') = ' + n4(Tk) + NU);
       right = Tk / 1000; wrong = wrongOf(Tk / 1000, [Ft / 1000, mc * at / 1000, (n - k) * mc * at / 1000 || Ft / 2000]);
-      view = fled({ title: 'Horizontal forces on the cars behind the cut (kN)', items: [['T', Tk / 1000, 'muted']], end: [(n - k + 1) + 'm_c a', Tk / 1000], readouts: [ro('\\(a\\)', n4(at) + AU), ro('\\(T\\)', n4(Tk / 1000) + '\\ \\text{kN}')], note: 'The couplings nearer the locomotive pull more cars, so they carry more tension.' });
+      view = fled({ title: 'Horizontal forces on the cars behind the cut', items: [['T', Tk / 1000, 'muted']], end: [(n - k + 1) + 'm_c a', Tk / 1000], readouts: [ro('\\(a\\)', n4(at) + AU), ro('\\(T\\)', n4(Tk / 1000) + '\\ \\text{kN}')], note: 'The couplings nearer the locomotive pull more cars, so they carry more tension.' });
       view.unit = 'kN';
       spec.explain = 'The coupling force is the mass behind it times \\(a\\).';
       return done(spec, view, right, wrong);

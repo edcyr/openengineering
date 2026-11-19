@@ -230,8 +230,10 @@ CYL.ready(function () {
   var lA = p.label([0, 0], 'A'), lB = p.label([0, 0], 'B');
   var arA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'left' });
   var arB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_B', labelAt: 1, labelSide: 'left' });
-  var fA = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
-  var fB = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'right' });
+  // the contact force is P while the bumpers deform and R while they recover, as in the text; each label sits at the
+  // arrow's tail, in the middle band between the two arrows, and shows once the arrow is long enough to carry it
+  var fA = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'P', labelAt: 0, labelSide: 'left' });
+  var fB = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'P', labelAt: 0, labelSide: 'left' });
   var phase = p.label([27, 52], '', { tex: false, color: 'muted' });
 
   var chF = ENERGY.chart(fEl, { x: { label: 'Time \\(t\\) (ms)', min: -PRE, max: 6 }, y: { label: 'Contact force (kN)', min: 0, max: 6 }, height: 150,
@@ -259,7 +261,7 @@ CYL.ready(function () {
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change it' }));
   panel.appendChild(CYL.slider({ label: 'Coefficient of restitution \\(e\\)', min: 0, max: 1, step: 0.05, value: st.e, onInput: function (v) { st.e = v; rebuild(); } }).el);
   panel.appendChild(CYL.slider({ label: 'Mass of \\(B\\)', min: 1, max: 6, step: 0.5, value: st.mB, unit: 'kg', color: 'warn', onInput: function (v) { st.mB = v; rebuild(); } }).el);
-  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'A: 2 kg at 6 m/s; B at rest. The deformation lasts 2 ms; the restitution lasts e times as long. Contact forces end on the bumper they push.' }));
+  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'A: 2 kg at 6 m/s; B at rest. The deformation lasts 2 ms; the restitution lasts e times as long. The contact forces, P while the bumpers deform and R while they recover, end on the bumper they push.' }));
 
   var c, T1, tab;                                  // contact model, end of the window (ms), positions table
   function rebuild() {
@@ -285,12 +287,12 @@ CYL.ready(function () {
     cV.set(vc);
     var vA2 = c.vA(1), vB2 = c.vB(1);
     chV.setAxes({ y: { min: Math.min(0, Math.floor(vA2)), max: Math.max(6.5, Math.ceil(vB2 + 0.5)) } });
-    roP.set(CYL.fmt(c.P, 4) + '\u00a0N\u00b7s');
-    roR.set(CYL.fmt(c.R, 4) + '\u00a0N\u00b7s');
-    roE.set(CYL.fmt(c.R / c.P, 3));
-    roV.set(CYL.fmt(vc, 4) + '\u00a0m/s');
-    roA.set(CYL.fmt(Math.abs(vA2) < 1e-9 ? 0 : vA2, 4) + '\u00a0m/s');
-    roB.set(CYL.fmt(vB2, 4) + '\u00a0m/s');
+    roP.set(CYL.fmtFixed(c.P, 2) + '\u00a0N\u00b7s');
+    roR.set(CYL.fmtFixed(c.R, 2) + '\u00a0N\u00b7s');
+    roE.set(CYL.fmtFixed(c.R / c.P, 3));
+    roV.set(CYL.fmtFixed(vc, 2) + '\u00a0m/s');
+    roA.set(CYL.fmtFixed(Math.abs(vA2) < 1e-9 ? 0 : vA2, 2) + '\u00a0m/s');
+    roB.set(CYL.fmtFixed(vB2, 2) + '\u00a0m/s');
     if (pl) pl.refresh(true);
   }
   function posAt(tm) {
@@ -311,12 +313,17 @@ CYL.ready(function () {
     lA.set([xa - BW + 7, BH - 7]); lB.set([xb + BW - 7, BH - 7]);
     var va = c.vA(Math.max(0, ts)), vb = c.vB(Math.max(0, ts)), K = 3.2;
     if (tm < 0) { va = vA1; vb = vB1; }
-    arA.setVisible(Math.abs(va) > 0.02); arA.set([xa - BW / 2, BH + 9], [xa - BW / 2 + va * K, BH + 9]);
-    arB.setVisible(Math.abs(vb) > 0.02); arB.set([xb + BW / 2, BH + 9], [xb + BW / 2 + vb * K, BH + 9]);
+    function vlen(v) { return Math.abs(v * K) < 5 ? (v < 0 ? -5 : 5) : v * K; }   // at least 5 mm, so the head shows
+    arA.setVisible(Math.abs(va) > 0.02); arA.set([xa - BW / 2, BH + 9], [xa - BW / 2 + vlen(va), BH + 9]);
+    arB.setVisible(Math.abs(vb) > 0.02); arB.set([xb + BW / 2, BH + 9], [xb + BW / 2 + vlen(vb), BH + 9]);
     var F = tm > 0 && tm < D ? c.F(ts) : 0, L = 26 * F / c.Fmax, xc = xa + th;
     fA.setVisible(L > 0.5); fB.setVisible(L > 0.5);
-    if (L > 0.5) { fA.set([xc + L, 21], [xa + th, 21]); fB.set([xc - L, 9], [xb - th, 9]); }
-    phase.set(null, tm < 0 ? 'Approach' : tm < c.td * 1000 ? 'Deformation' : tm < D ? 'Restitution' : 'Separated');
+    if (L > 0.5) {
+      var sym = L > 9 ? (tm < c.td * 1000 ? 'P' : 'R') : '';
+      fA.setLabel(sym); fB.setLabel(sym);
+      fA.set([xc + L, 21], [xa + th, 21]); fB.set([xc - L, 9], [xb - th, 9]);
+    }
+    phase.set(null, tm < 0 ? 'Approach' : tm < c.td * 1000 ? 'Deformation' : tm < D ? 'Restitution' : st.e > 0 ? 'Separated' : 'Moving together');
     aP.set(function (q) { return c.F(q / 1000) / 1000; }, { domain: [0, Math.min(tm, c.td * 1000)] });
     aR.set(function (q) { return c.F(q / 1000) / 1000; }, { domain: [c.td * 1000, Math.min(tm, D)] });
     curF.set(tm); curV.set(tm);
@@ -382,13 +389,14 @@ CYL.ready(function () {
     ch.setAxes({ x: { min: 0, max: Math.ceil(run.duration * 2) / 2 }, y: { min: 0, max: Math.ceil(st.h * 11) / 10 } });
     path.set(pts);
     peakLabels.forEach(function (h) { h.remove(); });
-    peakLabels = run.peaks.slice(0, 3).map(function (h, k) {
+    // the first three rebounds, but only those tall enough (12 % of the drop) for an arch wide enough to hold the label
+    peakLabels = run.peaks.slice(0, 3).filter(function (h) { return h >= 0.12 * st.h; }).map(function (h, k) {
       var t = run.events[k].t + Math.sqrt(2 * h / 9.81);
       return ch.marker([t, h], { color: 'good', r: 3, label: CYL.fmt(h, 3) + ' m' });
     });
-    roE.set(CYL.fmt(st.e, 3));
-    roH.set(CYL.fmt(run.peaks[0] || 0, 3) + '\u00a0m');
-    roH3.set(CYL.fmt(run.peaks[1] || 0, 3) + '\u00a0m');
+    roE.set(CYL.fmtFixed(st.e, 3));
+    roH.set(CYL.fmtFixed(run.peaks[0] || 0, 3) + '\u00a0m');
+    roH3.set(CYL.fmtFixed(run.peaks[1] || 0, 3) + '\u00a0m');
     if (pl) pl.refresh();
   }
   function draw(t) {

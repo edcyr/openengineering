@@ -191,20 +191,22 @@ CYL.ready(function () {
   var drop = p.line([0, 0], [0, 0], { color: 'warn', width: 1.2, dashed: true });
   var comp = p.line([0, 0], [0, 0], { color: 'warn', width: 6, opacity: 0.5 });
   var dr = p.line([0, 0], [0, 0], { color: 'good', width: 3, arrow: true, label: 'd\\rvec', labelAt: 1, labelSide: 'right' });
-  var force = p.line([0, 0], [0, 0], { color: 'warn', width: 3.2, arrow: true, label: '\\Fvec', labelAt: 1, labelSide: 'left' });
+  var fOp = { color: 'warn', width: 3.2, arrow: true, label: '\\Fvec', labelAt: 1, labelSide: 'left' };   // labelSide set in draw()
+  var force = p.line([0, 0], [0, 0], fOp);
   var arc = p.arc({ center: [0, 0], r: 0.45, theta0: 0, theta1: 1, color: 'muted', width: 1.4, arrow: false, label: '\\theta' });
   function nearestU(q) {
     var best = 0, bd = Infinity;
     for (var k = 0; k <= 400; k++) { var c = bez(k / 400), d = (c[0] - q[0]) * (c[0] - q[0]) + (c[1] - q[1]) * (c[1] - q[1]); if (d < bd) { bd = d; best = k / 400; } }
     return best;
   }
-  var P = p.point(bez(st.u), {
+  var pOp = {
     color: 'point', r: 6, label: 'P', labelAnchor: 'se', draggable: true, ariaLabel: 'Point P on the path',
     snap: function (q) { return bez(Math.min(0.97, Math.max(0.03, nearestU(q)))); },
     keyMove: function (pos, d) { st.u = Math.min(0.97, Math.max(0.03, st.u + 0.02 * (d[0] + d[1] > 0 ? 1 : -1))); return bez(st.u); },
     onDrag: function (pos) { st.u = Math.min(0.97, Math.max(0.03, nearestU(pos))); draw(); },
     ariaFormat: function () { return Math.round(st.u * 100) + ' percent of the way along the path'; }
-  });
+  };
+  var P = p.point(bez(st.u), pOp);                     // pOp.labelAnchor is set in draw()
   var roT = CYL.readout('Angle \\(\\theta\\) between \\(\\Fvec\\) and \\(d\\rvec\\)');
   var roC = CYL.readout('\\(F\\cos\\theta\\)', { color: 'warn' });
   var roS = CYL.readout('Work per meter of path');
@@ -216,7 +218,11 @@ CYL.ready(function () {
   function draw() {
     var Q = bez(st.u), d = dbez(st.u), L = Math.hypot(d[0], d[1]), t = [d[0] / L, d[1] / L];
     var a = st.ang * D2R, f = [Math.cos(a), Math.sin(a)], tip = [Q[0] + f[0] * st.F * K, Q[1] + f[1] * st.F * K];
-    var c = f[0] * t[0] + f[1] * t[1], Ft = st.F * c;
+    var c = f[0] * t[0] + f[1] * t[1], Ft = st.F * c, side = t[0] * f[1] - t[1] * f[0] >= 0 ? 1 : -1;
+    // F's label on its side away from dr; P's label across the path from F, so neither sits on an arrow
+    fOp.labelSide = side > 0 ? 'left' : 'right';
+    var na = Math.atan2(-side * t[0], side * t[1]);   // the normal to the path on the side away from F
+    pOp.labelAnchor = ['e', 'ne', 'n', 'nw', 'w', 'sw', 's', 'se'][((Math.round(na / (Math.PI / 4)) % 8) + 8) % 8];
     P.set(Q);
     tanLine.set([Q[0] - t[0] * 2.2, Q[1] - t[1] * 2.2], [Q[0] + t[0] * 2.2, Q[1] + t[1] * 2.2]);
     dr.set(Q, [Q[0] + t[0] * 0.9, Q[1] + t[1] * 0.9]);
@@ -230,8 +236,8 @@ CYL.ready(function () {
     var a0 = Math.atan2(t[1], t[0]), cross = t[0] * f[1] - t[1] * f[0];
     arc.set({ center: Q, r: 0.42, theta0: a0, theta1: a0 + (cross >= 0 ? th : -th) });
     arc.setVisible(th > 0.05);
-    roT.set(CYL.fmt(th / D2R, 3) + '\u00b0');
-    roC.set(CYL.fmt(Math.abs(Ft) < 1e-9 ? 0 : Ft, 3) + '\u00a0N');
+    roT.set(CYL.fmtFixed(th / D2R, 1) + '\u00b0');
+    roC.set(CYL.fmtFixed(Math.abs(Ft) < 1e-9 ? 0 : Ft, 2) + '\u00a0N');
     roS.set(Math.abs(Ft) < 0.5 ? 'zero: the force is perpendicular to the motion' : Ft > 0 ? 'positive: the force helps the motion' : 'negative: the force resists the motion');
   }
   draw();
@@ -271,8 +277,8 @@ CYL.ready(function () {
     aNeg.set(function (s) { return Math.min(0, F.f(s)); }, { domain: [0, st.s2] });
     end.set(st.s2);
     var U = F.U(st.s2);
-    roU.set(CYL.fmt(Math.abs(U) < 1e-9 ? 0 : U, 4) + '\u00a0J');
-    roA.set(CYL.fmt(U / st.s2, 4) + '\u00a0N');
+    roU.set(CYL.fmtFixed(Math.abs(U) < 1e-9 ? 0 : U, 2) + '\u00a0J');
+    roA.set(CYL.fmtFixed(U / st.s2, 2) + '\u00a0N');
   }
   draw();
   CYL.renderMath(panel);

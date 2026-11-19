@@ -202,14 +202,14 @@ CYL.ready(function () {
     xRange: [-0.55, 1.85], yRange: [-0.15, 0.55], maxHeight: 240, speed: 0.25, flash: 0.08,
     spec: spec(), draw: [{ shape: 'block', h: 0.22, color: 'accent' }, { shape: 'block', h: 0.22, color: 'warn' }],
     toggles: ['v', 'impulse'], readouts: ['vA', 'vB', 'Ttot', 'lost'], chart: { kind: 'v', height: 170 },
-    onUpdate: function (s) { roS.set(CYL.fmt(Math.max(0, s.x[1] + W / 2 - XF), 3) + '\u00a0m'); },
+    onUpdate: function (s) { roS.set(CYL.fmtFixed(Math.max(0, s.x[1] + W / 2 - XF), 2) + '\u00a0m'); },
     aria: 'Block A slides into block B, which rests against a spring. After the impact B compresses the spring, stops, and is thrown back; A follows more slowly, and the blocks may collide again.'
   });
   panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roS.el, roM.el]));
   function maxComp() {
     var r = fig.run(), S = r.samples, m = 0;
     for (var i = 0; i < S.t.length; i++) m = Math.max(m, S.x[1][i] + W / 2 - XF);
-    roM.set(CYL.fmt(m, 3) + '\u00a0m');
+    roM.set(CYL.fmtFixed(m, 2) + '\u00a0m');
   }
   function rebuild() { fig.setSpec(spec()); maxComp(); }
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the impact' }));
@@ -229,7 +229,11 @@ CYL.ready(function () {
     ariaLabel: 'A block hangs from a cord. A bullet flies in from the left and embeds itself in the block, which swings up to the right and back.' });
   p.line([-0.4, PIV[1]], [0.4, PIV[1]], { color: 'ink', width: 3 });
   for (var q = -0.4; q <= 0.4; q += 0.08) p.line([q, PIV[1]], [q + 0.06, PIV[1] + 0.07], { color: 'muted', width: 1 });
-  var hLine = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true, label: 'h', labelAt: 0, labelSide: 'left' });
+  // the rise h, dimensioned on the left from the block's center at rest to the dashed line it swings up to
+  var hLine = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true });
+  var hBase = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, dashed: true });
+  var hDimOp = { color: 'z', width: 1.4, arrow: 'both', label: 'h', labelAt: 0.5, labelSide: 'left' };
+  var hDim = p.line([0, 0], [0, 0], hDimOp);
   var cord = p.line(PIV, [0, 0], { color: 'ink', width: 1.6 });
   var block = p.polyline([], { closed: true, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.35 });
   var bullet = p.polyline([], { closed: true, color: 'ink', width: 1, fill: 'warn', fillOpacity: 0.9 });
@@ -243,7 +247,7 @@ CYL.ready(function () {
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change it' }));
   panel.appendChild(CYL.slider({ label: 'Bullet speed', min: 300, max: 900, step: 25, value: st.vb, unit: 'm/s', color: 'good', onInput: function (v) { st.vb = v; rebuild(); } }).el);
   panel.appendChild(CYL.slider({ label: 'Block mass \\(M\\)', min: 2, max: 8, step: 0.5, value: st.M, unit: 'kg', color: 'accent', onInput: function (v) { st.M = v; rebuild(); } }).el);
-  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Bullet 20 g; cord 1.5 m. The dashed line marks the height the block reaches.' }));
+  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Bullet 20 g; cord 1.5 m. The dashed lines mark the block\u2019s center at rest and at the top of the swing: h apart.' }));
   var V, tab, T2;
   function rebuild() {
     V = mb * st.vb / (mb + st.M);
@@ -260,11 +264,15 @@ CYL.ready(function () {
     T2 = t;
     var h = V * V / (2 * G), thMax = Math.acos(1 - h / L);
     var T1 = 0.5 * mb * st.vb * st.vb, Tafter = 0.5 * (mb + st.M) * V * V;
-    roV.set(CYL.fmt(V, 3) + '\u00a0m/s');
-    roL.set(CYL.fmt(100 * (1 - Tafter / T1), 4) + '%');
-    roH.set(CYL.fmt(h, 3) + '\u00a0m');
-    roA.set(CYL.fmt(thMax * 180 / Math.PI, 3) + '\u00b0');
-    hLine.set([-0.9, PIV[1] - L + h], [0.9, PIV[1] - L + h]);
+    roV.set(CYL.fmtFixed(V, 2) + '\u00a0m/s');
+    roL.set(CYL.fmtFixed(100 * (1 - Tafter / T1), 1) + '%');
+    roH.set(CYL.fmtFixed(h, 3) + '\u00a0m');
+    roA.set(CYL.fmtFixed(thMax * 180 / Math.PI, 1) + '\u00b0');
+    var y0 = PIV[1] - L, xd = -0.75;
+    hLine.set([xd - 0.03, y0 + h], [0.9, y0 + h]);               // both lines start just left of the dimension, so its label
+    hBase.set([xd - 0.03, y0], [-0.3, y0]);                       // (to the left) never sits on them, however small h is
+    hDimOp.labelAt = Math.min(h, 1.95 - y0) / (2 * h);          // the label stays in view, even for a swing past the top
+    hDim.set([xd, y0], [xd, y0 + h]);
     if (pl) pl.refresh();
   }
   function blockAt(th) {
@@ -287,7 +295,7 @@ CYL.ready(function () {
     else bullet.set([b.P(-BW / 2 + 0.11, -0.02), b.P(-BW / 2 + 0.03, -0.02), b.P(-BW / 2 + 0.03, 0.02), b.P(-BW / 2 + 0.11, 0.02), b.P(-BW / 2 + 0.14, 0)]);
     var sp = t < 0 ? 0 : w * L;
     varr.setVisible(Math.abs(sp) > 0.03);
-    if (Math.abs(sp) > 0.03) { var a0 = b.P(0, BH / 2 + 0.12); varr.set(a0, [a0[0] + b.u[0] * sp * 0.25, a0[1] + b.u[1] * sp * 0.25]); }
+    if (Math.abs(sp) > 0.03) { var a0 = b.P(0, BH / 2 + 0.12), vl = Math.max(-0.9, Math.min(0.9, sp * 0.25)); varr.set(a0, [a0[0] + b.u[0] * vl, a0[1] + b.u[1] * vl]); }
   }
   var pl = null;
   rebuild();

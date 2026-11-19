@@ -192,10 +192,13 @@ CYL.ready(function () {
   });
   p.arc({ center: [0, 0], r: 1, theta0: -0.3, theta1: PI + 0.3, color: 'muted', width: 1.2, dashed: true, arrow: false });
   var arcD = p.arc({ r: 0.45, theta0: 0, theta1: 1, color: 'muted', width: 1.5, arrow: true, label: '\\Delta\\psi' });
-  var e1 = p.line([0, 0], [1, 0], { color: 't', width: 3, arrow: true, label: '\\et', labelAt: 1, labelSide: 'right' });
-  var e2 = p.line([0, 0], [1, 0], { color: 't', width: 2.5, arrow: true, dashed: true, label: "\\et'", labelAt: 1, labelSide: 'left' });
-  var de = p.line([1, 0], [1, 0], { color: 'ink', width: 2.75, arrow: true, label: '\\Delta\\et', labelSide: 'right' });
-  var en = p.line([0, 0], [0, 1], { color: 'n', width: 2, arrow: true, label: '\\en', labelAt: 1, labelSide: 'left' });
+  // For a small turn the wedge is too narrow for the label: it moves outside the wedge, beside u_t.
+  var dLab = p.label([0, 0], '\\Delta\\psi', { color: 'muted', anchor: 'se', gap: 7 });
+  // the arrow labels are placed automatically, clear of each other, the arrows and the dashed circle
+  var e1 = p.line([0, 0], [1, 0], { color: 't', width: 3, arrow: true, label: '\\et', labelAt: 1, labelSide: 'right', labelAuto: true, labelPriority: 3 });
+  var e2 = p.line([0, 0], [1, 0], { color: 't', width: 2.5, arrow: true, dashed: true, label: "\\et'", labelAt: 1, labelSide: 'left', labelAuto: true, labelPriority: 3 });
+  var de = p.line([1, 0], [1, 0], { color: 'ink', width: 2.75, arrow: true, label: '\\Delta\\et', labelSide: 'right', labelAuto: true, labelPriority: 2 });
+  var en = p.line([0, 0], [0, 1], { color: 'n', width: 2, arrow: true, label: '\\en', labelAt: 1, labelSide: 'left', labelAuto: true, labelPriority: 1 });
   p.point([0, 0], { color: 'muted', r: 3 });
   var panel = document.getElementById('fig61-controls');
   var sP = CYL.angleSlider({ label: 'Direction \\(\\psi\\)', min: 0, max: PI / 3, snap: PI / 180, value: st.psi, color: 't', onInput: function (v) { st.psi = v; schedule(); } });
@@ -208,10 +211,16 @@ CYL.ready(function () {
   function update() {
     var a = dir(st.psi), b = dir(st.psi + st.d);
     e1.set([0, 0], a); e2.set([0, 0], b); de.set(a, b);
+    de.setLabel(2 * Math.sin(st.d / 2) * p.getView().scale >= 14 ? '\\Delta\\et' : '');   // no label on a stub
     en.set([0, 0], dir(st.psi + PI / 2).map(function (c) { return c * 0.55; }));
-    arcD.set({ theta0: st.psi, theta1: st.psi + st.d });
+    var wide = st.d >= 0.4;                                // about 23 degrees
+    arcD.set({ theta0: st.psi, theta1: st.psi + st.d, label: wide ? '\\Delta\\psi' : '' });
+    var k = Math.round(((st.psi - PI / 2) / (PI / 4) % 8 + 8) % 8);   // the side of u_t away from the wedge
+    dLab.set([0.45 * Math.cos(st.psi), 0.45 * Math.sin(st.psi)]);
+    dLab.setAnchor(['e', 'ne', 'n', 'nw', 'w', 'sw', 's', 'se'][k]);
+    dLab.setVisible(!wide);
     var L = 2 * Math.sin(st.d / 2);
-    roL.set(CYL.fmtFixed(L, 4)); roR.set(CYL.fmtFixed(L / st.d, 4)); roA.set(CYL.fmt(st.d / 2 * 180 / PI, 3) + '\u00b0');
+    roL.set(CYL.fmtFixed(L, 4)); roR.set(CYL.fmtFixed(L / st.d, 4)); roA.set(CYL.fmtFixed(st.d / 2 * 180 / PI, 1) + '\u00b0');
   }
   var schedule = CYL.throttleRAF(update);
   update();
@@ -227,8 +236,13 @@ CYL.ready(function () {
     if (T < 0.05) T = 0.05;
     function sp(t) { return Math.max(0, v0 + at * t); }
     function ph(t) { return PHI0 + (v0 * t + at * t * t / 2) / R; }
+    // Arrow scales for this run, so every arrow is long enough to read and carry its label yet stays in view:
+    // the largest a (mostly a_n, toward O) about 1.7R, a_t at most R/2 and v (along the track) at most R/2.
+    var vMax = Math.max(v0, sp(T)), anMax = vMax * vMax / R;
+    var kA = CURV.niceScale(Math.sqrt(at * at + anMax * anMax), 1.7 * R);
+    if (at) kA = Math.max(kA, CURV.niceScale(Math.abs(at), 0.5 * R));
     return {
-      T: T,
+      T: T, kV: CURV.niceScale(vMax, 0.5 * R), kA: kA,
       m: {
         x: function (t) { return R * Math.cos(ph(t)); }, y: function (t) { return R * Math.sin(ph(t)); },
         vx: function (t) { return -sp(t) * Math.sin(ph(t)); }, vy: function (t) { return sp(t) * Math.cos(ph(t)); },
@@ -249,7 +263,7 @@ CYL.ready(function () {
   var fig = CURV.figure({
     stage: document.getElementById('fig62-stage'), controls: panel,
     motion: B.m, t0: 0, t1: B.T, t: 2, xRange: Rg.x, yRange: Rg.y, loop: false,
-    vScale: 5, aScale: 2, show: { comps: 'nt', trace: true }, toggles: ['comps', 'v', 'a'],
+    vScale: B.kV, aScale: B.kA, show: { comps: 'nt', trace: true }, toggles: ['comps', 'v', 'a'],
     readouts: ['t', 'v', 'at', 'an', 'a'],
     decorate: function (p) {
       track = [p.circle({ center: [0, 0], r: st.R + 1.5, color: 'surface', width: 1 }), p.circle({ center: [0, 0], r: st.R - 1.5, color: 'surface', width: 1 })];
@@ -261,6 +275,7 @@ CYL.ready(function () {
     B = build(); Rg = range();
     fig.setMotion(B.m, 0, B.T, Math.min(fig.t(), B.T));
     fig.setRange(Rg.x, Rg.y);
+    fig.setScales(B.kV, B.kA);
     track[0].set({ r: st.R + 1.5 }); track[1].set({ r: st.R - 1.5 });
   });
 });

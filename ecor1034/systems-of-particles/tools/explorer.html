@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Systems Lab · Systems of Particles</title>
+<meta name="description" content="Pick a scene (two cars crossing, three blocks on two cords, a free wedge, a bursting shell, a walk along a boat, a block on a plank, a head-on collision, a ballistic pendulum or an oblique impact), change its numbers, and watch the center of mass, the momentum and the energy of the system.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<style>
+  /* ---- Systems Lab: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-desc { margin: 10px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-events { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; }
+  .ex-events p { margin: 0; }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+</style>
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/fma.js"></script>
+<script src="../assets/js/sop.js"></script>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Systems Lab</h1>
+    <p class="lede">Pick a scene, change its numbers, and watch a system of particles at work. Follow one particle from another, release blocks on cords, let a wedge slide out from under a block, burst a shell in flight, walk along a boat, and collide carts, bullets and pucks. In every scene, look for what the internal forces cannot change: the motion of the center of mass and the total momentum.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a scene</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label" id="ex-scene-label">Scene</p>
+        <div class="chip-row" id="ex-scene" role="group" aria-labelledby="ex-scene-label"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide" aria-labelledby="ex-cap">
+      <div class="viz" id="ex-viz">
+        <div class="viz-stage" id="ex-stage"></div>
+        <div class="viz-controls" id="ex-controls"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure S.1</strong> The chosen scene. Press <em>Play</em> or drag the time slider, and change the numbers in the panel; the motion is recomputed at once. Colors are the module's: velocity green, acceleration and impulses red, weight blue, internal forces violet, friction orange and thick. In relative-motion triangles the reference body is teal, the relative part violet and the body's own motion amber; the center of mass is the ring marked \(G\).</figcaption>
+    </figure>
+    <div class="ex-events" id="ex-events" aria-live="polite"></div>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>A collision course.</strong> Give car \(B\) \(24\ \text{m/s}\): both cars now reach the intersection at \(10\ \text{s}\), and seen from \(A\), \(B\)'s straight line runs right through \(A\). <button type="button" class="btn small" data-load="cars" data-set='{"vA": 20, "hA": 0, "vB": 24, "hB": 90}'>Load</button></li>
+      <li><strong>A balance that is not.</strong> With \(m_A = m_B + m_C\), the blocks balance only if \(m_B = m_C\). Try \(6, 3, 3\), then \(6, 2, 4\). <button type="button" class="btn small" data-load="pulleys" data-set='{"mA": 6, "mB": 3, "mC": 3}'>Load</button></li>
+      <li><strong>A heavy wedge is a fixed incline.</strong> With \(m_W = 50\ \text{kg}\) and \(m_B = 2\ \text{kg}\), the wedge hardly moves and \(a_{B/W}\) is close to \(g\sin\theta\). <button type="button" class="btn small" data-load="wedge" data-set='{"M": 50, "m": 2, "th": 30}'>Load</button></li>
+      <li><strong>The center of mass leaves the parabola.</strong> Burst the shell early into unequal pieces with a vertical kick: one piece lands first, the ground pushes on it, and \(G\) stops following the dashed curve. <button type="button" class="btn small" data-load="shell" data-set='{"f": 0.25, "tb": 3, "dv": 40, "phi": 90}'>Load</button></li>
+      <li><strong>A light boat.</strong> On a \(40\ \text{kg}\) boat an \(80\ \text{kg}\) person moves only a third of the walk over the water; the boat slides back the other two thirds. <button type="button" class="btn small" data-load="boat" data-set='{"mp": 80, "mb": 40}'>Load</button></li>
+      <li><strong>Half the energy.</strong> With equal masses, the block and the plank end at half the block's speed, and half the kinetic energy is lost to friction. <button type="button" class="btn small" data-load="plank" data-set='{"mb": 3, "mp": 3, "v0": 4, "mu": 0.3}'>Load</button></li>
+      <li><strong>Swapping velocities.</strong> Equal masses with \(e = 1\) exchange velocities: \(A\) leaves at \(B\)'s velocity, and \(B\) at \(A\)'s. <button type="button" class="btn small" data-load="collide" data-set='{"mA": 2, "mB": 2, "e": 1}'>Load</button></li>
+      <li><strong>Where the bullet's energy goes.</strong> A light block keeps a larger share of the bullet's energy, \(m/(m + M)\), and swings higher. <button type="button" class="btn small" data-load="ballistic" data-set='{"mb": 0.02, "v": 300, "M": 1}'>Load</button></li>
+      <li><strong>A right angle.</strong> Equal pucks with \(e = 1\) leave at \(90^\circ\) to each other, whatever the angle of impact. <button type="button" class="btn small" data-load="pucks" data-set='{"mA": 0.3, "mB": 0.3, "e": 1, "phi": 40}'>Load</button></li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the lab works</h2>
+    <p>Each scene is solved exactly, with the equations of the lessons: relative velocities add as vectors (<a href="../lessons/01-relative-motion.html">Lesson 1</a>); the blocks on cords and the wedge have constant accelerations from their FBDs and kinetic diagrams (<a href="../lessons/03-equations-of-motion.html">Lesson 3</a>); the shell's pieces fly on parabolas after a burst that leaves \(\vvec_G\) unchanged (<a href="../lessons/04-center-of-mass.html">Lesson 4</a>); the plank slides with constant friction until the two move together (<a href="../lessons/05-work-energy.html">Lesson 5</a>); and the impacts use momentum with the coefficient of restitution (<a href="../lessons/07-plastic-impact.html">Lessons 7</a> and <a href="../lessons/08-impact.html">8</a>). The ballistic pendulum's swing is integrated in small time steps.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Pause at any instant and check a readout by hand: add the momenta, or the kinetic energies, and compare them with the values before the event.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ---------- Systems Lab: scenes are the widgets of sop.js (and one MOMENTUM.figure) ---------- */
+CYL.ready(function () {
+  'use strict';
+  var stage = document.getElementById('ex-stage'), panel = document.getElementById('ex-controls');
+  var eventsEl = document.getElementById('ex-events'), descEl = document.getElementById('ex-desc'), vizEl = document.getElementById('ex-viz');
+
+  /* ----- a head-on collision with restitution e ----- */
+  function collide(o) {
+    var st = Object.assign({ mA: 2, mB: 3, vA: 6, vB: -2, e: 0.6 }, o.set || {});
+    function spec() {
+      return { bodies: [{ m: st.mA, x: -1.5, v: st.vA, w: 0.5, label: 'A' }, { m: st.mB, x: 1.0, v: st.vB, w: 0.5, label: 'B' }],
+        e: st.e, tmax: 2.4, until: function (s) { return s.x[0] < -3.3 || s.x[1] > 3.3 || s.x[1] < -3.3 || s.x[0] > 3.3; } };
+    }
+    var fig = MOMENTUM.figure({
+      stage: o.stage, controls: o.controls, xRange: [-3.6, 3.6], yRange: [-0.3, 0.95], maxHeight: 260, flash: 0.35, speed: 0.4,
+      spec: spec(), draw: [{ shape: 'cart', h: 0.3, color: 'accent' }, { shape: 'cart', h: 0.3, color: 'warn' }],
+      toggles: ['v', 'impulse'], readouts: ['vA', 'vB', 'ptot', 'Ttot', 'lost'], chart: { kind: 'p', height: 180 },
+      aria: 'Two carts on a smooth track collide head on and stick together or rebound, depending on the coefficient of restitution. The chart shows each cart’s momentum jumping at the impact while the total stays the same.'
+    });
+    function rebuild() { fig.setSpec(spec()); }
+    var p = o.controls;
+    p.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change it' }));
+    [['e', 'Restitution \\(e\\)', 0, 1, 0.05, '', null], ['mA', 'Mass of \\(A\\)', 0.5, 6, 0.5, 'kg', 'accent'], ['mB', 'Mass of \\(B\\)', 0.5, 6, 0.5, 'kg', 'warn'],
+      ['vA', 'Velocity of \\(A\\)', 0.5, 8, 0.5, 'm/s', 'good'], ['vB', 'Velocity of \\(B\\)', -6, 2, 0.5, 'm/s', 'good']].forEach(function (q) {
+      p.appendChild(CYL.slider({ label: q[1], min: q[2], max: q[3], step: q[4], value: st[q[0]], unit: q[5], color: q[6], onInput: function (v) { st[q[0]] = v; rebuild(); } }).el);
+    });
+    p.appendChild(CYL.el('p', { class: 'mf-note', text: 'Velocities are positive to the right; smooth track. Shown at 0.4 of real speed. If B is ahead and faster than A, they never meet.' }));
+    CYL.renderMath(p);
+    return { destroy: function () { fig.destroy(); }, state: function () { return st; } };
+  }
+
+  var SCENES = [
+    { id: 'cars', label: 'Two cars crossing', mount: function (o) { return SOP.relative(o); },
+      desc: 'Two cars at steady velocities near an intersection. Switch the view to car A: the ground slides past, and B moves in a straight line with its relative velocity.',
+      look: 'The closest approach is where the line of relative motion passes nearest to A. Its distance and time do not depend on the frame; only the picture does.' },
+    { id: 'pulleys', label: 'Three blocks on two cords', mount: function (o) { return SOP.pulleys(Object.assign({ mode: 'dynamics' }, o)); },
+      desc: 'The double Atwood machine: block A on one cord, blocks B and C on a second cord over a movable pulley. Released from rest.',
+      look: 'Two cords, four coordinates: two degrees of freedom. The light pulley always carries T₁ = 2T₂.' },
+    { id: 'wedge', label: 'A free wedge', mount: function (o) { return SOP.wedge(o); },
+      desc: 'A block slides down the smooth face of a wedge that is free to slide on a smooth floor. Hold the wedge to compare with a fixed incline.',
+      look: 'The internal pair N pushes the wedge away; the block’s acceleration is the wedge’s plus its own along the face.' },
+    { id: 'shell', label: 'A bursting shell', mount: function (o) { return SOP.shell(o); },
+      desc: 'A shell bursts into two pieces in flight. The center of mass G of the pieces keeps the shell’s parabola until a piece lands.',
+      look: 'The burst is internal, so it cannot change the motion of G. Only an external force, such as the ground’s push on a landed piece, can.' },
+    { id: 'boat', label: 'A walk along a boat', mount: function (o) { return SOP.boat(o); },
+      desc: 'A person walks the length of a boat on still water. No horizontal external force acts on the two together.',
+      look: 'G stays where it is, and the two momenta are equal and opposite while the person walks.' },
+    { id: 'plank', label: 'A block on a plank', mount: function (o) { return SOP.plank(Object.assign({ momentum: true }, o)); },
+      desc: 'A block slides onto a plank on a smooth floor; friction between them, an internal pair, slows the block and speeds up the plank.',
+      look: 'The total momentum never changes, but kinetic energy is lost: friction does more negative work on the block than positive work on the plank.' },
+    { id: 'collide', label: 'A head-on collision', mount: collide, wide: true,
+      desc: 'Two carts collide head on with a coefficient of restitution e that you choose.',
+      look: 'The total momentum is the same before and after; e decides how it is shared, and the fraction 1 − e² of the relative-motion energy is lost.' },
+    { id: 'ballistic', label: 'A ballistic pendulum', mount: function (o) { return SOP.ballistic(o); },
+      desc: 'A bullet embeds in a block hanging on two cords, and the block swings up.',
+      look: 'Momentum across the impact, energy during the swing: the impact keeps only m/(m + M) of the bullet’s kinetic energy.' },
+    { id: 'pucks', label: 'An oblique impact', mount: function (o) { return SOP.pucks(o); },
+      desc: 'Puck A strikes puck B, at rest, off center on smooth ice.',
+      look: 'Along the tangent nothing changes; along the line of impact it is a direct impact, and B moves off along that line.' }
+  ];
+  var SCENE = {};
+  SCENES.forEach(function (s) { SCENE[s.id] = s; });
+  var cur = null, widget = null, chips = {};
+
+  function clear() {
+    if (widget && widget.destroy) widget.destroy();
+    widget = null;
+    stage.innerHTML = ''; panel.innerHTML = '';
+    var main = stage.parentNode;
+    if (main && main.classList.contains('mf-main')) Array.prototype.forEach.call(main.querySelectorAll(':scope > .mf-chart, :scope > .mf-transport'), function (nd) { nd.remove(); });
+  }
+  function choose(id, set) {
+    cur = SCENE[id] || SCENES[0];
+    clear();
+    vizEl.classList.toggle('mf-viz', !!cur.wide);       // the collision has a chart under the stage
+    widget = cur.mount(Object.assign({ stage: stage, controls: panel, set: set }, set || {}));
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === cur.id)); });
+    descEl.textContent = cur.desc;
+    eventsEl.innerHTML = '';
+    eventsEl.appendChild(CYL.el('p', { html: '<strong>Look for:</strong> ' + cur.look }));
+    try { CYL.store.set('explorer:scene', cur.id); } catch (e) { /* fine without */ }
+  }
+
+  var sceneRow = document.getElementById('ex-scene');
+  SCENES.forEach(function (sc) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: sc.label });
+    b.addEventListener('click', function () { if (!cur || cur.id !== sc.id) choose(sc.id); });
+    chips[sc.id] = b; sceneRow.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var set = null;
+      try { set = btn.getAttribute('data-set') ? JSON.parse(btn.getAttribute('data-set')) : null; } catch (e) { set = null; }
+      choose(btn.getAttribute('data-load'), set);
+      document.getElementById('explore').scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+
+  choose(CYL.store.get('explorer:scene', 'cars'));
+  window.__explorer = { choose: choose, state: function () { return { scene: cur.id, widget: widget }; }, scenes: SCENES.map(function (s) { return s.id; }) };   // for QA scripts
+});
+</script>
+</body>
+</html>

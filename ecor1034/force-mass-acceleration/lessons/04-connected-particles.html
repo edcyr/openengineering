@@ -190,12 +190,12 @@ CYL.ready(function () {
   p.circle({ center: PC, r: 0.025, color: 'ink', fill: 'ink', fillOpacity: 1 });
   p.arc({ center: PC, r: PR, theta0: Math.PI / 2, theta1: 0, color: 'ink', width: 1.6, arrow: false });
   var cordA = p.line([0, 0], [0, 0], { color: 'ink', width: 1.6 }), cordB = p.line([0, 0], [0, 0], { color: 'ink', width: 1.6 });
-  var A = FMA.block(p, { w: AW, h: AH, color: 'accent', label: 'A' }), B = FMA.block(p, { w: BW, h: BH, color: 'warn', label: 'B' });
+  var A = FMA.block(p, { w: AW, h: AH, color: 'accent', label: 'A', labelAt: [0.3, 0.09] }), B = FMA.block(p, { w: BW, h: BH, color: 'warn', label: 'B', labelAt: [-0.17, -0.19] });
   var cgA = p.circle({ center: [0, 0], r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 }), cgB = p.circle({ center: [0, 0], r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 });
   var f = {
     WA: FMA.force(p, { color: 'z', label: 'W_A' }), NA: FMA.force(p, { color: 'ink', label: 'N_A' }),
     Ff: FMA.force(p, { color: 'r', label: 'F_f', labelSide: 'left', minLength: 0.25 }), TA: FMA.force(p, { color: 'muted', label: 'T', labelSide: 'left' }),
-    WB: FMA.force(p, { color: 'z', label: 'W_B', labelSide: 'right' }), TB: FMA.force(p, { color: 'muted', label: 'T' })
+    WB: FMA.force(p, { color: 'z', label: 'W_B', labelSide: 'left', labelGap: 16 }), TB: FMA.force(p, { color: 'muted', label: 'T', labelSide: 'beyond' })
   };
   var vA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v', labelAt: 1, labelSide: 'left' });
   var vB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v', labelAt: 1, labelSide: 'left' });
@@ -223,9 +223,9 @@ CYL.ready(function () {
     if (moves) { a = (mB - st.mu * mA) * G / (mA + mB); Ffr = st.mu * mA * G; T = mB * (G - a); dur = Math.sqrt(2 * D / a); }
     else { a = 0; Ffr = mB * G; T = mB * G; dur = 1.5; }
     K = 1.15 / Math.max(mA, mB) / G;
-    roA.set(CYL.fmt(a, 4) + '\u00a0m/s\u00b2');
-    roT.set(CYL.fmt(T, 4) + '\u00a0N');
-    roW.set(CYL.fmt(mB * G, 4) + '\u00a0N');
+    roA.set(CYL.fmtFixed(a, 2) + '\u00a0m/s\u00b2');
+    roT.set(CYL.fmtFixed(T, 2) + '\u00a0N');
+    roW.set(CYL.fmtFixed(mB * G, 2) + '\u00a0N');
     ledger.setScale(-Ffr, mB * G * 1.04);
     ledger.set({ start: 0, WB: mB * G, Ff: -Ffr, end: (mA + mB) * a });
     note.textContent = (moves ? 'B falls ' + D + ' m, and T is less than B\u2019s weight while it accelerates.'
@@ -246,13 +246,15 @@ CYL.ready(function () {
       f.NA.set([xa + 0.3, 0], [0, 1], st.mA * G * K);
       if (Ffr > 1e-9) f.Ff.set([xa - 0.2, 0], [-1, 0], Ffr * K); else f.Ff.hide();
       f.TA.set([xa + AW / 2, AH / 2 + 0.17], [1, 0], T * K);
+      // W_B's label: right of the cord, past T; inside B (left of the arrow) when the arrow is too short to leave B
+      f.WB.handle.setLabelOptions(st.mB * G * K < BH / 2 + 0.15 ? { labelSide: 'right', labelGap: 7 } : { labelSide: 'left', labelGap: 16 }, true);
       f.WB.set([XB, yb], [0, -1], st.mB * G * K);
       f.TB.set([XB + 0.14, yb + BH / 2], [0, 1], T * K);
     } else Object.keys(f).forEach(function (k) { f[k].hide(); });
     var vl = Math.min(1.2, 0.2 * v);
     vA.setVisible(show.v && vl > 0.02); vB.setVisible(show.v && vl > 0.02);
-    if (vl > 0.02) { vA.set([xa + 0.12, AH + 0.32], [xa + 0.12 + vl, AH + 0.32]); vB.set([XB + 0.55, yb + 0.35], [XB + 0.55, yb + 0.35 - vl]); }
-    roV.set(CYL.fmt(v, 4) + '\u00a0m/s');
+    if (vl > 0.02) { vA.set([xa + 0.12, AH + 0.32], [xa + 0.12 + vl, AH + 0.32]); vB.set([XB + 0.7, yb + 0.35], [XB + 0.7, yb + 0.35 - vl]); }
+    roV.set(CYL.fmtFixed(v, 2) + '\u00a0m/s');
   }
   var pl = null;
   rebuild();
@@ -293,8 +295,11 @@ CYL.ready(function () {
   var dA = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, arrow: 'both', label: 's_A', labelAt: 0.5, labelSide: 'right' });
   var dB = p.line([0, 0], [0, 0], { color: 'muted', width: 1.2, arrow: 'both', label: 's_B', labelAt: 0.5, labelSide: 'left' });
   p.line([PC[0], PC[1]], [PC[0], -0.5], { color: 'muted', width: 1, dashed: true });
+  // extension lines: from A's front face down to s_A, and from the two axles across to s_B
+  var extA = p.line([0, 0], [0, 0], { color: 'muted', width: 1, dashed: true }), extB = p.line([0, 0], [0, 0], { color: 'muted', width: 1, dashed: true });
+  p.line([PC[0] + PR + 0.04, PC[1]], [PC[0] + 0.87 + RM, PC[1]], { color: 'muted', width: 1, dashed: true });
   var vA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'left' });
-  var vB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_B', labelAt: 1, labelSide: 'right' });
+  var vB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_B', labelAt: 1, labelSide: 'left' });
   var roAA = CYL.readout('\\(a_A\\)', { color: 'bad' }), roAB = CYL.readout('\\(a_B\\)', { color: 'bad' }), roT = CYL.readout('Tension \\(T\\)');
   var roSA = CYL.readout('\\(A\\) has moved'), roSB = CYL.readout('\\(B\\) has dropped');
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The motion' }));
@@ -306,8 +311,8 @@ CYL.ready(function () {
   var aB = 0, dur = 1;
   function rebuild() {
     aB = st.mB * G / (st.mB + 4 * st.mA); dur = Math.sqrt(2 * DB / aB);
-    roAA.set(CYL.fmt(2 * aB, 4) + '\u00a0m/s\u00b2'); roAB.set(CYL.fmt(aB, 4) + '\u00a0m/s\u00b2');
-    roT.set(CYL.fmt(2 * st.mA * aB, 4) + '\u00a0N');
+    roAA.set(CYL.fmtFixed(2 * aB, 2) + '\u00a0m/s\u00b2'); roAB.set(CYL.fmtFixed(aB, 2) + '\u00a0m/s\u00b2');
+    roT.set(CYL.fmtFixed(2 * st.mA * aB, 2) + '\u00a0N');
     if (pl) pl.refresh();
   }
   function draw(t) {
@@ -322,10 +327,12 @@ CYL.ready(function () {
     strap.set([XM, ym], [XM, yb + BH / 2]);
     dA.set([xa + AW / 2, -0.35], [PC[0], -0.35]);
     dB.set([PC[0] + 0.75 + RM, PC[1]], [PC[0] + 0.75 + RM, ym]);
+    extA.set([xa + AW / 2, 0], [xa + AW / 2, -0.5]);
+    extB.set([XM + RM + 0.04, ym], [PC[0] + 0.87 + RM, ym]);
     var l = 0.25 * v;
     vA.setVisible(l > 0.02); vB.setVisible(l > 0.01);
-    if (l > 0.01) { vA.set([xa - 0.35, AH + 0.35], [xa - 0.35 + 2 * l, AH + 0.35]); vB.set([XM - BW / 2 - 0.3, yb + 0.25], [XM - BW / 2 - 0.3, yb + 0.25 - l]); }
-    roSA.set(CYL.fmt(sA, 3) + '\u00a0m'); roSB.set(CYL.fmt(sB, 3) + '\u00a0m');
+    if (l > 0.01) { vA.set([xa - 0.35, AH + 0.35], [xa - 0.35 + 2 * l, AH + 0.35]); vB.set([XM + BW / 2 + 0.3, yb + 0.25], [XM + BW / 2 + 0.3, yb + 0.25 - l]); }
+    roSA.set(CYL.fmtFixed(sA, 2) + '\u00a0m'); roSB.set(CYL.fmtFixed(sB, 2) + '\u00a0m');
   }
   var pl = null;
   rebuild();

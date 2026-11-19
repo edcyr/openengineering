@@ -891,7 +891,8 @@
       while (o) { if (o.visible === false) return false; if (o === scene) return true; o = o.parent; }
       return false;
     }
-    function segHitsBox(sg, b) {        // Liang–Barsky clip of segment against box
+    function segHitsBox(sg, b) {        // Liang–Barsky clip of segment against box (sg[4]: half its drawn width, px)
+      if (sg[4] > 0) b = [b[0] - sg[4], b[1] - sg[4], b[2] + sg[4], b[3] + sg[4]];
       var x0 = sg[0], y0 = sg[1], dx = sg[2] - x0, dy = sg[3] - y0, t0 = 0, t1 = 1;
       var P = [-dx, dx, -dy, dy], Q = [x0 - b[0], b[2] - x0, y0 - b[1], b[3] - y0];
       for (var i = 0; i < 4; i++) {
@@ -1369,12 +1370,28 @@
       var s = String(+x.toPrecision(3));
       return s.charAt(0) === '-' ? '−' + s.slice(1) : s;
     }
+    // Axis label: just past the arrow tip. When there is no room there (a zoomed view, where the axis runs to or
+    // off the edge), it goes beside the axis on its last visible stretch instead, so it never sits on the
+    // arrowhead and never disappears with an off-screen tip.
     function axisPlacer(tip, dir) {
-      return function (c) {
+      return function (c, lb) {
         var a = c.projLocal(decor, tip[0] - dir[0] * 0.3 * E, tip[1] - dir[1] * 0.3 * E, tip[2] - dir[2] * 0.3 * E);
         var b = c.projLocal(decor, tip[0], tip[1], tip[2]);
         var d = unit2(b[0] - a[0], b[1] - a[1]);
         if (!d || hypot(b[0] - a[0], b[1] - a[1]) < 6) d = [0.7071, -0.7071];
+        var ud = lb && lb.userData && lb.userData.cyl, w = (ud && ud.w) || 10, h = (ud && ud.h) || 16, M = 3;
+        function fits(x, y) { return x - w / 2 >= M && x + w / 2 <= c.W - M && y - h / 2 >= M && y + h / 2 <= c.H - M; }
+        var t = 4 + Math.abs(d[0]) * w / 2 + Math.abs(d[1]) * h / 2;
+        if (fits(b[0] + d[0] * t, b[1] + d[1] * t)) return { dirs: [d, rot2(d, 0.7), rot2(d, -0.7)], gap: 4 };
+        var o0 = c.projLocal(decor, 0, 0, 0);
+        var n = [-d[1], d[0]];
+        if (n[0] < -0.2 || (Math.abs(n[0]) <= 0.2 && n[1] > 0)) n = neg2(n);   // right of the axis (above a level one)
+        var sd = 6 + Math.abs(n[0]) * w / 2 + Math.abs(n[1]) * h / 2;
+        for (var k = 1; k <= 60; k++) {          // walk back from the tip toward the origin
+          var f = k / 60, qx = b[0] + (o0[0] - b[0]) * f, qy = b[1] + (o0[1] - b[1]) * f;
+          var lx = qx + n[0] * sd, ly = qy + n[1] * sd;
+          if (qx >= 0 && qx <= c.W && qy >= 0 && qy <= c.H && fits(lx, ly)) return { offset: [lx - b[0], ly - b[1]] };
+        }
         return { dirs: [d, rot2(d, 0.7), rot2(d, -0.7)], gap: 4 };
       };
     }
@@ -1605,7 +1622,10 @@
       return addTo(o, g);
     };
 
-    // v.arrow(from, to, {color, width:0.025, headLength:0.18, headRadius:0.07, label:null}) → .set(from, to)
+    // v.arrow(from, to, {color, width:0.025, headLength:0.18, headRadius:0.07, label:null,
+    //   labelAt:1 (fraction along the arrow; 1 = past the tip, 0 = past the tail), labelAway:null ([x,y,z] or a function returning one:
+    //   a mid-arrow label sits on the side of the arrow away from that point, e.g. outside a vector triangle)})
+    //   → .set(from, to)
     v.arrow = function (from, to, o) {
       o = o || {};
       var g = newGroup('arrow');
@@ -1616,10 +1636,22 @@
       body.add(shaft); body.add(head); g.add(body);
       var w = Math.max(0, num(o.width, 0.025 * S)), hl0 = Math.max(1e-6, num(o.headLength, 0.18 * S)), hr0 = Math.max(0, num(o.headRadius, 0.07 * S));
       var A = null, B = null, lab = null;
+      var lat = isNum(o.labelAt) ? clamp(o.labelAt, 0, 1) : 1;
       function place(c) {
         if (!A || !B) return null;
         var a = c.projLocal(g, A[0], A[1], A[2]), b = c.projLocal(g, B[0], B[1], B[2]);
         var d = hypot(b[0] - a[0], b[1] - a[1]) > 4 ? unit2(b[0] - a[0], b[1] - a[1]) : null;
+        if (lat < 0.001 && d) return { dirs: fan(neg2(d)).slice(0, 7), gap: 5 };   // past the tail
+        if (lat < 0.999 && d) {          // beside the arrow: the side away from labelAway first
+          var n = [-d[1], d[0]], aw = typeof o.labelAway === 'function' ? o.labelAway() : o.labelAway;
+          aw = vec3(aw);
+          if (aw) {
+            var q = c.projWorld(aw[0], aw[1], aw[2]), an = c.anchor;
+            if ((q[0] - an[0]) * n[0] + (q[1] - an[1]) * n[1] > 0) n = neg2(n);
+          } else if (n[1] > 0) n = neg2(n);
+          var m = neg2(n);
+          return { dirs: [n, rot2(n, 0.5), rot2(n, -0.5), rot2(n, 1.0), rot2(n, -1.0), m, rot2(m, 0.5), rot2(m, -0.5)], gap: 5 };
+        }
         return { dirs: fan(d || [0.7071, -0.7071]).slice(0, 7), gap: 5 };
       }
       function ensureLabel(t) {
@@ -1646,16 +1678,20 @@
         shaft.scale.set(w || 1e-6, w || 1e-6, Math.max(len - hl * 0.92, 1e-6));
         head.position.set(0, 0, len - hl);
         head.scale.set(hr || 1e-6, hr || 1e-6, hl);
-        if (lab) { lab.userData.cyl.hidden = false; lab.position.set(b[0], b[1], b[2]); }
+        if (lab) { lab.userData.cyl.hidden = false; lab.position.set(lerp(a[0], b[0], lat), lerp(a[1], b[1], lat), lerp(a[2], b[2], lat)); }
         requestRender();
         return g;
       };
       g.setLabel = function (t) { if (t == null || t === '') { if (lab) setLabelText(lab, ''); } else { ensureLabel(t); g.set(); } return g; };
       g.setColor = function (c) { paint(mat, c); if (lab && !o.labelColor) setLabelColor(lab, c); requestRender(); return g; };
+      var _mid = new THREE.Vector3();
       g.userData.cylSegs = function (c, out) {
         if (!body.visible || !A || !B) return;
         var a = c.projLocal(g, A[0], A[1], A[2]), b = c.projLocal(g, B[0], B[1], B[2]);
-        out.push([a[0], a[1], b[0], b[1]]);
+        // a thick shaft (a robot's column or arm) blocks labels across its whole drawn width
+        _mid.set((A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2).applyMatrix4(g.matrixWorld);
+        var hw = w > 0.03 ? c.pxLen(_mid, w) : 0;   // the shaft radius is w
+        out.push([a[0], a[1], b[0], b[1], hw]);
       };
       segSources.add(g);
       if (o.label != null && o.label !== '') ensureLabel(o.label);

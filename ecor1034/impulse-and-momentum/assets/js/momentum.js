@@ -69,7 +69,8 @@
  *     forces: ['W', 'N', 'Ff', 'P', 'Fs'], fScale, vScale, flash: 0.35 (s of the impact-impulse arrows),
  *     follow: true | {body: 0, lead: 0.35} (the view moves with that body once it passes lead × the width; distance marks),
  *     pbars: true | {items: [body indices], total: true, title}, ledger: {body: 0, items: ['P', 'Ff', 'W', 'Fs', 'C',
- *     'wall'], title}, readouts: ['t', 'vA', 'vB', 'pA', 'pB', 'ptot', 'TA', 'Ttot', 'lost', 'IA', …], panelTitle,
+ *     'wall'], title, start, end (TeX of the first and last rows; default m v_1 and m v_2, or m_A (v_A)_1 … with several
+ *     bodies)}, readouts: ['t', 'vA', 'vB', 'pA', 'pB', 'ptot', 'TA', 'Ttot', 'lost', 'IA', …], panelTitle,
  *     chart: {kind: 'p' | 'v' | 'F', bodies: [indices], total: true, height: 190} (momentum, velocity, or for the first
  *     listed body the applied force and friction, against time, under the stage, with a cursor at the current time),
  *     decorate(plane, fig), onUpdate(state, fig), speed, loop, autoplay, playback, t0
@@ -677,7 +678,7 @@
       var f = clamp(v / hi, -1, 1) * 50;
       r.bar.style.left = (f >= 0 ? 50 : 50 + f) + '%';
       r.bar.style.width = Math.max(0.4, Math.abs(f)) + '%';
-      r.val.textContent = fmt(Math.abs(v) < 5e-4 * hi ? 0 : v, 3) + ' ' + unit;
+      r.val.textContent = CYL.fmtScale(Math.abs(v) < 5e-4 * hi ? 0 : v, hi, 3) + ' ' + unit;   // fixed decimals: no jumping
     }
     return api;
   };
@@ -720,7 +721,6 @@
       xRange: o.xRange, yRange: o.yRange, grid: 'none', axes: false, height: curH, maxHeight: Math.max(o.maxHeight, 900),
       ariaLabel: o.aria || 'Animated figure'
     });
-    var span = Math.min(xspan, yspan);
     var fig = { plane: p };
     MOMENTUM.figures.push(fig);                       // every figure on the page, for tests
     var COLORS = ['accent', 'warn', 'z', 't', 'good'];
@@ -750,7 +750,8 @@
           var stp = niceStep(xspan / 5);
           for (var m = Math.ceil(a / stp) * stp; m <= b; m += stp) {
             gScene.line(P(m, 0), P(m, -2.2 * hatchLen), { color: 'ink', width: 1.4 });
-            gScene.label(P(m, -2.2 * hatchLen), CYL.fmt(m, 4) + ' m', { tex: false, color: 'muted', anchor: 's', offset: [0, 1] });
+            // the number sits a fixed 30 px below the floor, under the row where the friction label hangs
+            gScene.label(P(m, 0), CYL.fmt(m, 4) + ' m', { tex: false, color: 'muted', anchor: 's', offset: [0, 30] });
           }
         }
       }
@@ -786,7 +787,10 @@
         h.w2 = gBody.circle({ center: [0, 0], r: 0.05, color: 'ink', width: 1.4, fill: 'bg', fillOpacity: 1 });
       }
       h.label = gBody.label([0, 0], b.label, { tex: true, color: 'ink' });
-      h.v = gArr.line([0, 0], [0, 0], { color: 'good', width: 3, arrow: true, label: 'v_' + b.label, labelAt: 1, labelSide: 'left' });
+      // the options object is kept (made through the plane with parent: gArr, so it is not copied): sync() turns
+      // labelSide so the label stays above the arrow, whichever way it points
+      h.vOp = { parent: gArr, color: 'good', width: 3, arrow: true, label: 'v_' + b.label, labelAt: 1, labelSide: 'left' };
+      h.v = p.line([0, 0], [0, 0], h.vOp);
       var F = {};
       F.W = gArr.line([0, 0], [0, 0], { color: 'z', width: 2.6, arrow: true, label: 'W', labelAt: 0, labelSide: 'right' });
       F.N = gArr.line([0, 0], [0, 0], { color: 'ink', width: 2.6, arrow: true, label: 'N', labelAt: 0, labelSide: 'right' });
@@ -794,7 +798,10 @@
       F.P = gArr.line([0, 0], [0, 0], { color: 'warn', width: 2.6, arrow: true, label: 'P', labelAt: 0, labelSide: 'left' });
       F.Fs = gArr.line([0, 0], [0, 0], { color: 't', width: 2.6, arrow: true, label: 'F_s', labelAt: 0, labelSide: 'left' });
       h.F = F;
-      h.imp = gArr.line([0, 0], [0, 0], { color: 'bad', width: 3.4, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+      // impact force: the arrow ends on the face it pushes; its label sits above the bodies, clear of A, B and the wheels
+      h.imp = gArr.line([0, 0], [0, 0], { color: 'bad', width: 2.8, arrow: true });
+      h.impLab = gArr.label([0, 0], 'F', { tex: true, color: 'bad', anchor: 'n' });
+      h.imp.setVisible(false); h.impLab.setVisible(false);
       return h;
     });
 
@@ -804,7 +811,14 @@
       if (!o.vScale) vScale = run.extent.v > EPS ? 0.16 * xspan / run.extent.v : 0.1;
       var wmax = 0;
       run.bodies.forEach(function (b) { wmax = Math.max(wmax, b.m * run.g); });
-      if (!o.fScale) fScale = Math.max(wmax, run.extent.F) > EPS ? 0.3 * yspan / Math.max(wmax, run.extent.F) : 0.01;
+      // the largest arrow drawn: the normal force (raised by a push angled down) and the whole push, not only its
+      // component along the track, so no arrow runs off the figure and takes its label with it
+      var fmax = Math.max(wmax, run.extent.F);
+      for (var q = 0; q <= 60; q++) {
+        var sq = run.at(run.duration * q / 60);
+        for (var j = 0; j < run.bodies.length; j++) fmax = Math.max(fmax, sq.F.N[j] || 0, Math.hypot(sq.F.P[j] || 0, sq.F.Pn[j] || 0));
+      }
+      if (!o.fScale) fScale = fmax > EPS ? 0.3 * yspan / fmax : 0.01;
     }
     autoScales();
 
@@ -835,7 +849,9 @@
       if (o.ledger) {
         var lo2 = o.ledger, bi = lo2.body || 0, lb = run.bodies[bi].label;
         var works = (lo2.items || ['P', 'Ff']).map(function (k) { var d = IMPULSE_DEF[k]; return { key: k, label: d.label, color: d.color, name: d.name }; });
-        ledger = ENERGY.ledger(panel, { works: works, start: 'm' + 'v_{' + lb + '1}', end: 'm' + 'v_{' + lb + '2}', unit: 'N·s', title: lo2.title || 'Impulse and momentum of ' + lb + ' (N·s)' });
+        // Hibbeler's notation, as in the lessons: m v_1 and m v_2 for a lone body, m_A (v_A)_1 when there are several
+        var one = run.bodies.length === 1, mv = one ? 'mv' : 'm_' + lb + '(v_' + lb + ')';
+        ledger = ENERGY.ledger(panel, { works: works, start: lo2.start || mv + '_1', end: lo2.end || mv + '_2', unit: 'N·s', title: lo2.title || 'Impulse and momentum of ' + lb + ' (N·s)' });
         ledger.body = bi;
       }
       var keys = (o.readouts || []);
@@ -869,6 +885,13 @@
       if (m[1] === 'P') return ['Applied force \\(P\\)', 'warn', function (s) { return s.F.P[i]; }, 'N'];
       return ['Impulse on \\(' + L + '\\) so far', null, function (s) { var q = 0; for (var key in s.I) q += s.I[key][i]; return q; }, 'N·s'];
     }
+    function roScales() {                 // each readout's largest value over the run fixes its decimals
+      Object.keys(ro).forEach(function (k) {
+        var m = 0;
+        for (var q = 0; q <= 120; q++) { var v = ro[k].def[2](run.at(run.duration * q / 120)); if (isFinite(v)) m = Math.max(m, Math.abs(v)); }
+        ro[k].scale = m; ro[k].h.resetWidth();
+      });
+    }
     function rescaleBars() {
       pScale = run.extent.p * 1.08 || 1;
       if (bars) bars.setScale(pScale);
@@ -883,7 +906,7 @@
         ledger.setScale(lo * 1.04, hi * 1.04 + 1e-9);
       }
     }
-    rescaleBars();
+    rescaleBars(); roScales();
 
     var t = clamp(num(o.t0, 0), 0, run.duration), state = null;
     function add(a, b, k) { return [a[0] + b[0] * k, a[1] + b[1] * k]; }
@@ -897,6 +920,11 @@
         cam = Math.max(0, fx);
         if (Math.abs(cam - lastCam) > 1e-9) { lastCam = cam; drawScenery(); }
       }
+      var sc = p.getView().scale || 1;
+      function pxu(n) { return n / sc; }               // n screen pixels, in plot units
+      // velocity rows above the bodies: the first clears the impact-force labels, and each row leaves room for the
+      // label of the row below it
+      var rowBase = Math.max(0.12 * yspan, pxu(34)), rowSep = Math.max(0.09 * yspan, pxu(34));
       run.bodies.forEach(function (b, i) {
         var d = draws[i], h = bodyH[i], x = s.x[i], hw = b.w / 2;
         var C = P(x, d.h / 2), top = P(x, d.h);
@@ -908,14 +936,23 @@
           h.w2.set({ center: P(x + 0.28 * b.w, wr), r: wr });
           C = P(x, (y0 + d.h) / 2);
         } else h.body.set([P(x - hw, 0), P(x + hw, 0), P(x + hw, d.h), P(x - hw, d.h)]);
-        h.label.set(show.forces && d.shape !== 'ball' ? [C[0] - 0.27 * b.w * ct, C[1] - 0.27 * b.w * st0] : C);
+        // with the forces on, the letter moves beside the weight's arrowhead (which ends at the center), on the side no
+        // push arrives from, and stays inside the body
+        var pushR = (o.forces.indexOf('P') >= 0 && s.F.P[i] < -EPS) || (o.forces.indexOf('Fs') >= 0 && s.F.Fs[i] < -EPS);
+        var ls = show.forces && d.shape !== 'ball' && o.forces.indexOf('W') >= 0 ? (pushR ? -1 : 1) * Math.min(0.3 * b.w, hw - pxu(7)) : 0;
+        h.label.set([C[0] + ls * ct, C[1] + ls * st0]);
         // velocity above the body
         var v = s.v[i], vl = v * vScale, cap = 0.3 * xspan;
         if (Math.abs(vl) > cap) vl = sgn(vl) * cap;
-        h.v.setVisible(show.v && Math.abs(vl) > 1e-4);
-        if (Math.abs(vl) > 1e-4) {
-          var a0 = P(x, d.h + (0.12 + 0.09 * i) * yspan), a1 = add(a0, tv, vl);
+        var vOn = show.v && Math.abs(vl) > 1e-4;
+        h.v.setVisible(vOn);
+        if (vOn) {
+          if (Math.abs(vl) < pxu(22)) vl = sgn(vl) * pxu(22);           // long enough for its head to show
+          // with the forces on, the arrow starts over the leading face, clear of the weight's line of action
+          var xs = show.forces && d.shape !== 'ball' ? x + sgn(vl) * hw : x;
+          var a0 = P(xs, d.h + rowBase + rowSep * i), a1 = add(a0, tv, vl);
           if (th === 0) a1[0] = clamp(a1[0], o.xRange[0] + 0.02 * xspan, o.xRange[1] - 0.02 * xspan);
+          h.vOp.labelSide = vl >= 0 ? 'left' : 'right';                  // the label above the arrow, either way
           h.v.set(a0, a1);
         }
         // forces, free-body style
@@ -925,7 +962,9 @@
           var vis = on && o.forces.indexOf(key) >= 0 && L > 1e-5;
           hh.setVisible(vis);
           if (!vis) return;
-          if (tail) { var Lf = Math.max(L, 0.06 * span); hh.set(at, add(at, dirv, Lf)); return; }
+          // never so short that the head swallows the shaft, or that a label at the tail lands on the body
+          L = Math.max(L, pxu(tail ? 36 : 30));
+          if (tail) { hh.set(at, add(at, dirv, L)); return; }
           hh.set(add(at, dirv, -L), at);
         }
         var bottom = P(x, 0);
@@ -938,22 +977,37 @@
         arrow('P', pd, pm, pf >= 0 ? P(x - hw, d.h / 2) : P(x + hw, d.h / 2));
         var sf = s.F.Fs[i];
         arrow('Fs', [tv[0] * sgn(sf), tv[1] * sgn(sf)], sf, sf >= 0 ? P(x - hw, d.h / 2) : P(x + hw, d.h / 2));
-        h.imp.setVisible(false);
+        h.imp.setVisible(false); h.impLab.setVisible(false);
       });
       // impact forces: equal and opposite pushes, shown for a moment after each impact
+      function faceSpan(d, b) {                        // the height range of a body's side faces
+        if (d.shape === 'cart') return [1.6 * Math.min(0.11 * b.w, 0.18 * d.h), d.h];
+        if (d.shape === 'ball') return [0.4 * d.h, 0.6 * d.h];
+        return [0, d.h];
+      }
       if (show.impulse) {
-        run.events.forEach(function (ev) {
-          if (!(t >= ev.t && t < ev.t + o.flash)) return;
+        // only the latest impact still flashing, so a body never shows the arrows of two impacts at once
+        var live = run.events.filter(function (ev) { return (ev.kind === 'impact' || ev.kind === 'wall') && t >= ev.t && t < ev.t + o.flash; });
+        live.slice(-1).forEach(function (ev) {
           var L = Math.max(0.16 * yspan, 0.07 * xspan);
           if (ev.kind === 'impact') {
-            // equal and opposite pushes, each ending on the face it pushes, one above the other
-            var A = run.bodies[ev.a], Bb = run.bodies[ev.b], hm = Math.min(draws[ev.a].h, draws[ev.b].h);
-            var fa = P(s.x[ev.a] + A.w / 2, 0.72 * hm), fb = P(s.x[ev.b] - Bb.w / 2, 0.3 * hm), sg = sgn(ev.J) || 1;
-            bodyH[ev.a].imp.setVisible(true); bodyH[ev.a].imp.set(add(fa, tv, sg * L), fa);
-            bodyH[ev.b].imp.setVisible(true); bodyH[ev.b].imp.set(add(fb, tv, -sg * L), fb);
+            // equal and opposite pushes, each ending on the face it pushes, one near the top of the faces and one near
+            // the bottom, short enough to stop before the other body's letter; the labels sit above the pair
+            var A = run.bodies[ev.a], Bb = run.bodies[ev.b], da = draws[ev.a], db = draws[ev.b];
+            var sA = faceSpan(da, A), sB = faceSpan(db, Bb), lo = Math.max(sA[0], sB[0]), hi = Math.min(sA[1], sB[1]);
+            var Lc = Math.max(pxu(16), Math.min(L, 0.5 * Math.min(A.w, Bb.w) - pxu(9)));
+            var xa = s.x[ev.a] + A.w / 2, xb = s.x[ev.b] - Bb.w / 2, sg = sgn(ev.J) || 1, yl = Math.max(da.h, db.h) + pxu(2);
+            var fa = P(xa, lo + 0.8 * (hi - lo)), fb = P(xb, lo + 0.2 * (hi - lo));
+            bodyH[ev.a].imp.setVisible(true); bodyH[ev.a].imp.set(add(fa, tv, sg * Lc), fa);
+            bodyH[ev.b].imp.setVisible(true); bodyH[ev.b].imp.set(add(fb, tv, -sg * Lc), fb);
+            bodyH[ev.a].impLab.setVisible(true); bodyH[ev.a].impLab.set(P(xa + sg * Lc, yl));
+            bodyH[ev.b].impLab.setVisible(true); bodyH[ev.b].impLab.set(P(xb - sg * Lc, yl));
           } else if (ev.kind === 'wall') {
-            var W = run.bodies[ev.a], hw2 = draws[ev.a].h / 2, fw = P(s.x[ev.a] - ev.side * W.w / 2, hw2);
+            // the wall pushes on the face against it: the arrow comes out of the wall and ends on that face
+            var W = run.bodies[ev.a], dw = draws[ev.a], sW = faceSpan(dw, W), xc = s.x[ev.a] + ev.side * W.w / 2;
+            var fw = P(xc, (sW[0] + sW[1]) / 2);
             bodyH[ev.a].imp.setVisible(true); bodyH[ev.a].imp.set(add(fw, tv, ev.side * L), fw);
+            bodyH[ev.a].impLab.setVisible(true); bodyH[ev.a].impLab.set(P(xc - ev.side * pxu(12), dw.h + pxu(2)));
           }
         });
       }
@@ -984,7 +1038,7 @@
       }
       Object.keys(ro).forEach(function (k) {
         var v = ro[k].def[2](s);
-        ro[k].h.set(isFinite(v) ? CYL.fmt(Math.abs(v) < 5e-7 ? 0 : v, 4) + ' ' + ro[k].def[3] : '—');
+        ro[k].h.set(isFinite(v) ? CYL.fmtScale(Math.abs(v) < 5e-7 ? 0 : v, ro[k].scale, 3) + ' ' + ro[k].def[3] : '—');
       });
       if (cursor) cursor.set(t);
       if (o.onUpdate) { try { o.onUpdate(s, fig); } catch (e) { report('figure: onUpdate failed: ' + e.message); } }
@@ -1044,7 +1098,7 @@
     fig.update = function () { sync(); return fig; };
     fig.setSpec = function (sp, keepT) {
       spec = sp; run = MOMENTUM.line(sp);
-      buildMounts(); autoScales(); rescaleBars(); drawChart();
+      buildMounts(); autoScales(); rescaleBars(); roScales(); drawChart();
       pl.refresh(keepT);
       return fig;
     };

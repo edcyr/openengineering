@@ -167,12 +167,15 @@ CYL.ready(function () {
   var trace = gPath.polyline([], { color: 'accent', width: 1.8, dashed: true });
   var ball = gPath.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.55 });
   var vArr = gPath.line([0, 0], [0, 0], { color: 'good', width: 2.8, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
-  var v1 = gVec.line([0, 0], [0, 0], { color: 'good', width: 2.2, dashed: true, arrow: true, label: '\\vvec_1', labelAt: 0, labelSide: 'left' });
+  // labels sit at the middle of the vectors, outside the two component triangles, so none crowds the corner where
+  // v2 and its normal component meet; v_t hangs below the floor's hatching
+  var v1 = gVec.line([0, 0], [0, 0], { color: 'good', width: 2.2, dashed: true, arrow: true, label: '\\vvec_1', labelAt: 0.5, labelSide: 'right' });
   var v1t = gVec.line([0, 0], [0, 0], { color: 'muted', width: 1.6, dashed: true, arrow: true });
   var v1n = gVec.line([0, 0], [0, 0], { color: 'muted', width: 1.6, dashed: true, arrow: true });
   var v2 = gVec.line([0, 0], [0, 0], { color: 'good', width: 2.8, arrow: true, label: '\\vvec_2', labelAt: 1, labelSide: 'left' });
-  var v2t = gVec.line([0, 0], [0, 0], { color: 'ink', width: 1.8, arrow: true, label: 'v_t', labelAt: 1, labelSide: 'right' });
-  var v2n = gVec.line([0, 0], [0, 0], { color: 'ink', width: 1.8, arrow: true, label: 'v_n', labelAt: 1, labelSide: 'left' });
+  var v2tOp = { parent: gVec, color: 'ink', width: 1.8, arrow: true, label: 'v_t', labelAt: 0.5, labelSide: 'right', labelGap: 16 };
+  var v2t = p.line([0, 0], [0, 0], v2tOp);                          // through the plane, so the options object is not copied
+  var v2n = gVec.line([0, 0], [0, 0], { color: 'ink', width: 1.8, arrow: true, label: 'v_n', labelAt: 0.5, labelSide: 'right' });
   var ro1 = CYL.readout('Before: \\(v_1\\), angle \\(\\theta_1\\)', { color: 'good' });
   var ro2 = CYL.readout('After: \\(v_2\\), angle \\(\\theta_2\\)', { color: 'good' });
   var roR = CYL.readout('\\(\\tan\\theta_2 / \\tan\\theta_1\\)');
@@ -198,6 +201,7 @@ CYL.ready(function () {
     var xa = -vt * T - 2, xb = xEnd + 3;
     gFloor.line([xa, 0], [xb, 0], { color: 'ink', width: 2.2 });
     for (var q = Math.ceil(xa / 0.25) * 0.25; q <= xb; q += 0.25) gFloor.line([q, 0], [q - 0.12, -0.15], { color: 'muted', width: 1 });
+    v2tOp.labelGap = 0.15 * (p.getView().scale || 40) + 5;          // clear of the hatching under the floor
     scale = 0.3 * Math.max(3, xEnd + vt * T) / st.v;
     var ev = run.events[0], C = [ev.x, 0], v2t0 = vt, v2n0 = st.e * vn, K = scale;
     v1.set([C[0] - vt * K, C[1] + vn * K], C);
@@ -207,10 +211,10 @@ CYL.ready(function () {
     v2t.set(C, [C[0] + v2t0 * K, C[1]]);
     v2n.set([C[0] + v2t0 * K, C[1]], [C[0] + v2t0 * K, C[1] + v2n0 * K]);
     var th2 = Math.atan2(v2n0, v2t0), sp2 = Math.hypot(v2t0, v2n0);
-    ro1.set(CYL.fmt(st.v, 3) + '\u00a0m/s at ' + CYL.fmt(st.th, 3) + '\u00b0');
-    ro2.set(CYL.fmt(sp2, 3) + '\u00a0m/s at ' + CYL.fmt(th2 * 180 / Math.PI, 3) + '\u00b0');
-    roR.set(CYL.fmt(Math.tan(th2) / Math.tan(th), 3));
-    roK.set(CYL.fmt(100 * sp2 * sp2 / (st.v * st.v), 3) + '%');
+    ro1.set(CYL.fmtFixed(st.v, 2) + '\u00a0m/s at ' + CYL.fmtFixed(st.th, 1) + '\u00b0');
+    ro2.set(CYL.fmtFixed(sp2, 2) + '\u00a0m/s at ' + CYL.fmtFixed(th2 * 180 / Math.PI, 1) + '\u00b0');
+    roR.set(CYL.fmtFixed(Math.tan(th2) / Math.tan(th), 3));
+    roK.set(CYL.fmtFixed(100 * sp2 * sp2 / (st.v * st.v), 1) + '%');
     if (pl) pl.refresh();
   }
   function draw(t) {
@@ -243,10 +247,16 @@ CYL.ready(function () {
   var cA = gP.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.5 });
   var cB = gP.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'warn', fillOpacity: 0.5 });
   var lA = gP.label([0, 0], 'A'), lB = gP.label([0, 0], 'B');
-  var aA = gP.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'left' });
+  var aA = gP.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'right' });   // the side away from the t line, along which A leaves
   var aB = gP.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_B', labelAt: 1, labelSide: 'left' });
   var iA = gP.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+  // each impact-force label on the outer side of its arrow (A's on the -t side, B's on the +t side)
   var iB = gP.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+  // the offset b, dimensioned from A's line of motion to B's center until the pucks touch
+  var gDim = p.group();
+  var dimRef = gDim.line([0, 0], [0, 0], { color: 'muted', width: 1.1, dashed: true });
+  var dimTick = gDim.line([0, 0], [0, 0], { color: 'muted', width: 1.1 });
+  var dimB = gDim.line([0, 0], [0, 0], { color: 'ink', width: 1.4, arrow: 'both', label: 'b', labelAt: 0.5, labelSide: 'right' });
   var roA = CYL.readout('After: speed of \\(A\\)', { color: 'good' });
   var roB = CYL.readout('After: speed of \\(B\\)', { color: 'good' });
   var roG = CYL.readout('Angle between the paths afterward');
@@ -265,14 +275,16 @@ CYL.ready(function () {
     var h = run.hit;
     if (h) {
       var C = [(h.pA[0] + h.pB[0]) / 2, (h.pA[1] + h.pB[1]) / 2], n = h.n, t = [-n[1], n[0]];
-      gAx.line([C[0] - 0.45 * n[0], C[1] - 0.45 * n[1]], [C[0] + 0.45 * n[0], C[1] + 0.45 * n[1]], { color: 'muted', width: 1.3, dashed: true, label: 'n', labelAt: 1, labelSide: 'left' });
+      gAx.line([C[0] - 0.45 * n[0], C[1] - 0.45 * n[1]], [C[0] + 0.45 * n[0], C[1] + 0.45 * n[1]], { color: 'muted', width: 1.3, dashed: true, label: 'n', labelAt: 0, labelSide: 'left' });
       gAx.line([C[0] - 0.3 * t[0], C[1] - 0.3 * t[1]], [C[0] + 0.3 * t[0], C[1] + 0.3 * t[1]], { color: 'muted', width: 1.3, dashed: true, label: 't', labelAt: 1, labelSide: 'right' });
       var r = h.res, sA = Math.hypot(r.vA2[0], r.vA2[1]), sB = Math.hypot(r.vB2[0], r.vB2[1]);
-      roA.set(CYL.fmt(sA, 3) + '\u00a0m/s'); roB.set(CYL.fmt(sB, 3) + '\u00a0m/s');
+      roA.set(CYL.fmtFixed(sA, 2) + '\u00a0m/s'); roB.set(CYL.fmtFixed(sB, 2) + '\u00a0m/s');
       var ang = sA > 1e-6 && sB > 1e-6 ? Math.acos(Math.max(-1, Math.min(1, (r.vA2[0] * r.vB2[0] + r.vA2[1] * r.vB2[1]) / (sA * sB)))) * 180 / Math.PI : NaN;
-      roG.set(isFinite(ang) ? CYL.fmt(ang, 3) + '\u00b0' : '\u2014 (A stops)');
-      roL.set(CYL.fmt(Math.abs(r.lost) < 1e-9 ? 0 : r.lost, 3) + '\u00a0J');
+      roG.set(isFinite(ang) ? CYL.fmtFixed(ang, 1) + '\u00b0' : '\u2014 (A stops)');
+      roL.set(CYL.fmtFixed(Math.abs(r.lost) < 1e-9 ? 0 : r.lost, 2) + '\u00a0J');
     } else { roA.set('\u2014'); roB.set('\u2014'); roG.set('no impact'); roL.set('0\u00a0J'); }
+    var xd = R + 0.07;                                         // B starts at (0, b); the dimension stands to its right
+    dimRef.set([R + 0.01, 0], [xd + 0.04, 0]); dimTick.set([R + 0.01, st.b], [xd + 0.04, st.b]); dimB.set([xd, 0], [xd, st.b]);
     if (pl) pl.refresh();
   }
   function draw(t) {
@@ -281,14 +293,21 @@ CYL.ready(function () {
     lA.set(s.pA); lB.set(s.pB);
     function tr(which) { var out = []; for (var k = 0; k <= 80; k++) { var q = run.at(t * k / 80); out.push(q[which]); } return out; }
     trA.set(tr('pA')); trB.set(tr('pB'));
-    function vec(hh, P, v) { var sp = Math.hypot(v[0], v[1]); hh.setVisible(sp > 0.01); hh.set(P, [P[0] + v[0] * K, P[1] + v[1] * K]); }
+    // each velocity starts at the rim of its puck, so it never crosses the puck's letter
+    function vec(hh, P, v) {
+      var sp = Math.hypot(v[0], v[1]); hh.setVisible(sp > 0.01);
+      if (sp > 0.01) { var u = [v[0] / sp, v[1] / sp], S = [P[0] + u[0] * R, P[1] + u[1] * R]; hh.set(S, [S[0] + v[0] * K, S[1] + v[1] * K]); }
+    }
     vec(aA, s.pA, s.vA); vec(aB, s.pB, s.vB);
     gAx.setVisible(!!h && t >= h.t);
+    gDim.setVisible(st.b > 0.005 && (!h || t < h.t));
     var flash = h && t >= h.t && t < h.t + 0.35;
     iA.setVisible(!!flash); iB.setVisible(!!flash);
     if (flash) {
-      var n = h.n, L = 0.16;
-      var fa = [s.pA[0] + n[0] * R, s.pA[1] + n[1] * R], fb = [s.pB[0] - n[0] * R, s.pB[1] - n[1] * R];
+      // each arrow ends on its puck's rim beside the contact point, A's on the -t side and B's on the +t side, so the
+      // two never lie on top of each other and each passes beside, not over, the other puck's letter
+      var n = h.n, tt = [-n[1], n[0]], L = 0.16, an = 0.76 * R, at = 0.65 * R;
+      var fa = [s.pA[0] + n[0] * an - tt[0] * at, s.pA[1] + n[1] * an - tt[1] * at], fb = [s.pB[0] - n[0] * an + tt[0] * at, s.pB[1] - n[1] * an + tt[1] * at];
       iA.set([fa[0] + n[0] * L, fa[1] + n[1] * L], fa);
       iB.set([fb[0] - n[0] * L, fb[1] - n[1] * L], fb);
     }

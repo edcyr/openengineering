@@ -21,7 +21,9 @@
  *     // additions: gridStep:null (Cartesian grid/tick base step; auto), angleLabels:false|'deg'|'rad'
  *     //   (angle labels around a polar grid), polarMax:null (limit polar circles/rays to this radius),
  *     //   tickFormat:(v, 'x'|'y') => string, pad:10 (px margin around the ranges), maxHeight:480,
- *     //   background:'viz' (semantic color or 'none')
+ *     //   background:'viz' (semantic color or 'none'),
+ *     //   declutter:false (true: point, line and arc labels move to a free spot when their own spot is taken;
+ *     //   see p.declutter below)
  *   })
  *   p.svg, p.el (wrapper div.cyl2d), p.toPx([x,y]) -> [px,py], p.fromPx([px,py]) -> [x,y]
  *   p.point([x,y], {color:'point', r:5, label:null (TeX), draggable:false, onDrag:([x,y], info)=>{},
@@ -31,7 +33,9 @@
  *                   //   onDragStart(pos), onDragEnd(pos), ariaLabel (name), ariaFormat(pos)->string })
  *                                                       -> .set([x,y]), .get(), .el, .setLabel(tex), .focus()
  *   p.line(a, b, {color:'ink', width:2, dashed:false, arrow:false|true|'end'|'start'|'both', opacity,
- *                 label, labelAt:0.5, labelSide:'right'|'left', labelGap:7})          -> .set(a, b), .get()
+ *                 label, labelAt:0.5, labelSide:'right'|'left', labelGap:7,
+ *                 startGap:0, endGap:0 (px: stop short of a and b, e.g. so an arrowhead ends ON a dot's edge),
+ *                 labelPriority:20, declutter:true})                                  -> .set(a, b), .get()
  *   p.polyline(points, {color:'ink', width:2, closed:false, fill:null, fillOpacity:0.15, dashed, arrow})
  *                                                                                       -> .set(points)
  *   p.arc({center:[0,0], r, theta0, theta1, color:'t', width:2, arrow:true, rPx (radius in px instead of r),
@@ -53,6 +57,13 @@
  *   p.clear(group?)   // remove the group's items, or every item when called without arguments
  *   p.redraw()        // recompute size and redraw (automatic on resize; theme changes need nothing: every
  *                     //   stroke/fill references a CSS variable)
+ *   Label declutter (plane option declutter:true): after every change (batched in a microtask, so one animation
+ *     frame is laid out once) the labels of points, lines and arcs are placed in priority order (labelPriority;
+ *     points 40, lines 20, arcs 15). Each keeps its own spot when that is free; otherwise it takes the best of a
+ *     few candidates (the other side, further along the line, past an arrow's tip, another anchor, a little
+ *     farther out), scored against the labels already placed, point dots, drawn lines and paths, the axis
+ *     labels and the tick labels. A tick label still under a placed label is hidden. p.declutter() runs it now.
+ *     An item with {declutter:false} keeps its spot and is only an obstacle; p.label() labels are obstacles.
  *   additions: p.setOptions(partialOpts), p.setRange(xRange, yRange), p.getView() -> {x, y, width, height,
  *     scale}, p.step() (grid step used by the keyboard and as the tick base: gridStep, else for a polar grid
  *     the ring step unless it exceeds a quarter of the range, else niceStep(range / 10)), p.remove(handle),
@@ -424,6 +435,7 @@
       if ('polarMax' in src) o.polarMax = posNum(src.polarMax, null);
       if ('ariaLabel' in src) o.ariaLabel = src.ariaLabel ? String(src.ariaLabel) : '';
       if ('background' in src) o.background = src.background;
+      if ('declutter' in src) o.declutter = !!src.declutter;
     }
     applyOpts(opts || {});
     if (!o.ariaLabel) warn('plane(): ariaLabel is required (a text description of the figure)');
@@ -679,6 +691,7 @@
     function drawAxes() {
       empty(gAxes);
       empty(layAxes);
+      dc.ticks = []; dc.axisBoxes = []; dc.axisSegs = [];
       var W = L.W, Hh = L.H;
       var O = toPx([0, 0]);
       var ay = Math.round(clamp(O[1], 1, Hh - 1) - 0.5) + 0.5;   // pixel row of the x-axis
@@ -815,10 +828,14 @@
       nudge(XL, xt, [YL ? YL.box : null]);
       if (XL) placeLabel(XL.lb, XL.px, XL.py, XL.anchor, null, 0, W, Hh);
       if (YL) placeLabel(YL.lb, YL.px, YL.py, YL.anchor, null, 0, W, Hh);
+      // obstacles for the label declutter
+      dc.axisBoxes = axisBoxes().concat(angleBoxes).filter(Boolean);
+      if (o.axes) dc.axisSegs = [[xStart, ay, W - 1, ay], [ax, yStart, ax, 1]];
       if (tg) {
         var tf = paint('muted'), halo = paint('viz');
         xt.concat(yt).forEach(function (x) {
           if (!x.ok || boxHit(x.box, axisBoxes(), 2)) { detach(x.el); return; }
+          dc.ticks.push({ el: x.el, box: x.box });
           x.el.setAttribute('x', String(rd(x.x)));
           x.el.setAttribute('y', String(rd(x.y)));
           x.el.setAttribute('text-anchor', x.anchor);
@@ -827,6 +844,194 @@
         var tm = S('path', { d: marks, fill: 'none', 'stroke-width': 1, 'class': 'cyl2d-tickmarks' }, gAxes);
         tm.style.stroke = axisColor;
       }
+    }
+
+    // ---- label declutter (o.declutter; see the header). Candidates come from each item's render (lab.cands, the
+    // first one being the item's own spot); obstacles from the items' px geometry (it.segs runs, it.dot, it.circ).
+    var dc = { queued: false, ticks: [], axisBoxes: [], axisSegs: [] };
+    function queueDeclutter() {
+      if (!o.declutter || dc.queued || destroyed) return;
+      dc.queued = true;
+      var run = function () { dc.queued = false; if (!destroyed) declutter(); };
+      if (typeof global.queueMicrotask === 'function') global.queueMicrotask(run);
+      else if (typeof Promise === 'function') Promise.resolve().then(run);
+      else global.setTimeout(run, 0);
+    }
+    function shownItem(it) {
+      if (!it.visible || !it.ok || it.removed) return false;
+      for (var g = it.group; g; g = g.parent) if (g.removed || (g.api && g.api.visible === false)) return false;
+      return true;
+    }
+    function boxesHit(a, b) { return a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]; }
+    function segInBox(x0, y0, x1, y1, b) {   // Liang–Barsky: does the segment touch box b?
+      var dx = x1 - x0, dy = y1 - y0, t0 = 0, t1 = 1;
+      var P = [-dx, dx, -dy, dy], Q = [x0 - b[0], b[2] - x0, y0 - b[1], b[3] - y0];
+      for (var i = 0; i < 4; i++) {
+        if (P[i] === 0) { if (Q[i] < 0) return false; }
+        else {
+          var t = Q[i] / P[i];
+          if (P[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+          else { if (t < t0) return false; if (t < t1) t1 = t; }
+        }
+      }
+      return true;
+    }
+    function runsObstacle(it, runs, cost, pad) {   // flat segment list + bounding box of px runs
+      var segs = [], bb = [Infinity, Infinity, -Infinity, -Infinity];
+      for (var r = 0; r < runs.length; r++) {
+        var run = runs[r];
+        for (var i = 1; i < run.length; i++) {
+          var a = run[i - 1], b = run[i];
+          if (!(isFinite(a[0]) && isFinite(a[1]) && isFinite(b[0]) && isFinite(b[1]))) continue;
+          segs.push(a[0], a[1], b[0], b[1]);
+          bb[0] = Math.min(bb[0], a[0], b[0]); bb[1] = Math.min(bb[1], a[1], b[1]);
+          bb[2] = Math.max(bb[2], a[0], b[0]); bb[3] = Math.max(bb[3], a[1], b[1]);
+        }
+      }
+      if (!segs.length) return null;
+      return { it: it, segs: segs, bb: [bb[0] - pad, bb[1] - pad, bb[2] + pad, bb[3] + pad], cost: cost, pad: pad };
+    }
+    function candBox(c, w, h) {
+      var b = labelBox(c.x, c.y, c.anchor, c.gap, w, h);
+      var ox = c.off ? num(c.off[0], 0) : 0, oy = c.off ? num(c.off[1], 0) : 0;
+      return [b[0] + ox, b[1] + oy, b[2] + ox, b[3] + oy];
+    }
+    function declutter() {
+      var labs = [], obst = [], dots = [], fixedEls = [];
+      items.forEach(function (it, idx) {
+        if (!shownItem(it)) return;
+        var pad = Math.max(1, posNum(it.st && it.st.width, 2) / 2);
+        // cost of a label crossing it: an arrow 14, a dashed line 6, another line 8, an arc 6, a path 4
+        var cost = it.kind === 'line' ? (it.st.arrow ? 14 : it.st.dashed ? 6 : 8) : it.kind === 'arc' ? 6 : 4;
+        if (it.segs) { var ob = runsObstacle(it, it.segs, cost, pad); if (ob) obst.push(ob); }
+        if (it.circ) {
+          var C = it.circ[0], R = it.circ[1], cr = [];
+          if (R < 4 * Math.max(L.W, L.H)) { for (var k = 0; k <= 48; k++) cr.push([C[0] + R * Math.cos(k / 48 * TAU), C[1] + R * Math.sin(k / 48 * TAU)]); }
+          var oc = runsObstacle(it, [cr], 4, pad); if (oc) obst.push(oc);
+        }
+        if (it.dot) dots.push({ it: it, box: [it.dot[0] - it.dot[2] - 1, it.dot[1] - it.dot[2] - 1, it.dot[0] + it.dot[2] + 1, it.dot[1] + it.dot[2] + 1] });
+        var lab = it.lab;
+        if (lab && lab.cands && lab.cands.length && !lab.el._cyl2dOff && lab.el.style.display !== 'none') labs.push({ it: it, lab: lab, idx: idx });
+        else if (it.kind === 'label' || (lab && !lab.el._cyl2dOff)) fixedEls.push(it.kind === 'label' ? it.nodes[0] : lab.el);
+      });
+      var placed = [];
+      if (fixedEls.length) {   // labels that do not move are obstacles: their boxes in plot px
+        var orc = overlay.getBoundingClientRect(), kx = orc.width > 0 ? L.W / orc.width : 1;
+        fixedEls.forEach(function (el) {
+          if (el.style.display === 'none' || !el.offsetWidth) return;
+          var rc = el.getBoundingClientRect();
+          placed.push([(rc.left - orc.left) * kx, (rc.top - orc.top) * kx, (rc.right - orc.left) * kx, (rc.bottom - orc.top) * kx]);
+        });
+      }
+      if (dc.axisSegs.length) { var oa = runsObstacle(null, dc.axisSegs.map(function (q) { return [[q[0], q[1]], [q[2], q[3]]]; }), 6, 1); if (oa) obst.push(oa); }
+      labs.forEach(function (x) {   // one layout pass for the sizes (cached per text)
+        var lb = x.lab;
+        if (!lb.mw || lb.mText !== lb.text) {
+          var w = lb.el.offsetWidth, h = lb.el.offsetHeight;
+          if (w > 0 && h > 0) { lb.mw = w; lb.mh = h; lb.mText = lb.text; } else lb.mw = 0;
+        }
+      });
+      labs = labs.filter(function (x) { return x.lab.mw > 0; });
+      labs.sort(function (a, b) { return (b.lab.prio - a.lab.prio) || (a.idx - b.idx); });
+      function score(b, own) {
+        var sc = 0, i, j;
+        if (b[0] < 1 || b[1] < 1 || b[2] > L.W - 1 || b[3] > L.H - 1) sc += 60;
+        var bm = [b[0] - 3, b[1] - 1, b[2] + 3, b[3] + 1];   // keep a little air between labels
+        for (i = 0; i < placed.length; i++) if (boxesHit(bm, placed[i])) sc += 100;
+        for (i = 0; i < dots.length; i++) if (dots[i].it !== own && boxesHit(b, dots[i].box)) sc += 90;
+        for (i = 0; i < dc.axisBoxes.length; i++) if (boxesHit(b, dc.axisBoxes[i])) sc += 80;
+        for (i = 0; i < dc.ticks.length; i++) if (boxesHit(bm, dc.ticks[i].box)) sc += 5;   // a tick number right beside a label reads as part of it
+        var core = [b[0] + 1.5, b[1] + 2, b[2] - 1.5, b[3] - 2];
+        for (i = 0; i < obst.length; i++) {
+          var ob = obst[i];
+          if (ob.it === own || !boxesHit(core, ob.bb)) continue;
+          var cb = [core[0] - ob.pad, core[1] - ob.pad, core[2] + ob.pad, core[3] + ob.pad], sg = ob.segs;
+          for (j = 0; j < sg.length; j += 4) if (segInBox(sg[j], sg[j + 1], sg[j + 2], sg[j + 3], cb)) { sc += ob.cost; break; }
+        }
+        return sc;
+      }
+      // Greedy placement in the given order; returns the picks and their total cost.
+      var fixedPlaced = placed.slice();
+      function run(order) {
+        placed = fixedPlaced.slice();
+        var picks = [], total = 0;
+        order.forEach(function (x) {
+          var lb = x.lab, cs = lb.cands, best = Infinity, bi = 0, bb = null;
+          for (var i = 0; i < cs.length; i++) {
+            var b = candBox(cs[i], lb.mw, lb.mh);
+            var sc = score(b, x.it) + 0.35 * i - (i === lb.ci ? 1.5 : 0);   // own spot first; small hysteresis
+            if (sc < best) { best = sc; bi = i; bb = b; }
+            if (i === 0 && sc <= 0) break;
+          }
+          total += best;
+          picks.push([lb, bi, bb]);
+          placed.push(bb);
+        });
+        return { picks: picks, total: total, placed: placed };
+      }
+      // A point's label can sit on any side of its dot, so it may block a spot an arrow's label needs: also try
+      // each point label placed last, and keep the cheapest layout.
+      var best = run(labs);
+      labs.forEach(function (x, k) {
+        if (x.it.kind !== 'point' || k === labs.length - 1 || best.total < 1) return;
+        var alt = run(labs.slice(0, k).concat(labs.slice(k + 1), [x]));
+        if (alt.total < best.total - 0.5) best = alt;
+      });
+      placed = best.placed;
+      best.picks.forEach(function (pk) {
+        var lb = pk[0], c = lb.cands[pk[1]];
+        lb.ci = pk[1];
+        placeLabel(lb, c.x, c.y, c.anchor, c.off, c.gap, L.W, L.H);
+      });
+      dc.ticks.forEach(function (tk) {
+        var hide = false;
+        for (var i = 0; i < placed.length && !hide; i++) hide = boxesHit(tk.box, placed[i]);
+        for (i = 0; i < dots.length && !hide; i++) hide = boxesHit(tk.box, dots[i].box);   // a tick under a point
+        for (i = 0; i < obst.length && !hide; i++) {                                     // or under an arrow / line
+          var ob = obst[i];
+          if (!ob.it || ob.it.kind !== 'line' || !boxesHit(tk.box, ob.bb)) continue;
+          var tb = [tk.box[0] - ob.pad, tk.box[1] - ob.pad, tk.box[2] + ob.pad, tk.box[3] + ob.pad];
+          hide = segInBox(ob.segs[0], ob.segs[1], ob.segs[2], ob.segs[3], tb);
+        }
+        var d = hide ? 'none' : '';
+        if (tk.el.style.display !== d) tk.el.style.display = d;
+      });
+    }
+    // Candidate spots for a line label: its own spot first, then the other side, further along, past the tip.
+    function lineCands(A, B, op, width) {
+      var len = Math.hypot(B[0] - A[0], B[1] - A[1]);
+      var ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len;
+      var t = clamp(num(op.labelAt, 0.5), 0, 1), side = op.labelSide === 'left' ? -1 : 1;
+      var g0 = num(op.labelGap, 7) + width / 2, off = op.labelOffset;
+      function at(tt, sd, g) {
+        return { x: A[0] + (B[0] - A[0]) * tt, y: A[1] + (B[1] - A[1]) * tt, anchor: dirAnchor(-uy * sd, ux * sd), gap: g, off: off };
+      }
+      var tip = { x: B[0], y: B[1], anchor: dirAnchor(ux, uy), gap: 4 + width / 2, off: off };
+      var tail = { x: A[0], y: A[1], anchor: dirAnchor(-ux, -uy), gap: 4 + width / 2, off: off };
+      var out = [at(t, side, g0), at(t, -side, g0)];
+      if (t > 0.999) out.push(tip, at(0.7, side, g0), at(0.7, -side, g0));
+      else if (t < 0.001) out.push(tail, at(0.3, side, g0), at(0.3, -side, g0));
+      else {
+        [0.22, -0.22, 0.4, -0.4].forEach(function (d) {
+          var tt = t + d;
+          if (tt >= 0.12 && tt <= 0.88) out.push(at(tt, side, g0), at(tt, -side, g0));
+        });
+      }
+      out.push(at(t, side, g0 + 10), at(t, -side, g0 + 10));
+      if (t > 0.999) out.push({ x: B[0], y: B[1], anchor: tip.anchor, gap: tip.gap + 10, off: off });
+      else if (t < 0.001) out.push({ x: A[0], y: A[1], anchor: tail.anchor, gap: tail.gap + 10, off: off });
+      else out.push(tip, tail);
+      out.push(at(t, side, g0 + 20), at(t, -side, g0 + 20));
+      return out;
+    }
+    var ANCHOR_RING = ['e', 'ne', 'n', 'nw', 'w', 'sw', 's', 'se'];
+    function pointCands(q, anchor, gap, off) {
+      var out = [{ x: q[0], y: q[1], anchor: anchor, gap: gap, off: off }];
+      var k = ANCHOR_RING.indexOf(anchorKey(anchor));
+      if (k < 0) return out;
+      [1, -1, 2, -2, 3, -3, 4].forEach(function (d) { out.push({ x: q[0], y: q[1], anchor: ANCHOR_RING[(k + d + 8) % 8], gap: gap, off: off }); });
+      [0, 1, -1, 2, -2, 3, -3, 4].forEach(function (d) { out.push({ x: q[0], y: q[1], anchor: ANCHOR_RING[(k + d + 8) % 8], gap: gap + 9, off: off }); });
+      return out;
     }
 
     // ---- items
@@ -842,6 +1047,7 @@
       if (it.removed) return;
       try { it.render(); } catch (e) { it.ok = false; report(it.kind + ' render failed: ' + (e && e.message ? e.message : e)); }
       applyVis(it);
+      queueDeclutter();
     }
     function addItem(it, grp) {
       it.group = grp || null;
@@ -851,7 +1057,7 @@
       if (grp) grp.items.push(it);
       var h = it.handle;
       h.kind = it.kind;
-      h.setVisible = function (v) { it.visible = v !== false; applyVis(it); return h; };
+      h.setVisible = function (v) { it.visible = v !== false; applyVis(it); queueDeclutter(); return h; };
       h.remove = function () { removeItem(it); };
       h.setColor = function (c) { it.st.color = c; renderItem(it); return h; };
       renderItem(it);
@@ -862,6 +1068,7 @@
       it.removed = true;
       if (it.cleanup) { try { it.cleanup(); } catch (e) { /* ignore */ } }
       it.nodes.forEach(detach);
+      queueDeclutter();
       var i = items.indexOf(it);
       if (i >= 0) items.splice(i, 1);
       if (it.group) { i = it.group.items.indexOf(it); if (i >= 0) it.group.items.splice(i, 1); }
@@ -928,6 +1135,8 @@
       function ensureLabel() {
         if (!lab && st.label !== undefined && st.label !== null && st.label !== '') {
           lab = newLabel(grp, op.labelClass, op.labelBackground);
+          lab.prio = num(op.labelPriority, 40);
+          it.lab = lab;
           it.nodes.push(lab.el);
         }
       }
@@ -966,13 +1175,16 @@
         if (!it.ok) return;
         var q = toPx(p);
         g.setAttribute('transform', 'translate(' + rd(q[0]) + ' ' + rd(q[1]) + ')');
+        it.dot = [q[0], q[1], st.r];
         if (lab) {
           var has = st.label !== undefined && st.label !== null && st.label !== '';
           lab.el._cyl2dOff = !has;
           if (has) {
             lab.el.style.color = paint(op.labelColor, 'ink');
             setLabelContent(lab, st.label, op.labelTex !== false);
-            placeLabel(lab, q[0], q[1], fitAnchor(lab, op.labelAnchor || 'ne', q, st.r + 3), op.labelOffset, st.r + 3, L.W, L.H);
+            var fa = fitAnchor(lab, op.labelAnchor || 'ne', q, st.r + 3);
+            placeLabel(lab, q[0], q[1], fa, op.labelOffset, st.r + 3, L.W, L.H);
+            lab.cands = o.declutter && op.declutter !== false ? pointCands(q, fa, st.r + 3, op.labelOffset) : null;
           }
         }
       };
@@ -1097,14 +1309,26 @@
       var it = { kind: 'line', st: st, nodes: [path], handle: h };
       var lab = null;
       function ensureLabel() {
-        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') { lab = newLabel(grp, op.labelClass, op.labelBackground); it.nodes.push(lab.el); }
+        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') {
+          lab = newLabel(grp, op.labelClass, op.labelBackground);
+          lab.prio = num(op.labelPriority, 20);
+          it.lab = lab;
+          it.nodes.push(lab.el);
+        }
       }
       ensureLabel();
       it.render = function () {
         var ok = okPt(st.a) && okPt(st.b), A, B;
         if (ok) { A = toPx(st.a); B = toPx(st.b); ok = Math.hypot(B[0] - A[0], B[1] - A[1]) > 0.05; }
+        if (ok && (op.startGap > 0 || op.endGap > 0)) {   // stop short of the end points (px)
+          var gl = Math.hypot(B[0] - A[0], B[1] - A[1]), gx = (B[0] - A[0]) / gl, gy = (B[1] - A[1]) / gl;
+          var g0 = Math.max(0, num(op.startGap, 0)), g1 = Math.max(0, num(op.endGap, 0));
+          ok = gl - g0 - g1 > 0.05;
+          if (ok) { A = [A[0] + gx * g0, A[1] + gy * g0]; B = [B[0] - gx * g1, B[1] - gy * g1]; }
+        }
         it.ok = ok;
         if (!ok) return;
+        it.segs = [[A, B]];
         var c = paint(st.color, 'ink');
         styleStroke(path, c, st.width, st.dashed, st.opacity);
         strokeRun(path, [A, B], c, st.width, st.arrow);
@@ -1121,6 +1345,7 @@
             lab.el.style.color = paint(op.labelColor !== undefined ? op.labelColor : st.color, 'ink');
             setLabelContent(lab, st.label, op.labelTex !== false);
             placeLabel(lab, mx, my, dirAnchor(nx, ny), op.labelOffset, num(op.labelGap, 7) + st.width / 2, L.W, L.H);
+            lab.cands = o.declutter && op.declutter !== false ? lineCands(A, B, op, st.width) : null;
           }
         }
       };
@@ -1151,6 +1376,7 @@
         if (runs.length === 1 && !st.closed && st.arrow) strokeRun(path, runs[0], c, st.width, st.arrow);
         else { path.setAttribute('d', runsD(runs, st.closed)); path.removeAttribute('marker-end'); path.removeAttribute('marker-start'); }
         it.ok = !!path.getAttribute('d');
+        it.segs = op.declutter === false ? null : runs;
       };
       h.set = function (pts) { st.pts = toPts(pts); renderItem(it); return h; };
       h.get = function () { return st.pts.map(function (p) { return p.slice(); }); };
@@ -1169,7 +1395,12 @@
       var it = { kind: 'arc', st: st, nodes: [path], handle: h };
       var lab = null;
       function ensureLabel() {
-        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') { lab = newLabel(grp, op.labelClass, op.labelBackground); it.nodes.push(lab.el); }
+        if (!lab && st.label !== undefined && st.label !== null && st.label !== '') {
+          lab = newLabel(grp, op.labelClass, op.labelBackground);
+          lab.prio = num(op.labelPriority, 15);
+          it.lab = lab;
+          it.nodes.push(lab.el);
+        }
       }
       ensureLabel();
       it.render = function () {
@@ -1189,6 +1420,7 @@
           pts.push([C[0] + rpx * Math.cos(a), C[1] - rpx * Math.sin(a)]);
         }
         var w = posNum(st.width, 2), c = paint(st.color, 't');
+        it.segs = [pts];
         styleStroke(path, c, w, st.dashed, st.opacity);
         strokeRun(path, pts, c, w, st.arrow === undefined ? true : st.arrow);
         if (lab) {
@@ -1199,7 +1431,21 @@
             var ux = Math.cos(m), uy = -Math.sin(m);
             lab.el.style.color = paint(op.labelColor !== undefined ? op.labelColor : st.color, 'ink');
             setLabelContent(lab, st.label, op.labelTex !== false);
-            placeLabel(lab, C[0] + rpx * ux, C[1] + rpx * uy, dirAnchor(ux, uy), op.labelOffset, num(st.labelGap, 5) + w / 2, L.W, L.H);
+            var ag = num(st.labelGap, 5) + w / 2;
+            placeLabel(lab, C[0] + rpx * ux, C[1] + rpx * uy, dirAnchor(ux, uy), op.labelOffset, ag, L.W, L.H);
+            lab.cands = null;
+            if (o.declutter && op.declutter !== false) {
+              lab.cands = [0.5, 0.5, 0.3, 0.7, 0.5].map(function (f, k) {
+                var mm = t0 + sweep * f, vx = Math.cos(mm), vy = -Math.sin(mm);
+                return { x: C[0] + rpx * vx, y: C[1] + rpx * vy, anchor: dirAnchor(vx, vy), gap: ag + (k === 1 ? 9 : k === 4 ? 18 : 0), off: op.labelOffset };
+              });
+              // a narrow angle has no room inside: also just past either end of the arc
+              var sg = sweep > 0 ? 1 : -1, dm = 16 / rpx;
+              [t0 + sweep + sg * dm, t0 - sg * dm].forEach(function (mm) {
+                var vx = Math.cos(mm), vy = -Math.sin(mm);
+                lab.cands.push({ x: C[0] + rpx * vx, y: C[1] + rpx * vy, anchor: dirAnchor(vx, vy), gap: ag, off: op.labelOffset });
+              });
+            }
           }
         }
       };
@@ -1223,6 +1469,7 @@
         it.ok = okPt(c0) && rpx > 0.05;
         if (!it.ok) return;
         var C = toPx(c0), w = Math.max(0, num(st.width, 2)), c = paint(st.color, 'ink');
+        it.circ = op.declutter === false || !(w > 0) ? null : [C, rpx];
         el.setAttribute('cx', String(rd(C[0])));
         el.setAttribute('cy', String(rd(C[1])));
         el.setAttribute('r', String(rd(Math.min(rpx, BIG))));
@@ -1330,6 +1577,7 @@
         var d = runsD(runs);
         if (!d) return;
         it.ok = true;
+        it.segs = op.declutter === false ? null : runs;
         styleStroke(path, paint(st.color, 'accent'), st.width, st.dashed, st.opacity);
         path.setAttribute('d', d);
       };
@@ -1369,6 +1617,7 @@
         var d = runsD(runs);
         if (!d) return;
         it.ok = true;
+        it.segs = op.declutter === false ? null : runs;
         styleStroke(path, paint(st.color, 'accent'), st.width, st.dashed, st.opacity);
         path.setAttribute('d', d);
       };
@@ -1430,6 +1679,7 @@
         g.visible = v !== false;
         var d = g.visible ? '' : 'none';
         grp.content.style.display = d; grp.points.style.display = d; grp.labels.style.display = d;
+        queueDeclutter();
         return g;
       };
       g.clear = function () { clearGroup(grp); return g; };
@@ -1512,6 +1762,7 @@
       },
       remove: function (h) { if (h && typeof h.remove === 'function') h.remove(); return api; },
       redraw: function () { redraw(); return api; },
+      declutter: function () { declutter(); return api; },
       setOptions: function (src) { applyOpts(src); redraw(); return api; },
       setRange: function (xr, yr) {
         var src = {};

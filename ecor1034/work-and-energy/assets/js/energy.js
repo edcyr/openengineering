@@ -55,9 +55,13 @@
  *           (or track, params, body for a single run),
  *     show: {v: true, forces: true, trace: false}, toggles: ['v', 'forces', 'trace'],
  *     forces: ['W', 'N', 'Ff', 'Fs', 'P'] (which force arrows), bars: true | false | {items, title},
- *     fbd: 'center' (default: every force arrow starts at the body's center) | 'contact' (free-body style: W ends
- *       at the center of gravity; N ends on the contact face, pushing in from the surface; Fs and P end on the face
- *       they push on; friction, drawn thicker, starts on the contact face and is never drawn too short for its head),
+ *     fbd: 'contact' (default, the course's free-body convention: W ends at the center of gravity; N ends on the
+ *       contact face, pushing in from the surface; Fs and P end on the face they push on; friction, drawn thicker,
+ *       starts on the contact face and is never drawn too short for its head; a pull starts where it acts: the string
+ *       of a centered bob, or rails holding a car that is drawn on one side of them; the velocity starts just ahead
+ *       of the body; every label takes the clear side of its arrow, and an arrow is shortened, if need be, so that it
+ *       and its label stay inside the plot) | 'center' (every arrow starts at the body's center),
+ *     forceLabels: {W, N, Ff, Fs, P} (TeX labels of the force arrows, e.g. {N: 'T_s'} for a string's pull),
  *     readouts: ['t', 'v', 'h', 'T', 'Vg', 'Ve', 'Uf', 'N', …] (keys of RO), panelTitle,
  *     t0: 0, speed: 1, loop: false, autoplay: false, transport: true, playback: true,
  *     vScale (m of arrow per m/s), fScale (m of arrow per N): automatic when omitted,
@@ -80,7 +84,7 @@
  *   chart.fn(f, {color, width, dashed, domain, samples, label, labelAt}), chart.area(f, {domain, color,
  *   fillOpacity, base: 0 | f(x)}) (shaded band between f and the base: a constant or a second curve), chart.polyline(pts, {color, width, dashed, fill,
  *   fillOpacity, closed}), chart.points(list, {x, y, color, shape, r, label, title}), chart.vline(x, o), chart.hline(y, o),
- *   chart.marker([x, y], {color, r, ring, label}), chart.text([x, y], text, o); every handle has set(…), setVisible(),
+ *   chart.marker([x, y], {color, r, ring, label, labelDy (px, + down)}), chart.text([x, y], text, o); every handle has set(…), setVisible(),
  *   remove(); chart.setAxes({x, y}), chart.clear(), chart.redraw(), chart.toPx([x, y]), chart.setLegend(list)
  *
  * Drawing helpers for scenery: ENERGY.springPoints(a, b, {coils: 9, amp, lead}) -> zigzag points;
@@ -458,7 +462,7 @@
           var v = num(vals[k], 0), c = cols[k], top = pos(Math.max(0, v)), bot = pos(Math.min(0, v));
           c.fill.style.bottom = bot + '%';
           c.fill.style.height = Math.max(0, top - bot) + '%';
-          c.val.textContent = fmt(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, 3);
+          c.val.textContent = CYL.fmtScale(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, Math.max(Math.abs(lo), Math.abs(hi)), 3);   // fixed decimals
           c.val.style.bottom = (v >= 0 ? top : z) + '%';
         });
         if (stack) {
@@ -518,13 +522,17 @@
     var rEnd = row(o.end || 'T_2', 'good', 'end');
     container.appendChild(wrap);
     CYL.renderMath(wrap);
+    // widen the label column for a long label (e.g. -mg cos theta), the same for every row so the bars line up
+    var labW = 0;
+    rows.forEach(function (it) { var l = it.el.querySelector('.lg-label'); if (l) labW = Math.max(labW, l.scrollWidth); });
+    if (labW > 40) wrap.style.setProperty('--lg-lab', Math.ceil(labW + 2) + 'px');
     var lo = 0, hi = 1;
     function pc(v) { return clamp((v - lo) / (hi - lo), 0, 1) * 100; }
     function place(it, a, b, v) {
       var x0 = pc(Math.min(a, b)), x1 = pc(Math.max(a, b));
       it.bar.style.left = x0 + '%';
       it.bar.style.width = Math.max(0.4, x1 - x0) + '%';
-      it.val.textContent = (v > 0 && it !== rStart && it !== rEnd ? '+' : '') + fmt(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, 3) + '\u00a0' + unit;
+      it.val.textContent = (v > 0 && it !== rStart && it !== rEnd ? '+' : '') + CYL.fmtScale(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, Math.max(Math.abs(lo), Math.abs(hi)), 3) + '\u00a0' + unit;   // fixed decimals
       Array.prototype.forEach.call(it.track.querySelectorAll('.lg-zero'), function (z) { z.style.left = pc(0) + '%'; });
     }
     var api = {
@@ -705,7 +713,8 @@
     if (o.decorate) { try { o.decorate(p, fig); } catch (e) { report('figure: decorate failed: ' + e.message); } }
 
     /* ----- per-run drawings ----- */
-    var contactFbd = o.fbd === 'contact';
+    var contactFbd = o.fbd !== 'center';             // the course's free-body convention, unless 'center' is asked for
+    var FL = Object.assign({ W: 'W', N: 'N', Ff: 'F_f', Fs: 'F_s', P: 'P' }, o.forceLabels);
     function bodyOffset(r) { var b = r.body; return b.centered ? 0 : b.shape === 'ball' ? b.r : b.h / 2; }   // centered: on the path (a bob)
     runs.forEach(function (r) {
       var gTrack = p.group(), gSpr = p.group(), gBody = p.group(), gArr = p.group();
@@ -714,28 +723,39 @@
       r.h.trace = gTrack.polyline([], { color: r.color, width: 2, dashed: true });
       if (r.body.shape === 'ball') r.h.body = gBody.circle({ center: [0, 0], r: r.body.r, color: 'ink', width: 1.6, fill: r.color, fillOpacity: 0.55 });
       else r.h.body = gBody.polyline([[0, 0], [1, 0], [1, 1]], { closed: true, color: 'ink', width: 1.6, fill: r.color, fillOpacity: 0.28 });
-      r.h.v = gArr.line([0, 0], [0, 0], { color: 'good', width: 3, arrow: true, label: '\\vvec', labelAt: 1, labelSide: 'left' });
+      // The label options are kept (r.h.op) and updated before each redraw: CYL2D reads labelAt / labelSide / labelGap
+      // from them every time it draws, so each label can move to the clear side of its arrow as the body moves.
+      var op = r.h.op = {};
+      function arrowLine(key, color, width, label, at, side) {
+        op[key] = { parent: gArr, color: color, width: width, arrow: true, label: label, labelAt: at, labelSide: side };
+        return p.line([0, 0], [0, 0], op[key]);      // p.line keeps this options object (a group's line copies it)
+      }
+      r.h.v = arrowLine('v', 'good', 3, '\\vvec', 1, 'left');
       var F = {}, la = contactFbd ? 0 : 1;           // contact style: the label sits at the tail, away from the body
-      F.W = gArr.line([0, 0], [0, 0], { color: 'z', width: 2.6, arrow: true, label: 'W', labelAt: la, labelSide: 'right' });
-      F.N = gArr.line([0, 0], [0, 0], { color: 'ink', width: 2.6, arrow: true, label: 'N', labelAt: la, labelSide: contactFbd ? 'right' : 'left' });
-      F.Ff = gArr.line([0, 0], [0, 0], { color: 'r', width: contactFbd ? 4.2 : 2.6, arrow: true, label: 'F_f', labelAt: 1, labelSide: contactFbd ? 'left' : 'right' });
-      F.Fs = gArr.line([0, 0], [0, 0], { color: 't', width: 2.6, arrow: true, label: 'F_s', labelAt: la, labelSide: 'left' });
-      F.P = gArr.line([0, 0], [0, 0], { color: 'warn', width: 2.6, arrow: true, label: 'P', labelAt: la, labelSide: 'left' });
+      // a halo in the plot's background color under the spring force, so the arrow reads clearly over the coils
+      r.h.FsHalo = gArr.line([0, 0], [0, 0], { color: 'viz', width: 6.5 });
+      F.W = arrowLine('W', 'z', 2.6, FL.W, la, 'right');
+      F.N = arrowLine('N', 'ink', 2.6, FL.N, la, contactFbd ? 'right' : 'left');
+      F.Ff = arrowLine('Ff', 'r', contactFbd ? 4.2 : 2.6, FL.Ff, 1, contactFbd ? 'left' : 'right');
+      F.Fs = arrowLine('Fs', 't', 2.6, FL.Fs, la, 'left');
+      F.P = arrowLine('P', 'warn', 2.6, FL.P, la, 'left');
       r.h.F = F;
       if (r.label) r.h.label = gBody.label([0, 0], r.label, { anchor: 'n', offset: [0, -6], color: r.color, tex: false });
     });
 
     function drawStatic(r) {
       r.h.path.set(r.track.points());
+      r.trackPts = r.track.points(500);                // to keep labels off the track
       r.h.springs.forEach(function (h) { h.remove(); });
       r.h.walls.forEach(function (h) { h.remove(); });
-      r.h.springs = []; r.h.walls = [];
+      r.h.springs = []; r.h.walls = []; r.wallSegs = [];
       (r.params.springs || []).forEach(function (sp) {
         r.h.springs.push(r.h.gSpr.polyline([], { color: 't', width: 2 }));
         if (sp.wall !== false && sp.len > 0) {
           var dir = sp.dir === -1 ? -1 : 1, sw = r.track.at(sp.s + dir * sp.len), side = r.params.side != null ? r.params.side : r.track.side || 1;
           var off = bodyOffset(r) * 2.2, a = [sw.x, sw.y], b = [sw.x + sw.n[0] * side * off, sw.y + sw.n[1] * side * off];
           r.h.walls.push(r.h.gSpr.line(a, b, { color: 'ink', width: 4 }));
+          r.wallSegs.push([a, b, 14]);
         }
       });
     }
@@ -832,6 +852,11 @@
 
     /* ----- redraw ----- */
     var states = [];
+    function roScale(run, k) {            // a readout's largest value over the run fixes its decimals (cached per run)
+      var c = run._roScale || (run._roScale = {});
+      if (c[k] == null) { var m = 0; for (var q = 0; q <= 120; q++) { var v = RO[k][2](run.at(run.duration * q / 120), run); if (isFinite(v)) m = Math.max(m, Math.abs(v)); } c[k] = m; }
+      return c[k];
+    }
     function add(P, d, k) { return [P[0] + d[0] * k, P[1] + d[1] * k]; }
     function sync() {
       states = runs.map(function (r) { return r.run.at(Math.min(t, r.run.duration)); });
@@ -855,6 +880,7 @@
         }
         if (r.h.label) r.h.label.set([C[0], C[1] + off]);
         // springs
+        var springLen = 0, springSegs = [];               // length of a spring the body is compressing (for F_s)
         (r.params.springs || []).forEach(function (sp, k) {
           var h = r.h.springs[k];
           if (!h) return;
@@ -864,6 +890,8 @@
           var A0 = r.track.at(sw), B0 = r.track.at(send), so = sd * off;
           var a = [A0.x + A0.n[0] * so, A0.y + A0.n[1] * so], bb = [B0.x + B0.n[0] * so, B0.y + B0.n[1] * so];
           if (b.shape === 'block' && !s.flight && comp > 0) bb = add(C, tv, dir * b.w / 2);
+          if (comp > 0) springLen = Math.max(springLen, hyp(bb[0] - a[0], bb[1] - a[1]));
+          springSegs.push([a, bb]);
           h.set(ENERGY.springPoints(a, bb, { coils: sp.coils || 9, amp: Math.min(off * 0.7, 0.35 * span / 6) }));
         });
         // trace
@@ -874,9 +902,114 @@
           r.h.trace.set(pts.filter(Boolean).concat([C]));
         } else r.h.trace.set([]);
         // arrows
+        var view = p.getView(), sc = view.scale > 0 ? view.scale : 100;
+        var X0 = view.x[0], X1 = view.x[1], Y0 = view.y[0], Y1 = view.y[1], EDGE = 14 / sc;
+        // The longest an arrow from P along d can be with its free end (where the label sits) still inside the plot,
+        // but never so short that its head disappears.
+        function fitLen(P, d, L) {
+          var lim = L;
+          if (d[0] > 1e-9) lim = Math.min(lim, (X1 - EDGE - P[0]) / d[0]); else if (d[0] < -1e-9) lim = Math.min(lim, (X0 + EDGE - P[0]) / d[0]);
+          if (d[1] > 1e-9) lim = Math.min(lim, (Y1 - EDGE - P[1]) / d[1]); else if (d[1] < -1e-9) lim = Math.min(lim, (Y0 + EDGE - P[1]) / d[1]);
+          return Math.max(lim, Math.min(L, 22 / sc));
+        }
+        var coilPx = Math.min(off * 0.7, 0.35 * span / 6) * sc;   // half the height of a spring's zigzag, in px
+        // the arrows and labels already placed on this body, and the walls and springs, which labels keep clear of
+        var segs = (r.wallSegs || []).concat(springSegs.map(function (g) { return [g[0], g[1], coilPx + 9]; })), boxes = [];
+        if (r.h.label) boxes.push([C[0] - 9 / sc, C[1] + off + 6 / sc, C[0] + 9 / sc, C[1] + off + 24 / sc]);   // the run's name, above it
+        function segDist2(x, y, S) {
+          var ux = S[1][0] - S[0][0], uy = S[1][1] - S[0][1], l2 = ux * ux + uy * uy;
+          var f = l2 > 0 ? clamp(((x - S[0][0]) * ux + (y - S[0][1]) * uy) / l2, 0, 1) : 0;
+          var px = S[0][0] + ux * f - x, py = S[0][1] + uy * f - y;
+          return px * px + py * py;
+        }
+        // How well does the label of arrow a -> e fit on side sgn (+1: CYL2D's 'right')? 0: clear; 1: inside the plot
+        // but on the track, another arrow or another label; 2: off the plot. Labels are taken as about 22 x 20 px,
+        // placed the way CYL2D places them: on that side of the arrow, at labelAt.
+        function labelBox(q, a, e, sgn) {
+          var dx = e[0] - a[0], dy = e[1] - a[1], len = hyp(dx, dy) || 1;
+          var k = Math.round(Math.atan2(-dx / len * sgn, dy / len * sgn) / (PI / 4));
+          var ax = Math.round(Math.cos(k * PI / 4)), ay = Math.round(Math.sin(k * PI / 4)), dg = ax && ay ? 0.7071 : 1;
+          var g = ((q.labelGap || 7) + 1.5) / sc * dg, W2 = 11 / sc, H2 = 10 / sc;   // CYL2D steps diagonal anchors by 0.7071 gap
+          var cx = a[0] + dx * q.labelAt + ax * (g + W2), cy = a[1] + dy * q.labelAt + ay * (g + H2);
+          return [cx - W2, cy - H2, cx + W2, cy + H2];
+        }
+        function labelScore(q, a, e, sgn) {
+          var B = labelBox(q, a, e, sgn), cx = (B[0] + B[2]) / 2, cy = (B[1] + B[3]) / 2, i;
+          if (!(B[0] >= X0 && B[2] <= X1 && B[1] >= Y0 && B[3] <= Y1)) return 2;
+          var R2 = 12 / sc * (12 / sc);                    // off every run's track line
+          for (var ri = 0; ri < runs.length; ri++) {
+            var pts = runs[ri].trackPts || [];
+            for (i = 0; i < pts.length; i++) if ((pts[i][0] - cx) * (pts[i][0] - cx) + (pts[i][1] - cy) * (pts[i][1] - cy) < R2) return 1;
+          }
+          for (i = 0; i < segs.length; i++) { var rr = (segs[i][2] || 12) / sc; if (segDist2(cx, cy, segs[i]) < rr * rr) return 1; }
+          for (i = 0; i < boxes.length; i++) { var o2 = boxes[i]; if (B[0] < o2[2] && B[2] > o2[0] && B[1] < o2[3] && B[3] > o2[1]) return 1; }
+          return 0;
+        }
+        // Draw an arrow from its point of action P along d (toward its free end), L long, with its label on the side
+        // toward pref, or on the other side when that one is not clear. If the label would leave the plot on both
+        // sides, the arrow is shortened until it fits (never so short that its head disappears). tailFree: P is the
+        // head (a push).
+        function place(key, P, d, L, tailFree, pref, keepSide) {
+          var q = r.h.op[key], minL = Math.min(L, 22 / sc), L0 = fitLen(P, d, L), best = null;
+          for (var k = 0; k < 7; k++) {
+            var Lk = Math.max(minL, L0 * (1 - 0.13 * k)), free = add(P, d, Lk);
+            var a = tailFree ? free : P, e = tailFree ? P : free, dx = e[0] - a[0], dy = e[1] - a[1], len = hyp(dx, dy) || 1;
+            var sg = (dy * pref[0] - dx * pref[1]) / len >= -1e-9 ? 1 : -1;   // the side toward pref
+            var s1 = labelScore(q, a, e, sg), s2 = s1 ? labelScore(q, a, e, -sg) : 3;
+            if (!s1) { best = [a, e, sg, 0]; break; }
+            if (!s2 && !keepSide) { best = [a, e, -sg, 0]; break; }
+            var pick = s2 < s1 ? [a, e, -sg, s2] : [a, e, sg, s1];
+            if (!best || pick[3] < best[3]) best = pick;
+            if (s1 < 2 || Lk <= minL) break;               // shorten an arrow only while its label's side is off the plot
+          }
+          // a label kept on its side (the velocity's) with no clear spot by the head (on another track, or off the plot
+          // as a body leaves the scene): try further back along the arrow, on that side first
+          if (keepSide) {
+            var bA = best[0], bE = best[1], dxk = bE[0] - bA[0], dyk = bE[1] - bA[1], lk = hyp(dxk, dyk) || 1;
+            var sgk = (dyk * pref[0] - dxk * pref[1]) / lk >= -1e-9 ? 1 : -1, at1 = q.labelAt;
+            if (labelScore(q, bA, bE, sgk)) {
+              [0.6, 0.35, 0.15].some(function (f) {
+                q.labelAt = f;
+                if (!labelScore(q, bA, bE, sgk)) { best = [bA, bE, sgk, 0]; return true; }
+                if (best[3] === 2 && labelScore(q, bA, bE, -sgk) < 2) { best = [bA, bE, -sgk, 1]; return true; }
+                q.labelAt = at1;
+                return false;
+              });
+            }
+          }
+          // friction is drawn longer than to scale when it is small anyway: lengthen it to find a clear spot for its label
+          for (var gk = 1; key === 'Ff' && best[3] === 1 && gk <= 3; gk++) {
+            var Lg = fitLen(P, d, L * (1 + 0.35 * gk)), fe = add(P, d, Lg), dxg = fe[0] - P[0], dyg = fe[1] - P[1], lg = hyp(dxg, dyg) || 1;
+            var sgg = (dyg * pref[0] - dxg * pref[1]) / lg >= -1e-9 ? 1 : -1;
+            if (!labelScore(q, P, fe, sgg)) best = [P, fe, sgg, 0];
+            else if (!labelScore(q, P, fe, -sgg)) best = [P, fe, -sgg, 0];
+          }
+          q.labelSide = best[2] > 0 ? 'right' : 'left';
+          segs.push([best[0], best[1]]);
+          boxes.push(labelBox(q, best[0], best[1], best[2]));
+          return [best[0], best[1]];
+        }
+        var out = sd && !s.flight ? [nv[0] * sd, nv[1] * sd] : [0, 1];   // away from the track (up, in flight)
+        var hh = b.shape === 'ball' ? b.r : b.h / 2;
         var vlen = s.speed * vScale, vk = vlen > capV ? capV / s.speed : vScale;
+        var fsOn = show.forces && o.forces.indexOf('Fs') >= 0 && Math.abs(s.Fs) * fScale > 1e-6 && contactFbd;
         r.h.v.setVisible(show.v && vlen > 1e-6);
-        if (vlen > 1e-6) r.h.v.set(C, [C[0] + s.vx * vk, C[1] + s.vy * vk]);
+        if (contactFbd && show.forces && o.forces.indexOf('W') >= 0) segs.push([C, add(C, [0, 1], fitLen(C, [0, 1], Math.min(capF, s.W * fScale)))]);
+        if (vlen > 1e-6) {
+          if (!contactFbd) r.h.v.set(C, [C[0] + s.vx * vk, C[1] + s.vy * vk]);
+          else {
+            // free-body style: the velocity starts just ahead of the body, level with its outer face, so it never
+            // covers the force arrows (or a spring the body is pushing into)
+            var vd = [s.vx / s.speed, s.vy / s.speed];
+            var ext = b.shape === 'ball' ? b.r : Math.abs(vd[0] * tv[0] + vd[1] * tv[1]) * b.w / 2 + Math.abs(vd[0] * nv[0] + vd[1] * nv[1]) * b.h / 2;
+            // moving into a spring that pushes back: lift it a label's height more, so F_s can be labeled under it
+            var lift = fsOn && (vd[0] * tv[0] + vd[1] * tv[1]) * s.Fs < 0 ? 26 / sc : 0;
+            var vA = add(add(C, vd, ext + 4 / sc), out, hh + 3 / sc + lift);
+            r.h.op.v.labelAt = 1;
+            var vv = place('v', vA, vd, s.speed * vk, false, out, true);   // keep v's label on the outer side
+            r.h.v.set(vv[0], vv[1]);
+          }
+        }
         var F = r.h.F, on = show.forces;
         // contact style: where each force acts (its arrowhead ends there)
         var halfT = b.shape === 'ball' ? b.r : b.w / 2;
@@ -885,15 +1018,27 @@
           var h = F[key], L = Math.min(capF, mag * fScale);
           var visible = on && o.forces.indexOf(key) >= 0 && L > 1e-6 && isFinite(L);
           h.setVisible(visible);
+          if (key === 'Fs') r.h.FsHalo.setVisible(visible && contactFbd);
           if (!visible) return;
           if (!contactFbd) { h.set(C, [C[0] + dirv[0] * L, C[1] + dirv[1] * L]); return; }
-          if (key === 'Ff') {                              // friction: tail on the contact face, at least 6% of the scene
-            var Lf = Math.max(L, 0.06 * span);
-            h.set(P0, [P0[0] + dirv[0] * Lf, P0[1] + dirv[1] * Lf]);
-            return;
+          var q = r.h.op[key], ae;
+          // pulls start where they act: friction, a string holding a bob, rails holding a car to the track
+          if (key === 'Fs' && springLen > 0) L = Math.min(L, Math.max(springLen - 6 / sc, 22 / sc));   // along the spring, not past it
+          var pull = key === 'Ff' || (key === 'N' && (b.centered || (sd !== 0 && dirv[0] * out[0] + dirv[1] * out[1] < 0)));
+          if (pull) {
+            if (key === 'Ff') L = Math.max(L, 0.06 * span, 32 / sc);   // friction: never too short for its head
+            q.labelAt = 1;
+            // friction's label on the track's side (below, for a body drawn on its path), a pull's above
+            ae = place(key, P0, dirv, L, false, key === 'Ff' ? (sd ? [-out[0], -out[1]] : [0, -1]) : [0, 1]);
+          } else {
+            // pushes end on the face they act on, the weight at the center of gravity
+            var at = key === 'W' ? C : key === 'N' ? P0 : add(C, dirv, -halfT);
+            q.labelAt = key === 'Fs' ? 0.5 : 0;
+            if (key === 'Fs') q.labelGap = coilPx + 6;       // clear of the spring's coils, which lie along the arrow
+            ae = place(key, at, [-dirv[0], -dirv[1]], L, true, key === 'W' ? [-1, 0] : key === 'N' ? [0, 1] : out);
+            if (key === 'Fs') r.h.FsHalo.set(ae[0], add(ae[1], dirv, -Math.min(14 / sc, 0.5 * hyp(ae[1][0] - ae[0][0], ae[1][1] - ae[0][1]))));
           }
-          var at = key === 'W' ? C : key === 'N' ? P0 : add(C, dirv, -halfT);   // Fs, P push on a face
-          h.set([at[0] - dirv[0] * L, at[1] - dirv[1] * L], at);
+          h.set(ae[0], ae[1]);
         }
         arrow('W', [0, -1], s.W);
         var Nsgn = s.N >= 0 ? 1 : -1;
@@ -907,7 +1052,7 @@
       if (ledger) ledger.set(ledgerVals(s0, r0.run));
       Object.keys(ro).forEach(function (k) {
         var v = RO[k][2](s0, r0.run), unit = RO[k][3];
-        ro[k].set(isFinite(v) ? CYL.fmt(Math.abs(v) < 5e-7 ? 0 : v, 4) + ' ' + unit : '—');
+        ro[k].set(isFinite(v) ? CYL.fmtScale(Math.abs(v) < 5e-7 ? 0 : v, roScale(r0.run, k), 3) + ' ' + unit : '—');
       });
       tr.syncSlider();
       tr.syncPlay();
@@ -1264,8 +1409,11 @@
         if ((isX && (X1 < pad.l - 1 || X1 > W - pad.r + 1)) || (!isX && (Y1 < pad.t - 1 || Y1 > H - pad.b + 1))) return;
         g.appendChild(svgEl('line', { x1: X1, x2: X2, y1: Y1, y2: Y2, stroke: paint(o.color || 'muted'), 'stroke-width': o.width || 1.5, 'stroke-dasharray': o.dashed === false ? null : '5 4' }));
         if (o.label) {
-          var tx = svgEl('text', isX ? { x: X1 + 5, y: pad.t + 14 + (o.labelDy || 0), 'font-size': 11.5, 'font-weight': 600, fill: paint(o.color || 'muted'), class: 'ec-ptlabel' }
-                                     : { x: W - pad.r - 5, y: Y1 - 6, 'text-anchor': 'end', 'font-size': 11.5, 'font-weight': 600, fill: paint(o.color || 'muted'), class: 'ec-ptlabel' });
+          // beside the line, inside the plot: a vertical line's label moves to its left near the right edge, a
+          // horizontal line's label below it near the top
+          var flipX = isX && X1 + 5 + textWidth(o.label, 11.5) > W - pad.r - 2, flipY = !isX && Y1 - 17 < pad.t;
+          var tx = svgEl('text', isX ? { x: flipX ? X1 - 5 : X1 + 5, y: pad.t + 14 + (o.labelDy || 0), 'text-anchor': flipX ? 'end' : 'start', 'font-size': 11.5, 'font-weight': 600, fill: paint(o.color || 'muted'), class: 'ec-ptlabel' }
+                                     : { x: W - pad.r - 5, y: flipY ? Y1 + 15 : Y1 - 6, 'text-anchor': 'end', 'font-size': 11.5, 'font-weight': 600, fill: paint(o.color || 'muted'), class: 'ec-ptlabel' });
           tx.textContent = o.label; g.appendChild(tx);
         }
       }, o);
@@ -1285,7 +1433,7 @@
         if (o.ring !== false) g.appendChild(svgEl('circle', { cx: X, cy: Y, r: (o.r || 6) + 5, fill: 'none', stroke: col, 'stroke-width': 2 }));
         g.appendChild(svgEl('path', { d: shapePath(o.shape || 'circle', o.r || 6), transform: 'translate(' + X + ',' + Y + ')', fill: col, stroke: paint('bg'), 'stroke-width': 1.5 }));
         if (o.label) {
-          var left = X > W - pad.r - 120, tx = svgEl('text', { x: X + (left ? -14 : 14), y: Y + 4, 'text-anchor': left ? 'end' : 'start', 'font-size': 12, 'font-weight': 700, fill: col, class: 'ec-ptlabel' });
+          var left = X > W - pad.r - 120, tx = svgEl('text', { x: X + (left ? -14 : 14), y: Y + 4 + (o.labelDy || 0), 'text-anchor': left ? 'end' : 'start', 'font-size': 12, 'font-weight': 700, fill: col, class: 'ec-ptlabel' });
           tx.textContent = typeof o.label === 'function' ? o.label() : o.label; g.appendChild(tx);
         }
       }, o);

@@ -531,6 +531,16 @@
     return s.replace('e+', 'e').replace(/-/g, MINUS);
   };
 
+  /** Fixed decimals chosen from a reference scale, so that a live value keeps the same number of decimals
+   *  while it changes: about `sig` significant figures for numbers the size of `scale` (default 3). */
+  CYL.decimalsFor = function (scale, sig) {
+    sig = sig == null ? 3 : sig;
+    var a = Math.abs(toNum(scale));
+    if (!(a > 0) || !isFinite(a)) return Math.max(0, sig - 1);
+    return Math.max(0, Math.min(6, sig - 1 - Math.floor(Math.log10(a) + 1e-9)));
+  };
+  CYL.fmtScale = function (x, scale, sig) { return CYL.fmtFixed(x, CYL.decimalsFor(scale, sig)); };
+
   /** Fixed decimals with U+2212 minus (never "−0.00"). */
   CYL.fmtFixed = function (x, decimals) {
     x = toNum(x);
@@ -957,9 +967,14 @@
         if (tex) CYL.setTex(val, s);
         else if (/[<&]|\\\(|\\\[/.test(s)) { val.innerHTML = s; if (hasMath(s)) CYL.renderMath(val); }
         else val.textContent = s;
+        // A live value keeps the widest width it has had (in ch), so the row never shrinks back and the panel
+        // under an animation does not jump when a digit or a minus sign comes and goes.
+        if (!tex && !/[<&]|\\\(|\\\[/.test(s) && s.length > maxCh) { maxCh = s.length; val.style.minWidth = maxCh + 'ch'; }
         return api;
-      }
+      },
+      resetWidth: function () { maxCh = 0; val.style.minWidth = ''; return api; }
     };
+    var maxCh = 0;
     return api;
   };
 

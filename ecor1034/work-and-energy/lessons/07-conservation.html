@@ -205,13 +205,13 @@ CYL.ready(function () {
   }
   var panel = document.getElementById('fig71-controls');
   var string = null;
-  var roTen = CYL.readout('String tension');
+  var roTen = CYL.readout('String tension \\(T_s\\)');
   var first = setup();
   var fig = ENERGY.figure({
     stage: document.getElementById('fig71-stage'), controls: panel,
     xRange: [-1.45, 1.45], yRange: [-1.5, 0.3], maxHeight: 380,
     track: first.track, params: first.params, body: { shape: 'ball', r: 0.09, centered: true },
-    readouts: ['t', 'v', 'h'], toggles: ['v', 'forces'], forces: ['W', 'N'],
+    readouts: ['t', 'v', 'h'], toggles: ['v', 'forces'], forces: ['W', 'N'], forceLabels: { N: 'T_s' },
     decorate: function (p) {
       p.polyline([[-0.3, 0.12], [0.3, 0.12]], { color: 'ink', width: 3 });
       ENERGY.hatch(p, [-0.3, 0.12], [0.3, 0.12], { side: 1, gap: 0.06, len: 0.07 });
@@ -223,14 +223,14 @@ CYL.ready(function () {
     onUpdate: function (s, f) {
       var r = f.runs[0];
       if (r.center) string.set([0, 0], r.center);
-      roTen.set(CYL.fmt(Math.max(0, s[0].N), 4) + '\u00a0N');
+      roTen.set(CYL.fmtFixed(Math.max(0, s[0].N), 2) + '\u00a0N');
     },
     aria: 'A pendulum: a bob on a string swinging from a fixed pivot, with energy bars showing kinetic and gravitational potential energy trading places while their total stays constant.'
   });
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Release' }));
   panel.appendChild(CYL.slider({ label: 'Release angle from vertical', min: 10, max: 90, step: 5, value: st.th, unit: '\u00b0', onInput: function (v) { st.th = v; var s = setup(); fig.setRun(0, s); } }).el);
   panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roTen.el]));
-  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Datum at the lowest point. The black arrow on the bob is the string\u2019s pull, the blue one its weight.' }));
+  panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Datum at the lowest point. The black arrow \\(T_s\\) is the string\u2019s pull on the bob, the blue one \\(W\\) its weight.' }));
   fig.update();
   CYL.renderMath(panel);
 });
@@ -245,8 +245,8 @@ CYL.ready(function () {
   var panel = document.getElementById('fig72-controls');
   var fig = ENERGY.figure({
     stage: document.getElementById('fig72-stage'), controls: panel,
-    xRange: [-0.3, 16.3], yRange: [-0.4, 7.9], maxHeight: 400,
-    track: track, params: params(), body: { shape: 'block', w: 0.7, h: 0.4 },
+    xRange: [-0.3, 16.3], yRange: [-0.4, 8.6], maxHeight: 400, fScale: 0.0003,   // W drawn about 1.2 m long
+    track: track, params: params(), body: { shape: 'block', w: 0.7, h: 0.4, side: 1 },   // drawn on top of its rails
     bars: { items: ['T', 'Vg', 'lost'] }, readouts: ['t', 'v', 'h', 'Uf'], toggles: ['v', 'forces'], forces: ['W', 'Ff'],
     decorate: function (p) {
       ENERGY.fillUnder(p, track, 0, track.length, -0.4, { opacity: 0.18 });

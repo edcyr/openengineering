@@ -458,7 +458,7 @@
           var v = num(vals[k], 0), c = cols[k], top = pos(Math.max(0, v)), bot = pos(Math.min(0, v));
           c.fill.style.bottom = bot + '%';
           c.fill.style.height = Math.max(0, top - bot) + '%';
-          c.val.textContent = fmt(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, 3);
+          c.val.textContent = CYL.fmtScale(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, Math.max(Math.abs(lo), Math.abs(hi)), 3);   // fixed decimals
           c.val.style.bottom = (v >= 0 ? top : z) + '%';
         });
         if (stack) {
@@ -524,7 +524,7 @@
       var x0 = pc(Math.min(a, b)), x1 = pc(Math.max(a, b));
       it.bar.style.left = x0 + '%';
       it.bar.style.width = Math.max(0.4, x1 - x0) + '%';
-      it.val.textContent = (v > 0 && it !== rStart && it !== rEnd ? '+' : '') + fmt(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, 3) + '\u00a0' + unit;
+      it.val.textContent = (v > 0 && it !== rStart && it !== rEnd ? '+' : '') + CYL.fmtScale(Math.abs(v) < 5e-4 * (hi - lo) ? 0 : v, Math.max(Math.abs(lo), Math.abs(hi)), 3) + '\u00a0' + unit;   // fixed decimals
       Array.prototype.forEach.call(it.track.querySelectorAll('.lg-zero'), function (z) { z.style.left = pc(0) + '%'; });
     }
     var api = {
@@ -834,6 +834,11 @@
 
     /* ----- redraw ----- */
     var states = [];
+    function roScale(run, k) {            // a readout's largest value over the run fixes its decimals (cached per run)
+      var c = run._roScale || (run._roScale = {});
+      if (c[k] == null) { var m = 0; for (var q = 0; q <= 120; q++) { var v = RO[k][2](run.at(run.duration * q / 120), run); if (isFinite(v)) m = Math.max(m, Math.abs(v)); } c[k] = m; }
+      return c[k];
+    }
     function add(P, d, k) { return [P[0] + d[0] * k, P[1] + d[1] * k]; }
     function sync() {
       states = runs.map(function (r) { return r.run.at(Math.min(t, r.run.duration)); });
@@ -897,8 +902,10 @@
           var at = key === 'W' ? C : key === 'N' ? P0 : add(C, dirv, -halfT);   // Fs, P push on a face
           h.set([at[0] - dirv[0] * L, at[1] - dirv[1] * L], at);
         }
-        arrow('W', [0, -1], s.W);
         var Nsgn = s.N >= 0 ? 1 : -1;
+        // contact style: the weight's label goes left of its tail, or above it when the normal force comes in from the left
+        if (contactFbd) F.W.setLabelOptions({ labelSide: !s.flight && nv[0] * Nsgn > 0.3 ? 'beyond' : 'right' }, true);
+        arrow('W', [0, -1], s.W);
         arrow('N', [nv[0] * Nsgn, nv[1] * Nsgn], s.flight ? 0 : Math.abs(s.N));
         arrow('Ff', [tv[0] * (s.Ff >= 0 ? 1 : -1), tv[1] * (s.Ff >= 0 ? 1 : -1)], Math.abs(s.Ff));
         arrow('Fs', [tv[0] * (s.Fs >= 0 ? 1 : -1), tv[1] * (s.Fs >= 0 ? 1 : -1)], Math.abs(s.Fs));
@@ -909,7 +916,7 @@
       if (ledger) ledger.set(ledgerVals(s0, r0.run));
       Object.keys(ro).forEach(function (k) {
         var v = RO[k][2](s0, r0.run), unit = RO[k][3];
-        ro[k].set(isFinite(v) ? CYL.fmt(Math.abs(v) < 5e-7 ? 0 : v, 4) + ' ' + unit : '—');
+        ro[k].set(isFinite(v) ? CYL.fmtScale(Math.abs(v) < 5e-7 ? 0 : v, roScale(r0.run, k), 3) + ' ' + unit : '—');
       });
       tr.syncSlider();
       tr.syncPlay();

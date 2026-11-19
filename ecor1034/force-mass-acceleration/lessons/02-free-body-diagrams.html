@@ -172,8 +172,9 @@ CYL.ready(function () {
   FMA.force(p, { color: 'ink', label: 'N' }).set([bottom[0] + 0.3, bottom[1]], [0, 1], 1.05);
   FMA.force(p, { color: 'r', label: 'F_f', labelSide: 'left' }).set([bottom[0] - 0.15, bottom[1]], [-1, 0], 0.95);
   FMA.force(p, { color: 'muted', label: 'T', labelSide: 'left' }).set(right, [Math.cos(Math.PI / 6), Math.sin(Math.PI / 6)], 1.35);
+  p.line(right, [right[0] + 0.8, right[1]], { color: 'muted', width: 1, dashed: true });   // the horizontal the angle is measured from
   p.arc({ center: right, r: 0.55, theta0: 0, theta1: Math.PI / 6, color: 'muted', width: 1, arrow: false });
-  p.label([right[0] + 0.78, right[1] + 0.18], '30^\\circ', { color: 'muted' });
+  p.label([right[0] + 0.88 * Math.cos(Math.PI / 15), right[1] + 0.88 * Math.sin(Math.PI / 15)], '30^\\circ', { color: 'muted', anchor: 'e' });
   FMA.equals(p, [5.55, 0.45]);
   var K = crate(8.4, 'Kinetic diagram');
   var KC = K.center();
@@ -206,7 +207,7 @@ CYL.ready(function () {
   FMA.equals(p, [6.35, 0.6]);
   var KB = FMA.block(p, { c: [8.0, 0.6], w: 0.7, h: 1.4, color: 'accent' });
   p.circle({ center: KB.center(), r: 0.05, color: 'bad', fill: 'bad', fillOpacity: 1 });
-  var fMA = FMA.force(p, { color: 'bad', label: 'ma', mode: 'tail', width: 3.2 });
+  var fMA = FMA.force(p, { color: 'bad', label: 'ma', mode: 'tail', width: 3.2, labelGap: 24 });   // label beside the block, not on its edge
   p.label([8.0, -2.6], 'Kinetic diagram', { tex: false, color: 'muted' });
   var roN = CYL.readout('Scale reading \\(N = m(g + a)\\)');
   var roK = CYL.readout('Reads as a mass of');
@@ -223,12 +224,13 @@ CYL.ready(function () {
     fW.set(cg, [0, -1], Wt * K);
     if (N > 1) fN.set(feet, [0, 1], N * K); else fN.hide();
     var kd = KB.center();
+    fMA.handle.setLabelOptions({ labelSide: a > 0 ? 'right' : 'left' }, true);     // on the block's right, up or down
     if (Math.abs(a) > 1e-6) fMA.set(kd, [0, a > 0 ? 1 : -1], Math.abs(M * a) * K); else fMA.hide();
     aCar.setVisible(Math.abs(a) > 1e-6);
     if (Math.abs(a) > 1e-6) aCar.set([2.95, 0.85], [2.95, 0.85 + 0.25 * a]);
-    roN.set(CYL.fmt(N, 4) + '\u00a0N');
-    roK.set(CYL.fmt(N / G, 4) + '\u00a0kg');
-    roR.set(CYL.fmt(N / Wt, 3));
+    roN.set(CYL.fmtFixed(N, 2) + '\u00a0N');
+    roK.set(CYL.fmtFixed(N / G, 2) + '\u00a0kg');
+    roR.set(CYL.fmtFixed(N / Wt, 3));
     note.textContent = a > 0 ? 'Acceleration up: speeding up on the way up, or slowing down on the way down. The scale reads more than the weight.'
       : a < -9.8 ? 'Free fall: the cable has snapped (or the elevator is diving). The scale reads zero.'
       : a < 0 ? 'Acceleration down: speeding up on the way down, or slowing down on the way up. The scale reads less than the weight.'

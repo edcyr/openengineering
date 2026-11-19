@@ -36,7 +36,8 @@
  *        labelSide 'beyond' puts the label past the end it sits at (labelAt 0: behind the tail; 1: past the tip).
  *        An arrow too short to show its head is drawn at a minimum length (about 1.5 times the head) instead,
  *        lengthened from its anchor: 'start' (default) keeps the tail in place, 'end' keeps the tip in place
- *        (a push that must end on the face it acts on).
+ *        (a push that must end on the face it acts on). .setLabelOptions({labelAt, labelSide, labelGap, labelOffset},
+ *        quiet) moves the label later (quiet: it takes effect at the next .set()).
  *   p.polyline(points, {color:'ink', width:2, closed:false, fill:null, fillOpacity:0.15, dashed, arrow})
  *                                                                                       -> .set(points)
  *   p.arc({center:[0,0], r, theta0, theta1, color:'t', width:2, arrow:true, rPx (radius in px instead of r),
@@ -1143,6 +1144,12 @@
       };
       h.get = function () { return [st.a ? st.a.slice() : null, st.b ? st.b.slice() : null]; };
       h.setLabel = function (tex) { st.label = tex; ensureLabel(); renderItem(it); return h; };
+      // change where the label sits (labelAt, labelSide, labelGap, labelOffset); quiet: wait for the next set()
+      h.setLabelOptions = function (lo, quiet) {
+        if (lo && typeof lo === 'object') ['labelAt', 'labelSide', 'labelGap', 'labelOffset'].forEach(function (k) { if (hasOwn.call(lo, k)) op[k] = lo[k]; });
+        if (!quiet) renderItem(it);
+        return h;
+      };
       return addItem(it, grp);
     }
 

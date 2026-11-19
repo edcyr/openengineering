@@ -163,10 +163,10 @@ CYL.ready(function () {
   var G = 9.81, MS = { A: 2, B: 3, C: 5 }, SIZE = { A: [0.3, 1.4, 0.7], B: [1.4, 2.9, 0.9], C: [2.9, 5.0, 1.1] };   // x0, x1, h
   var st = { P: 60, mu: 0.1, part: 'ABC' };
   var stage = document.getElementById('fig81-stage'), panel = document.getElementById('fig81-controls');
-  var p = CYL2D.plane(stage, { xRange: [-1.5, 8.9], yRange: [-0.75, 1.75], grid: 'none', axes: false, maxHeight: 320,
+  var p = CYL2D.plane(stage, { xRange: [-2.0, 9.2], yRange: [-0.75, 1.75], grid: 'none', axes: false, maxHeight: 320,
     ariaLabel: 'Three crates A, B and C stand in a row on a floor, pushed from the left. A dashed outline isolates a chosen group of them, and arrows show the horizontal forces on that group from outside: the push P, friction under each crate, and the push of a neighboring crate wherever the outline cuts between two crates. To the right, the kinetic diagram of the group: its mass times the acceleration.' });
-  p.line([-1.4, 0], [5.6, 0], { color: 'ink', width: 2.2 });
-  for (var q = -1.35; q <= 5.55; q += 0.14) p.line([q, 0], [q - 0.08, -0.1], { color: 'muted', width: 1 });
+  p.line([-1.9, 0], [5.6, 0], { color: 'ink', width: 2.2 });
+  for (var q = -1.85; q <= 5.55; q += 0.14) p.line([q, 0], [q - 0.08, -0.1], { color: 'muted', width: 1 });
   var box = {};
   ['A', 'B', 'C'].forEach(function (k, i) {
     var z = SIZE[k];
@@ -174,16 +174,17 @@ CYL.ready(function () {
     p.label([(z[0] + z[1]) / 2, z[2] - 0.2], k, { color: 'ink' });
   });
   var outline = p.polyline([], { closed: true, color: 'ink', width: 1.4, dashed: true });
-  var fP = FMA.force(p, { color: 'warn', label: 'P' });
-  var fFr = { A: FMA.force(p, { color: 'r', label: 'F_A', labelSide: 'left', minLength: 0.25 }), B: FMA.force(p, { color: 'r', label: 'F_B', labelSide: 'left', minLength: 0.25 }), C: FMA.force(p, { color: 'r', label: 'F_C', labelSide: 'left', minLength: 0.25 }) };
-  var fAB = FMA.force(p, { color: 'ink', label: 'F_{AB}' }), fBA = FMA.force(p, { color: 'ink', label: 'F_{AB}' });
-  var fBC = FMA.force(p, { color: 'ink', label: 'F_{BC}' }), fCB = FMA.force(p, { color: 'ink', label: 'F_{BC}' });
+  var fP = FMA.force(p, { color: 'warn', label: 'P', labelSide: 'left' });             // above its tail, clear of the floor
+  var fFr = { A: FMA.force(p, { color: 'r', label: 'F_A', labelSide: 'left', labelGap: 11, minLength: 0.25 }), B: FMA.force(p, { color: 'r', label: 'F_B', labelSide: 'left', labelGap: 11, minLength: 0.25 }), C: FMA.force(p, { color: 'r', label: 'F_C', labelSide: 'left', labelGap: 11, minLength: 0.25 }) };
+  // the contact forces' labels sit just past their tails, low in the neighbouring crate, clear of the crates' letters
+  var fAB = FMA.force(p, { color: 'ink', label: 'F_{AB}', labelSide: 'beyond' }), fBA = FMA.force(p, { color: 'ink', label: 'F_{AB}', labelSide: 'beyond' });
+  var fBC = FMA.force(p, { color: 'ink', label: 'F_{BC}', labelSide: 'beyond' }), fCB = FMA.force(p, { color: 'ink', label: 'F_{BC}', labelSide: 'beyond' });
   // the kinetic diagram
   var kd = p.polyline([], { closed: true, color: 'ink', width: 1.4, dashed: true });
-  var kdL = p.label([7.3, 1.45], '', { color: 'ink' });
+  var kdL = p.label([7.05, 1.45], '', { color: 'ink' });
   var fK = FMA.force(p, { color: 'bad', label: '', mode: 'tail', width: 3.2 });
-  var kdLab = p.label([7.3, 0.25], '', { color: 'bad' });
-  var eq = FMA.equals(p, [6.0, 0.55]);
+  var kdLab = p.label([7.05, 0.25], '', { color: 'bad' });
+  var eq = FMA.equals(p, [5.85, 0.55]);
   var roA = CYL.readout('Acceleration \\(a\\)', { color: 'bad' }), roAB = CYL.readout('\\(F_{AB}\\), \\(A\\) on \\(B\\)'), roBC = CYL.readout('\\(F_{BC}\\), \\(B\\) on \\(C\\)');
   var roS = CYL.readout('External force on the part'), roM = CYL.readout('Its mass times \\(a\\)', { color: 'bad' });
   var opts = [['ABC', 'All three: A, B and C'], ['A', 'A alone'], ['B', 'B alone'], ['C', 'C alone'], ['AB', 'A and B'], ['BC', 'B and C']];
@@ -217,18 +218,18 @@ CYL.ready(function () {
       if (inc(k) && fr > 1e-9) fFr[k].set([SIZE[k][0] + 0.15, 0], [-1, 0], fr * K); else fFr[k].hide();
     });
     // a cut between A and B: B pushes A back (on A's right face); A pushes B forward (on B's left face)
-    if (inc('A') && !inc('B')) fBA.set([SIZE.A[1], 0.3], [-1, 0], FAB * K); else fBA.hide();
-    if (inc('B') && !inc('A')) fAB.set([SIZE.B[0], 0.3], [1, 0], FAB * K); else fAB.hide();
-    if (inc('B') && !inc('C')) fCB.set([SIZE.B[1], 0.45], [-1, 0], FBC * K); else fCB.hide();
-    if (inc('C') && !inc('B')) fBC.set([SIZE.C[0], 0.45], [1, 0], FBC * K); else fBC.hide();
+    if (inc('A') && !inc('B')) fBA.set([SIZE.A[1], 0.22], [-1, 0], FAB * K); else fBA.hide();
+    if (inc('B') && !inc('A')) fAB.set([SIZE.B[0], 0.22], [1, 0], FAB * K); else fAB.hide();
+    if (inc('B') && !inc('C')) fCB.set([SIZE.B[1], 0.4], [-1, 0], FBC * K); else fCB.hide();
+    if (inc('C') && !inc('B')) fBC.set([SIZE.C[0], 0.4], [1, 0], FBC * K); else fBC.hide();
     var m = 0; part.split('').forEach(function (k) { m += MS[k]; });
     var ext = (inc('A') ? P : 0) - mu * m * G + (inc('B') && !inc('A') ? FAB : 0) - (inc('A') && !inc('B') ? FAB : 0) + (inc('C') && !inc('B') ? FBC : 0) - (inc('B') && !inc('C') ? FBC : 0);
-    kd.set([[6.65, 0], [7.95, 0], [7.95, 0.9], [6.65, 0.9]]);
-    kdL.set([7.3, 1.2], part.length === 3 ? 'ABC' : part);
-    fK.set([7.3, 0.45], [1, 0], m * a * K);
-    kdLab.set([7.65, 0.2], '(' + m + '\\,\\text{kg})\\,a');
-    roA.set(CYL.fmt(a, 4) + '\u00a0m/s\u00b2'); roAB.set(CYL.fmt(FAB, 4) + '\u00a0N'); roBC.set(CYL.fmt(FBC, 4) + '\u00a0N');
-    roS.set(CYL.fmt(ext, 4) + '\u00a0N'); roM.set(CYL.fmt(m * a, 4) + '\u00a0N');
+    kd.set([[6.3, 0], [7.8, 0], [7.8, 0.9], [6.3, 0.9]]);
+    kdL.set([7.05, 1.2], part.length === 3 ? 'ABC' : part);
+    fK.set([7.05, 0.6], [1, 0], m * a * K);
+    kdLab.set([7.05, 0.25], '(' + m + '\\,\\text{kg})\\,a');                // under the arrow, inside the outline
+    roA.set(CYL.fmtFixed(a, 2) + '\u00a0m/s\u00b2'); roAB.set(CYL.fmtFixed(FAB, 2) + '\u00a0N'); roBC.set(CYL.fmtFixed(FBC, 2) + '\u00a0N');
+    roS.set(CYL.fmtFixed(ext, 2) + '\u00a0N'); roM.set(CYL.fmtFixed(m * a, 2) + '\u00a0N');
     note.textContent = NOTES[part] + ' Whichever part you isolate, the acceleration is the same.';
   }
   draw();

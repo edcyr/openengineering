@@ -124,7 +124,7 @@ CYL.ready(function () {
         { key: 'e', label: 'Coefficient of restitution \\(e\\)', min: 0, max: 1, step: 0.05, value: 0.9 }
       ],
       note: 'The same e for both pairs. Smooth, level track.',
-      frame: { xRange: [-2.6, 2.6], yRange: [-0.25, 0.85], maxHeight: 240 }, draw: [CART, CART, CART],
+      frame: { xRange: [-2.6, 2.6], yRange: [-0.25, 1.8], maxHeight: 240 }, draw: [CART, CART, CART],
       readouts: ['vA', 'vB', 'vC', 'lost'], chart: { kind: 'p' },
       spec: function (st) { return { bodies: [{ m: st.mA, x: -1.6, v: st.vA, w: 0.45 }, { m: st.mB, x: 0, w: 0.45 }, { m: st.mC, x: 0.55, w: 0.45 }], e: st.e, tmax: 8, until: out(2.35) }; } },
     { id: 'wall', label: 'Between walls',
@@ -236,9 +236,9 @@ CYL.ready(function () {
       imp.setVisible(!!fl);
       if (fl) imp.set([last.x, -0.4], [last.x, 0]);
       roN.set(String(done.length));
-      roV.set('(' + CYL.fmt(s.vx, 3) + ', ' + CYL.fmt(Math.abs(s.vy) < 1e-9 ? 0 : s.vy, 3) + ') m/s');
-      roH.set(done.length && run.peaks[done.length - 1] != null ? CYL.fmt(run.peaks[done.length - 1], 3) + ' m' : '—');
-      roA.set(last && st.vx > 0 ? CYL.fmt(Math.atan2(last.v2, st.vx) / D2R, 3) + '°' : '—');
+      roV.set('(' + CYL.fmtFixed(s.vx, 2) + ', ' + CYL.fmtFixed(Math.abs(s.vy) < 1e-9 ? 0 : s.vy, 2) + ') m/s');
+      roH.set(done.length && run.peaks[done.length - 1] != null ? CYL.fmtFixed(run.peaks[done.length - 1], 3) + ' m' : '—');
+      roA.set(last && st.vx > 0 ? CYL.fmtFixed(Math.atan2(last.v2, st.vx) / D2R, 1) + '°' : '—');
     }
     var pl = MOMENTUM.player({ stage: stg, duration: function () { return run.duration; }, onTime: draw, speed: 0.6 });
     return {
@@ -264,10 +264,16 @@ CYL.ready(function () {
     var cA = p.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'accent', fillOpacity: 0.5 });
     var cB = p.circle({ center: [0, 0], r: R, color: 'ink', width: 1.6, fill: 'warn', fillOpacity: 0.5 });
     var lA = p.label([0, 0], 'A'), lB = p.label([0, 0], 'B');
-    var aA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'left' });
+    var aA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_A', labelAt: 1, labelSide: 'right' });   // the side away from the t line, along which A leaves
     var aB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v_B', labelAt: 1, labelSide: 'left' });
     var iA = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+    // each impact-force label on the outer side of its arrow (A's on the -t side, B's on the +t side)
     var iB = p.line([0, 0], [0, 0], { color: 'bad', width: 3, arrow: true, label: 'F', labelAt: 0, labelSide: 'left' });
+    // the offset b, dimensioned from A's line of motion to B's center until the pucks touch
+    var gDim = p.group(), xd = R + 0.07;
+    gDim.line([R + 0.01, 0], [xd + 0.04, 0], { color: 'muted', width: 1.1, dashed: true });
+    gDim.line([R + 0.01, st.b], [xd + 0.04, st.b], { color: 'muted', width: 1.1 });
+    gDim.line([xd, 0], [xd, st.b], { color: 'ink', width: 1.4, arrow: 'both', label: 'b', labelAt: 0.5, labelSide: 'right' });
     var roA = CYL.readout('Velocity of \\(A\\)', { color: 'good' }), roB = CYL.readout('Velocity of \\(B\\)', { color: 'good' });
     var roP = CYL.readout('Total momentum \\((p_x, p_y)\\)'), roL = CYL.readout('Kinetic energy lost', { color: 'bad' });
     pnl.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roA.el, roB.el, roP.el, roL.el]));
@@ -286,18 +292,25 @@ CYL.ready(function () {
       lA.set(s.pA); lB.set(s.pB);
       function tr(w) { var o2 = []; for (var k = 0; k <= 80; k++) o2.push(run.at(t * k / 80)[w]); return o2; }
       trA.set(tr('pA')); trB.set(tr('pB'));
-      function vec(hh, P, v) { hh.setVisible(Math.hypot(v[0], v[1]) > 0.01); hh.set(P, [P[0] + v[0] * K, P[1] + v[1] * K]); }
+      // each velocity starts at the rim of its puck, so it never crosses the puck's letter
+      function vec(hh, P, v) {
+        var sp = Math.hypot(v[0], v[1]); hh.setVisible(sp > 0.01);
+        if (sp > 0.01) { var u = [v[0] / sp, v[1] / sp], S = [P[0] + u[0] * R, P[1] + u[1] * R]; hh.set(S, [S[0] + v[0] * K, S[1] + v[1] * K]); }
+      }
       vec(aA, s.pA, s.vA); vec(aB, s.pB, s.vB);
       gAx.setVisible(!!h && t >= h.t);
+      gDim.setVisible(st.b > 0.005 && (!h || t < h.t));
       var fl = h && t >= h.t && t < h.t + 0.35;
       iA.setVisible(!!fl); iB.setVisible(!!fl);
       if (fl) {
-        var n2 = h.n, L = 0.16, fa = [s.pA[0] + n2[0] * R, s.pA[1] + n2[1] * R], fb = [s.pB[0] - n2[0] * R, s.pB[1] - n2[1] * R];
+        // each arrow ends on its puck's rim beside the contact point, A's on the -t side and B's on the +t side
+        var n2 = h.n, t2 = [-n2[1], n2[0]], L = 0.16, an = 0.76 * R, at = 0.65 * R;
+        var fa = [s.pA[0] + n2[0] * an - t2[0] * at, s.pA[1] + n2[1] * an - t2[1] * at], fb = [s.pB[0] - n2[0] * an + t2[0] * at, s.pB[1] - n2[1] * an + t2[1] * at];
         iA.set([fa[0] + n2[0] * L, fa[1] + n2[1] * L], fa); iB.set([fb[0] - n2[0] * L, fb[1] - n2[1] * L], fb);
       }
       roA.set(vtxt(s.vA)); roB.set(vtxt(s.vB));
-      roP.set('(' + CYL.fmt(mA * s.vA[0] + mB * s.vB[0], 3) + ', ' + CYL.fmt(Math.abs(mA * s.vA[1] + mB * s.vB[1]) < 1e-9 ? 0 : mA * s.vA[1] + mB * s.vB[1], 3) + ') kg·m/s');
-      roL.set(h && t >= h.t ? CYL.fmt(Math.abs(h.res.lost) < 1e-9 ? 0 : h.res.lost, 3) + ' J' : '0 J');
+      roP.set('(' + CYL.fmtFixed(mA * s.vA[0] + mB * s.vB[0], 2) + ', ' + CYL.fmtFixed(Math.abs(mA * s.vA[1] + mB * s.vB[1]) < 1e-9 ? 0 : mA * s.vA[1] + mB * s.vB[1], 2) + ') kg·m/s');
+      roL.set(h && t >= h.t ? CYL.fmtFixed(Math.abs(h.res.lost) < 1e-9 ? 0 : h.res.lost, 2) + ' J' : '0 J');
     }
     var pl = MOMENTUM.player({ stage: stg, duration: function () { return run.duration; }, onTime: draw, speed: 0.6 });
     return {

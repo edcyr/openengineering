@@ -22,9 +22,11 @@
  * FMA.block(plane, {c: [x, y], w, h, angle: 0 (rad), color: 'accent', label}) -> {set(c, angle), local([u, v]) -> point,
  *   dir(ux, uy) -> unit vector in the body frame, handles}: a rectangle with an optional label, and helpers that turn
  *   body coordinates (u along the base, v up from the base's middle line... measured from the center) into the plane.
- * FMA.force(plane, {color, label, width, mode: 'head' | 'tail', labelSide}) -> {set(point, dir, length), hide()}: one
- *   force arrow. mode 'head': the arrowhead ends at the point (weights, pushes); 'tail': the tail starts there
- *   (friction, tension). Friction ('r') defaults to width 4.2 and 'tail'.
+ * FMA.force(plane, {color, label, width, mode: 'head' | 'tail', labelSide, labelAt, labelGap, labelOffset}) ->
+ *   {set(point, dir, length), hide(), handle}: one force arrow. mode 'head': the arrowhead ends at the point (weights,
+ *   pushes); 'tail': the tail starts there (friction, tension). Friction ('r') defaults to width 4.2 and 'tail'. The
+ *   label sits at the free end (labelAt 0 for 'head', 1 for 'tail'); labelGap (px) and labelOffset ([dx, dy] px)
+ *   move it clear of a body; handle.setLabelOptions({...}) changes them later.
  * FMA.equals(plane, [x, y]) -> a large "=" sign between a free-body diagram and its kinetic diagram.
  * FMA.ode(f, y0, t0, t1, dt) -> {t: [], y: [[…]], at(t) -> y (linear interpolation)}: fourth-order Runge–Kutta for
  *   y' = f(t, y), with y an array. FMA.odeUntil(f, y0, dt, stop(t, y) -> bool, tmax) stops early.
@@ -68,7 +70,8 @@
     var mode = o.mode || (fr || color === 'muted' ? 'tail' : 'head');
     var width = o.width || (fr ? 4.2 : 2.6);
     var h = p.line([0, 0], [0, 0], { color: color, width: width, arrow: true, label: o.label || null,
-      labelAt: mode === 'head' ? 0 : 1, labelSide: o.labelSide || 'right', anchor: mode === 'head' ? 'end' : 'start' });
+      labelAt: o.labelAt != null ? o.labelAt : mode === 'head' ? 0 : 1, labelSide: o.labelSide || 'right',
+      labelGap: o.labelGap, labelOffset: o.labelOffset, anchor: mode === 'head' ? 'end' : 'start' });
     var api = {
       mode: mode,
       set: function (pt, dir, L) {

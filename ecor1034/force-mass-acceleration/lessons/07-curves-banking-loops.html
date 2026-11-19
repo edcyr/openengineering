@@ -185,16 +185,16 @@ CYL.ready(function () {
   var avA = pa.line([0, 0], [0, 0], { color: 'bad', width: 2.8, arrow: true, label: '\\avec', labelAt: 1, labelSide: 'right' });
   var avF = pa.line([0, 0], [0, 0], { color: 'r', width: 4.2, arrow: true, label: 'F_f', labelAt: 1, labelSide: 'left' });
   var status = pa.label([0, -2.8], '', { tex: false, color: 'bad', anchor: 'c' });
-  var p = CYL2D.plane(stage, { xRange: [-0.3, 9.4], yRange: [-1.7, 2.5], grid: 'none', axes: false, maxHeight: 360,
+  var p = CYL2D.plane(stage, { xRange: [-0.3, 9.4], yRange: [-2.25, 2.5], grid: 'none', axes: false, maxHeight: 410,
     ariaLabel: 'Rear view of a car on a banked curve, the center of the curve to the left. Left, the free-body diagram: the weight down to the center of gravity, the normal force perpendicular to the road and pushing on the bottom of the car, and friction along the road, up or down the bank. Right, the kinetic diagram: m v squared over rho, horizontal, toward the center.' });
   var gRoad = p.group();
   var A = FMA.block(p, { w: BW, h: BH, color: 'accent' }), K = FMA.block(p, { w: BW, h: BH, color: 'accent' });
   var cgA = p.circle({ center: [0, 0], r: 0.04, color: 'z', fill: 'z', fillOpacity: 1 }), cgK = p.circle({ center: [0, 0], r: 0.04, color: 'bad', fill: 'bad', fillOpacity: 1 });
   var fW = FMA.force(p, { color: 'z', label: 'W' }), fN = FMA.force(p, { color: 'ink', label: 'N', labelSide: 'left' });
-  var fF = FMA.force(p, { color: 'r', label: 'F_f', minLength: 0.25 }), fK = FMA.force(p, { color: 'bad', label: 'mv^2/\\rho', mode: 'tail', width: 3.2, labelSide: 'right' });
+  var fF = FMA.force(p, { color: 'r', label: 'F_f', minLength: 0.25 }), fK = FMA.force(p, { color: 'bad', label: 'mv^2/\\rho', mode: 'tail', width: 3.2, labelSide: 'right', labelGap: 30 });   // above the block
   var eq = FMA.equals(p, [4.75, 0.6]);
-  p.label([2.2, -1.5], 'Free-body diagram', { tex: false, color: 'muted' });
-  p.label([7.2, -1.5], 'Kinetic diagram', { tex: false, color: 'muted' });
+  p.label([2.2, -2.08], 'Free-body diagram', { tex: false, color: 'muted' });
+  p.label([7.2, -2.08], 'Kinetic diagram', { tex: false, color: 'muted' });
   var bars = MOMENTUM.pbars(panel, { items: [{ key: 'need', label: '|F_f|', color: 'r' }, { key: 'have', label: '\\mu_s N', color: 'muted' }], total: false, unit: 'N', title: 'Friction needed and available (N)' });
   var ro0 = CYL.readout('Design speed \\(v_0\\)', { color: 'good' }), roMin = CYL.readout('\\(v_{\\min}\\)', { color: 'good' }), roMax = CYL.readout('\\(v_{\\max}\\)', { color: 'good' }), roN = CYL.readout('\\(N/mg\\)');
   panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro0.el, roMin.el, roMax.el, roN.el]));
@@ -205,15 +205,16 @@ CYL.ready(function () {
   panel.appendChild(CYL.slider({ label: 'Bank angle \\(\\theta\\)', min: 0, max: 40, step: 1, value: st.th, unit: '°', onInput: function (v) { st.th = v; draw(); rebuildAnim(); } }).el);
   panel.appendChild(CYL.slider({ label: 'Friction \\(\\mu_s\\)', min: 0, max: 1, step: 0.05, value: st.mu, color: 'r', onInput: function (v) { st.mu = v; draw(); rebuildAnim(); } }).el);
   panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'A 1200 kg car on a 12 m wide road. In the rear view the forces are drawn to scale, except that friction is never shorter than its arrowhead needs and mv\u00b2/\u03c1 is drawn no longer than 2 mg. In the view from above, the arrows show directions, friction\u2019s length grows with its size, and a lap is played in about six seconds; a slide is played in real time, with \u03bck = 0.8\u03bcs.' }));
-  function kmh(x) { return isFinite(x) ? CYL.fmt(x * 3.6, 3) + '\u00a0km/h' : 'no limit'; }
+  function kmh(x) { return isFinite(x) ? CYL.fmtFixed(x * 3.6, 1) + '\u00a0km/h' : 'no limit'; }
   function road(cx, th) {
-    var d = [Math.cos(th), Math.sin(th)], a = [cx - 1.75 * d[0], -1.75 * d[1]], b = [cx + 1.75 * d[0], 1.75 * d[1]], yb = a[1] - 0.3;
+    var d = [Math.cos(th), Math.sin(th)], a = [cx - 2.3 * d[0], -2.3 * d[1]], b = [cx + 1.75 * d[0], 1.75 * d[1]], yb = a[1] - 0.3;   // theta at the left end, clear of friction
     gRoad.polyline([[a[0], yb], [b[0], yb], b, a], { closed: true, color: 'muted', width: 1, fill: 'surface', fillOpacity: 0.25 });   // the embankment
     gRoad.line(a, b, { color: 'ink', width: 2.2 });
     if (th > 0.5 * D2R) {
       gRoad.line(a, [a[0] + 1.3, a[1]], { color: 'muted', width: 1, dashed: true });
       gRoad.arc({ center: a, r: 0.95, theta0: 0, theta1: th, color: 'muted', width: 1, arrow: false });
-      gRoad.label([a[0] + 1.2 * Math.cos(th / 2), a[1] + 1.2 * Math.sin(th / 2)], '\\theta', { color: 'muted' });
+      if (th < 12 * D2R) gRoad.label([a[0] + 0.95, a[1]], '\\theta', { color: 'muted', anchor: 's', offset: [0, 2] });   // a thin wedge: below its arc
+      else gRoad.label([a[0] + 1.25 * Math.cos(th / 2), a[1] + 1.25 * Math.sin(th / 2)], '\\theta', { color: 'muted' });
     }
     gRoad.label([cx - 1.4, 2.05], '\\leftarrow O', { color: 'muted' });
   }
@@ -231,9 +232,12 @@ CYL.ready(function () {
     fN.set(A.local([0.05, -BH / 2]), n, N * Ks);
     var Fd = slip ? Math.sign(F) * mu * N : F;            // what friction can actually give
     if (Math.abs(Fd) > 1e-6) {
+      fF.handle.setLabelOptions({ labelOffset: Fd > 0 ? [-26, 0] : null }, true);   // down the bank: above the road, left of the block
       if (Fd > 0) fF.set(A.local([-0.45, -BH / 2]), [-d[0], -d[1]], Fd * Ks);
       else fF.set(A.local([0.45, -BH / 2]), d, -Fd * Ks);
     } else fF.hide();
+    // mv^2/rho's label: above its tip, and moved left of a tip still under the tilted block so it clears the block's top
+    fK.handle.setLabelOptions({ labelOffset: Math.min(an, 2 * G) * Ks < BW / 2 + 0.2 ? [-34, 0] : null }, true);
     if (an > 1e-6) fK.set(KC, [-1, 0], Math.min(an, 2 * G) * Ks); else fK.hide();
     eq.set([4.75, 0.6], slip ? '\\Huge \\neq' : '\\Huge =');
     bars.setScale(Math.max(Math.abs(F), mu * N, 0.1) * 1200 * 1.05);
@@ -241,7 +245,7 @@ CYL.ready(function () {
     var v0 = Math.sqrt(G * RHO * Math.tan(th));
     var dn = c - mu * s, vmax = dn > 1e-9 ? Math.sqrt(G * RHO * (s + mu * c) / dn) : Infinity;
     var nm = s - mu * c, vmin = nm > 0 ? Math.sqrt(G * RHO * nm / (c + mu * s)) : 0;
-    ro0.set(kmh(v0)); roMin.set(vmin > 0 ? kmh(vmin) : 'none (tan \u03b8 \u2264 \u03bcs)'); roMax.set(kmh(vmax)); roN.set(CYL.fmt(N / G, 3));
+    ro0.set(kmh(v0)); roMin.set(vmin > 0 ? kmh(vmin) : 'none (tan \u03b8 \u2264 \u03bcs)'); roMax.set(kmh(vmax)); roN.set(CYL.fmtFixed(N / G, 3));
     note.textContent = slip ? (F > 0 ? 'Too fast: friction cannot hold the car, and it slides up and out of the curve.' : 'Too slow: friction cannot hold the car, and it slides down the bank.')
       : Math.abs(F) < 1e-3 * G ? 'At the design speed: no friction is needed.'
       : F > 0 ? 'Faster than the design speed: friction acts down the bank.' : 'Slower than the design speed: friction acts up the bank.';
@@ -348,6 +352,7 @@ CYL.ready(function () {
       a: p.line([0, 0], [0, 0], { color: 'bad', width: 2.8, arrow: true, label: 'a_n', labelAt: 1, labelSide: 'right' }) };
   }
   var cA = car('accent'), cB = car('warn');
+  cA.a.setLabelOptions({ labelAt: 0 }, true);                 // at the crest the label sits at the arrow's top, clear of the road
   var air = p.label([XR[0] + 0.15, YR[0] + 0.3], '', { tex: false, color: 'bad', anchor: 'e' });
   var roA = CYL.readout('At the crest, \\(N/mg = 1 - v^2/g\\rho\\)'), roB = CYL.readout('In the dip, \\(N/mg = 1 + v^2/g\\rho\\)');
   var roN = CYL.readout('Acceleration \\(a_n = v^2/\\rho\\)', { color: 'bad' }), roV = CYL.readout('Leaves the crest at \\(\\sqrt{g\\rho}\\)', { color: 'good' });
@@ -390,7 +395,7 @@ CYL.ready(function () {
     if (N > 1e-6) cc.N.set([x0, b0], [0, 1], Math.min(N, 3 * G) * KS); else cc.N.hide();   // both tires' push as one, ending under the CG
     var lv = Math.min(1.0, 0.03 * v);
     cc.v.setVisible(lv > 1e-6);
-    if (lv > 1e-6) cc.v.set([x0 - 0.35, cg[1] + 0.82], [x0 - 0.35 + lv, cg[1] + 0.82]);   // above the weight's tail
+    if (lv > 1e-6) cc.v.set([x0 - 0.35, cg[1] + 0.95], [x0 - 0.35 + lv, cg[1] + 0.95]);   // above the weight's tail and its label
     var la = Math.min(1.0, an * KS), yb = y(aX) + 0.1;     // beside the car, above the road
     cc.a.setVisible(la > 1e-6);
     if (la > 1e-6) { if (aDir < 0) cc.a.set([aX, yb + la], [aX, yb]); else cc.a.set([aX, yb], [aX, yb + la]); }
@@ -410,8 +415,8 @@ CYL.ready(function () {
     radius([-1.3, y(-1.3)], oc); radius([D - 1.3, y(D - 1.3)], od);
     place(cA, 0, NA, Math.min(an, G), v, -1, -0.85);          // airborne at the crest: gravity alone, so its acceleration is g
     place(cB, D, NB, an, v, 1, D + 0.85);
-    roA.set(CYL.fmt(Math.max(0, NA / G), 3)); roB.set(CYL.fmt(NB / G, 3)); roN.set(CYL.fmt(an, 3) + '\u00a0m/s\u00b2');
-    roV.set(CYL.fmt(Math.sqrt(G * rho) * 3.6, 3) + '\u00a0km/h');
+    roA.set(CYL.fmtFixed(Math.max(0, NA / G), 3)); roB.set(CYL.fmtFixed(NB / G, 3)); roN.set(CYL.fmtFixed(an, 2) + '\u00a0m/s\u00b2');
+    roV.set(CYL.fmtFixed(Math.sqrt(G * rho) * 3.6, 1) + '\u00a0km/h');
     air.setText(NA < 0 ? 'At the crest: airborne, since N would have to pull' : NA < 1e-6 ? 'At the crest: N = 0, about to leave the road' : '');
   }
   draw();
@@ -436,14 +441,14 @@ CYL.ready(function () {
   var first = setup();
   var fig = ENERGY.figure({
     stage: document.getElementById('fig73-stage'), controls: panel,
-    xRange: [-3.1, 2.7], yRange: [-0.35, 2.4], maxHeight: 360,
+    xRange: [-3.35, 2.7], yRange: [-0.35, 2.4], maxHeight: 360,
     track: first.track, params: first.params, body: { shape: 'block', w: 0.22, h: 0.12 }, fbd: 'contact', fScale: 0.025, vScale: 0.07,
     bars: false, readouts: ['t', 'v'], toggles: ['v', 'forces', 'trace'], forces: ['W', 'N'], speed: 0.5,
     decorate: function (p) { p.line([-3.05, -0.02], [2.65, -0.02], { color: 'muted', width: 1.2 }); },
     onUpdate: function (s, f) {
       var s0 = s[0], run = f.run(0), lv = run.event('leave');
-      roN.set(s0.flight ? '0 (off the track)' : CYL.fmt(s0.N / G, 3));
-      roS.set(lv ? (s0.t >= lv.t ? 'left the track at ' + CYL.fmt(lv.y, 3) + '\u00a0m up' : 'will leave the track at ' + CYL.fmt(lv.y, 3) + '\u00a0m') : 'stays on the track');
+      roN.set(s0.flight ? '0 (off the track)' : CYL.fmtFixed(s0.N / G, 3));
+      roS.set(lv ? (s0.t >= lv.t ? 'left the track at ' + CYL.fmtFixed(lv.y, 2) + '\u00a0m up' : 'will leave the track at ' + CYL.fmtFixed(lv.y, 2) + '\u00a0m') : 'stays on the track');
     },
     aria: 'A small car runs along a level track into a vertical circular loop at a chosen speed. If the speed is too low, the normal force falls to zero before the top, and the car leaves the track and falls inside the loop.'
   });

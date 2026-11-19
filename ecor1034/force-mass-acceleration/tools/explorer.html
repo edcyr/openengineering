@@ -129,8 +129,12 @@ CYL.ready(function () {
         var top = f.toPlane(0, 0), bot = f.toPlane(L, 0), th = slope(st);
         g.polyline([top, bot, [top[0], bot[1]]], { closed: true, color: 'muted', width: 1, fill: 'muted', fillOpacity: 0.12 });
         if (th > 0.01) {
-          g.arc({ center: bot, r: 0.9, theta0: Math.PI - th, theta1: Math.PI, color: 'muted', width: 1.2, arrow: false });
-          g.label([bot[0] - 1.2 * Math.cos(th / 2), bot[1] + 1.2 * Math.sin(th / 2)], '\\theta', { color: 'muted' });
+          // theta's label sits where the wedge is tall enough for it (below the base for a very gentle slope),
+          // beyond the block's last position at the bottom
+          var rw = 0.155 / Math.sin(th / 2), rl = Math.min(3.6, Math.max(1.6, rw));
+          g.arc({ center: bot, r: rl - 0.3, theta0: Math.PI - th, theta1: Math.PI, color: 'muted', width: 1.2, arrow: false });
+          if (rw > 3.6) g.label([bot[0] - rl + 0.3, bot[1]], '\\theta', { color: 'muted', anchor: 's', offset: [0, 2] });
+          else g.label([bot[0] - rl * Math.cos(th / 2), bot[1] + rl * Math.sin(th / 2)], '\\theta', { color: 'muted' });
         }
       },
       spec: function (st) {
@@ -148,7 +152,17 @@ CYL.ready(function () {
       note: '\u03bcs = \u03bck + 0.1. The bars show the horizontal component of the pull, P cos \u03b1.',
       frame: { xRange: [-0.6, 9.6], yRange: [-1.9, 2.7], maxHeight: 320, follow: true }, draw: [{ shape: 'block', h: 0.6, pull: true }],
       forces: ['W', 'N', 'Ff', 'P'], ledger: ['P', 'Ff'], readouts: ['t', 'vA', 'aA', 'NA'], chart: { kind: 'v' },
-      spec: function (st) { var a = st.al * D2R; return { bodies: [{ m: st.m, x: 0.5, w: 0.8, mu: st.mu, muS: st.mu + 0.1, P: st.P * Math.cos(a), Pn: st.P * Math.sin(a), label: 'A' }], tmax: 3, stopWhenStill: false }; } },
+      spec: function (st) { var a = st.al * D2R; return { bodies: [{ m: st.m, x: 0.5, w: 0.8, mu: st.mu, muS: st.mu + 0.1, P: st.P * Math.cos(a), Pn: st.P * Math.sin(a), label: 'A' }], tmax: 3, stopWhenStill: false }; },
+      onUpdate: function (s, f, st) {             // the pull's angle alpha, marked at its tail on the front face
+        if (!f.gAl) f.gAl = f.plane.group();
+        f.gAl.clear();
+        var al = st.al * D2R;
+        if (al < 8 * D2R || !(st.P > 0) || !f.shown('forces')) return;
+        var tail = f.toPlane(s.x[0] + 0.4, 0.3), rl = Math.min(2.3, Math.max(0.75, 0.16 / Math.sin(al / 2)));
+        f.gAl.line(tail, [tail[0] + rl + 0.15, tail[1]], { color: 'muted', width: 1, dashed: true });
+        f.gAl.arc({ center: tail, r: rl - 0.25, theta0: 0, theta1: al, color: 'muted', width: 1.2, arrow: false });
+        f.gAl.label([tail[0] + rl * Math.cos(al / 2), tail[1] + rl * Math.sin(al / 2)], '\\alpha', { color: 'muted' });
+      } },
     { id: 'grow', label: 'Growing push',
       desc: 'A push that grows steadily with time, P = ct. Static friction follows it up until it reaches \u03bcs N; then the crate breaks free.',
       sliders: [
@@ -216,12 +230,12 @@ CYL.ready(function () {
     p.circle({ center: PC, r: 0.025, color: 'ink', fill: 'ink', fillOpacity: 1 });
     p.arc({ center: PC, r: PR, theta0: Math.PI / 2, theta1: 0, color: 'ink', width: 1.6, arrow: false });
     var cordA = p.line([0, 0], [0, 0], { color: 'ink', width: 1.6 }), cordB = p.line([0, 0], [0, 0], { color: 'ink', width: 1.6 });
-    var A = FMA.block(p, { w: AW, h: AH, color: 'accent', label: 'A' }), B = FMA.block(p, { w: BW, h: BH, color: 'warn', label: 'B' });
+    var A = FMA.block(p, { w: AW, h: AH, color: 'accent', label: 'A', labelAt: [0.3, 0.09] }), B = FMA.block(p, { w: BW, h: BH, color: 'warn', label: 'B', labelAt: [-0.17, -0.19] });
     var cgA = p.circle({ center: [0, 0], r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 }), cgB = p.circle({ center: [0, 0], r: 0.035, color: 'z', fill: 'z', fillOpacity: 1 });
     var f = {
       WA: FMA.force(p, { color: 'z', label: 'W_A' }), NA: FMA.force(p, { color: 'ink', label: 'N_A' }),
       Ff: FMA.force(p, { color: 'r', label: 'F_f', labelSide: 'left', minLength: 0.25 }), TA: FMA.force(p, { color: 'muted', label: 'T', labelSide: 'left' }),
-      WB: FMA.force(p, { color: 'z', label: 'W_B', labelSide: 'right' }), TB: FMA.force(p, { color: 'muted', label: 'T' })
+      WB: FMA.force(p, { color: 'z', label: 'W_B', labelSide: 'left', labelGap: 16 }), TB: FMA.force(p, { color: 'muted', label: 'T', labelSide: 'beyond' })
     };
     var vA = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v', labelAt: 1, labelSide: 'left' });
     var vB = p.line([0, 0], [0, 0], { color: 'good', width: 2.6, arrow: true, label: 'v', labelAt: 1, labelSide: 'left' });
@@ -232,7 +246,7 @@ CYL.ready(function () {
     var mA = st.mA, mB = st.mB, muS = st.mu + 0.05, moves = mB > muS * mA + 1e-9;
     var a = moves ? (mB - st.mu * mA) * G / (mA + mB) : 0, Ffr = moves ? st.mu * mA * G : mB * G, T = moves ? mB * (G - a) : mB * G, dur = moves ? Math.sqrt(2 * D / a) : 1.5;
     var K = 1.15 / Math.max(mA, mB) / G;
-    roA.set(CYL.fmt(a, 4) + '\u00a0m/s\u00b2'); roT.set(CYL.fmt(T, 4) + '\u00a0N'); roW.set(CYL.fmt(mB * G, 4) + '\u00a0N');
+    roA.set(CYL.fmtFixed(a, 2) + '\u00a0m/s\u00b2'); roT.set(CYL.fmtFixed(T, 2) + '\u00a0N'); roW.set(CYL.fmtFixed(mB * G, 2) + '\u00a0N');
     ledger.setScale(-Ffr, mB * G * 1.04);
     ledger.set({ start: 0, WB: mB * G, Ff: -Ffr, end: (mA + mB) * a });
     function draw(t) {
@@ -246,12 +260,14 @@ CYL.ready(function () {
       f.NA.set([xa + 0.3, 0], [0, 1], mA * G * K);
       if (Ffr > 1e-9) f.Ff.set([xa - 0.2, 0], [-1, 0], Ffr * K); else f.Ff.hide();
       f.TA.set([xa + AW / 2, AH / 2 + 0.17], [1, 0], T * K);
+      // W_B's label: right of the cord, past T; inside B (left of the arrow) when the arrow is too short to leave B
+      f.WB.handle.setLabelOptions(mB * G * K < BH / 2 + 0.15 ? { labelSide: 'right', labelGap: 7 } : { labelSide: 'left', labelGap: 16 }, true);
       f.WB.set([XB, yb], [0, -1], mB * G * K);
       f.TB.set([XB + 0.14, yb + BH / 2], [0, 1], T * K);
       var vl = Math.min(1.2, 0.2 * v);
       vA.setVisible(vl > 0.02); vB.setVisible(vl > 0.02);
-      if (vl > 0.02) { vA.set([xa + 0.12, AH + 0.32], [xa + 0.12 + vl, AH + 0.32]); vB.set([XB + 0.55, yb + 0.35], [XB + 0.55, yb + 0.35 - vl]); }
-      roV.set(CYL.fmt(v, 4) + '\u00a0m/s');
+      if (vl > 0.02) { vA.set([xa + 0.12, AH + 0.32], [xa + 0.12 + vl, AH + 0.32]); vB.set([XB + 0.7, yb + 0.35], [XB + 0.7, yb + 0.35 - vl]); }
+      roV.set(CYL.fmtFixed(v, 2) + '\u00a0m/s');
     }
     var pl = MOMENTUM.player({ stage: stg, duration: function () { return dur; }, onTime: draw });
     return {
@@ -318,6 +334,7 @@ CYL.ready(function () {
       fig = MOMENTUM.figure(Object.assign({}, sc.frame, {
         stage: stage, controls: panel, spec: sc.spec(st), draw: sc.draw, fScale: sc.fScale,
         track: sc.track ? sc.track(st) : undefined, scenery: sc.scenery ? function (g, f) { sc.scenery(g, f, st); } : undefined,
+        onUpdate: sc.onUpdate ? function (s, f) { sc.onUpdate(s, f, st); } : undefined,
         show: { v: true, forces: true }, toggles: ['v', 'forces'], forces: sc.forces,
         pbars: false, forceLedger: { items: sc.ledger, title: sc.ledgerTitle },
         readouts: sc.readouts, chart: sc.chart,

@@ -189,25 +189,32 @@ CYL.ready(function () {
   }
   var panel = document.getElementById('fig81-controls');
   var roN = CYL.readout('Normal force \\(N/mg\\)'), roS = CYL.readout('Status');
-  var first = setup();
+  var first = setup(), hDim = null, hExt = null;
+  function setH() {                                  // the start height h, measured from the datum at the bottom of the loop
+    hExt.set([-3.5, st.h * R], [-4.0, st.h * R]);
+    hDim.set([-3.85, 0], [-3.85, st.h * R]);
+  }
   var fig = ENERGY.figure({
     stage: document.getElementById('fig81-stage'), controls: panel,
-    xRange: [-3.6, 2.7], yRange: [-0.35, 4.25], maxHeight: 420,
+    xRange: [-4.25, 2.7], yRange: [-1.0, 4.9], maxHeight: 420,
     track: first.track, params: first.params, body: { shape: 'ball', r: 0.08 },
     bars: { items: ['T', 'Vg'] }, readouts: ['t', 'v', 'h'], toggles: ['v', 'forces', 'trace'], forces: ['W', 'N'],
     decorate: function (p) {
-      p.line([-3.55, -0.02], [2.65, -0.02], { color: 'muted', width: 1.2 });
+      p.line([-4.2, -0.02], [2.65, -0.02], { color: 'muted', width: 1.2 });
       p.line([1.4, 0], [1.4, 2 * R], { color: 'muted', width: 1.2, arrow: 'both', label: '2R', labelSide: 'right' });
+      hExt = p.line([-3.5, 1], [-4.0, 1], { color: 'faint', width: 1 });
+      hDim = p.line([-3.85, 0], [-3.85, 1], { color: 'muted', width: 1.2, arrow: 'both', label: 'h', labelSide: 'left' });
+      setH();
     },
     onUpdate: function (s, f) {
       var st0 = s[0], run = f.run(0), lv = run.event('leave');
-      roN.set(st0.flight ? '0 (off the track)' : CYL.fmt(st0.N / 9.81, 3));
-      roS.set(lv ? (st0.t >= lv.t ? 'left the track at ' + CYL.fmt(lv.y, 3) + '\u00a0m up' : 'will leave the track at ' + CYL.fmt(lv.y, 3) + '\u00a0m') : 'stays on the track');
+      roN.set(st0.flight ? '0.000' : CYL.fmtFixed(st0.N / 9.81, 3));   // off the track: the Status line says so
+      roS.set(lv ? (st0.t >= lv.t ? 'left the track at ' + CYL.fmtFixed(lv.y, 2) + '\u00a0m up' : 'will leave the track at ' + CYL.fmtFixed(lv.y, 2) + '\u00a0m') : 'stays on the track');
     },
     aria: 'A ball runs down a ramp from a chosen height into a vertical circular loop. If the start is too low it leaves the track near the top and falls inside the loop.'
   });
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Start height' }));
-  panel.appendChild(CYL.slider({ label: 'Height \\(h\\) (in loop radii)', min: 1.5, max: 4, step: 0.1, value: st.h, unit: 'R', onInput: function (v) { st.h = v; fig.setRun(0, setup()); } }).el);
+  panel.appendChild(CYL.slider({ label: 'Height \\(h\\) (in loop radii)', min: 1.5, max: 4, step: 0.1, value: st.h, unit: 'R', onInput: function (v) { st.h = v; setH(); fig.setRun(0, setup()); } }).el);
   panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [roN.el, roS.el]));
   panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Smooth track, loop radius R = 1 m, a tiny starting push of 0.2 m/s. Datum at the bottom of the loop.' }));
   fig.update();
@@ -227,7 +234,7 @@ CYL.ready(function () {
   var curve = ch.fn(function () { return 0; }, { color: 'ink', width: 2.6, samples: 360 });
   var neg = ch.area(function () { return 0; }, { color: 'bad', fillOpacity: 0.18, samples: 360 });
   var top = ch.vline(180, { color: 'muted', label: 'top' });
-  var off = ch.marker([0, 0], { color: 'bad', r: 5, label: 'leaves' });
+  var off = ch.marker([0, 0], { color: 'bad', r: 5, label: 'leaves', labelDy: -12 });   // above the zero line
   var roT = CYL.readout('At the top, \\(N/mg\\)'), roB = CYL.readout('At the bottom, \\(N/mg\\)'), roL = CYL.readout('Leaves the track at');
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The loop' }));
   panel.appendChild(CYL.slider({ label: 'Start height \\(h/R\\)', min: 1.5, max: 4, step: 0.05, value: st.h, onInput: function (v) { st.h = v; draw(); } }).el);
@@ -236,12 +243,12 @@ CYL.ready(function () {
   function draw() {
     curve.setFn(n);
     neg.set(function (d) { return Math.min(0, n(d)); }, { base: 0 });
-    roT.set(CYL.fmt(n(180), 3)); roB.set(CYL.fmt(n(0), 3));
+    roT.set(CYL.fmtFixed(n(180), 3)); roB.set(CYL.fmtFixed(n(0), 3));
     var c = -2 * (st.h - 1) / 3;                       // cos φ where N = 0
     if (c > -1 && c < 1 && n(180) < 0) {
       var phi = Math.acos(c) * 180 / Math.PI;
       off.setVisible(true); off.set([phi, 0]);
-      roL.set(CYL.fmt(phi, 4) + '\u00b0 from the bottom');
+      roL.set(CYL.fmtFixed(phi, 1) + '\u00b0 from the bottom');
     } else { off.setVisible(false); roL.set('never: N > 0 all the way round'); }
   }
   draw();
@@ -256,6 +263,7 @@ CYL.ready(function () {
   var track = ENERGY.track([{ arc: { c: [0, 0], r: R, a0: Math.PI / 2, a1: 0 } }, { line: [[R, 0], [R + 1.6, 0]] }], { side: 1 });
   function params() { return { m: 1, v0: st.v0, tmax: 6 }; }
   var panel = document.getElementById('fig83-controls');
+  var thRay = null, thArc = null;
   var roA = CYL.readout('Leaves at \\(\\theta\\) from the vertical'), roP = CYL.readout('Predicted \\(\\cos^{-1}\\!\\left(\\tfrac23 + \\tfrac{v_0^2}{3gR}\\right)\\)');
   var fig = ENERGY.figure({
     stage: document.getElementById('fig83-stage'), controls: panel,
@@ -268,18 +276,23 @@ CYL.ready(function () {
       p.polyline(pts.slice(45), { color: 'ink', width: 2.6 });
       p.line([-1.45, 0], [2.85, 0], { color: 'ink', width: 2 });
       p.line([0, 0], [0, R], { color: 'faint', width: 1, dashed: true });
+      thRay = p.line([0, 0], [0, R], { color: 'faint', width: 1, dashed: true });      // to where it leaves
+      thArc = p.arc({ center: [0, 0], r: 0.38, theta0: Math.PI / 2 - 0.8, theta1: Math.PI / 2, color: 'muted', width: 1.3, arrow: false, label: '\\theta' });
     },
     onUpdate: function (s, f) {
       var lv = f.run(0).event('leave');
-      roA.set(lv ? CYL.fmt(Math.acos(Math.max(-1, Math.min(1, lv.y / R))) / D2R, 4) + '\u00b0' : '\u2014');
+      var th = lv ? Math.acos(Math.max(-1, Math.min(1, lv.y / R))) : 0;
+      thRay.setVisible(th > 0.02); thArc.setVisible(th > 0.02);
+      if (th > 0.02) { thRay.set([0, 0], [R * Math.sin(th), R * Math.cos(th)]); thArc.set({ theta0: Math.PI / 2 - th, theta1: Math.PI / 2 }); }
+      roA.set(lv ? CYL.fmtFixed(Math.acos(Math.max(-1, Math.min(1, lv.y / R))) / D2R, 1) + '\u00b0' : '\u2014');
     },
     aria: 'A small block slides from the top of a smooth dome, leaves the surface part way down and lands on the ground as a projectile.'
   });
   function predicted() { var c = 2 / 3 + st.v0 * st.v0 / (3 * 9.81 * R); return c >= 1 ? 0 : Math.acos(c) / D2R; }
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Starting push' }));
-  panel.appendChild(CYL.slider({ label: 'Speed at the top \\(v_0\\)', min: 0.05, max: 3.5, step: 0.05, value: st.v0, color: 'good', unit: 'm/s', onInput: function (v) { st.v0 = v; fig.setParams(0, params()); roP.set(CYL.fmt(predicted(), 4) + '\u00b0'); } }).el);
+  panel.appendChild(CYL.slider({ label: 'Speed at the top \\(v_0\\)', min: 0.05, max: 3.5, step: 0.05, value: st.v0, color: 'good', unit: 'm/s', onInput: function (v) { st.v0 = v; fig.setParams(0, params()); roP.set(CYL.fmtFixed(predicted(), 1) + '\u00b0'); } }).el);
   panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'polite' }, [roA.el, roP.el]));
-  roP.set(CYL.fmt(predicted(), 4) + '\u00b0');
+  roP.set(CYL.fmtFixed(predicted(), 1) + '\u00b0');
   fig.update();
   CYL.renderMath(panel);
 });

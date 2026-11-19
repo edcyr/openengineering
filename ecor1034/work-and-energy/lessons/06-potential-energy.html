@@ -179,13 +179,16 @@ CYL.ready(function () {
   p.line([4.4, 1], [4.4, 0], { color: 'ink', width: 2 }); p.line([5.4, 1], [5.4, 0], { color: 'ink', width: 2 });
   p.circle({ center: [2.3, 4.14], r: 0.14, color: 'ink', width: 1.4, fill: 'accent', fillOpacity: 0.6 });
   p.circle({ center: [4.9, 1.14], r: 0.14, color: 'ink', width: 1.4, fill: 'accent', fillOpacity: 0.6 });
-  p.label([2.3, 4.3], 'A', { anchor: 'n' }); p.label([4.9, 1.3], 'B', { anchor: 'n' });
+  p.label([2.3, 4.3], 'A', { anchor: 'n' }); p.label([5.07, 1.14], 'B', { anchor: 'e' });   // B to the right, off the dashed path
   var path = []; for (var i = 0; i <= 40; i++) { var u = i / 40; path.push([2.3 + 2.6 * u, 4.14 + 1.2 * u - 4.2 * u * u]); }
   p.polyline(path, { color: 'faint', width: 1.4, dashed: true });
   var hA = p.line([0, 0], [0, 0], { color: 'z', width: 1.6, arrow: 'both', label: 'y_A', labelSide: 'left' });
-  var hB = p.line([0, 0], [0, 0], { color: 'z', width: 1.6, arrow: 'both', label: 'y_B', labelSide: 'right' });
+  var opB = { color: 'z', width: 1.6, arrow: 'both', label: 'y_B', labelSide: 'right' };   // labelAt is set in draw()
+  var hB = p.line([0, 0], [0, 0], opB);
   var dline = p.line([-0.45, 0], [6.45, 0], { color: 'z', width: 2, dashed: true });
-  var dlab = p.label([3.4, 0], '\\text{datum}', { anchor: 'n', color: 'z' });
+  // the datum's name sits over the building, clear of the path, the dimensions and the table; below the line when
+  // the line is under the floor or just under the balcony's edge
+  var dlab = p.label([0.8, 0], '\\text{datum}', { anchor: 'n', color: 'z' }), dlabS = p.label([0.8, 0], '\\text{datum}', { anchor: 's', color: 'z' });
   var grip = p.point([6.0, 0], {
     color: 'z', r: 7, draggable: true, ariaLabel: 'Datum height',
     snap: function (q) { return [6.0, Math.max(-1.2, Math.min(5, Math.round(q[1] * 4) / 4))]; },
@@ -201,12 +204,15 @@ CYL.ready(function () {
   panel.appendChild(CYL.el('p', { class: 'mf-note', text: 'Drag the blue handle at the right end of the datum, or use the slider.' }));
   function draw(fromSlider) {
     var d = st.d;
-    dline.set([-0.45, d], [6.45, d]); dlab.set([3.4, d]); if (!fromSlider) sl.set(d, true); grip.set([6.0, d]);
+    var below = d < 0 || (d > 3.6 && d < 4);
+    dline.set([-0.45, d], [6.45, d]); dlab.set([0.8, d]); dlabS.set([0.8, d]); dlab.setVisible(!below); dlabS.setVisible(below);
+    if (!fromSlider) sl.set(d, true); grip.set([6.0, d]);
+    opB.labelAt = d < 0 ? (0.5 - d) / (YB - d) : 0.5;   // y_B's label between the floor and the table top, not on the floor
     hA.set([2.75, d], [2.75, YA]); hB.set([5.75, d], [5.75, YB]);
-    hA.setVisible(Math.abs(YA - d) > 0.15); hB.setVisible(Math.abs(YB - d) > 0.15);
+    hA.setVisible(Math.abs(YA - d) > 0.3); hB.setVisible(Math.abs(YB - d) > 0.3);   // too short to label: the readouts give it
     var VA = W * (YA - d), VB = W * (YB - d);
-    roA.set(CYL.fmt(VA, 4) + '\u00a0J'); roB.set(CYL.fmt(VB, 4) + '\u00a0J');
-    roD.set(CYL.fmt(VB - VA, 4) + '\u00a0J'); roU.set('+' + CYL.fmt(VA - VB, 4) + '\u00a0J');
+    roA.set(CYL.fmtFixed(VA, 2) + '\u00a0J'); roB.set(CYL.fmtFixed(VB, 2) + '\u00a0J');
+    roD.set(CYL.fmtFixed(VB - VA, 2) + '\u00a0J'); roU.set('+' + CYL.fmtFixed(VA - VB, 2) + '\u00a0J');
   }
   draw();
   CYL.renderMath(panel);
@@ -245,8 +251,8 @@ CYL.ready(function () {
     eLine.set(E);
     mark.set([x, v]);
     slope.set(function (q) { return Math.abs(q - x) < 0.6 ? v - f * (q - x) : NaN; });
-    roT.set(v <= E ? CYL.fmt(E - v, 4) + '\u00a0J' : 'none here');
-    roF.set(CYL.fmt(Math.abs(f) < 1e-6 ? 0 : f, 4) + '\u00a0N' + (Math.abs(f) < 0.05 ? ' (equilibrium)' : f > 0 ? ' (toward +s)' : ' (toward −s)'));
+    roT.set(v <= E ? CYL.fmtFixed(E - v, 2) + '\u00a0J' : 'none here');
+    roF.set(CYL.fmtFixed(Math.abs(f) < 1e-6 ? 0 : f, 2) + '\u00a0N' + (Math.abs(f) < 0.05 ? ' (equilibrium)' : f > 0 ? ' (toward +s)' : ' (toward −s)'));
     roR.set(v <= E ? 'yes: V is below E' : 'no: it would need negative T');
   }
   draw();

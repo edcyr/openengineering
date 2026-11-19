@@ -203,8 +203,10 @@ CYL.ready(function () {
     scenery: function (g, f) {
       var top = f.toPlane(0, 0), bot = f.toPlane(L, 0), corner = [top[0], bot[1]];
       g.polyline([top, bot, corner], { closed: true, color: 'muted', width: 1, fill: 'muted', fillOpacity: 0.12 });
-      g.arc({ center: bot, r: 0.9, theta0: Math.PI - th(), theta1: Math.PI, color: 'muted', width: 1.2, arrow: false });
-      g.label([bot[0] - 1.2 * Math.cos(th() / 2), bot[1] + 1.2 * Math.sin(th() / 2)], '\\theta', { color: 'muted' });
+      // theta's label sits where the wedge is tall enough for it, beyond the block's last position at the bottom
+      var rl = Math.min(3.6, Math.max(1.6, 0.155 / Math.sin(th() / 2)));
+      g.arc({ center: bot, r: rl - 0.3, theta0: Math.PI - th(), theta1: Math.PI, color: 'muted', width: 1.2, arrow: false });
+      g.label([bot[0] - rl * Math.cos(th() / 2), bot[1] + rl * Math.sin(th() / 2)], '\\theta', { color: 'muted' });
     },
     aria: 'A block on a rough incline that slopes down to the right. Arrows show its weight, the normal force and friction up the slope. When it slides, it speeds up steadily, and a chart plots its velocity against time as a straight line. Bars add the forces along the slope to give m times a.'
   });
@@ -212,7 +214,7 @@ CYL.ready(function () {
   function rebuild() {
     fig.setSpec(spec(), false, { origin: origin() });
     var tr = Math.atan(st.muS) / D2R, slides = Math.tan(th()) > st.muS + 1e-9;
-    note.textContent = (slides ? 'It slides: tan \u03b8 = ' + CYL.fmt(Math.tan(th()), 3) + ' > \u03bcs.' : 'It holds: tan \u03b8 = ' + CYL.fmt(Math.tan(th()), 3) + ' \u2264 \u03bcs, so friction balances the weight\u2019s pull along the slope.')
+    note.textContent = (slides ? 'It slides: tan \u03b8 = ' + CYL.fmtFixed(Math.tan(th()), 3) + ' > \u03bcs.' : 'It holds: tan \u03b8 = ' + CYL.fmtFixed(Math.tan(th()), 3) + ' \u2264 \u03bcs, so friction balances the weight\u2019s pull along the slope.')
       + ' The angle of repose is ' + CYL.fmt(tr, 3) + '\u00b0.' + (st.muK > st.muS ? ' (\u03bck is held at \u03bcs.)' : '');
   }
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Change the setup' }));
@@ -229,7 +231,7 @@ CYL.ready(function () {
 CYL.ready(function () {
   'use strict';
   var D2R = Math.PI / 180, M = 40, MUK = 0.4, G = 9.81;
-  var st = { P: 250, al: 0 };
+  var st = { P: 250, al: 0 }, gAl = null;
   function spec() {
     var a = st.al * D2R;
     return { bodies: [{ m: M, x: 0.5, w: 0.8, mu: MUK, muS: MUK + 0.1, P: st.P * Math.cos(a), Pn: st.P * Math.sin(a), label: 'A' }], tmax: 2.5, stopWhenStill: false };
@@ -242,6 +244,16 @@ CYL.ready(function () {
     show: { v: true, forces: true }, toggles: ['v', 'forces'], forces: ['W', 'N', 'Ff', 'P'],
     pbars: false, forceLedger: { items: ['P', 'Ff'] },
     readouts: ['vA', 'aA', 'NA'], chart: { kind: 'v', height: 150 },
+    onUpdate: function (s, f) {                 // the pull's angle alpha, marked at its tail on the front face
+      if (!gAl) gAl = f.plane.group();
+      gAl.clear();
+      var al = st.al * D2R;
+      if (al < 8 * D2R || !(st.P > 0) || !f.shown('forces')) return;
+      var tail = f.toPlane(s.x[0] + 0.4, 0.3), rl = Math.min(2.3, Math.max(0.75, 0.16 / Math.sin(al / 2)));
+      gAl.line(tail, [tail[0] + rl + 0.15, tail[1]], { color: 'muted', width: 1, dashed: true });
+      gAl.arc({ center: tail, r: rl - 0.25, theta0: 0, theta1: al, color: 'muted', width: 1.2, arrow: false });
+      gAl.label([tail[0] + rl * Math.cos(al / 2), tail[1] + rl * Math.sin(al / 2)], '\\alpha', { color: 'muted' });
+    },
     aria: 'A crate on a rough floor pulled to the right by a force at an angle above the horizontal. Arrows show the weight, the normal force, friction and the pull. Bars add the horizontal component of the pull and friction to give m times a.'
   });
   var roBest = CYL.readout('Best angle \\(\\tan^{-1}\\mu_k\\)');
@@ -249,8 +261,8 @@ CYL.ready(function () {
   function rebuild() {
     fig.setSpec(spec());
     var best = Math.atan(MUK);
-    roBest.set(CYL.fmt(best / D2R, 3) + '\u00b0');
-    roAmax.set(CYL.fmt(Math.max(0, (st.P * (Math.cos(best) + MUK * Math.sin(best)) - MUK * M * G) / M), 3) + ' m/s\u00b2');
+    roBest.set(CYL.fmtFixed(best / D2R, 1) + '\u00b0');
+    roAmax.set(CYL.fmtFixed(Math.max(0, (st.P * (Math.cos(best) + MUK * Math.sin(best)) - MUK * M * G) / M), 2) + ' m/s\u00b2');
   }
   panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The pull' }));
   panel.appendChild(CYL.slider({ label: 'Pull \\(P\\)', min: 0, max: 300, step: 10, value: st.P, unit: 'N', color: 'warn', onInput: function (v) { st.P = v; rebuild(); } }).el);

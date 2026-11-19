@@ -178,15 +178,16 @@ CYL.ready(function () {
   });
   var circ = p.circle({ center: [0, 0], r: 1, color: 'muted', width: 1.2, dashed: true });
   var pathArc = p.polyline([], { color: 'accent', width: 3 });
-  var aT = p.line([0, 0], [0, 0], { color: 't', width: 2.5, arrow: true, label: 'a_t', labelSide: 'right' });
-  var aN = p.line([0, 0], [0, 0], { color: 'n', width: 2.5, arrow: true, label: 'a_n', labelSide: 'right' });
+  // labels placed automatically, clear of the arrows and of each other wherever the tips are dragged
+  var aT = p.line([0, 0], [0, 0], { color: 't', width: 2.5, arrow: true, label: 'a_t', labelSide: 'right', labelAuto: true, labelPriority: 2 });
+  var aN = p.line([0, 0], [0, 0], { color: 'n', width: 2.5, arrow: true, label: 'a_n', labelSide: 'right', labelAuto: true, labelPriority: 2 });
   var vL = p.line([0, 0], st.v, { color: 'good', width: 3.25, arrow: true });
   var aL = p.line([0, 0], st.a, { color: 'bad', width: 3.25, arrow: true });
-  p.point([0, 0], { color: 'point', r: 5.5, label: 'P', labelAnchor: 'sw' });
+  p.point([0, 0], { color: 'point', r: 5.5, label: 'P', labelAnchor: 'sw', labelAuto: true, labelPriority: 3 });
   var snap = function (q) { return [Math.round(q[0] * 4) / 4, Math.round(q[1] * 4) / 4]; };
-  var V = p.point(st.v, { color: 'good', r: 7, draggable: true, snap: snap, label: '\\vvec', labelAnchor: 'ne', ariaLabel: 'Tip of the velocity',
+  var V = p.point(st.v, { color: 'good', r: 7, draggable: true, snap: snap, label: '\\vvec', labelAnchor: 'ne', labelAuto: true, labelPriority: 5, ariaLabel: 'Tip of the velocity',
     ariaFormat: function (q) { return 'v = (' + q[0] + ', ' + q[1] + ') m/s'; }, onDrag: function (q) { st.v = q; schedule(); } });
-  var A = p.point(st.a, { color: 'bad', r: 7, draggable: true, snap: snap, label: '\\avec', labelAnchor: 'ne', ariaLabel: 'Tip of the acceleration',
+  var A = p.point(st.a, { color: 'bad', r: 7, draggable: true, snap: snap, label: '\\avec', labelAnchor: 'ne', labelAuto: true, labelPriority: 4, ariaLabel: 'Tip of the acceleration',
     ariaFormat: function (q) { return 'a = (' + q[0] + ', ' + q[1] + ') m/s squared'; }, onDrag: function (q) { st.a = q; schedule(); } });
   var panel = document.getElementById('fig81-controls');
   var R = {
@@ -203,8 +204,8 @@ CYL.ready(function () {
     var vx = st.v[0], vy = st.v[1], ax = st.a[0], ay = st.a[1];
     vL.set([0, 0], st.v); aL.set([0, 0], st.a);
     var s = CURV.nt(vx, vy, ax, ay);
-    R.v.set('(' + CYL.fmt(vx) + ', ' + CYL.fmt(vy) + ') m/s');
-    R.a.set('(' + CYL.fmt(ax) + ', ' + CYL.fmt(ay) + ') m/s\u00b2');
+    R.v.set('(' + CYL.fmtFixed(vx, 2) + ', ' + CYL.fmtFixed(vy, 2) + ') m/s');
+    R.a.set('(' + CYL.fmtFixed(ax, 2) + ', ' + CYL.fmtFixed(ay, 2) + ') m/s\u00b2');
     if (!(s.v > 1e-9)) {
       aT.setVisible(false); aN.setVisible(false); circ.setVisible(false); pathArc.set([]);
       R.at.set('\u2014'); R.an.set('\u2014'); R.rho.set('\u2014 (\\(v = 0\\))'); R.sp.set('undefined: at rest');
@@ -213,7 +214,9 @@ CYL.ready(function () {
     var et = s.et, Q = [et[0] * s.at, et[1] * s.at];
     aT.set([0, 0], Q); aT.setVisible(Math.abs(s.at) > 0.02);
     aN.set(Q, [Q[0] + s.en[0] * s.an, Q[1] + s.en[1] * s.an]); aN.setVisible(s.an > 0.02);
-    R.at.set(CYL.fmt(s.at, 4) + ' m/s\u00b2'); R.an.set(CYL.fmt(s.an, 4) + ' m/s\u00b2');
+    var px = p.getView().scale;                          // a component too short for its arrowhead loses its label
+    aT.setLabel(Math.abs(s.at) * px >= 12 ? 'a_t' : ''); aN.setLabel(s.an * px >= 12 ? 'a_n' : '');
+    R.at.set(CYL.fmtFixed(s.at, 2) + ' m/s\u00b2'); R.an.set(CYL.fmtFixed(s.an, 2) + ' m/s\u00b2');
     R.sp.set(Math.abs(s.at) < 1e-9 ? 'steady (\\(\\avec \\perp \\vvec\\))' : s.at > 0 ? 'increasing (\\(\\avec\\cdot\\vvec \\gt 0\\))' : 'decreasing (\\(\\avec\\cdot\\vvec \\lt 0\\))');
     // local path: the osculating circle, or a straight segment when a_n = 0
     var pts = [], i;
@@ -221,11 +224,11 @@ CYL.ready(function () {
       var c = [s.rho * s.en[0], s.rho * s.en[1]], th0 = Math.atan2(-c[1], -c[0]), span = Math.min(Math.PI * 0.9, 3.2 / s.rho);
       for (i = -30; i <= 30; i++) { var th = th0 + s.turn * span * i / 30; pts.push([c[0] + s.rho * Math.cos(th), c[1] + s.rho * Math.sin(th)]); }
       circ.set({ center: c, r: s.rho }); circ.setVisible(true);
-      R.rho.set(CYL.fmt(s.rho, 4) + ' m');
+      R.rho.set(CYL.fmtFixed(s.rho, 2) + ' m');
     } else {
       for (i = -1; i <= 1; i += 2) pts.push([3.2 * i * et[0], 3.2 * i * et[1]]);
       circ.setVisible(false);
-      R.rho.set(s.an > 1e-9 ? CYL.fmt(s.rho, 4) + ' m' : '\u221e (straight)');
+      R.rho.set(s.an > 1e-9 ? CYL.fmtFixed(s.rho, 2) + ' m' : '\u221e (straight)');
     }
     pathArc.set(pts);
   }
@@ -243,8 +246,8 @@ CYL.ready(function () {
       vx: function (t) { return 1.5 * t * t; }, vy: function (t) { return 6 * t - 2; },
       ax: function (t) { return 3 * t; }, ay: function () { return 6; }
     },
-    t0: 0, t1: 2.3, t: 2, speed: 0.5, xRange: [-1, 7.5], yRange: [-1, 11.6], gridStep: 1,
-    vScale: 5, aScale: 5, show: { comps: 'nt' }, toggles: ['comps', 'v', 'a', 'circle'],
+    t0: 0, t1: 2.3, t: 2, speed: 0.5, xRange: [-1.5, 8.5], yRange: [-1, 14.2], gridStep: 1,
+    vScale: 5, aScale: 2.5, show: { comps: 'nt' }, toggles: ['comps', 'v', 'a', 'circle'],
     readouts: ['t', 'v', 'ax', 'ay', 'at', 'an', 'a', 'rho'],
     aria: 'The gripper path from the origin, first dipping slightly below the x-axis and then curving up and to the right. Arrows show the velocity, the acceleration and its components, either in x and y or in the tangential and normal directions.'
   });
