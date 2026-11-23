@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drag Build-Up · Lift and the Drag Build-Up</title>
+<meta name="description" content="A drag build-up tool: the zero-lift drag of one of Module 6's aircraft built up component by component from skin friction, form factors and interference, with the miscellaneous drags, the Oswald factor, the drag polar, the maximum lift-to-drag ratio, the cruise point and the drag-divergence Mach number. Presets include the module's business jet and three illustrative aircraft.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/drag.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table td.l, .sc-table th.l { text-align: left; }
+</style>
+</head>
+<body data-page="drag" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Aerodynamics</p>
+    <h1>Drag Build-Up</h1>
+    <p class="lede">The module on one page: build up the zero-lift drag of one of Module 6's aircraft from each component's skin friction, form factor and interference, add the upsweep and the leakage, estimate the Oswald factor, and see the drag polar, the best lift-to-drag ratio, where the aircraft cruises on it, and how close it is to the drag rise.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="db-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="db-presets" role="group" aria-labelledby="db-presets-label"></div>
+    <div class="sc-grid" id="db-grid"></div>
+    <p class="small muted" id="db-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="db-totals"></div>
+    <figure class="figure wide" aria-labelledby="db-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="db-stage1"></div>
+      </div>
+      <figcaption id="db-fig1-cap"><strong>Figure T.1</strong> The drag polar at the cruise Mach number, \(C_L\) against \(C_D\), with the tangent from the origin to \(C_L^*\), the best-range point and the cruise point; Module 3's equivalent-skin-friction polar (with the same Oswald factor) is dashed for comparison.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="db-comp">
+        <caption>Component build-up at the cruise condition</caption>
+        <thead><tr><th scope="col">Component</th><th scope="col">\(\Swet\) <span class="u">(m²)</span></th><th scope="col">\(Re\)</th><th scope="col">\(C_f\)</th><th scope="col">\(FF\)</th><th scope="col">\(Q\)</th><th scope="col">\(C_D\)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="db-sum">
+        <caption>Polar and cruise</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col" class="l">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="db-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Geometry (Module 6): wetted areas, lengths, thickness ratios and sweeps from the chosen layout (the business jet with Module 7's nacelles). The length is the mean aerodynamic chord for the wing and tails, the body length for the fuselage and nacelles.</li>
+      <li>Skin friction (Lesson 3): \(Re = \rho Vl/\mu\) at the cruise altitude and Mach number; \(C_f = 1.328/\sqrt{Re}\) laminar and \(0.455/[(\log_{10}Re)^{2.58}(1 + 0.144M^2)^{0.65}]\) turbulent, mixed by the laminar share on the wing and tails, with \(Re\) capped at \(38.21(l/k)^{1.053}\) for the surface chosen.</li>
+      <li>Form factors and interference (Lesson 4): wings and tails \([1 + 0.6(t/c)/(x/c)_m + 100(t/c)^4][1.34M^{0.18}\cos^{0.28}\Lambda_m]\); fuselage \(0.9 + 5/f^{1.5} + f/400\); nacelles \(1 + 0.35/f\); \(Q\) 1.04 for the tails and as chosen for the wing and nacelles.</li>
+      <li>Miscellaneous (Lesson 5): upsweep \(3.83u^{2.5}A_{\max}\) from the layout's tail cone; leakage and protuberances as a share of the rest.</li>
+      <li>Polar (Lesson 6): \(e = 1.78(1 - 0.045A^{0.68}) - 0.64\), \(K = 1/(\pi Ae)\); \((L/D)_{\max}\), \(C_L^*\) and the best-range point at \(C_L^*/\sqrt3\). Cruise: \(C_L = (W/S)/(0.7pM^2)\) at the weight fraction chosen.</li>
+      <li>Drag rise (Lesson 7): Korn's \(\MDD\) at the cruise \(C_L\), \(M_{\text{crit}} = \MDD - 0.108\), wave drag \(20(M - M_{\text{crit}})^4\). Clean \(\CLmax = 0.9\,c_{l,\max}\cos\Lambda\) (Lesson 2).</li>
+      <li>The business jet preset is the module's; the other three are illustrative, not real types. Several constants (the Mach correction of the friction, the roughness heights, the leakage allowance, the wave-drag rise) are typical values to check. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var PRE = {}; DRAG.PRESETS.forEach(function (p) { PRE[p.id] = p; });
+  var IDS = Object.keys(PRE);
+  function copy(o) { var r = JSON.parse(JSON.stringify(o)); delete r.label; delete r.id; r.hk = o.h / 1000; delete r.h; r.lamP = 100 * o.lam; delete r.lam; r.lpP = 100 * o.lp; delete r.lp; r.airfoil = o.kappa > 0.9 ? 'supercritical' : 'conventional'; delete r.kappa; return r; }
+  var KEY = 'drag:inputs';
+  var st = Object.assign(copy(PRE.bizjet), CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+  function spec() { var s = JSON.parse(JSON.stringify(st)); s.h = st.hk * 1000; s.lam = st.lamP / 100; s.lp = st.lpP / 100; s.kappa = DRAG.KORN[st.airfoil]; delete s.hk; delete s.lamP; delete s.lpP; delete s.airfoil; return s; }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('db-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { t: 'Aircraft and cruise', f: [opt('layout', 'Airframe (Module 6)', [['bizjet', 'Business jet'], ['narrow', 'Narrow-body airliner'], ['tprop', 'Regional turboprop'], ['commuter', 'Commuter turboprop']], true),
+      num('hk', 'Cruise altitude (km)'), num('M', 'Cruise Mach number'), num('wf', 'Weight / \\(\\Wo\\) in cruise')] },
+    { t: 'Surfaces', f: [opt('rough', 'Surface finish', DRAG.ROUGH.map(function (r) { return [r.id, r.label]; }), true), num('lamP', 'Laminar share, wing and tails (%)'), num('xm', 'Max. thickness at \\((x/c)_m\\)'), num('lpP', 'Leakage and protuberances (%)')] },
+    { t: 'Interference and airfoil', f: [num('Qw', 'Wing \\(Q\\)'), num('Qn', 'Nacelle \\(Q\\)'), opt('airfoil', 'Airfoil family', [['supercritical', 'Supercritical (\u03ba 0.95)'], ['conventional', 'Conventional (\u03ba 0.87)']], true), num('clmax', 'Section \\(c_{l,\\max}\\)')] }
+  ];
+  function ok(k, v) { var R = { hk: [0, 18], M: [0.1, 0.95], wf: [0.4, 1], lamP: [0, 80], xm: [0.15, 0.6], lpP: [0, 30], Qw: [0.9, 1.6], Qn: [0.9, 1.8], clmax: [0.8, 2.5] }; return !R[k] || (v >= R[k][0] && v <= R[k][1]); }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'db-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () {
+          if (q.k === 'layout') { var m = IDS.filter(function (id2) { return PRE[id2].layout === el.value; })[0]; if (m) { load(m); document.getElementById('db-msg').textContent = 'Loaded the ' + PRE[m].label + ' preset for this airframe.'; return; } }
+          st[q.k] = el.value; save(); update();
+        });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f])));
+  });
+  CYL.renderMath(grid);
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = st[k]; }); }
+  var pre = document.getElementById('db-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: PRE[id].label });
+    b.addEventListener('click', function () { load(id); document.getElementById('db-msg').textContent = 'Loaded: ' + PRE[id].label + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+  function load(id) { st = copy(PRE[id]); save(); fill(); update(); }
+
+  /* ---------- the polar chart ---------- */
+  var chart = AERO.chart(document.getElementById('db-stage1'), {
+    x: { label: '\\(C_D\\)', min: 0, max: 0.08 }, y: { label: '\\(C_L\\)', min: 0, max: 1.4 }, height: 360,
+    ariaLabel: 'The drag polar of the chosen aircraft.',
+    legend: [{ label: 'Build-up polar', color: 'accent', line: true }, { label: 'Module 3 estimate', color: 'muted', line: true, dashed: true }, { label: 'Tangent', color: 'r', line: true, dashed: true }, { label: '\\(C_L^*\\)', color: 'r' }, { label: 'Best range', color: 'good', shape: 'square' }, { label: 'Cruise', color: 'bad', shape: 'diamond' }]
+  });
+  var pB = chart.polyline([], { color: 'accent', width: 2.8 }), pM = chart.polyline([], { color: 'muted', width: 2, dashed: true }), tg = chart.polyline([], { color: 'r', width: 1.4, dashed: true });
+  var m1 = chart.marker([0, 0], { color: 'r', r: 6 }), m2 = chart.marker([0, 0], { color: 'good', r: 6, shape: 'square' }), m3 = chart.marker([0, 0], { color: 'bad', r: 7, shape: 'diamond' });
+
+  /* ---------- results ---------- */
+  var R;
+  function f2(v) { return (v + 1e-12).toFixed(2); } function f3(v) { return (v + 1e-12).toFixed(3); } function f4(v) { return (v + 1e-12).toFixed(4); } function f5(v) { return (v + 1e-12).toFixed(5); }
+  function sci(v) { var e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e); return '\\(' + m.toFixed(2) + '\\times10^{' + e + '}\\)'; }
+  function compute() { return DRAG.evaluate(spec()); }
+  function update() {
+    IDS.forEach(function (id) { var p = PRE[id], same = p.layout === st.layout && Math.abs(p.h / 1000 - st.hk) < 1e-9 && Math.abs(p.M - st.M) < 1e-9 && Math.abs(100 * p.lam - st.lamP) < 1e-9 && p.rough === st.rough; chips[id].setAttribute('aria-pressed', String(same)); });
+    R = compute();
+    var T = document.getElementById('db-totals'); T.innerHTML = '';
+    function tile(lab, val, warn) { T.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', text: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    tile('Zero-lift drag', f4(R.CD0)); tile('Oswald factor', f3(R.e)); tile('Best L/D', f2(R.LDmax)); tile('Cruise CL', f3(R.CL), R.CL < 0.5 * R.CLstar);
+    tile('Cruise L/D', f2(R.LD)); tile('Drag divergence', f3(R.Mdd), st.M > R.Mdd);
+    // polar
+    var P = [], Q = [], K = R.K, Cm = R.cd0Cfe;
+    for (var i = 0; i <= 140; i++) { var cl = 1.4 * i / 140; P.push([R.CD0 + K * cl * cl, cl]); Q.push([Cm + K * cl * cl, cl]); }
+    var xmax = Math.max(0.05, Math.ceil(1.6 * (R.CD0 + K * 0.8) * 100) / 100);
+    chart.setAxes({ x: { label: '\\(C_D\\)', min: 0, max: xmax, log: false } });
+    pB.set(P); pM.set(Q); tg.set([[0, 0], [1.4 / R.LDmax, 1.4]]);
+    m1.set([R.CD0 + K * R.CLstar * R.CLstar, R.CLstar]); var cr = R.CLstar / Math.sqrt(3); m2.set([R.CD0 + K * cr * cr, cr]); m3.set([R.CD, Math.min(R.CL, 1.4)]);
+    chart.setAriaLabel('The build-up polar has a zero-lift drag of ' + R.CD0.toFixed(4) + ' and a best lift-to-drag ratio of ' + R.LDmax.toFixed(2) + '; the aircraft cruises at a lift coefficient of ' + R.CL.toFixed(3) + ' and an L/D of ' + R.LD.toFixed(2) + '.');
+    // component table
+    var tb = document.querySelector('#db-comp tbody'); tb.innerHTML = '';
+    function tr(cells) { tb.appendChild(CYL.el('tr', null, cells.map(function (c) { return CYL.el('td', { html: c }); }))); }
+    R.B.rows.forEach(function (r) { tr([r.name, f2(r.swet), sci(r.Re), f5(r.cf) + (r.rough ? ' (rough)' : ''), f3(r.ff), f2(r.Q), f5(r.cd)]); });
+    tr(['Upsweep (' + f2(R.upsweep.u * 180 / Math.PI) + '°)', '', '', '', '', '', f5(R.B.misc)]);
+    tr(['Leakage and protuberances (' + (100 * R.B.lp).toFixed(1) + '%)', '', '', '', '', '', f5(R.B.lpCD)]);
+    tr(['<strong>Total</strong>', f2(R.C.lay.swet.total), '', '', '', '', '<strong>' + f5(R.CD0) + '</strong>']);
+    // summary
+    var ts = document.querySelector('#db-sum tbody'); ts.innerHTML = '';
+    function r2(a, b) { ts.appendChild(CYL.el('tr', null, [CYL.el('td', { html: a }), CYL.el('td', { class: 'l', html: b })])); }
+    r2('Cruise: altitude, Mach number, speed', f2(st.hk) + ' km, ' + f2(st.M) + ', ' + f2(R.B.V) + ' m/s');
+    r2('Reynolds number per meter, dynamic pressure', sci(R.B.Rem) + ', ' + Math.round(R.B.q).toLocaleString('en-US') + ' Pa');
+    r2('\\(C_{D0}\\): build-up, Module 3 (\\(C_{fe} = ' + R.C.Cfe + '\\))', f5(R.CD0) + ', ' + f5(R.cd0Cfe) + ' (' + (R.CD0 > R.cd0Cfe ? '+' : '') + (100 * (R.CD0 / R.cd0Cfe - 1)).toFixed(1) + '%)');
+    r2('Equivalent \\(C_{fe}\\), \\(\\Swet/\\Sref\\)', f5(R.cfeEq) + ', ' + f3(R.C.lay.swet.total / R.C.S));
+    r2('\\(e\\), \\(K\\)', f3(R.e) + ', ' + f5(R.K));
+    r2('\\((L/D)_{\\max}\\) at \\(C_L^*\\)', f2(R.LDmax) + ' at ' + f3(R.CLstar));
+    r2('Best range: \\(C_L\\), \\(L/D\\)', f3(R.CLstar / Math.sqrt(3)) + ', ' + f2(0.866 * R.LDmax));
+    r2('Cruise: \\(C_L\\), \\(C_D\\), \\(L/D\\)', f3(R.CL) + ', ' + f5(R.CD) + ', ' + f2(R.LD));
+    r2('\\(M_{\\text{crit}}\\), \\(\\MDD\\), wave drag', f3(R.Mcr) + ', ' + f3(R.Mdd) + ', ' + f5(R.cdw));
+    r2('Clean \\(\\CLmax\\)', f3(R.clmaxClean));
+    CYL.renderMath(document.getElementById('result'));
+    return R;
+  }
+  fill(); update();
+
+  /* ---------- CSV ---------- */
+  document.getElementById('db-csv').addEventListener('click', function () {
+    var rows = [['quantity', 'value', 'unit']];
+    Object.keys(st).forEach(function (k) { rows.push(['input ' + k, st[k], '']); });
+    R.B.rows.forEach(function (r) { rows.push([r.name + ' Swet', f3(r.swet), 'm2'], [r.name + ' Re', r.Re.toExponential(4), ''], [r.name + ' Cf', f5(r.cf), ''], [r.name + ' FF', f4(r.ff), ''], [r.name + ' Q', f2(r.Q), ''], [r.name + ' CD', f5(r.cd), '']); });
+    rows.push(['upsweep CD', f5(R.B.misc), ''], ['leakage and protuberances CD', f5(R.B.lpCD), ''], ['CD0', f5(R.CD0), ''], ['CD0 Module 3', f5(R.cd0Cfe), ''], ['equivalent Cfe', f5(R.cfeEq), ''],
+      ['e', f4(R.e), ''], ['K', f5(R.K), ''], ['L/D max', f3(R.LDmax), ''], ['CL*', f4(R.CLstar), ''], ['cruise CL', f4(R.CL), ''], ['cruise CD', f5(R.CD), ''], ['cruise L/D', f3(R.LD), ''], ['Mcrit', f4(R.Mcr), ''], ['MDD', f4(R.Mdd), ''], ['wave drag', f5(R.cdw), ''], ['clean CLmax', f3(R.clmaxClean), '']);
+    var csv = rows.map(function (r) { return r.map(function (c) { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'drag-buildup.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  window.__drag = { compute: compute, state: function () { return st; }, load: load, set: function (o) { Object.assign(st, o); save(); fill(); return update(); }, result: function () { return R; } };
+});
+</script>
+</body>
+</html>

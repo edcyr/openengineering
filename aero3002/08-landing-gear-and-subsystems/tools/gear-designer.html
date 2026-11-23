@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landing Gear Designer · Landing Gear and Subsystems</title>
+<meta name="description" content="A landing gear layout tool: place the nose and main gear on an aircraft from Module 6, against its CG range, and see the tail-down, tip-back and tip-over angles, the nose gear's share, the gear loads, catalog tires that carry them, and the shock absorbers' stroke and size. Presets include the module's business jet and three illustrative aircraft.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/gear.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table td.l, .sc-table th.l { text-align: left; }
+  .sc-warn { color: var(--c-bad); font-weight: 700; }
+  .sc-ok { color: var(--c-good); font-weight: 700; }
+</style>
+</head>
+<body data-page="gear" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Landing Gear</p>
+    <h1>Landing Gear Designer</h1>
+    <p class="lede">The module on one page: place the nose and main gear under one of Module 6's aircraft, against its CG range, and see whether it can rotate, whether it tips back or over, how the weight shares between the legs, which catalog tires carry the loads, and how long and thick the shock absorbers must be.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="gd-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="gd-presets" role="group" aria-labelledby="gd-presets-label"></div>
+    <div class="sc-grid" id="gd-grid"></div>
+    <p class="small muted" id="gd-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="gd-totals"></div>
+    <figure class="figure wide" aria-labelledby="gd-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="gd-stage1"></div>
+      </div>
+      <figcaption id="gd-fig1-cap"><strong>Figure T.1</strong> The aircraft on its gear, to scale: side view with the forward and aft CG and the tail-down line, half view from below with the wheels and the tipping line from the nose wheel, and the view from ahead with the bank line to the first point that would touch.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="gd-geo">
+        <caption>Geometry and loads</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col" class="l">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="gd-tires">
+        <caption>Tires and shock absorbers</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col">Main</th><th scope="col">Nose</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="gd-checks">
+        <caption>Checks</caption>
+        <thead><tr><th scope="col">Check</th><th scope="col">Value</th><th scope="col" class="l">Guideline</th><th scope="col" class="l">Result</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="gd-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Airframe (Module 6): the fuselage, wing, tails and engines of the chosen layout; stations \(x\) aft of the nose, heights from the fuselage axis. The CG range is a share of the mean aerodynamic chord, an assumption until Module 10's weights.</li>
+      <li>Angles (Lesson 2): tail-down \(\theta_{TD}\), the lowest line from the main wheels' contact to the fuselage or nacelles behind them; tip-back \(\arctan[(x_m - x_{cg,a})/h_{cg}]\); lateral tip-over \(\psi = \arctan[h_{cg}/((x_{cg} - x_n)\sin\delta)]\), \(\tan\delta = y_m/B\), at both ends of the CG range; bank about the main wheels to the wing tip, nacelle or propeller.</li>
+      <li>Loads (Lesson 3): \(W_{m,\max} = W(x_{cg,a} - x_n)/B\) shared by the legs and wheels; \(W_{n,\max} = W(x_m - x_{cg,f})/B\); braking at 0.31&nbsp;g adds \(0.31\,W h_{cg}/B\) to the nose.</li>
+      <li>Tires (Lesson 4): the Goodyear Aviation Data Book 2022 (251 tires). Main tires must carry the load per wheel (1.07 times the rating on a multiple-wheel axle), nose tires the static load and 1.5 times the rating in braking (CS/FAR 25.733); the rated speed must reach the value given, and the inflation for the load, \(p_{\text{rated}}W_w/W_{\text{rated}}\), must not exceed the highest inflation. <em>Auto</em> picks the smallest diameter that passes. The statistical size is \(A W_w^B\) (source: Raymer, Table 11.1).</li>
+      <li>Shock absorbers (Lesson 5): \(S = V_v^2/(2g\eta N_g) - (\eta_T/\eta)S_T + 25\ \text{mm}\), with the main tire's deflection \(S_T\) from the catalog; piston \(\sqrt{4L/(\pi P)}\) at 1800&nbsp;psi, outside diameter 1.3 times the piston, length 2.5 times the stroke.</li>
+      <li>The guidelines (tail-down angle, tip-back at least 15°, nose share 5 to 20%, tip-over at most 63°, bank at least 5°, nacelle clearance about a quarter of the fan diameter, propeller clearance 7&nbsp;in) are those of Lesson 2. The business jet preset is the module's; the other three are illustrative, not real types. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var IN = GEAR.IN, LBF = GEAR.LBF;
+  var PRE = {}; GEAR.PRESETS.forEach(function (p) { PRE[p.id] = p; });
+  var IDS = Object.keys(PRE);
+  function copy(o) { var r = JSON.parse(JSON.stringify(o)); delete r.label; delete r.id; r.cg0 = o.cg[0]; r.cg1 = o.cg[1]; r.Vfps = Math.round(o.V / 0.3048 * 100) / 100; delete r.cg; delete r.V; return r; }
+  var KEY = 'gear:inputs';
+  var st = Object.assign(copy(PRE.bizjet), CYL.store.get(KEY, {}) || {});
+  function save() { CYL.store.set(KEY, st); }
+  function spec() {
+    var s = JSON.parse(JSON.stringify(st));
+    s.cg = [st.cg0, st.cg1]; s.V = st.Vfps * 0.3048; delete s.cg0; delete s.cg1; delete s.Vfps;
+    return s;
+  }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('gd-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { t: 'Aircraft', f: [opt('layout', 'Airframe (Module 6)', [['bizjet', 'Business jet'], ['narrow', 'Narrow-body airliner'], ['tprop', 'Regional turboprop'], ['commuter', 'Commuter turboprop']], true),
+      num('W0', 'Takeoff mass \\(\\Wo\\) (kg)'), num('cg0', 'Forward CG (% MAC)'), num('cg1', 'Aft CG (% MAC)'), num('zcg', 'CG above the axis (m)')] },
+    { t: 'Gear position', f: [num('xn', 'Nose gear \\(x_n\\) (m)'), num('xm', 'Main gear \\(x_m\\) (m)'), num('ym', 'Half track \\(y_m\\) (m)'), num('hb', 'Underside above ground \\(h_b\\) (m)'),
+      num('legs', 'Main legs', 1), num('mainWheels', 'Wheels per main leg', 1), num('noseWheels', 'Nose wheels', 1)] },
+    { t: 'Tires', f: [opt('mainTire', 'Main tire', [], true), opt('noseTire', 'Nose tire', [], true), num('pmax', 'Highest inflation (psi)'), num('speed', 'Rated speed at least (mph)'),
+      opt('cls', 'Statistics class', [['ga', 'General aviation'], ['twin', 'Business twin'], ['transport', 'Transport'], ['fighter', 'Fighter or trainer']])] },
+    { t: 'Rotation and shock absorbers', f: [num('thTD', 'Tail-down needed (°)'), num('Vfps', 'Descent velocity (ft/s)'), num('N', 'Gear load factor \\(N_g\\)'), num('eta', 'Efficiency \\(\\eta\\)')] }
+  ];
+  function ok(k, v) {
+    if (k === 'legs' || k === 'mainWheels' || k === 'noseWheels') return Math.round(v) === v && v >= 1 && v <= (k === 'legs' ? 6 : 6);
+    var R = { W0: [300, 600000], cg0: [-20, 80], cg1: [-20, 80], zcg: [-3, 4], xn: [0, 60], xm: [0, 80], ym: [0.2, 10], hb: [0.05, 5], pmax: [20, 400], speed: [50, 300], thTD: [0, 25], Vfps: [2, 30], N: [0.5, 10], eta: [0.3, 1] };
+    return !R[k] || (v >= R[k][0] && v <= R[k][1]);
+  }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'gd-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () {
+          if (q.k === 'layout') { var m = IDS.filter(function (id) { return PRE[id].layout === el.value; })[0]; if (m) { load(m); document.getElementById('gd-msg').textContent = 'Loaded the ' + PRE[m].label + ' preset for this airframe.'; return; } }
+          st[q.k] = (q.k === 'mainTire' || q.k === 'noseTire') && el.value === 'auto' ? null : el.value; save(); update();
+        });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f])));
+  });
+  CYL.renderMath(grid);
+  function tireOptions(el, cand, cur, need) {
+    el.innerHTML = '';
+    el.appendChild(CYL.el('option', { value: 'auto', text: 'Auto: ' + (cand[0] ? GEAR.label(cand[0]) : 'none carries it') }));
+    var list = cand.slice(0, 40), curT = GEAR.byKey(cur);
+    if (curT && !list.some(function (t) { return GEAR.key(t) === cur; })) list.unshift(curT);
+    list.forEach(function (t) { el.appendChild(CYL.el('option', { value: GEAR.key(t), text: GEAR.label(t) + ' (' + t.load.toLocaleString('en-US') + ' lb, ' + t.psi + ' psi)' + (GEAR.carries(t, need) ? '' : ': does not carry it') })); });
+    el.value = cur || 'auto';
+  }
+  function fill() { Object.keys(inputs).forEach(function (k) { if (k !== 'mainTire' && k !== 'noseTire') inputs[k].value = st[k]; }); }
+  var pre = document.getElementById('gd-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: PRE[id].label });
+    b.addEventListener('click', function () { load(id); document.getElementById('gd-msg').textContent = 'Loaded: ' + PRE[id].label + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+  function load(id) { st = copy(PRE[id]); save(); fill(); update(); }
+
+  /* ---------- drawing ---------- */
+  var plane = CYL2D.plane(document.getElementById('gd-stage1'), { xRange: [0, 30], yRange: [-10, 4], grid: 'none', axes: false, ticks: false, maxHeight: 560, ariaLabel: 'The aircraft on its landing gear, three views.' });
+  var g = plane.group(), gA = plane.group(), L = null;
+  function fit() { if (!L) return; var s = 20; for (var i = 0; i < 4; i++) { plane.setRange([L.xRange[0] - 8 / s, L.xRange[1] + 8 / s], [L.yRange[0] - 8 / s, L.yRange[1] + 8 / s]); s = plane.getView().scale || s; } }
+
+  /* ---------- results ---------- */
+  var R;
+  function f1(v) { return (v + 1e-9).toFixed(1); } function f2(v) { return (v + 1e-9).toFixed(2); } function f3(v) { return (v + 1e-9).toFixed(3); }
+  function kN(v) { return f2(v / 1000) + ' kN (' + Math.round(v / LBF).toLocaleString('en-US') + ' lb)'; }
+  function compute() { return GEAR.evaluate(spec()); }
+  function row(tb, cells) { tb.appendChild(CYL.el('tr', null, cells.map(function (c, i) { return CYL.el('td', { class: i > 0 && cells.length === 2 ? 'l' : '', html: c }); }))); }
+  function update() {
+    IDS.forEach(function (id) { var p = PRE[id], same = p.layout === st.layout && Math.abs(p.W0 - st.W0) < 1e-6 && Math.abs(p.xm - st.xm) < 1e-6 && Math.abs(p.xn - st.xn) < 1e-6; chips[id].setAttribute('aria-pressed', String(same)); });
+    R = compute();
+    tireOptions(inputs.mainTire, R.candMain, st.mainTire, R.needMain); tireOptions(inputs.noseTire, R.candNose, st.noseTire, R.needNose);
+    // tiles
+    var T = document.getElementById('gd-totals'); T.innerHTML = '';
+    function tile(lab, val, warn) { T.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', text: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    var c = {}; R.checks.forEach(function (k) { c[k.id] = k; });
+    tile('Tail-down', f1(R.tailDown) + '°', !c.td.ok);
+    tile('Tip-back', f1(R.tipBack) + '°', !c.tb.ok);
+    tile('Tip-over', f1(R.tipOver) + '°', !c.to.ok);
+    tile('Nose share', f1(100 * R.loads.shareAft) + '–' + f1(100 * R.loads.shareFwd) + '%', !c.na.ok || !c.nf.ok);
+    tile('Each main wheel', Math.round(R.perMain).toLocaleString('en-US') + ' lb', !R.okMain);
+    tile('Stroke', Math.round(1000 * R.stroke.S) + ' mm', R.stroke.S <= 0);
+    // drawing
+    g.clear(); gA.clear();
+    L = GEAR.threeView(plane, g, R, {}); fit();
+    var D2R = Math.PI / 180, sp = R.sp, a = R.tailDown * D2R, Pt = R.tailPt;
+    if (Pt) { var len = (Pt[0] - sp.xm) / Math.cos(a) * 1.2; gA.line(L.S(sp.xm, R.zg), L.S(sp.xm + len * Math.cos(a), R.zg + len * Math.sin(a)), { color: 'r', width: 1.4, dashed: true }); }
+    if (R.bank && R.bank.y) { var yb = R.bank.y + 0.05 * R.G.lF; gA.line(L.F(sp.ym, R.zg), L.F(yb, R.zg + (yb - sp.ym) * Math.tan(R.bank.a * D2R)), { color: 'r', width: 1.4, dashed: true }); }
+    plane.svg.setAttribute('aria-label', 'Three views on the gear: tail-down angle ' + f1(R.tailDown) + ' degrees, tip-back ' + f1(R.tipBack) + ' degrees, tip-over ' + f1(R.tipOver) + ' degrees.');
+    // geometry and loads
+    var tb = document.querySelector('#gd-geo tbody'); tb.innerHTML = '';
+    row(tb, ['CG range, stations', f3(R.xf) + ' to ' + f3(R.xa) + ' m (MAC ' + f3(R.mac) + ' m from ' + f3(R.macLE) + ' m)']);
+    row(tb, ['CG height \\(h_{cg}\\)', f2(R.h) + ' m']);
+    row(tb, ['Wheelbase \\(B\\), track', f2(R.B) + ' m, ' + f2(2 * sp.ym) + ' m (smallest for 63°: ' + (isFinite(R.minTrack) ? f2(R.minTrack) : '—') + ' m)']);
+    row(tb, ['Weight \\(W\\)', kN(R.W)]);
+    row(tb, ['Main gear, all legs, aft CG', kN(R.loads.mainTot)]);
+    row(tb, ['Each main leg', kN(R.loads.mainLeg)]);
+    row(tb, ['Nose gear, forward CG', kN(R.loads.noseMax)]);
+    row(tb, ['Nose gear, aft CG', kN(R.loads.noseMin)]);
+    row(tb, ['Nose gear braking at 0.31 g', kN(R.loads.noseBrake)]);
+    // tires and shock absorbers
+    var tt = document.querySelector('#gd-tires tbody'); tt.innerHTML = '';
+    function r3(a, b, c2) { tt.appendChild(CYL.el('tr', null, [CYL.el('td', { html: a }), CYL.el('td', { text: b }), CYL.el('td', { text: c2 })])); }
+    var tm = R.tMain, tn = R.tNose;
+    r3('Load per wheel (lb)', Math.round(R.perMain).toLocaleString('en-US'), Math.round(R.perNose).toLocaleString('en-US') + ' (' + Math.round(R.perBrake).toLocaleString('en-US') + ' braking)');
+    r3('Statistical size (in)', f1(R.statMain.D) + ' × ' + f1(R.statMain.W), f1(R.statNose.D) + ' × ' + f1(R.statNose.W));
+    r3('Tire', tm ? GEAR.label(tm) : 'none', tn ? GEAR.label(tn) : 'none');
+    r3('Rated load (lb), inflation (psi)', tm ? tm.load.toLocaleString('en-US') + ', ' + tm.psi : '—', tn ? tn.load.toLocaleString('en-US') + ', ' + tn.psi : '—');
+    r3('OD × width, loaded radius (in)', tm ? tm.OD + ' × ' + tm.W + ', ' + tm.SLR : '—', tn ? tn.OD + ' × ' + tn.W + ', ' + tn.SLR : '—');
+    r3('Inflation for the load (psi)', tm ? f1(R.psiMain) : '—', tn ? f1(R.psiNose) : '—');
+    r3('Rated speed (mph)', tm ? String(tm.speed) : '—', tn ? String(tn.speed) : '—');
+    r3('Tire deflection (mm)', tm ? f1(1000 * R.ST) : '—', tn ? f1(1000 * GEAR.deflection(tn)) : '—');
+    r3('Stroke with 25 mm margin (m)', f3(R.stroke.S), f3(R.stroke.S));
+    r3('Strut load (kN)', f2(R.loads.mainLeg / 1000), f2(R.loads.noseBrake / 1000) + ' (braking)');
+    r3('Piston, outside diameter (mm)', Math.round(1000 * R.oleoMain.dp) + ', ' + Math.round(1000 * R.oleoMain.D), Math.round(1000 * R.oleoNose.dp) + ', ' + Math.round(1000 * R.oleoNose.D));
+    r3('Strut length 2.5 S (m)', f2(R.oleoLength), f2(R.oleoLength));
+    // checks
+    var tc = document.querySelector('#gd-checks tbody'); tc.innerHTML = '';
+    R.checks.forEach(function (k) {
+      var v = k.id === 'tm' || k.id === 'tn' ? Math.round(k.value).toLocaleString('en-US') + ' lb' : k.id === 'nf' || k.id === 'na' ? f1(k.value) + '%' : k.id === 'ec' || k.id === 'pc' ? f2(k.value) + ' m' : f1(k.value) + '°';
+      tc.appendChild(CYL.el('tr', null, [CYL.el('td', { text: k.label }), CYL.el('td', { text: v }), CYL.el('td', { class: 'l', text: k.rule }), CYL.el('td', { class: 'l', html: k.ok ? '<span class="sc-ok">OK</span>' : '<span class="sc-warn">Fails</span>' })]));
+    });
+    CYL.renderMath(document.getElementById('result'));
+    return R;
+  }
+  fill(); update();
+  var lastW = plane.el.clientWidth;
+  if (window.ResizeObserver) new ResizeObserver(function () { var w = plane.el.clientWidth; if (Math.abs(w - lastW) > 1) { lastW = w; fit(); } }).observe(plane.el);
+
+  /* ---------- CSV ---------- */
+  document.getElementById('gd-csv').addEventListener('click', function () {
+    var rows = [['quantity', 'value', 'unit']];
+    Object.keys(st).forEach(function (k) { rows.push(['input ' + k, st[k] == null ? 'auto' : st[k], '']); });
+    rows.push(['CG forward', f3(R.xf), 'm'], ['CG aft', f3(R.xa), 'm'], ['CG height', f3(R.h), 'm'], ['wheelbase', f3(R.B), 'm'],
+      ['tail-down angle', f2(R.tailDown), 'deg'], ['tip-back angle', f2(R.tipBack), 'deg'], ['tip-over angle', f2(R.tipOver), 'deg'], ['bank to touch', f2(R.bank.a), 'deg'],
+      ['nose share aft CG', f2(100 * R.loads.shareAft), '%'], ['nose share forward CG', f2(100 * R.loads.shareFwd), '%'],
+      ['each main leg', Math.round(R.loads.mainLeg), 'N'], ['nose forward CG', Math.round(R.loads.noseMax), 'N'], ['nose braking', Math.round(R.loads.noseBrake), 'N'],
+      ['main tire', R.tMain ? GEAR.label(R.tMain) : 'none', ''], ['nose tire', R.tNose ? GEAR.label(R.tNose) : 'none', ''],
+      ['main inflation', f1(R.psiMain), 'psi'], ['stroke', f3(R.stroke.S), 'm'], ['main strut outside diameter', f3(R.oleoMain.D), 'm'], ['strut length', f3(R.oleoLength), 'm']);
+    R.checks.forEach(function (k) { rows.push(['check ' + k.label, k.ok ? 'OK' : 'fails', k.rule]); });
+    var csv = rows.map(function (r) { return r.map(function (c) { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'landing-gear.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  window.__gear = { compute: compute, state: function () { return st; }, load: load, set: function (o) { Object.assign(st, o); save(); fill(); return update(); }, result: function () { return R; } };
+});
+</script>
+</body>
+</html>

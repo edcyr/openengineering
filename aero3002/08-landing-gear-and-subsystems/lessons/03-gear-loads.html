@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gear Loads and Wheels · Landing Gear and Subsystems</title>
+<meta name="description" content="The static loads on the main and nose gear across the CG range, the extra nose load while braking, the number of wheels and the runway's strength, with the business jet's gear loads.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/gear.js"></script>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 30 min</p>
+    <h1>Gear Loads and Wheels</h1>
+    <p class="lede">Once the legs are placed, statics gives their loads: the main gear is most loaded at the aft CG, the nose gear at the forward CG, and braking shifts more weight onto the nose. These loads choose the tires of Lesson 4 and the shock absorbers of Lesson 5, and they decide how many wheels the aircraft needs to spare the runway.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute the maximum static loads on the main and nose gear and the minimum nose load.</li>
+      <li>Add the nose load from braking at a given deceleration.</li>
+      <li>Choose the number of wheels from the load per wheel and the runway's strength.</li>
+    </ul>
+  </section>
+
+  <section id="static">
+    <h2>Static loads</h2>
+    <p>On the ground and at rest, the weight \(W\) at the CG is carried by the nose gear at \(x_n\) and the main gear at \(x_m\). Moments about each gear give the loads, and the CG range gives their extremes:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Static gear loads</p>
+      \[ W_{m,\max} = W\,\frac{x_{cg,a} - x_n}{B} \]
+      \[ W_{n,\max} = W\,\frac{x_m - x_{cg,f}}{B} \]
+      \[ W_{n,\min} = W\,\frac{x_m - x_{cg,a}}{B} \]
+      <p>\(W_{m,\max}\) is the total on the main gear, shared by its legs; \(B = x_m - x_n\) is the wheelbase. Use the maximum takeoff weight (strictly, the maximum ramp weight, a little higher because of the fuel burned while taxiing).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 3.1 — The business jet's static loads</p>
+      <p>The business jet weighs \(W_0 = 6943\ \text{kg}\). Its gear is at stations 1.80&nbsp;m and 7.65&nbsp;m, and its CG between 6.773&nbsp;m and 7.177&nbsp;m (Lesson 2). Find the maximum load on each main leg, and the maximum and minimum loads on the nose gear, in newtons and in pounds (1&nbsp;lbf = 4.448&nbsp;N).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ W = 6943(9.81) = 68\,110\ \text{N}, \qquad B = 5.85\ \text{m} \]
+          \[ W_{m,\max} = 68\,110\,\frac{7.177 - 1.80}{5.85} = 62\,600\ \text{N} \]
+          <p>so each of the two main legs carries 31&nbsp;300&nbsp;N, or 7036&nbsp;lb, 46% of the weight. For the nose gear:</p>
+          \[ W_{n,\max} = 68\,110\,\frac{7.65 - 6.773}{5.85} = 10\,210\ \text{N}\ (2294\ \text{lb}) \]
+          \[ W_{n,\min} = 68\,110\,\frac{7.65 - 7.177}{5.85} = 5510\ \text{N} \]
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> The nose gear's share of the weight against the CG's station for the business jet, with the guideline band of 8 to 15% and the limits of 5 and 20%. The markers are the forward and aft CG. Move the gear to see the share and the loads change.</figcaption>
+    </figure>
+  </section>
+
+  <section id="braking">
+    <h2>Braking</h2>
+    <p>Braking decelerates the aircraft at \(a\), which needs a force \((a/g)W\) at the wheels, acting backward at ground level. The CG is \(h_{cg}\) above the ground, so the braking force pitches the aircraft nose-down and moves load from the main gear to the nose gear. Taking moments about the main wheels' contact:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The nose load while braking</p>
+      \[ W_{n,\text{brake}} = W\,\frac{(x_m - x_{cg,f}) + (a/g)\,h_{cg}}{B} \]
+      <p>CS/FAR 25.733 checks the nose tire with a deceleration of 0.31&nbsp;g at the forward CG (and 0.20&nbsp;g at the maximum ramp weight). In that condition the tire may carry up to 1.5 times its rated static load (Lesson 4).</p>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig32-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig32-stage"></div>
+        <div class="viz-controls" id="fig32-controls"></div>
+      </div>
+      <figcaption id="fig32-cap"><strong>Figure 3.2</strong> The forces on the business jet braking at its forward CG: the weight \(W\), the braking force at the main wheels \((a/g)W\), and the gear reactions \(W_n\) and \(W_m\), with arrows drawn to scale (the braking force's arrow is lengthened when it would be too short to see). Change the deceleration.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 3.2 — The business jet's nose gear while braking</p>
+      <p>Find the business jet's nose load at the forward CG while braking at 0.31&nbsp;g. The CG is 1.20&nbsp;m above the ground.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ W_{n,\text{brake}} = 68\,110\,\frac{(7.65 - 6.773) + 0.31(1.20)}{5.85} = 14\,530\ \text{N}\ (3267\ \text{lb}) \]
+          <p>That is 21% of the weight, against 15% at rest: braking adds 4320&nbsp;N, about 40% more than the static load.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="wheels">
+    <h2>How many wheels</h2>
+    <p>A single wheel per leg is the lightest and simplest gear, but a tire's size grows with its load, and a heavy wheel load damages the runway. Airports grade their pavements' strength, and each aircraft's loading is graded on the same scale: the aircraft classification number (ACN) of an aircraft must not exceed the pavement classification number (PCN) of the runway it uses, or the airport must give permission. As a rough guide the ACN is about twice the load on a single wheel in tonnes, increased for wheels close enough together for their loads to overlap in the ground.</p>
+    <ul>
+      <li>Light aircraft and business jets carry a few tonnes per wheel and use one wheel per leg.</li>
+      <li>Narrow-bodies such as the A320 and 737 carry about 20&nbsp;t on each main wheel, on two wheels per leg; long-range wide-bodies carry about 30&nbsp;t per wheel on four- or six-wheel bogies. Two wheels per leg also let a transport land safely on a flat tire.</li>
+      <li>On a multiple-wheel axle, CS/FAR 25.733 lets each main tire carry up to 1.07 times its rating, because the loads never share out perfectly.</li>
+    </ul>
+    <div class="example">
+      <p class="example-title">Example 3.3 — Wheels for an airliner and for the business jet</p>
+      <p>A 73.5&nbsp;t narrow-body has two main legs, each carrying 46% of the weight. How many wheels does it need on each leg at about 20&nbsp;t per wheel? How heavily is each business jet main wheel loaded?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ 0.46(73.5) = 33.8\ \text{t per leg} \quad\Rightarrow\quad \frac{33.8}{20} = 1.7 \]
+          <p>so two wheels per leg, 16.9&nbsp;t each. Each business jet main wheel carries 31&nbsp;300&nbsp;N, or 3.19&nbsp;t: one wheel per leg is plenty, and its ACN of about 6 is far below that of any paved runway.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>The main gear's load is largest at the aft CG, the nose gear's at the forward CG; the nose's smallest load is at the aft CG.</li>
+      <li>Braking at \(a\) adds \((a/g)W\,h_{cg}/B\) to the nose load; the nose tire is checked at 0.31&nbsp;g.</li>
+      <li>The business jet: 31&nbsp;300&nbsp;N (7036&nbsp;lb) on each main leg; 10&nbsp;210&nbsp;N (2294&nbsp;lb) on the nose at rest and 14&nbsp;530&nbsp;N (3267&nbsp;lb) while braking.</li>
+      <li>The load per wheel and the runway's strength set the number of wheels: about 20&nbsp;t per wheel on narrow-bodies, one wheel per leg on business jets.</li>
+      <li>Next, <a href="04-tires.html">Lesson 4</a> chooses tires that carry these loads.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 3.1: the nose share against the CG station ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { xm: 7.65, xn: 1.80 }, st = Object.assign({}, BASE);
+  var R0 = GEAR.evaluate(GEAR.preset('bizjet')), xf = R0.xf, xa = R0.xa, W = R0.W;
+  var chart = AERO.chart(document.getElementById('fig31-stage'), {
+    x: { label: 'CG station \\(x_{cg}\\) (m)', min: 6.4, max: 7.6 }, y: { label: 'Nose share \\(W_n/W\\) (%)', min: 0, max: 26 }, height: 320,
+    ariaLabel: 'Nose gear share of the weight against the CG station.',
+    legend: [{ label: 'Nose share', color: 'good', line: true }, { label: '8 to 15%', color: 'muted', line: true, dashed: true }, { label: '5 and 20% limits', color: 'bad', line: true, dashed: true }, { label: 'CG range', color: 'r' }]
+  });
+  [8, 15].forEach(function (v) { chart.hline(v, { color: 'muted', dashed: true }); });
+  [5, 20].forEach(function (v) { chart.hline(v, { color: 'bad', dashed: true }); });
+  var c = chart.fn(function (x) { return 100 * (st.xm - x) / (st.xm - st.xn); }, { color: 'good', width: 2.8 });
+  var mf = chart.marker([xf, 0], { color: 'r', r: 6 }), ma = chart.marker([xa, 0], { color: 'r', r: 6 });
+  var panel = document.getElementById('fig31-controls');
+  var sM = CYL.slider({ label: 'Main gear station \\(x_m\\)', min: 7.2, max: 8.4, step: 0.01, value: st.xm, unit: ' m', color: 'good', onInput: function (v) { st.xm = v; draw(); } });
+  var sN = CYL.slider({ label: 'Nose gear station \\(x_n\\)', min: 1.0, max: 3.5, step: 0.01, value: st.xn, unit: ' m', color: 'good', onInput: function (v) { st.xn = v; draw(); } });
+  var reset = CYL.button('Business jet', function () { st = Object.assign({}, BASE); sM.set(st.xm, true); sN.set(st.xn, true); draw(); }, { small: true });
+  var ro = { m: CYL.readout('Each main leg, aft CG'), n: CYL.readout('Nose, forward CG'), k: CYL.readout('Nose, aft CG') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Gear' }));
+  [sM.el, sN.el, CYL.el('div', { class: 'chip-row' }, [reset]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.m.el, ro.n.el, ro.k.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function kN(v) { return (v / 1000).toFixed(2) + ' kN (' + Math.round(v / GEAR.LBF) + ' lb)'; }
+  function draw() {
+    c.draw();
+    var L = GEAR.loads({ W: W, xn: st.xn, xm: st.xm, xf: xf, xa: xa, h: R0.h, legs: 2 });
+    mf.set([xf, 100 * L.shareFwd]); ma.set([xa, 100 * L.shareAft]);
+    ro.m.set(kN(L.mainLeg)); ro.n.set(kN(L.noseMax)); ro.k.set(kN(L.noseMin));
+    ro.n.el.classList.toggle('readout-warn', L.shareFwd > 0.20); ro.k.el.classList.toggle('readout-warn', L.shareAft < 0.05);
+    chart.setAriaLabel('With the main gear at ' + st.xm.toFixed(2) + ' m and the nose gear at ' + st.xn.toFixed(2) + ' m the nose carries ' + (100 * L.shareAft).toFixed(1) + ' percent at the aft CG and ' + (100 * L.shareFwd).toFixed(1) + ' percent at the forward CG.');
+  }
+  draw();
+});
+
+/* ---------- Figure 3.2: the forces while braking ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { a: 0.31 };
+  var R = GEAR.evaluate(GEAR.preset('bizjet')), G = R.G, sp = R.sp;
+  var plane = CYL2D.plane(document.getElementById('fig32-stage'), { xRange: [-0.5, 16], yRange: [-2.2, 3.2], grid: 'none', axes: false, ticks: false, maxHeight: 400, ariaLabel: 'Forces on the braking business jet.' });
+  var gB = plane.group(), gF = plane.group();
+  GEAR.drawSide(gB, R, {});
+  var panel = document.getElementById('fig32-controls');
+  var sA = CYL.slider({ label: 'Deceleration \\(a/g\\)', min: 0, max: 0.5, step: 0.01, value: st.a, color: 'r', onInput: function (v) { st.a = v; draw(); } });
+  var ro = { n: CYL.readout('Nose \\(W_n\\)'), m: CYL.readout('Main gear \\(W_m\\), both legs'), s: CYL.readout('Nose share') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Braking' }));
+  [sA.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.n.el, ro.m.el, ro.s.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function fit() { var s = 30; for (var i = 0; i < 4; i++) { plane.setRange([-0.3 - 8 / s, G.lF + 0.3 + 8 / s], [R.zg - 1.5 - 8 / s, 2.85 + 8 / s]); s = plane.getView().scale || s; } }
+  fit();
+  var K = 1.7 / R.W;                                      // arrow length per newton: the weight is 1.7 m long
+  function draw() {
+    gF.clear();
+    var Wn = R.W * ((sp.xm - R.xf) + st.a * R.h) / R.B, Wm = R.W - Wn, F = st.a * R.W, zg = R.zg;
+    gF.line([R.xf, R.zcg + K * R.W], [R.xf, R.zcg], { color: 'bad', width: 3, arrow: 'end' });
+    gF.label([R.xf, R.zcg + K * R.W], 'W', { anchor: 'w', offset: [-4, 0], color: 'bad', background: true });
+    gF.line([sp.xn, zg - K * Wn], [sp.xn, zg], { color: 'good', width: 3, arrow: 'end' });
+    gF.label([sp.xn, zg - K * Wn], 'W_n', { anchor: 'e', offset: [4, 0], color: 'good', background: true });
+    gF.line([sp.xm, zg - K * Wm], [sp.xm, zg], { color: 'good', width: 3, arrow: 'end' });
+    gF.label([sp.xm, zg - K * Wm], 'W_m', { anchor: 'e', offset: [4, 0], color: 'good', background: true });
+    if (F > 1) {
+      var lf = Math.max(K * F, 0.6);
+      gF.line([sp.xm, zg], [sp.xm + lf, zg], { color: 'r', width: 4.5, arrow: 'end' });
+      gF.label([sp.xm + lf, zg], '(a/g)W', { anchor: 'e', offset: [4, 0], color: 'r', background: true });
+    }
+    ro.n.set((Wn / 1000).toFixed(2) + ' kN (' + Math.round(Wn / GEAR.LBF) + ' lb)');
+    ro.m.set((Wm / 1000).toFixed(2) + ' kN');
+    ro.s.set((100 * Wn / R.W).toFixed(1) + '%');
+    plane.svg.setAttribute('aria-label', 'Braking at ' + st.a.toFixed(2) + ' g at the forward CG, the nose gear carries ' + (Wn / 1000).toFixed(1) + ' kN, ' + (100 * Wn / R.W).toFixed(1) + ' percent of the weight.');
+  }
+  draw();
+  var lastW = plane.el.clientWidth;
+  if (window.ResizeObserver) new ResizeObserver(function () { var w = plane.el.clientWidth; if (Math.abs(w - lastW) > 1) { lastW = w; fit(); } }).observe(plane.el);
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1',
+    type: 'numeric',
+    prompt: 'A 21&nbsp;000&nbsp;kg turboprop has its nose gear at station 2.6&nbsp;m and its main gear at 12.0&nbsp;m. Its aft CG is at 11.1&nbsp;m. What is the largest load on each of its two main legs?',
+    label: '\\(W_{m,\\max}/2 =\\)', answer: 21000 * 9.81 * (11.1 - 2.6) / (12.0 - 2.6) / 2 / 1000, unit: 'kN',
+    hints: ['\\(W_{m,\\max} = W(x_{cg,a} - x_n)/B\\), shared by the two legs.', '\\(W = 21\\,000(9.81)\\) N, \\(B = 9.4\\) m.'],
+    explain: 'The main gear carries most at the aft CG.',
+    solution: '\\[ W_{m,\\max} = 206\\,010\\,\\frac{11.1 - 2.6}{9.4} = 186\\,300\\ \\text{N}, \\qquad \\text{each leg } 93.1\\ \\text{kN} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2',
+    type: 'numeric',
+    prompt: 'The same turboprop\'s forward CG is at 10.6&nbsp;m and 2.4&nbsp;m above the ground. What does its nose gear carry when it brakes at 0.31&nbsp;g at the forward CG?',
+    label: '\\(W_{n,\\text{brake}} =\\)', answer: 21000 * 9.81 * ((12.0 - 10.6) + 0.31 * 2.4) / 9.4 / 1000, unit: 'kN',
+    hints: ['\\(W_{n,\\text{brake}} = W[(x_m - x_{cg,f}) + (a/g)h_{cg}]/B\\).'],
+    explain: 'Braking moves about 8% of the weight onto the nose of this tall-legged aircraft.',
+    solution: '\\[ W_{n,\\text{brake}} = 206\\,010\\,\\frac{1.4 + 0.31(2.4)}{9.4} = 47.0\\ \\text{kN} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3',
+    type: 'mc',
+    prompt: 'Why do airliners put at least two wheels on each main leg, even when one tire could carry the load?',
+    choices: [
+      { html: 'To spread the load over the pavement and to land safely if a tire fails', correct: true, feedback: 'Yes: smaller wheel loads spare the runway, and a twin wheel survives a flat tire.' },
+      { html: 'Because a single tire cannot be braked', feedback: 'Single wheels carry brakes on most light aircraft and business jets.' },
+      { html: 'Because the regulations forbid single main wheels', feedback: 'No rule forbids them; business jets use single main wheels.' },
+      { html: 'To make the gear easier to retract', feedback: 'More wheels make the gear harder to stow, not easier.' }
+    ],
+    explain: 'Runway loading and tolerance of a flat tire drive the wheel count on transports.'
+  });
+});
+</script>
+</body>
+</html>

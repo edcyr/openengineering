@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tire Selection · Landing Gear and Subsystems</title>
+<meta name="description" content="Reading an aircraft tire catalog, a statistical first estimate of tire size, the rules a tire must meet, inflation pressure and the footprint, and the business jet's main and nose tires chosen from the Goodyear data book.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/gear.js"></script>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 35 min</p>
+    <h1>Tire Selection</h1>
+    <p class="lede">Aircraft tires come in standard sizes, each rated for a load at an inflation pressure and a speed. The designer estimates the size from statistics, then picks a real tire from a manufacturer's catalog that carries the loads of Lesson 3 with the pressure the runways allow. This lesson reads the catalog, applies the certification rules, and chooses the business jet's tires.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Read an aircraft tire's size designation and its catalog data.</li>
+      <li>Estimate a tire's diameter and width from the load on the wheel.</li>
+      <li>Choose main and nose tires that meet the rated-load, braking and speed rules.</li>
+      <li>Relate the tire's load, inflation pressure and footprint, and find its deflection.</li>
+    </ul>
+  </section>
+
+  <section id="catalog">
+    <h2>Reading the catalog</h2>
+    <p>A tire's name gives its size in inches. A three-part name such as H22x8.25-10 gives the outside diameter (22&nbsp;in), the section width (8.25&nbsp;in) and the rim diameter (10&nbsp;in); older names give the width and rim only (Type III, such as 6.00-6, the low-pressure tires of light aircraft) or the diameter and width only (Type VII, such as 18x4.4, high-pressure tires for jets). An R marks a radial tire. The <strong>ply rating</strong> is an index of the casing's strength, not a count of plies: the same size comes in several ply ratings, each with its own rated load, pressure and rated speed.</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Some catalog entries: outside diameter OD, section width W and static loaded radius SLR (source: Goodyear Aviation Data Book, 2022)</caption>
+        <thead><tr><th scope="col">Tire</th><th scope="col">Rated load <span class="u">(lb)</span></th><th scope="col">Inflation <span class="u">(psi)</span></th><th scope="col">OD × W; SLR <span class="u">(in)</span></th><th scope="col">Used on</th></tr></thead>
+        <tbody id="tire-rows"></tbody>
+      </table>
+    </div>
+    <p>The <strong>rated load</strong> is the largest static load at the rated inflation; the catalog also gives the largest braking load (1.5 times the rated load) and the <strong>static loaded radius</strong>, the distance from the axle to the ground under the rated load. The difference between half the outside diameter and the static loaded radius is the tire's deflection.</p>
+  </section>
+
+  <section id="statistics">
+    <h2>A first estimate from statistics</h2>
+    <p>Before the loads are known well enough to open a catalog, a statistical fit gives the size of the wheel needed for the load \(W_w\) on each wheel.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Statistical tire size</p>
+      \[ D \ \text{or}\ w = A\,W_w^{\,B} \qquad (D, w \text{ in inches; } W_w \text{ in pounds}) \]
+      <p>\(D\) is the outside diameter, \(w\) the section width; \(A\) and \(B\) come from the table below. The fits describe the main tires; nose tires are smaller, often 60 to 100% of the main tires' size.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Coefficients of the tire statistics (source: Raymer, Table 11.1)</caption>
+        <thead><tr><th scope="col">Class</th><th scope="col">Diameter \(A\)</th><th scope="col">Diameter \(B\)</th><th scope="col">Width \(A\)</th><th scope="col">Width \(B\)</th></tr></thead>
+        <tbody id="stat-rows"></tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.1 — A first size for the business jet's tires</p>
+      <p>Each business jet main wheel carries 7036&nbsp;lb and the nose wheel 2294&nbsp;lb (Lesson 3). Estimate the tire sizes with the business-twin fit.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ D_m = 2.69(7036)^{0.251} = 24.9\ \text{in}, \qquad w_m = 1.170(7036)^{0.216} = 7.9\ \text{in} \]
+          \[ D_n = 2.69(2294)^{0.251} = 18.8\ \text{in}, \qquad w_n = 1.170(2294)^{0.216} = 6.2\ \text{in} \]
+          <p>About a 25 by 8&nbsp;in main tire and a 19 by 6&nbsp;in nose tire; the catalog now finds real ones.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="rules">
+    <h2>The rules a tire must meet</h2>
+    <p>CS/FAR 25.733 sets the loads a transport's tires must carry; other categories have similar rules:</p>
+    <ul>
+      <li><strong>Main tires:</strong> the load from the most critical combination of weight and CG may not exceed the rated load. On an axle with more than one wheel, the rating may be multiplied by 1.07.</li>
+      <li><strong>Nose tires:</strong> the static load at the most critical CG may not exceed the rated load, and in braking (0.31&nbsp;g at the maximum landing weight, 0.20&nbsp;g at the maximum ramp weight) the load may not exceed 1.5 times the rated load.</li>
+      <li><strong>Speed:</strong> the rated speed must exceed the highest ground speed at liftoff or touchdown, including tail winds and hot, high airports.</li>
+    </ul>
+    <p>Two other considerations choose among the tires that pass. Aircraft grow heavier over their lives, so it pays to pick a size that a higher ply rating can later carry heavier. And the wheel must be big enough to hold the brake, whose heat sink must absorb a rejected takeoff, so a tiny high-pressure tire on a small rim is rarely the answer for a main wheel.</p>
+    <div class="example">
+      <p class="example-title">Example 4.2 — The business jet's tires</p>
+      <p>Choose the business jet's main and nose tires from the catalog. The main tires carry 7036&nbsp;lb each; the nose tire 2294&nbsp;lb at rest and 3267&nbsp;lb braking at 0.31&nbsp;g.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The Cessna Citation CJ3 uses the H22x8.25-10 main tire in its 12-ply version, rated for 6900&nbsp;lb: too little for 7036&nbsp;lb. The 14-ply version of the same size, rated for 8300&nbsp;lb at 156&nbsp;psi, carries it at 85% of its rating; it is the tire of the heavier CJ4. For the nose, the 18x4.4 in its 6-ply version (2100&nbsp;lb) is too weak, but the 10-ply version, the CJ3's own nose tire, carries</p>
+          \[ 2294 \le 3550\ \text{lb}, \qquad 3267 \le 1.5(3550) = 5325\ \text{lb} \]
+          <p>Both are rated for 190&nbsp;mph or more, well above the business jet's speeds on the runway. The main tires are close to the statistical estimate; the nose tire is 18 by 4.4&nbsp;in, narrower than the estimate's 6.2&nbsp;in.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> The 251 tires of the Goodyear data book: rated load against outside diameter. The curves are the statistical fits; the filled markers are the tires that carry the load on the wheel at no more than the chosen inflation and speed. Hover over a marker for its data.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pressure">
+    <h2>Inflation and the footprint</h2>
+    <p>A loaded tire flattens until its footprint, pressed at the inflation pressure, carries the load. The footprint's area is therefore about the load divided by the pressure, and a tire carrying less than its rated load is inflated less in proportion, which keeps its deflection and footprint area about the same.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Load, pressure and footprint</p>
+      \[ W_w \approx p\,A_p, \qquad p = p_{\text{rated}}\,\frac{W_w}{W_{\text{rated}}}, \qquad S_T = \frac{D}{2} - R_{\text{SLR}} \]
+      <p>\(A_p\) is the footprint area, \(p\) the inflation pressure, \(S_T\) the deflection under the load and \(R_{\text{SLR}}\) the static loaded radius.</p>
+    </div>
+    <p>The pressure is what a runway feels. A concrete runway at a major airport takes 200&nbsp;psi or more; grass, gravel and soft strips need much lower pressures, which means bigger tires for the same load. This is why bush aircraft have balloon tires, and why the runways an aircraft must use enter the tire choice.</p>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> The business jet's main tire, H22x8.25-10, to scale: from the side with its deflection, and its footprint from below (an ellipse of the right area, schematic in shape). The deflection is the catalog's at the rated load and inflation, scaled with the footprint area. Change the load and the inflation pressure.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 4.3 — Inflating the business jet's main tires</p>
+      <p>At what pressure should the business jet's main tires be inflated for 7036&nbsp;lb, and what are their footprint area and deflection? The H22x8.25-10 (14 ply) has a static loaded radius of 9.14&nbsp;in.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ p = 156\,\frac{7036}{8300} = 132\ \text{psi}\ (0.91\ \text{MPa}), \qquad A_p = \frac{8300}{156} = 53.2\ \text{in}^2\ (343\ \text{cm}^2) \]
+          \[ S_T = \frac{22}{2} - 9.14 = 1.86\ \text{in} = 47\ \text{mm} \]
+          <p>The deflection is used in Lesson 5: the tire absorbs part of the landing's energy before the shock absorber does.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Tire names give the size in inches; the ply rating indexes the strength, and each size and ply has a rated load, inflation and speed.</li>
+      <li>Statistics give a first size: \(D\) or \(w = A W_w^B\), with \(W_w\) in pounds and \(D\), \(w\) in inches.</li>
+      <li>Main tires: load ≤ rated load (× 1.07 on multiple-wheel axles). Nose tires: static load ≤ rated, braking load ≤ 1.5 × rated. Rated speed above the highest ground speed.</li>
+      <li>The footprint area is about the load over the pressure; inflation falls in proportion to the load; the deflection is \(D/2 - R_{\text{SLR}}\).</li>
+      <li>The business jet: H22x8.25-10 main tires (14 ply, 132&nbsp;psi, 47&nbsp;mm deflection) and an 18x4.4 nose tire (10 ply).</li>
+      <li>Next, <a href="05-shock-absorbers.html">Lesson 5</a> sizes the shock absorbers.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Tables: catalog entries and the statistics ---------- */
+CYL.ready(function () {
+  'use strict';
+  var rows = [['18x4.4', 6, 'Smaller business jets (nose)'], ['18x4.4', 10, 'Citation CJ3, CJ4 (nose)'], ['H22x8.25-10', 12, 'Citation CJ3 (main)'], ['H22x8.25-10', 14, 'Citation CJ4 (main)'],
+    ['6.00-6', 4, 'Cessna 172 (main)'], ['30x8.8R15', 16, 'Airbus ACJ320 (nose)'], ['H44.5x16.5-21', 28, 'Boeing BBJ (main)'], ['46x17.0R20', 30, 'Airbus ACJ320 (main)']];
+  var tb = document.getElementById('tire-rows');
+  rows.forEach(function (r) {
+    var t = GEAR.tire(r[0], r[1]);
+    tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: t.size + ', ' + t.ply + ' ply' }), CYL.el('td', { text: t.load.toLocaleString('en-US') }), CYL.el('td', { text: String(t.psi) }), CYL.el('td', { text: t.OD + ' × ' + t.W + '; ' + t.SLR }), CYL.el('td', { text: r[2] })]));
+  });
+  var sb = document.getElementById('stat-rows');
+  ['ga', 'twin', 'transport', 'fighter'].forEach(function (k) {
+    var s = GEAR.STAT[k];
+    sb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: s.label }), CYL.el('td', { text: String(s.D[0]) }), CYL.el('td', { text: String(s.D[1]) }), CYL.el('td', { text: String(s.W[0]) }), CYL.el('td', { text: String(s.W[1]) })]));
+  });
+});
+
+/* ---------- Figure 4.1: the catalog ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { load: 7036, pmax: 200, speed: 160, nose: false }, st = Object.assign({}, BASE);
+  var chart = AERO.chart(document.getElementById('fig41-stage'), {
+    x: { label: 'Outside diameter \\(D\\) (in)', min: 10, max: 60 }, y: { label: 'Rated load (lb)', min: 500, max: 100000, log: true }, height: 360,
+    ariaLabel: 'Rated load against outside diameter for the tires of the catalog.',
+    legend: [{ label: 'Carries the load', color: 'good', shape: 'circle' }, { label: 'Does not', color: 'muted', shape: 'circle' }, { label: 'Business twin fit', color: 'r', line: true }, { label: 'Transport fit', color: 't', line: true, dashed: true }, { label: 'General aviation fit', color: 'z', line: true, dashed: true }]
+  });
+  function inv(cls) { var s = GEAR.STAT[cls]; return function (D) { return Math.pow(D / s.D[0], 1 / s.D[1]); }; }
+  chart.fn(inv('twin'), { color: 'r', width: 2.2 });
+  chart.fn(inv('transport'), { color: 't', width: 1.8, dashed: true });
+  chart.fn(inv('ga'), { color: 'z', width: 1.8, dashed: true });
+  var hl = chart.hline(st.load, { color: 'good', dashed: true });
+  var pts = chart.points(GEAR.TIRES, {
+    x: function (t) { return t.OD; }, y: function (t) { return t.load; },
+    color: function (t) { return ok(t) ? 'good' : 'muted'; }, r: 3.5,
+    title: function (t) { return '<strong>' + GEAR.label(t) + '</strong><br>' + t.load.toLocaleString('en-US') + ' lb at ' + t.psi + ' psi, ' + t.speed + ' mph<br>' + t.OD + ' × ' + t.W + ' in' + (ok(t) ? '<br>' + Math.round(GEAR.inflation(t, st.load)) + ' psi at this load' : ''); }
+  });
+  var mk = chart.marker([22, 8300], { color: 'r', r: 7 });
+  function need() { return st.nose ? { nose: true, load: st.load, brake: 0, speed: st.speed, pmax: st.pmax } : { load: st.load, perAxle: 1, speed: st.speed, pmax: st.pmax }; }
+  function ok(t) { return GEAR.carries(t, need()); }
+  var panel = document.getElementById('fig41-controls');
+  var sL = CYL.slider({ label: 'Load on the wheel \\(W_w\\)', min: 500, max: 60000, step: 1, value: st.load, unit: ' lb', color: 'good', onInput: function (v) { st.load = v; draw(); } });
+  var sP = CYL.slider({ label: 'Highest inflation', min: 30, max: 320, step: 1, value: st.pmax, unit: ' psi', color: 'muted', onInput: function (v) { st.pmax = v; draw(); } });
+  var sS = CYL.slider({ label: 'Rated speed at least', min: 100, max: 250, step: 5, value: st.speed, unit: ' mph', color: 'muted', onInput: function (v) { st.speed = v; draw(); } });
+  var reset = CYL.button('Business jet main', function () { st = Object.assign({}, BASE); sL.set(st.load, true); sP.set(st.pmax, true); sS.set(st.speed, true); draw(); }, { small: true });
+  var ro = { n: CYL.readout('Tires that carry it'), s: CYL.readout('Smallest'), d: CYL.readout('Statistical size (business twin)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Requirement' }));
+  [sL.el, sP.el, sS.el, CYL.el('div', { class: 'chip-row' }, [reset]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.n.el, ro.s.el, ro.d.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    pts.set(GEAR.TIRES); hl.set(st.load);
+    var c = GEAR.selectTire(need()), sd = GEAR.tireStat(st.load, 'twin');
+    ro.n.set(String(c.length));
+    ro.s.set(c.length ? GEAR.label(c[0]) + ', ' + Math.round(GEAR.inflation(c[0], st.load)) + ' psi' : 'none');
+    ro.d.set(sd.D.toFixed(1) + ' × ' + sd.W.toFixed(1) + ' in');
+    mk.set([sd.D, st.load]);
+    chart.setAriaLabel(c.length + ' catalog tires carry ' + st.load + ' lb at no more than ' + st.pmax + ' psi; the smallest is ' + (c.length ? GEAR.label(c[0]) : 'none') + '.');
+  }
+  draw();
+});
+
+/* ---------- Figure 4.2: the main tire, deflection and footprint ---------- */
+CYL.ready(function () {
+  'use strict';
+  var T = GEAR.tire('H22x8.25-10', 14), IN = 0.0254;
+  var BASE = { load: 7036, p: 132.2 }, st = Object.assign({}, BASE);
+  var plane = CYL2D.plane(document.getElementById('fig42-stage'), { xRange: [-0.42, 1.1], yRange: [-0.2, 0.62], grid: 'none', axes: false, ticks: false, maxHeight: 360, ariaLabel: 'The main tire from the side and its footprint.' });
+  var g = plane.group();
+  var panel = document.getElementById('fig42-controls');
+  var sL = CYL.slider({ label: 'Load', min: 1000, max: 12000, step: 1, value: st.load, unit: ' lb', color: 'good', onInput: function (v) { st.load = v; draw(); } });
+  var sP = CYL.slider({ label: 'Inflation pressure', min: 60, max: 230, step: 0.1, value: st.p, unit: ' psi', color: 'muted', onInput: function (v) { st.p = v; draw(); } });
+  var rated = CYL.button('Inflate for the load', function () { st.p = Math.round(10 * GEAR.inflation(T, st.load)) / 10; sP.set(st.p, true); draw(); }, { small: true });
+  var ro = { a: CYL.readout('Footprint area \\(A_p\\)'), d: CYL.readout('Deflection \\(S_T\\)'), r: CYL.readout('Load / rated load') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'H22x8.25-10, 14 ply' }));
+  [sL.el, sP.el, CYL.el('div', { class: 'chip-row' }, [rated]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.d.el, ro.r.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    g.clear();
+    var R = T.OD / 2 * IN, Ap = st.load / st.p, ST0 = (T.OD / 2 - T.SLR) * IN;
+    // deflection grows with the footprint: about in proportion to load/pressure (the catalog's value at the rated load and inflation)
+    var ST = Math.min(0.6 * R, ST0 * (Ap / (T.load / T.psi))), cz = R - ST, P = [];
+    for (var i = 0; i <= 120; i++) { var th = 2 * Math.PI * i / 120, x = R * Math.cos(th), z = cz + R * Math.sin(th); P.push([x, Math.max(0, z)]); }
+    g.line([-0.38, 0], [0.38, 0], { color: 'muted', width: 1.6 });
+    g.polyline(P, { color: 'ink', width: 1.6, closed: true, fill: 'ink', fillOpacity: 0.5 });
+    g.circle({ center: [0, cz], r: 5 * IN, color: 'surface', width: 1.2, fill: 'surface', fillOpacity: 0.7 });
+    g.line([0.31, cz], [0.31, 0], { color: 'r', width: 1.2, arrow: 'both' });
+    g.label([0.31, cz / 2], 'R_{\\text{SLR}}', { anchor: 'e', offset: [4, 0], color: 'r', background: true });
+    g.line([-0.34, cz + R], [-0.34, cz - R], { color: 'muted', width: 1, arrow: 'both' });
+    g.label([-0.34, cz + R * 0.5], 'D', { anchor: 'e', offset: [3, 0], background: true });
+    // footprint: an ellipse of area Ap, width 0.75 of the section width
+    var b = 0.75 * T.W * IN / 2, a = Ap * IN * IN / (Math.PI * b), E = [], ox = 0.75, oz = 0.3;
+    for (i = 0; i <= 60; i++) { th = 2 * Math.PI * i / 60; E.push([ox + a * Math.cos(th), oz + b * Math.sin(th)]); }
+    g.polyline([[ox - R, oz - T.W * IN / 2], [ox + R, oz - T.W * IN / 2], [ox + R, oz + T.W * IN / 2], [ox - R, oz + T.W * IN / 2]], { color: 'muted', width: 1, closed: true, dashed: true });
+    g.polyline(E, { color: 'good', width: 1.6, closed: true, fill: 'good', fillOpacity: 0.35 });
+    g.label([ox, oz + T.W * IN / 2 + 0.02], '\\text{footprint, from below}', { anchor: 'n' });
+    ro.a.set(Ap.toFixed(1) + ' in² (' + Math.round(Ap * 6.4516) + ' cm²)');
+    ro.d.set((ST / IN).toFixed(2) + ' in (' + Math.round(ST * 1000) + ' mm)');
+    ro.r.set((st.load / T.load).toFixed(2)); ro.r.el.classList.toggle('readout-warn', st.load > T.load);
+    plane.svg.setAttribute('aria-label', 'The tire carries ' + st.load + ' lb at ' + st.p + ' psi on a footprint of ' + Ap.toFixed(1) + ' square inches, deflecting about ' + (ST / IN).toFixed(2) + ' inches.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'Estimate the outside diameter of a transport\'s main tire carrying 37&nbsp;000&nbsp;lb, with the transport fit \\(D = 1.63 W_w^{0.315}\\).',
+    label: '\\(D =\\)', answer: 1.63 * Math.pow(37000, 0.315), unit: 'in',
+    hints: ['Put the load in pounds into the fit; the answer is in inches.'],
+    explain: 'The catalog then offers tires of 40 to 46&nbsp;in for this load.',
+    solution: '\\[ D = 1.63(37\\,000)^{0.315} = 44.8\\ \\text{in} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'A nose tire is rated for 4350&nbsp;lb. Under CS/FAR 25.733, what is the largest nose load it may carry in the 0.31&nbsp;g braking condition?',
+    label: '\\(W_{n,\\text{brake}} \\le\\)', answer: 1.5 * 4350, unit: 'lb',
+    hints: ['In braking, a nose tire may carry 1.5 times its rated static load.'],
+    explain: 'The catalog lists this as the tire\'s maximum braking load.',
+    solution: '\\[ 1.5(4350) = 6525\\ \\text{lb} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'numeric',
+    prompt: 'A tire rated for 9650&nbsp;lb at 200&nbsp;psi will carry 7700&nbsp;lb. To what pressure should it be inflated, and what is its footprint area? Enter the pressure.',
+    label: '\\(p =\\)', answer: 200 * 7700 / 9650, unit: 'psi',
+    hints: ['Inflation falls in proportion to the load: \\(p = p_{\\text{rated}} W_w/W_{\\text{rated}}\\).'],
+    explain: 'The footprint stays about 9650/200 = 48.3&nbsp;in² at any proportional inflation.',
+    solution: '\\[ p = 200\\,\\frac{7700}{9650} = 160\\ \\text{psi}, \\qquad A_p = \\frac{7700}{160} = 48.3\\ \\text{in}^2 \\]'
+  });
+});
+</script>
+</body>
+</html>

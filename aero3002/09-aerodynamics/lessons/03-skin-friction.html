@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skin Friction · Lift and the Drag Build-Up</title>
+<meta name="description" content="The Reynolds number of each component, laminar and turbulent flat-plate skin friction, the effect of Mach number, laminar flow and surface roughness, with the skin friction of the business jet's components in cruise.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/wing.js"></script>
+<script src="../assets/js/drag.js"></script>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 35 min</p>
+    <h1>Skin Friction</h1>
+    <p class="lede">Most of a subsonic aircraft's zero-lift drag is friction: the air dragged along in the thin boundary layer over every wetted surface. The component build-up starts from the friction of a flat plate of the same length at the same Reynolds number. This lesson finds that friction, laminar and turbulent, with the corrections for Mach number and roughness, for each of the business jet's components.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute a component's Reynolds number from the flight condition and its length.</li>
+      <li>Compute the laminar and turbulent flat-plate skin-friction coefficients, with the Mach correction.</li>
+      <li>Estimate the effect of a share of laminar flow, and of surface roughness through the cutoff Reynolds number.</li>
+    </ul>
+  </section>
+
+  <section id="reynolds">
+    <h2>The Reynolds number of each component</h2>
+    <p>Each component is treated as a flat plate of its own length \(l\) in the flow direction: the fuselage's length, the nacelle's length, and the mean aerodynamic chord of the wing and each tail.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">A component's Reynolds number</p>
+      \[ Re = \frac{\rho V l}{\mu}, \qquad \mu = \frac{1.458\times 10^{-6}\,T^{1.5}}{T + 110.4} \]
+      <p>\(\rho\), \(T\) and the speed of sound come from the standard atmosphere; the viscosity \(\mu\) (Pa&nbsp;s) from Sutherland's law with \(T\) in kelvins.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 3.1 — The business jet's Reynolds numbers in cruise</p>
+      <p>At 12&nbsp;km (216.65&nbsp;K, 0.3108&nbsp;kg/m³, \(a = 295.1\ \text{m/s}\)) and Mach&nbsp;0.80, find the Reynolds number per meter, and those of the wing (MAC 2.015&nbsp;m) and the fuselage (15.5&nbsp;m).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \mu = \frac{1.458\times10^{-6}(216.65)^{1.5}}{216.65 + 110.4} = 1.422\times10^{-5}\ \text{Pa s} \]
+          \[ V = 0.80(295.1) = 236.1\ \text{m/s} \]
+          \[ \frac{Re}{l} = \frac{0.3108(236.1)}{1.422\times10^{-5}} = 5.16\times 10^{6}\ \text{per m} \]
+          <p>The wing's Reynolds number is \(1.04\times10^7\), the fuselage's \(8.0\times10^7\). An airliner at the same Mach number has components two or three times longer, so higher Reynolds numbers and lower friction.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="flatplate">
+    <h2>Laminar and turbulent friction</h2>
+    <p>Near the leading edge the boundary layer is laminar: smooth layers sliding over each other, with little friction. After a short distance, at a local Reynolds number of a few hundred thousand on a smooth plate, it becomes turbulent, mixing fast air down to the surface and rubbing it harder. On most of an aircraft the flow is turbulent.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Flat-plate skin friction (average over the plate)</p>
+      \[ C_{f,\text{lam}} = \frac{1.328}{\sqrt{Re}}, \qquad C_{f,\text{turb}} = \frac{0.455}{(\log_{10} Re)^{2.58}\,(1 + 0.144M^2)^{0.65}} \]
+      <p>The first is Blasius's laminar solution; the second is Schlichting's turbulent formula with a correction for the Mach number \(M\), which lowers the friction a few percent at high subsonic speeds.</p>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> Flat-plate skin friction against the Reynolds number (both scales logarithmic): laminar, turbulent at the chosen Mach number, and the level where roughness stops the turbulent friction falling for the length and surface chosen. The markers are the business jet's components in cruise.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 3.2 — Friction on the business jet's wing</p>
+      <p>Find the business jet wing's turbulent skin-friction coefficient in cruise, and compare it with laminar flow at the same Reynolds number, \(1.04\times10^7\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ C_{f,\text{turb}} = \frac{0.455}{(7.017)^{2.58}\,(1 + 0.144(0.80)^2)^{0.65}} = \frac{0.455}{152.4(1.059)} = 0.00282 \]
+          \[ C_{f,\text{lam}} = \frac{1.328}{\sqrt{1.04\times10^7}} = 0.00041 \]
+          <p>Laminar flow would have a seventh of the friction. The fuselage, at \(8.0\times10^7\), has \(C_f = 0.00207\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="laminar">
+    <h2>Laminar flow</h2>
+    <p>Real surfaces keep some laminar flow near their leading edges. For a first estimate the build-up takes a share of each surface as laminar and the rest as turbulent, both at the component's Reynolds number. Typical metal wings and tails keep perhaps 10 to 20% laminar flow, fuselages almost none; airfoils and noses shaped for natural laminar flow, with very smooth composite skins, keep much more, which some recent business jets exploit. The business jet's build-up assumes fully turbulent flow, the cautious choice.</p>
+    <figure class="figure wide" aria-labelledby="fig32-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig32-stage"></div>
+        <div class="viz-controls" id="fig32-controls"></div>
+      </div>
+      <figcaption id="fig32-cap"><strong>Figure 3.2</strong> The skin-friction coefficient of a surface against the share of it in laminar flow, at the Reynolds number and Mach number chosen. The marker is the share chosen.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 3.3 — Twenty percent laminar flow on the wing</p>
+      <p>If 20% of the business jet's wing kept laminar flow, what would its skin-friction coefficient be?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ C_f = 0.2(0.00041) + 0.8(0.00282) = 0.00234 \]
+          <p>17% less friction on the wing, the largest component of the drag (Lesson 5).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="roughness">
+    <h2>Roughness</h2>
+    <p>On a smooth surface the turbulent friction keeps falling as the Reynolds number grows. On a rough one, once the boundary layer's viscous sublayer is thinner than the roughness, the friction stops falling: it stays at its value at a <strong>cutoff Reynolds number</strong> set by the ratio of the length to the roughness height \(k\).</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The cutoff Reynolds number (subsonic)</p>
+      \[ Re_{\text{cutoff}} = 38.21\left(\frac{l}{k}\right)^{1.053} \]
+      <p>If the component's \(Re\) is higher, use \(Re_{\text{cutoff}}\) in the turbulent formula.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Typical roughness heights \(k\)</caption>
+        <thead><tr><th scope="col">Surface</th><th scope="col">\(k\) <span class="u">(μm)</span></th></tr></thead>
+        <tbody id="rough-rows"></tbody>
+      </table>
+    </div>
+    <p>For the business jet's painted surfaces the cutoffs (\(2.4\times10^7\) for the wing, \(2.0\times10^8\) for the fuselage) are above the actual Reynolds numbers: roughness does not limit them in cruise. Long components of large aircraft at low altitude are where it matters.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Each component is a flat plate of its own length: \(Re = \rho Vl/\mu\), with Sutherland's viscosity.</li>
+      <li>\(C_{f,\text{lam}} = 1.328/\sqrt{Re}\); \(C_{f,\text{turb}} = 0.455/[(\log_{10}Re)^{2.58}(1 + 0.144M^2)^{0.65}]\).</li>
+      <li>A laminar share \(f\) mixes the two: \(C_f = fC_{f,\text{lam}} + (1 - f)C_{f,\text{turb}}\).</li>
+      <li>Roughness caps the Reynolds number at \(38.21(l/k)^{1.053}\).</li>
+      <li>The business jet in cruise: \(5.16\times10^6\) per meter; \(C_f = 0.00282\) on the wing, 0.00207 on the fuselage.</li>
+      <li>Next, <a href="04-form-factors.html">Lesson 4</a> adds the pressure drag of thickness and the interference between components.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Table: roughness ---------- */
+CYL.ready(function () {
+  'use strict';
+  var tb = document.getElementById('rough-rows');
+  DRAG.ROUGH.forEach(function (r) { tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: r.label }), CYL.el('td', { text: (r.k * 1e6).toFixed(2) })])); });
+});
+
+/* ---------- Figure 3.1: skin friction against Reynolds number ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { M: 0.80, l: 15.5, rough: 'paint' }, st = Object.assign({}, BASE);
+  function sci(v) { var e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e), sup = '⁰¹²³⁴⁵⁶⁷⁸⁹'; return m.toFixed(2) + ' × 10' + String(e).split('').map(function (d) { return sup[+d]; }).join(''); }
+  var R = DRAG.evaluate(DRAG.preset('bizjet'));
+  var chart = AERO.chart(document.getElementById('fig31-stage'), {
+    x: { label: 'Reynolds number \\(Re\\)', min: 1e5, max: 1e9, log: true, ticks: [1e5, 1e6, 1e7, 1e8, 1e9], format: function (v) { var e = Math.round(Math.log10(v)), sup = '⁰¹²³⁴⁵⁶⁷⁸⁹'; return '10' + String(e).split('').map(function (d) { return sup[+d]; }).join(''); } }, y: { label: '\\(C_f\\)', min: 0.0003, max: 0.01, log: true }, height: 340,
+    ariaLabel: 'Skin-friction coefficient against Reynolds number.',
+    legend: [{ label: 'Laminar', color: 'good', line: true }, { label: 'Turbulent', color: 'accent', line: true }, { label: 'Rough, from the cutoff', color: 'bad', line: true, dashed: true }, { label: 'Business jet components', color: 'r' }]
+  });
+  chart.fn(function (Re) { return DRAG.cfLam(Re); }, { color: 'good', width: 2.4 });
+  var cT = chart.fn(function (Re) { return DRAG.cfTurb(Re, st.M); }, { color: 'accent', width: 2.6 });
+  var cR = chart.fn(function (Re) { var c = DRAG.cutoffRe(st.l, DRAG.rough(st.rough).k); return Re >= c ? DRAG.cfTurb(c, st.M) : NaN; }, { color: 'bad', width: 2, dashed: true });
+  var pts = chart.points(R.B.rows, { x: function (r) { return r.Re; }, y: function (r) { return r.cf; }, color: 'r', r: 5, title: function (r) { return '<strong>' + r.name + '</strong><br>Re ' + r.Re.toExponential(2) + ', C<sub>f</sub> ' + r.cf.toFixed(5); } });
+  var panel = document.getElementById('fig31-controls');
+  var sM = CYL.slider({ label: 'Mach number \\(M\\)', min: 0, max: 0.9, step: 0.01, value: st.M, color: 'accent', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.M = v; draw(); } });
+  var sL = CYL.slider({ label: 'Length \\(l\\)', min: 0.5, max: 60, step: 0.1, value: st.l, unit: ' m', color: 'muted', format: function (v) { return CYL.fmtFixed(v, 1); }, onInput: function (v) { st.l = v; draw(); } });
+  var sel = CYL.select({ label: 'Surface', value: st.rough, options: DRAG.ROUGH.map(function (r) { return { value: r.id, label: r.label }; }), onChange: function (v) { st.rough = v; draw(); } });
+  var ro = { c: CYL.readout('Cutoff \\(Re\\)'), f: CYL.readout('\\(C_f\\) beyond the cutoff') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Flow and surface' }));
+  [sM.el, sL.el, sel.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.c.el, ro.f.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    cT.draw(); cR.draw(); pts.set(R.B.rows);
+    var c = DRAG.cutoffRe(st.l, DRAG.rough(st.rough).k);
+    ro.c.set(sci(c)); ro.f.set(CYL.fmtFixed(DRAG.cfTurb(c, st.M), 5));
+    chart.setAriaLabel('For a ' + st.l.toFixed(1) + ' m component the cutoff Reynolds number is ' + c.toExponential(2) + '.');
+  }
+  draw();
+});
+
+/* ---------- Figure 3.2: laminar share ---------- */
+CYL.ready(function () {
+  'use strict';
+  var BASE = { Re: 1.04e7, M: 0.80, f: 0.2 }, st = Object.assign({}, BASE);
+  var chart = AERO.chart(document.getElementById('fig32-stage'), {
+    x: { label: 'Laminar share (%)', min: 0, max: 80 }, y: { label: '\\(C_f\\)', min: 0, max: 0.004 }, height: 300,
+    ariaLabel: 'Skin friction against the laminar share.',
+    legend: [{ label: '\\(C_f\\)', color: 'accent', line: true }, { label: 'Chosen share', color: 'r' }]
+  });
+  var c = chart.fn(function (p) { return p / 100 * DRAG.cfLam(st.Re) + (1 - p / 100) * DRAG.cfTurb(st.Re, st.M); }, { color: 'accent', width: 2.6 });
+  var mk = chart.marker([20, 0.002], { color: 'r', r: 6 });
+  var panel = document.getElementById('fig32-controls');
+  var sR = CYL.slider({ label: '\\(\\log_{10} Re\\)', min: 6, max: 8.5, step: 0.01, value: Math.log10(st.Re), color: 'muted', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.Re = Math.pow(10, v); draw(); } });
+  var sF = CYL.slider({ label: 'Laminar share', min: 0, max: 80, step: 1, value: 100 * st.f, unit: '%', color: 'r', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.f = v / 100; draw(); } });
+  var reset = CYL.button('Business jet wing', function () { st = Object.assign({}, BASE); sR.set(Math.log10(st.Re), true); sF.set(100 * st.f, true); draw(); }, { small: true });
+  var ro = { c: CYL.readout('\\(C_f\\)'), d: CYL.readout('Change from fully turbulent') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Surface' }));
+  [sR.el, sF.el, CYL.el('div', { class: 'chip-row' }, [reset]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.c.el, ro.d.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    c.draw(); var t = DRAG.cfTurb(st.Re, st.M), v = st.f * DRAG.cfLam(st.Re) + (1 - st.f) * t;
+    mk.set([100 * st.f, v]); ro.c.set(CYL.fmtFixed(v, 5)); ro.d.set(CYL.fmtFixed(100 * (v / t - 1), 1) + '%');
+    chart.setAriaLabel('With ' + Math.round(100 * st.f) + ' percent laminar flow the skin friction is ' + v.toFixed(5) + '.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1',
+    type: 'numeric',
+    prompt: 'A turboprop cruises at 7&nbsp;km (\\(\\rho = 0.590\\ \\text{kg/m}^3\\), \\(\\mu = 1.561\\times10^{-5}\\ \\text{Pa s}\\)) at 140&nbsp;m/s. What is the Reynolds number of its 2.34&nbsp;m wing chord?',
+    label: '\\(Re =\\)', answer: 0.590 * 140 * 2.34 / 1.561e-5,
+    hints: ['\\(Re = \\rho Vl/\\mu\\).'],
+    explain: 'About \\(1.2\\times10^7\\): the same order as the business jet\'s wing.',
+    solution: '\\[ Re = \\frac{0.590(140)(2.34)}{1.561\\times10^{-5}} = 1.238\\times10^7 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2',
+    type: 'numeric',
+    prompt: 'What is the turbulent skin-friction coefficient of a fuselage at \\(Re = 2.2\\times10^8\\) and Mach 0.78?',
+    label: '\\(C_f =\\)', answer: DRAG.cfTurb(2.2e8, 0.78),
+    hints: ['\\(C_f = 0.455/[(\\log_{10}Re)^{2.58}(1 + 0.144M^2)^{0.65}]\\).', '\\(\\log_{10}(2.2\\times10^8) = 8.342\\).'],
+    explain: 'The airliner\'s long fuselage has less friction per unit area than the business jet\'s.',
+    solution: '\\[ C_f = \\frac{0.455}{(8.342)^{2.58}(1 + 0.144(0.78)^2)^{0.65}} = 0.00181 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3',
+    type: 'mc',
+    prompt: 'Why does a small business jet have a higher skin-friction coefficient than an airliner at the same Mach number and altitude?',
+    choices: [
+      { html: 'Its components are shorter, so their Reynolds numbers are lower, and turbulent friction falls as the Reynolds number rises', correct: true, feedback: 'Yes: friction falls slowly with Reynolds number, so size helps.' },
+      { html: 'Its skin is rougher', feedback: 'Roughness does not limit the business jet\'s components in cruise.' },
+      { html: 'It flies with more laminar flow', feedback: 'More laminar flow would lower its friction.' },
+      { html: 'Its Mach correction is larger', feedback: 'At the same Mach number the correction is the same.' }
+    ],
+    explain: 'Scale effect: larger aircraft have lower friction coefficients, one reason Module 3\'s equivalent skin friction varies with class.'
+  });
+});
+</script>
+</body>
+</html>

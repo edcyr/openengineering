@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Landing Gear and Subsystems</title>
+<meta name="description" content="Twelve printable problems on landing gear and subsystems: placing the gear against the CG range, tip-back and tip-over, gear loads and wheels, tire sizing and selection, shock-absorber strokes and oleo struts, stowing the wheels, hydraulic actuators and electrical cables, cabin pressurization and fresh air, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from placing a light jet's gear against its CG range, its angles and its loads, and a regional jet's wheels, through the light jet's tires, shock absorbers and wheel wells, to a hydraulic actuator, the copper in a cable, and an airliner's pressurization and fresh air. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Landing Gear and Subsystems · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. SI units, with tire loads, pressures and sizes in the catalog's pounds, psi and inches; give answers to 4 significant figures. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A covers placing the gear, its angles and its loads, Part B tires, shock absorbers and stowage, and Part C hydraulic and electrical power, pressurization and fresh air. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units unless a problem asks otherwise, answers to 4 significant figures: loads in N or kN (tires in lb, 1&nbsp;lbf = 4.448&nbsp;N), lengths in m (tires in inches), pressures in Pa or MPa (tires in psi, 1&nbsp;psi = 6895&nbsp;Pa), and \(g = 9.81\ \text{m/s}^2\). The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Placing the gear and its loads</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 2–3</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Tires, shock absorbers and stowage</h2>
+    <p class="ws-part-sub">Problems 5–8 · Basic to intermediate · Lessons 4–6</p>
+    <div class="ws-list" data-from="5" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Power systems and the cabin</h2>
+    <p class="ws-part-sub">Problems 9–12 · Basic to challenge · Lessons 7–8</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Placing a light jet’s gear', level: 1, lessons: ['l02'], units: 'm',
+      statementHTML: T`<p>An illustrative \(4800\ \text{kg}\) light jet has its mean aerodynamic chord's leading edge at station \(5.20\ \text{m}\) and a MAC of \(1.60\ \text{m}\). Its CG is assumed to range from 15% to 35% of the MAC. Stations are measured aft from the nose.</p>`,
+      parts: [
+        part('a', T`Find the forward and aft CG stations.`, T`\(x_{cg,f} = 5.440\ \text{m}\), \(x_{cg,a} = 5.760\ \text{m}\)`, { xf: 5.44, xa: 5.76 }),
+        part('b', T`Find the wheelbase and the main and nose gear stations that put 8% of the weight on the nose gear at the aft CG and 15% at the forward CG.`, T`\(B = 4.571\ \text{m}\), \(x_m = 6.126\ \text{m}\), \(x_n = 1.554\ \text{m}\)`, { B: 4.5714, xm: 6.1257, xn: 1.5543 }),
+        part('c', T`The fuselage's underside is straight back to the tail upsweep at station \(8.10\ \text{m}\). How high above the ground must it be for a tail-down angle of 12°?`, T`\(h_b = (8.10 - 6.126)\tan 12^\circ = 0.4196\ \text{m}\)`, { hb: 0.41965 })
+      ],
+      figure: null, space: 32 }),
+
+    prob({ n: 2, title: 'Tipping back and tipping over', level: 2, lessons: ['l02'], units: 'm, °',
+      statementHTML: T`<p>The light jet of Problem 1 is built with its nose gear at \(1.55\ \text{m}\) and its main gear at \(6.15\ \text{m}\), the main wheels \(1.40\ \text{m}\) either side of the centerline. Its CG is \(1.05\ \text{m}\) above the ground, between stations \(5.44\) and \(5.76\ \text{m}\).</p>`,
+      parts: [
+        part('a', T`Find the tip-back angle at the aft CG. Does it meet the guideline?`, T`\(\theta_{tb} = \arctan(0.39/1.05) = 20.38^\circ\): more than 15°`, { tb: 20.376 }),
+        part('b', T`Find the lateral tip-over angle at the forward CG.`, T`\(\delta = 16.93^\circ\), \(d = 1.133\ \text{m}\), \(\psi = 42.83^\circ\)`, { d: 1.1326, psi: 42.832 }),
+        part('c', T`Find the smallest track that keeps \(\psi\) at 63° or less.`, T`\(d \ge 0.5350\ \text{m}\); \(y_m = 0.6387\ \text{m}\); track \(1.277\ \text{m}\)`, { ym: 0.63872, track: 1.2774 })
+      ],
+      figure: null, space: 36 }),
+
+    prob({ n: 3, title: 'Gear loads', level: 1, lessons: ['l03'], units: 'N, lb',
+      statementHTML: T`<p>Use the light jet of Problem 2 (\(4800\ \text{kg}\), gear at \(1.55\) and \(6.15\ \text{m}\), CG from \(5.44\) to \(5.76\ \text{m}\) and \(1.05\ \text{m}\) above the ground). 1&nbsp;lbf = 4.448&nbsp;N.</p>`,
+      parts: [
+        part('a', T`Find the largest static load on each of the two main legs, in newtons and pounds.`, T`\(W_{m,\max}/2 = 21\,550\ \text{N}\) (4844 lb)`, { leg: 21548, lb: 4844.2 }),
+        part('b', T`Find the largest and smallest static nose loads, as loads and as shares of the weight.`, T`\(7268\ \text{N}\) (1634 lb, 15.43%); \(3992\ \text{N}\) (8.48%)`, { nmax: 7267.9, nmin: 3992.2 }),
+        part('c', T`Find the nose load while braking at \(0.31\,g\) at the forward CG.`, T`\(W_{n,\text{brake}} = 10\,600\ \text{N}\) (2383 lb, 22.5% of the weight)`, { nb: 10600 })
+      ],
+      figure: null, space: 32 }),
+
+    prob({ n: 4, title: 'Wheels for a regional jet', level: 2, lessons: ['l03'], units: 'N, lb',
+      statementHTML: T`<p>An illustrative \(42\,000\ \text{kg}\) regional jet has its nose gear at \(3.0\ \text{m}\), its two main legs at \(15.2\ \text{m}\), and its aft CG at \(14.2\ \text{m}\). Each main leg has two wheels on one axle.</p>`,
+      parts: [
+        part('a', T`Find the largest static load on each main leg, in newtons and in tonnes.`, T`\(189\,100\ \text{N}\), 19.28&nbsp;t`, { leg: 189124 }),
+        part('b', T`Find the load on each main tire in pounds, and the smallest rated load the tires may have under CS/FAR 25.733.`, T`\(21\,260\ \text{lb}\) per tire; rated load \(\ge 21\,260/1.07 = 19\,870\ \text{lb}\)`, { tire: 21258, rated: 19868 }),
+        part('c', T`Estimate the aircraft's classification number from the rule of thumb of twice the single-wheel load in tonnes. Would a single wheel per leg be better for the runway?`, T`\(9.64\ \text{t}\) per wheel: ACN about 19, a little more for the twin wheels' overlap; a single wheel would carry 19.3&nbsp;t, roughly doubling the ACN`, { acn: 19.28 })
+      ],
+      figure: null, space: 34 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'Sizing the light jet’s tires', level: 1, lessons: ['l04'], units: 'in, psi',
+      statementHTML: T`<p>Use the light jet's loads from Problem 3. The business-twin fits are \(D = 2.69\,W_w^{0.251}\) and \(w = 1.170\,W_w^{0.216}\) (inches, pounds; source: Raymer, Table 11.1). The catalog offers the 22x5.75-12, 10 ply: \(5700\ \text{lb}\) at \(180\ \text{psi}\).</p>`,
+      parts: [
+        part('a', T`Estimate the main tire's diameter and width.`, T`\(W_w = 4844\ \text{lb}\): \(D = 22.63\ \text{in}\), \(w = 7.315\ \text{in}\)`, { D: 22.633, w: 7.3146 }),
+        part('b', T`Estimate the nose tire's diameter and width from the largest static nose load.`, T`\(W_w = 1634\ \text{lb}\): \(D = 17.23\ \text{in}\), \(w = 5.784\ \text{in}\)`, { D: 17.229, w: 5.7842 }),
+        part('c', T`Check the catalog tire for the main wheels. To what pressure should it be inflated, and what is its footprint area?`, T`\(4844 \le 5700\ \text{lb}\); \(p = 180(4844/5700) = 153.0\ \text{psi}\); \(A_p = 5700/180 = 31.67\ \text{in}^2\)`, { p: 152.97, Ap: 31.667 })
+      ],
+      figure: null, space: 32 }),
+
+    prob({ n: 6, title: 'The nose tire', level: 2, lessons: ['l04'], units: 'lb, psi, mm',
+      statementHTML: T`<p>The light jet's nose tire carries the loads of Problem 3(b) and 3(c). The 18x4.4 tire comes in a 6-ply version (\(2100\ \text{lb}\) at \(100\ \text{psi}\)) and a 10-ply version (\(3550\ \text{lb}\) at \(185\ \text{psi}\)); both are \(17.9\ \text{in}\) in outside diameter with a static loaded radius of \(7.9\ \text{in}\).</p>`,
+      parts: [
+        part('a', T`Which ply rating meets CS/FAR 25.733 for the nose tire? Check both the static and the braking conditions.`, T`6 ply: \(1634 \le 2100\) and \(2383 \le 1.5(2100) = 3150\ \text{lb}\): it is enough`, { b15: 3150 }),
+        part('b', T`At what pressure should the chosen tire be inflated, and what is its footprint area?`, T`\(p = 100(1634/2100) = 77.80\ \text{psi}\); \(A_p = 21.00\ \text{in}^2\)`, { p: 77.805, Ap: 21.0 }),
+        part('c', T`How far does it deflect under its load, in millimeters?`, T`\(S_T = 17.9/2 - 7.9 = 1.05\ \text{in} = 26.67\ \text{mm}\)`, { ST: 26.67 })
+      ],
+      figure: null, space: 32 }),
+
+    prob({ n: 7, title: 'Shock absorbers', level: 2, lessons: ['l05'], units: 'm, mm',
+      statementHTML: T`<p>The light jet's main gear is designed for \(10\ \text{ft/s}\) (\(3.048\ \text{m/s}\)) with an oleo efficiency of 0.80, a gear load factor of 3 and a tire efficiency of 0.47. Its 22x5.75-12 main tire is \(22\ \text{in}\) in outside diameter with a static loaded radius of \(9.6\ \text{in}\). Take the gas pressure as \(12.4\ \text{MPa}\).</p>`,
+      parts: [
+        part('a', T`Find the tire's deflection and the stroke, adding a \(25.4\ \text{mm}\) margin.`, T`\(S_T = 0.03556\ \text{m}\); \(S = 0.1764 + 0.0254 = 0.2018\ \text{m}\)`, { ST: 0.03556, S: 0.20181 }),
+        part('b', T`What gear load factor does the \(12\ \text{ft/s}\) reserve-energy test reach with that stroke?`, T`\(N_g = 0.6819/(0.80(0.2018) + 0.47(0.03556)) = 3.827\)`, { N: 3.8273 }),
+        part('c', T`Size the main strut (static load from Problem 3a) and the nose strut (braking load from Problem 3c): piston and outside diameters, and length.`, T`Main: \(d_p = 47.0\ \text{mm}\), \(D = 61.1\ \text{mm}\); nose: \(33.0\) and \(42.9\ \text{mm}\); length \(2.5S = 0.505\ \text{m}\)`, { Dm: 61.149, Dn: 42.888, L: 0.50451 })
+      ],
+      figure: null, space: 38 }),
+
+    prob({ n: 8, title: 'Stowing the main wheels', level: 2, lessons: ['l06'], units: 'm',
+      statementHTML: T`<p>The light jet's main leg hangs from a pivot \(0.75\ \text{m}\) above the ground, \(1.40\ \text{m}\) from the centerline, and folds inward through 90°. Its 22x5.75-12 wheel's axle is at the static loaded radius, \(9.6\ \text{in}\), above the ground. The fuselage's radius is \(0.75\ \text{m}\); the wing's root chord is \(2.30\ \text{m}\) and 13% thick.</p>`,
+      parts: [
+        part('a', T`Find the leg's length and where the axle ends up.`, T`\(\ell = 0.75 - 0.2438 = 0.5062\ \text{m}\); axle \(0.8938\ \text{m}\) from the centerline`, { l: 0.50616, y: 0.89384 }),
+        part('b', T`Between what distances from the centerline does the stowed wheel lie? Does it stay outside the fuselage?`, T`\(0.614\) to \(1.173\ \text{m}\): its inner \(0.136\ \text{m}\) lies inside the fuselage line, so the belly needs a wheel well`, { y0: 0.61444, y1: 1.1732 }),
+        part('c', T`Lying flat, the wheel needs its width plus \(25\ \text{mm}\) all round. Is the wing root deep enough?`, T`Needs \(0.146 + 0.05 = 0.196\ \text{m}\); root depth \(0.13(2.30) = 0.299\ \text{m}\): yes`, { need: 0.19605, root: 0.299 })
+      ],
+      figure: null, space: 34 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'A hydraulic actuator', level: 1, lessons: ['l07'], units: 'mm, L, kW',
+      statementHTML: T`<p>A flap actuator must push with \(35\ \text{kN}\) over a \(0.20\ \text{m}\) stroke, completed in \(4\ \text{s}\).</p>`,
+      parts: [
+        part('a', T`Find its piston area and bore at \(3000\ \text{psi}\) (\(20.7\ \text{MPa}\)).`, T`\(A = 16.91\ \text{cm}^2\), \(d = 46.40\ \text{mm}\)`, { A: 16.908, d: 46.398 }),
+        part('b', T`Repeat at \(5000\ \text{psi}\) (\(34.5\ \text{MPa}\)), and compare the fluid each needs for one stroke.`, T`\(A = 10.14\ \text{cm}^2\), \(d = 35.94\ \text{mm}\); \(0.338\) against \(0.203\ \text{L}\)`, { d: 35.940, V3: 0.33816, V5: 0.20290 }),
+        part('c', T`Find the hydraulic power the stroke takes, at either pressure.`, T`\(P = pQ = F s/t = 35(0.20)/4 = 1.75\ \text{kW}\)`, { P: 1.75 })
+      ],
+      figure: null, space: 30 }),
+
+    prob({ n: 10, title: 'Voltage and copper', level: 2, lessons: ['l07'], units: 'A, mm², kg',
+      statementHTML: T`<p>A \(12\ \text{kW}\) galley load is fed through a \(10\ \text{m}\) copper conductor sized for a current density of \(5\ \text{A/mm}^2\). Copper's density is \(8960\ \text{kg/m}^3\).</p>`,
+      parts: [
+        part('a', T`Find the current at \(28\ \text{V}\) and at \(115\ \text{V}\).`, T`\(428.6\ \text{A}\) and \(104.3\ \text{A}\)`, { I28: 428.57, I115: 104.35 }),
+        part('b', T`Find the conductor's cross-section in each case.`, T`\(85.71\ \text{mm}^2\) and \(20.87\ \text{mm}^2\)`, { A28: 85.714, A115: 20.870 }),
+        part('c', T`Find the copper's mass in each case. What fraction does the higher voltage save?`, T`\(7.680\ \text{kg}\) and \(1.870\ \text{kg}\): the 115&nbsp;V conductor needs 24% of the copper`, { m28: 7.68, m115: 1.8699 })
+      ],
+      figure: null, space: 30 }),
+
+    prob({ n: 11, title: 'A lower cabin altitude', level: 2, lessons: ['l08'], units: 'Pa, MPa, kN',
+      statementHTML: T`<p>An illustrative airliner cruises at \(12\ \text{km}\), where \(p = 19\,330\ \text{Pa}\). Its cabin is held at \(6000\ \text{ft}\) (\(1829\ \text{m}\)) instead of the usual \(8000\ \text{ft}\) (\(75\,260\ \text{Pa}\)). Its fuselage is \(1.98\ \text{m}\) in radius with a skin \(1.6\ \text{mm}\) thick.</p>`,
+      parts: [
+        part('a', T`Find the cabin pressure from the standard atmosphere, \(p = 101\,325(1 - 2.256\times10^{-5}h)^{5.256}\), and the pressure differential in pascals and psi.`, T`\(p_{\text{cabin}} = 81\,200\ \text{Pa}\); \(\Delta p = 61\,870\ \text{Pa}\) (8.973 psi)`, { pc: 81200, dp: 61870 }),
+        part('b', T`Find the hoop stress in the skin, if the skin alone carries the differential.`, T`\(\sigma = 61\,870(1.98)/0.0016 = 76.56\ \text{MPa}\)`, { s: 76.564 }),
+        part('c', T`Find the load on a \(0.9\ \text{m}\) by \(1.9\ \text{m}\) door, and how much larger the differential is than with the \(8000\ \text{ft}\) cabin.`, T`\(105.8\ \text{kN}\); 10.6% more than the \(55\,930\ \text{Pa}\) of an 8000 ft cabin`, { F: 105.80, r: 1.1062 })
+      ],
+      figure: null, space: 34 }),
+
+    prob({ n: 12, title: 'Fresh air for an airliner', level: 3, lessons: ['l08'], units: 'kg/s, kW',
+      statementHTML: T`<p>An illustrative airliner carries 180 passengers and 6 crew at \(11\ \text{km}\) (\(22\,630\ \text{Pa}\), \(216.65\ \text{K}\)) and Mach 0.78, with its cabin at \(75\,260\ \text{Pa}\). Take \(c_p = 1005\ \text{J/(kg K)}\) and \(\gamma = 1.4\).</p>`,
+      parts: [
+        part('a', T`Find the fresh-air flow at the CS/FAR 25.831 minimum.`, T`\(\dot m = 186(0.55)(0.4536)/60 = 0.7734\ \text{kg/s}\)`, { m: 0.77337 }),
+        part('b', T`Find the ideal power to compress it from the outside pressure to the cabin's.`, T`Ratio 3.326; \(P = 68.98\ \text{kW}\)`, { P: 68.979 }),
+        part('c', T`With the ram rise at Mach 0.78, \(p_1 = p(1 + 0.2M^2)^{3.5}\) and \(T_1 = T(1 + 0.2M^2)\), and a compressor efficiency of 0.80, what power does the compressor need?`, T`\(p_1 = 33\,820\ \text{Pa}\), \(T_1 = 243.0\ \text{K}\), ratio 2.225; \(P = 48.49/0.80 = 60.61\ \text{kW}\)`, { P: 60.612 })
+      ],
+      figure: null, space: 36 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; tire loads in lb, pressures in psi, sizes in inches; g = 9.81 m/s^2; 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

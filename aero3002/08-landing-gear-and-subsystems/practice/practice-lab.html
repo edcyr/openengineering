@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Landing Gear and Subsystems</title>
+<meta name="description" content="Unlimited randomized problems on landing gear and subsystems: placing the gear, tipping over, gear loads, tires, the stroke, oleo struts, hydraulic and electrical power, and pressurization and fresh air, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/gear.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: gear angles and loads, tires, shock absorbers, hydraulic and electrical power, and the cabin's pressure and air, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>loads-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. loads-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>atan(0.50/2.261)*180/pi</code></td><td>\(12.47\)</td></tr>
+          <tr><td><code>6943*9.81*(7.177-1.80)/5.85/2</code></td><td>\(31\,302\)</td></tr>
+          <tr><td><code>2.69*7036^0.251</code></td><td>\(24.86\)</td></tr>
+          <tr><td><code>(10*0.3048)^2/(2*9.81)/(0.8*3)-0.47/0.8*0.0472</code></td><td>\(0.1696\)</td></tr>
+          <tr><td><code>sqrt(4*31300/(pi*12.4e6))*1000</code></td><td>\(56.69\)</td></tr>
+          <tr><td><code>101325*(1-2.2558e-5*2438.4)^5.2559-19330</code></td><td>\(55\,932\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(g = 9.81\ \text{m/s}^2\) and \(p_0 = 101\,325\ \text{Pa}\); give each answer in the unit the box shows, and angles in degrees. <code>sqrt</code>, <code>^</code>, <code>pi</code>, <code>atan</code> (in radians: multiply by <code>180/pi</code>) and powers of ten such as <code>12.4e6</code> all work. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>6943*9.81*((7.65-6.773)+0.31*1.20)/5.85</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  function r4(x) { return +x.toPrecision(4); }                                       // a given value rounded to 4 significant figures
+  var G = 9.81, RHO0 = 1.225, P0 = 101325;
+  var KG = '\\ \\text{kg}', KGS = '\\ \\text{kg/s}', MM = '\\ \\text{m}', MS = '\\ \\text{m/s}', NN = '\\ \\text{N}', KN = '\\ \\text{kN}', KW = '\\ \\text{kW}', PA = '\\ \\text{Pa}',
+    KPA = '\\ \\text{kPa}', MPA = '\\ \\text{MPa}', MMM = '\\ \\text{mm}', DEG = '^\\circ', LB = '\\ \\text{lb}', PSIU = '\\ \\text{psi}', INU = '\\ \\text{in}', IN2 = '\\ \\text{in}^2',
+    FPS = '\\ \\text{ft/s}', LPM = '\\ \\text{L/min}', AMP = '\\ \\text{A}', VOLT = '\\ \\text{V}', M2 = '\\ \\text{m}^2', CM2 = '\\ \\text{cm}^2', LIT = '\\ \\text{L}', KK = '\\ \\text{K}';
+  var D2R = Math.PI / 180, PSI = 6894.757, LBF = 4.4482216;
+  function deg(r) { return r / D2R; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function upN(v, st) { return Math.ceil(v / st) * st; }                               // a tidy axis maximum in steps of st
+  function sci(x) { var e = Math.floor(Math.log10(x)), c = x / Math.pow(10, e); return nn(+c.toFixed(2)) + '\\times 10^{' + e + '}'; }   // 3.2 × 10^7 (TeX)
+
+  /* ================================================================ 2. Generators */
+  /* ---------- 2.1 Placing the gear (Lesson 2) ---------- */
+  function genPosition(rng) {
+    var kind = pickW(rng, [['td', 3], ['tb', 3], ['share', 3], ['wb', 2], ['hb', 2]]), spec, right, wrong, view;
+    if (kind === 'td') {
+      var hb = rng.pick(range(0.3, 2.5, 0.01)), dx = rng.pick(range(1.5, 12, 0.05)), th = deg(Math.atan(hb / dx));
+      spec = { type: 'numeric', prompt: 'An aircraft\'s fuselage underside is straight back to the start of its tail upsweep, ' + m(nn(dx) + MM) + ' behind the main wheels, where it is ' + m(nn(hb) + MM) + ' above the ground. What is its tail-down angle?', label: '\\(\\theta_{TD} =\\)', answer: th, unit: '°' };
+      spec.hints = ['The tail-down angle is the angle at the main wheels\' contact between the ground and the line to the critical point.', '\\(\\tan\\theta_{TD} = h/(x - x_m)\\).'];
+      spec.solution = M('\\theta_{TD} = \\arctan\\frac{' + nn(hb) + '}{' + nn(dx) + '} = ' + n4(th) + DEG);
+      right = { value: typed(th) }; wrong = { value: typed(wrongOf(th, [deg(Math.atan(dx / hb)), hb / dx, deg(Math.asin(Math.min(1, hb / dx)) * 1.2)])) };
+      view = { title: 'Tail-down angle', aria: 'Tail-down angle against the distance from the main wheels to the upsweep, for this height, with this problem marked.',
+        x: { label: '\\(x - x_m\\) (m)', min: 0.5, max: upN(dx * 1.6, 1) }, y: { label: '\\(\\theta_{TD}\\) (°)', min: 0, max: upN(Math.max(th * 1.5, 20), 5) },
+        curves: [{ f: function (d) { return deg(Math.atan(hb / d)); }, color: 'z' }], hline: { y: 15, label: '15°' }, marker: { at: [dx, th], label: '' },
+        readouts: [{ label: '\\(h\\)', tex: nn(hb) + MM }, { label: '\\(x - x_m\\)', tex: nn(dx) + MM }, { label: '\\(\\theta_{TD}\\)', tex: n4(th) + DEG }],
+        note: 'Moving the main wheels aft, toward the upsweep, lowers the tail-down angle unless the legs grow.' };
+    } else if (kind === 'tb') {
+      var e = rng.pick(range(0.2, 2.0, 0.01)), h = rng.pick(range(0.8, 4.5, 0.01)), tb = deg(Math.atan(e / h));
+      spec = { type: 'numeric', prompt: 'An aircraft\'s main wheels are ' + m(nn(e) + MM) + ' behind its aft CG, which is ' + m(nn(h) + MM) + ' above the ground. What is its tip-back angle?', label: '\\(\\theta_{tb} =\\)', answer: tb, unit: '°' };
+      spec.hints = ['The tip-back angle is measured from the vertical through the main wheels to the line to the aft CG.', '\\(\\tan\\theta_{tb} = (x_m - x_{cg,a})/h_{cg}\\).'];
+      spec.solution = M('\\theta_{tb} = \\arctan\\frac{' + nn(e) + '}{' + nn(h) + '} = ' + n4(tb) + DEG) + '<p>' + (tb >= 15 ? 'It meets the 15° guideline.' : 'It is below the 15° guideline: the main wheels should move aft.') + '</p>';
+      right = { value: typed(tb) }; wrong = { value: typed(wrongOf(tb, [deg(Math.atan(h / e)), 90 - tb + 3, e / h * 100])) };
+      view = { title: 'Tip-back angle', aria: 'Tip-back angle against the distance of the main wheels behind the aft CG, with this problem marked.',
+        x: { label: '\\(x_m - x_{cg,a}\\) (m)', min: 0, max: upN(Math.max(e * 1.6, 1), 0.5) }, y: { label: '\\(\\theta_{tb}\\) (°)', min: 0, max: upN(Math.max(tb * 1.5, 25), 5) },
+        curves: [{ f: function (q) { return deg(Math.atan(q / h)); }, color: 'z' }], hline: { y: 15, label: '15°' }, marker: { at: [e, tb], label: '' },
+        readouts: [{ label: '\\(x_m - x_{cg,a}\\)', tex: nn(e) + MM }, { label: '\\(h_{cg}\\)', tex: nn(h) + MM }, { label: '\\(\\theta_{tb}\\)', tex: n4(tb) + DEG }],
+        note: 'A tall gear needs the main wheels further behind the CG for the same angle.' };
+    } else if (kind === 'share') {
+      var B = rng.pick(range(4, 25, 0.05)), d = r4(B * rng.pick(range(0.04, 0.22, 0.001))), sh = 100 * d / B;
+      spec = { type: 'numeric', prompt: 'An aircraft\'s wheelbase is ' + m(nn(B) + MM) + ' and its CG is ' + m(nn(d) + MM) + ' ahead of its main wheels. What share of the weight does the nose gear carry?', label: '\\(W_n/W =\\)', answer: sh, unit: '%' };
+      spec.hints = ['Take moments about the main wheels.', '\\(W_n/W = (x_m - x_{cg})/B\\).'];
+      spec.solution = M('\\frac{W_n}{W} = \\frac{' + nn(d) + '}{' + nn(B) + '} = ' + n4(sh) + '\\%') + '<p>' + (sh < 5 ? 'Below 5%: the nose wheel could not steer.' : sh > 20 ? 'Above 20%: the aircraft would be hard to rotate.' : sh >= 8 && sh <= 15 ? 'Inside the 8 to 15% band.' : 'Outside the 8 to 15% band but within the 5 to 20% limits.') + '</p>';
+      right = { value: typed(sh) }; wrong = { value: typed(wrongOf(sh, [100 * (B - d) / B, 100 * d / (B + d), 100 * B / d / 10])) };
+      view = { title: 'The nose gear\'s share', aria: 'Nose share against the distance of the CG ahead of the main wheels, with this problem marked.',
+        x: { label: '\\(x_m - x_{cg}\\) (m)', min: 0, max: upN(Math.max(d * 1.6, 0.25 * B), 0.5) }, y: { label: '\\(W_n/W\\) (%)', min: 0, max: upN(Math.max(sh * 1.4, 25), 5) },
+        curves: [{ f: function (q) { return 100 * q / B; }, color: 'z' }], hline: { y: 8, label: '8%' }, marker: { at: [d, sh], label: '' },
+        readouts: [{ label: '\\(B\\)', tex: nn(B) + MM }, { label: '\\(x_m - x_{cg}\\)', tex: nn(d) + MM }, { label: '\\(W_n/W\\)', tex: n4(sh) + '\\%' }],
+        note: 'The share grows in proportion to the CG\'s distance ahead of the main wheels.' };
+    } else if (kind === 'wb') {
+      var dx2 = rng.pick(range(0.2, 2.5, 0.01)), sa = rng.pick([5, 6, 7, 8, 9]), sf = sa + rng.pick([5, 6, 7, 8, 9, 10]), Bw = dx2 / ((sf - sa) / 100), xm = Bw * sa / 100;
+      spec = { type: 'numeric', prompt: 'An aircraft\'s CG range is ' + m(nn(dx2) + MM) + ' long. The nose gear should carry ' + m(nn(sa) + '\\%') + ' of the weight at the aft CG and ' + m(nn(sf) + '\\%') + ' at the forward CG. What wheelbase does that need?', label: '\\(B =\\)', answer: Bw, unit: 'm' };
+      spec.hints = ['The share changes by \\(\\Delta x/B\\) across the CG range.', '\\(B = (x_{cg,a} - x_{cg,f})/(\\text{share}_f - \\text{share}_a)\\).'];
+      spec.solution = M('B = \\frac{' + nn(dx2) + '}{' + nn(sf / 100) + ' - ' + nn(sa / 100) + '} = ' + n4(Bw) + MM) + '<p>The main wheels then sit ' + m(n4(xm) + MM) + ' behind the aft CG.</p>';
+      right = { value: typed(Bw) }; wrong = { value: typed(wrongOf(Bw, [dx2 * (sf - sa) / 100, dx2 / (sf / 100), dx2 / (sa / 100)])) };
+      view = { title: 'Wheelbase and the spread of the share', aria: 'Spread of the nose share across the CG range against the wheelbase, with this problem marked.',
+        x: { label: '\\(B\\) (m)', min: 0, max: upN(Bw * 1.8, 5) }, y: { label: 'Spread of \\(W_n/W\\) (%)', min: 0, max: upN(Math.max((sf - sa) * 2.5, 10), 5) },
+        curves: [{ f: function (b) { return b > 0.01 ? 100 * dx2 / b : NaN; }, color: 'z' }], hline: { y: sf - sa, label: 'wanted' }, marker: { at: [Bw, sf - sa], label: '' },
+        readouts: [{ label: 'CG range', tex: nn(dx2) + MM }, { label: 'Shares', tex: nn(sa) + '\\% \\text{ to } ' + nn(sf) + '\\%' }, { label: '\\(B\\)', tex: n4(Bw) + MM }],
+        note: 'A long CG range needs a long wheelbase to keep the nose share in its band.' };
+    } else {
+      var t = rng.pick(range(10, 15, 0.5)), dx3 = rng.pick(range(1.5, 12, 0.05)), hh = dx3 * Math.tan(t * D2R);
+      spec = { type: 'numeric', prompt: 'The start of an aircraft\'s tail upsweep is ' + m(nn(dx3) + MM) + ' behind its main wheels, and its underside is straight up to it. How high above the ground must the underside be for a tail-down angle of ' + m(nn(t) + DEG) + '?', label: '\\(h_b =\\)', answer: hh, unit: 'm' };
+      spec.hints = ['\\(\\tan\\theta_{TD} = h_b/(x - x_m)\\).', 'So \\(h_b = (x - x_m)\\tan\\theta_{TD}\\).'];
+      spec.solution = M('h_b = ' + nn(dx3) + '\\tan ' + nn(t) + '^\\circ = ' + n4(hh) + MM);
+      right = { value: typed(hh) }; wrong = { value: typed(wrongOf(hh, [dx3 / Math.tan(t * D2R), dx3 * Math.sin(t * D2R) * 1.15, dx3 * t / 100])) };
+      view = { title: 'Height for the tail-down angle', aria: 'Underside height needed against the distance to the upsweep, with this problem marked.',
+        x: { label: '\\(x - x_m\\) (m)', min: 0, max: upN(dx3 * 1.6, 1) }, y: { label: '\\(h_b\\) (m)', min: 0, max: upN(hh * 1.7, 0.5) },
+        curves: [{ f: function (q) { return q * Math.tan(t * D2R); }, color: 'z' }], marker: { at: [dx3, hh], label: '' },
+        readouts: [{ label: '\\(\\theta_{TD}\\)', tex: nn(t) + DEG }, { label: '\\(x - x_m\\)', tex: nn(dx3) + MM }, { label: '\\(h_b\\)', tex: n4(hh) + MM }],
+        note: 'The farther the upsweep is behind the main wheels, the longer the legs must be.' };
+    }
+    spec.explain = 'The main gear\'s station and height trade the tail-down angle, the tip-back angle and the nose gear\'s share against each other.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Tipping over and bank clearance (Lesson 2) ---------- */
+  function genTipOver(rng) {
+    var kind = pickW(rng, [['psi', 4], ['track', 3], ['bank', 3]]), spec, right, wrong, view;
+    if (kind === 'bank') {
+      var H = rng.pick(range(0.6, 4.0, 0.01)), y = rng.pick(range(3, 30, 0.05)), ph = deg(Math.atan(H / y));
+      spec = { type: 'numeric', prompt: 'An aircraft\'s wing tip is ' + m(nn(H) + MM) + ' above the ground and ' + m(nn(y) + MM) + ' outboard of its main wheels. How far can it bank about the main wheels before the tip touches?', label: '\\(\\varphi =\\)', answer: ph, unit: '°' };
+      spec.hints = ['The bank turns the aircraft about the line through the main wheels\' contact.', '\\(\\tan\\varphi = H/(y_{tip} - y_m)\\).'];
+      spec.solution = M('\\varphi = \\arctan\\frac{' + nn(H) + '}{' + nn(y) + '} = ' + n4(ph) + DEG);
+      right = { value: typed(ph) }; wrong = { value: typed(wrongOf(ph, [deg(Math.atan(y / H)), H / y * 100, deg(Math.atan(H / (y + 2)))])) };
+      view = { title: 'Bank clearance', aria: 'Bank angle to touch against the tip height, with this problem marked.',
+        x: { label: 'Tip height \\(H\\) (m)', min: 0, max: upN(H * 1.6, 0.5) }, y: { label: '\\(\\varphi\\) (°)', min: 0, max: upN(Math.max(ph * 1.6, 10), 5) },
+        curves: [{ f: function (q) { return deg(Math.atan(q / y)); }, color: 'z' }], hline: { y: 5, label: '5°' }, marker: { at: [H, ph], label: '' },
+        readouts: [{ label: '\\(H\\)', tex: nn(H) + MM }, { label: '\\(y_{tip} - y_m\\)', tex: nn(y) + MM }, { label: '\\(\\varphi\\)', tex: n4(ph) + DEG }],
+        note: 'Long wings and low wing tips limit the bank at touchdown.' };
+    } else {
+      var B = rng.pick(range(4, 25, 0.05)), a = r4(B * rng.pick(range(0.6, 0.95, 0.005))), h = rng.pick(range(0.8, 4.0, 0.01)), ym, dl, d, ps;
+      for (var k = 0; k < 40; k++) { ym = rng.pick(range(0.8, 4.5, 0.01)); dl = Math.atan(ym / B); d = a * Math.sin(dl); ps = deg(Math.atan(h / d)); if (ps > 25 && ps < 75) break; }
+      if (kind === 'psi') {
+        spec = { type: 'numeric', prompt: 'An aircraft\'s main wheels are ' + m(nn(ym) + MM) + ' either side of the centerline, on a wheelbase of ' + m(nn(B) + MM) + '. Its forward CG is ' + m(nn(a) + MM) + ' behind the nose wheel and ' + m(nn(h) + MM) + ' above the ground. What is its lateral tip-over angle?', label: '\\(\\psi =\\)', answer: ps, unit: '°' };
+        spec.hints = ['\\(\\tan\\delta = y_m/B\\); the CG is \\(d = (x_{cg} - x_n)\\sin\\delta\\) from the tipping line.', '\\(\\tan\\psi = h_{cg}/d\\).'];
+        spec.solution = M('\\delta = \\arctan\\frac{' + nn(ym) + '}{' + nn(B) + '} = ' + n4(deg(dl)) + '^\\circ, \\qquad d = ' + nn(a) + '\\sin\\delta = ' + n4(d) + MM) + M('\\psi = \\arctan\\frac{' + nn(h) + '}{' + n4(d) + '} = ' + n4(ps) + DEG) + '<p>' + (ps <= 63 ? 'It meets the 63° guideline.' : 'It exceeds 63°: the track should widen.') + '</p>';
+        right = { value: typed(ps) }; wrong = { value: typed(wrongOf(ps, [deg(Math.atan(h / ym)), deg(Math.atan(h / (a * Math.tan(dl) * 0.8))), 90 - ps])) };
+        view = { title: 'Tip-over angle', aria: 'Tip-over angle against half the track, with this problem marked.',
+          x: { label: '\\(y_m\\) (m)', min: 0.2, max: upN(Math.max(ym * 1.6, 2), 0.5) }, y: { label: '\\(\\psi\\) (°)', min: 0, max: 90 },
+          curves: [{ f: function (q) { return deg(Math.atan(h / (a * Math.sin(Math.atan(q / B))))); }, color: 'z' }], hline: { y: 63, label: '63°' }, marker: { at: [ym, ps], label: '' },
+          readouts: [{ label: '\\(\\delta\\)', tex: n4(deg(dl)) + DEG }, { label: '\\(d\\)', tex: n4(d) + MM }, { label: '\\(\\psi\\)', tex: n4(ps) + DEG }],
+          note: 'A wider track moves the tipping line away from the CG and lowers the angle.' };
+      } else {
+        var dmin = h / Math.tan(63 * D2R), sd = dmin / a;
+        if (sd >= 0.95) { a = r4(dmin / 0.5); sd = 0.5; }
+        var yminv = B * Math.tan(Math.asin(sd));
+        spec = { type: 'numeric', prompt: 'An aircraft has a wheelbase of ' + m(nn(B) + MM) + '; its forward CG is ' + m(nn(a) + MM) + ' behind the nose wheel and ' + m(nn(h) + MM) + ' above the ground. What is the smallest half track (centerline to main wheels) that keeps the tip-over angle at 63°?', label: '\\(y_m =\\)', answer: yminv, unit: 'm' };
+        spec.hints = ['At 63°, the CG must be \\(d = h_{cg}/\\tan 63^\\circ\\) from the tipping line.', '\\(\\sin\\delta = d/(x_{cg} - x_n)\\), then \\(y_m = B\\tan\\delta\\).'];
+        spec.solution = M('d = \\frac{' + nn(h) + '}{\\tan 63^\\circ} = ' + n4(dmin) + MM + ', \\qquad \\delta = \\arcsin\\frac{' + n4(dmin) + '}{' + nn(a) + '} = ' + n4(deg(Math.asin(sd))) + '^\\circ') + M('y_m = ' + nn(B) + '\\tan\\delta = ' + n4(yminv) + MM);
+        right = { value: typed(yminv) }; wrong = { value: typed(wrongOf(yminv, [dmin, B * sd * 0.8, a * Math.tan(Math.asin(sd))])) };
+        view = { title: 'The smallest track', aria: 'Tip-over angle against half the track, with the 63° limit and this problem marked.',
+          x: { label: '\\(y_m\\) (m)', min: 0.05, max: upN(Math.max(yminv * 2.2, 1), 0.5) }, y: { label: '\\(\\psi\\) (°)', min: 0, max: 90 },
+          curves: [{ f: function (q) { return deg(Math.atan(h / (a * Math.sin(Math.atan(q / B))))); }, color: 'z' }], hline: { y: 63, label: '63°' }, marker: { at: [yminv, 63], label: '' },
+          readouts: [{ label: '\\(d\\) at 63°', tex: n4(dmin) + MM }, { label: '\\(y_m\\)', tex: n4(yminv) + MM }, { label: 'Track', tex: n4(2 * yminv) + MM }],
+          note: 'Below this half track the tip-over angle exceeds 63°.' };
+      }
+    }
+    spec.explain = 'The tipping line runs from the nose wheel to a main wheel; the CG\'s height and its distance from that line decide the tip-over angle.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 Gear loads (Lesson 3) ---------- */
+  function genLoads(rng) {
+    var kind = pickW(rng, [['main', 3], ['nmax', 3], ['nmin', 2], ['brake', 3]]), spec, right, wrong, view;
+    var W0 = rng.pick(range(800, 2000, 10).concat(range(2000, 30000, 100), range(30000, 300000, 1000))), xn = rng.pick(range(1, 6, 0.05)), B = rng.pick(range(3, 25, 0.05));
+    var xm = r4(xn + B), sa = rng.pick(range(0.06, 0.1, 0.005)), sf = rng.pick(range(0.12, 0.18, 0.005)), xa = r4(xm - sa * B), xf = r4(xm - sf * B), h = rng.pick(range(0.8, 4, 0.01));
+    var W = W0 * G, Bv = xm - xn, mainTot = W * (xa - xn) / Bv, nmax = W * (xm - xf) / Bv, nmin = W * (xm - xa) / Bv, nbr = W * ((xm - xf) + 0.31 * h) / Bv;
+    var given = 'An aircraft of ' + m(g4(W0) + KG) + ' has its nose gear at station ' + m(nn(xn) + MM) + ' and its two main legs at ' + m(nn(xm) + MM) + '; its CG ranges from ' + m(nn(xf) + MM) + ' to ' + m(nn(xa) + MM) + '. ';
+    var ans, lab, sol, hint2, wr;
+    if (kind === 'main') {
+      ans = mainTot / 2 / 1000; lab = '\\(W_{m,\\max}/2 =\\)';
+      spec = { type: 'numeric', prompt: given + 'What is the largest load on each main leg?', label: lab, answer: ans, unit: 'kN' };
+      hint2 = '\\(W_{m,\\max} = W(x_{cg,a} - x_n)/B\\), shared by the two legs.';
+      sol = M('W_{m,\\max} = ' + g4(W) + '\\,\\frac{' + nn(xa) + ' - ' + nn(xn) + '}{' + n4(Bv) + '} = ' + g4(mainTot) + NN) + '<p>Each leg carries ' + m(n4(ans) + KN) + '.</p>';
+      wr = [W * (xf - xn) / Bv / 2000, mainTot / 1000, W * (xm - xa) / Bv / 1000];
+    } else if (kind === 'nmax') {
+      ans = nmax / 1000; lab = '\\(W_{n,\\max} =\\)';
+      spec = { type: 'numeric', prompt: given + 'What is the largest static load on the nose gear?', label: lab, answer: ans, unit: 'kN' };
+      hint2 = '\\(W_{n,\\max} = W(x_m - x_{cg,f})/B\\): the forward CG loads the nose most.';
+      sol = M('W_{n,\\max} = ' + g4(W) + '\\,\\frac{' + nn(xm) + ' - ' + nn(xf) + '}{' + n4(Bv) + '} = ' + n4(ans) + KN);
+      wr = [nmin / 1000, W * (xm - xf) / xm / 1000, (W - nmax) / 1000];
+    } else if (kind === 'nmin') {
+      ans = nmin / 1000; lab = '\\(W_{n,\\min} =\\)';
+      spec = { type: 'numeric', prompt: given + 'What is the smallest static load on the nose gear?', label: lab, answer: ans, unit: 'kN' };
+      hint2 = '\\(W_{n,\\min} = W(x_m - x_{cg,a})/B\\): the aft CG loads the nose least.';
+      sol = M('W_{n,\\min} = ' + g4(W) + '\\,\\frac{' + nn(xm) + ' - ' + nn(xa) + '}{' + n4(Bv) + '} = ' + n4(ans) + KN) + '<p>That is ' + m(n4(100 * nmin / W) + '\\%') + ' of the weight.</p>';
+      wr = [nmax / 1000, W * (xa - xn) / Bv / 1000, nmin / 100];
+    } else {
+      ans = nbr / 1000; lab = '\\(W_{n,\\text{brake}} =\\)';
+      spec = { type: 'numeric', prompt: given + 'The CG is ' + m(nn(h) + MM) + ' above the ground. What does the nose gear carry when the aircraft brakes at 0.31&nbsp;g at the forward CG?', label: lab, answer: ans, unit: 'kN' };
+      hint2 = '\\(W_{n,\\text{brake}} = W[(x_m - x_{cg,f}) + (a/g)h_{cg}]/B\\).';
+      sol = M('W_{n,\\text{brake}} = ' + g4(W) + '\\,\\frac{' + n4(xm - xf) + ' + 0.31(' + nn(h) + ')}{' + n4(Bv) + '} = ' + n4(ans) + KN);
+      wr = [nmax / 1000, W * (0.31 * h) / Bv / 1000, W * ((xm - xf) + h) / Bv / 1000];
+    }
+    spec.hints = ['\\(W = ' + g4(W0) + '(9.81) = ' + g4(W) + '\\) N; the wheelbase is \\(B = ' + n4(Bv) + '\\) m.', hint2];
+    spec.solution = sol;
+    right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, wr)) };
+    var Wk = W / 1000;
+    view = { title: 'Loads across the CG range', aria: 'Nose and main gear loads against the CG station, with this problem marked.',
+      x: { label: '\\(x_{cg}\\) (m)', min: r4(xf - 0.5 * (xa - xf) - 0.1), max: r4(xa + 0.5 * (xa - xf) + 0.1) }, y: { label: 'Load (kN)', min: 0, max: upN(Wk * 1.05, Wk > 100 ? 50 : Wk > 20 ? 10 : 2) },
+      curves: [{ f: function (x) { return Wk * (xm - x) / Bv; }, color: 'z' }, { f: function (x) { return Wk * (x - xn) / Bv / 2; }, color: 'muted', dashed: true }],
+      marker: { at: kind === 'main' ? [xa, ans] : kind === 'nmin' ? [xa, ans] : [xf, ans], label: '' },
+      readouts: [{ label: '\\(W\\)', tex: n4(Wk) + KN }, { label: '\\(B\\)', tex: n4(Bv) + MM }, { label: 'Answer', tex: n4(ans) + KN }],
+      note: 'Solid: the nose load; dashed: each main leg. ' + (kind === 'brake' ? 'Braking adds to the nose load at the forward CG, above the solid line.' : '') };
+    if (kind === 'brake') view.y.max = upN(Math.max(Wk * 1.05, ans * 1.2), Wk > 100 ? 50 : Wk > 20 ? 10 : 2);
+    spec.explain = 'Moments about the gear give its loads; the CG range gives their extremes.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Tires (Lesson 4) ---------- */
+  function genTires(rng) {
+    var kind = pickW(rng, [['stat', 3], ['psi', 3], ['area', 2], ['defl', 2], ['nose', 2]]), spec, right, wrong, view;
+    if (kind === 'stat') {
+      var cls = rng.pick(['ga', 'twin', 'transport', 'fighter']), S = GEAR.STAT[cls], dim = rng.pick(['D', 'W']);
+      var Ww = cls === 'ga' ? rng.pick(range(400, 3000, 10)) : cls === 'twin' ? rng.pick(range(1500, 12000, 10)) : rng.pick(range(5000, 60000, 100));
+      var A = S[dim][0], Bx = S[dim][1], v = A * Math.pow(Ww, Bx), nm = dim === 'D' ? 'outside diameter' : 'section width';
+      spec = { type: 'numeric', prompt: 'Estimate the ' + nm + ' of a main tire carrying ' + m(g4(Ww) + LB) + ' on a ' + S.label.toLowerCase() + ' aircraft, with the statistical fit ' + m((dim === 'D' ? 'D' : 'w') + ' = ' + nn(A) + 'W_w^{' + nn(Bx) + '}') + ' (inches and pounds).', label: dim === 'D' ? '\\(D =\\)' : '\\(w =\\)', answer: v, unit: 'in' };
+      spec.hints = ['Put the load in pounds into the fit; the result is in inches.', '\\(' + g4(Ww) + '^{' + nn(Bx) + '} = ' + n4(Math.pow(Ww, Bx)) + '\\).'];
+      spec.solution = M((dim === 'D' ? 'D' : 'w') + ' = ' + nn(A) + '(' + g4(Ww) + ')^{' + nn(Bx) + '} = ' + n4(v) + INU);
+      right = { value: typed(v) }; wrong = { value: typed(wrongOf(v, [A * Math.pow(Ww * LBF, Bx), A * Ww * Bx, A * Math.pow(Ww / 2.2046, Bx)])) };
+      view = { title: 'Statistical tire size', aria: 'Statistical tire size against the load per wheel, with this problem marked.',
+        x: { label: '\\(W_w\\) (lb)', min: 0, max: upN(Ww * 1.6, 1000) }, y: { label: (dim === 'D' ? 'Diameter' : 'Width') + ' (in)', min: 0, max: upN(v * 1.5, 5) },
+        curves: [{ f: function (q) { return q > 0 ? A * Math.pow(q, Bx) : 0; }, color: 'z' }], marker: { at: [Ww, v], label: '' },
+        readouts: [{ label: '\\(W_w\\)', tex: g4(Ww) + LB }, { label: 'Fit', tex: nn(A) + 'W_w^{' + nn(Bx) + '}' }, { label: 'Size', tex: n4(v) + INU }],
+        note: 'A first size before the catalog; source of the fits: Raymer, Table 11.1.' };
+    } else {
+      var T = rng.pick(GEAR.TIRES.filter(function (t) { return t.load >= 1500 && t.load <= 50000; })), name = T.size + ', ' + T.ply + ' ply';
+      if (kind === 'psi' || kind === 'area') {
+        var Wl = Math.round(T.load * rng.pick(range(0.55, 0.98, 0.01)) / 10) * 10, p = T.psi * Wl / T.load, Ap = T.load / T.psi;
+        if (kind === 'psi') {
+          spec = { type: 'numeric', prompt: 'The ' + name + ' tire is rated for ' + m(g4(T.load) + LB) + ' at ' + m(nn(T.psi) + PSIU) + '. To what pressure should it be inflated to carry ' + m(g4(Wl) + LB) + '?', label: '\\(p =\\)', answer: p, unit: 'psi' };
+          spec.hints = ['Inflation is reduced in proportion to the load.', '\\(p = p_{\\text{rated}}W_w/W_{\\text{rated}}\\).'];
+          spec.solution = M('p = ' + nn(T.psi) + '\\,\\frac{' + g4(Wl) + '}{' + g4(T.load) + '} = ' + n4(p) + PSIU);
+          right = { value: typed(p) }; wrong = { value: typed(wrongOf(p, [T.psi * T.load / Wl, T.psi, Wl / Ap * 1.15])) };
+        } else {
+          spec = { type: 'numeric', prompt: 'The ' + name + ' tire carries ' + m(g4(Wl) + LB) + ', inflated in proportion to its rating of ' + m(g4(T.load) + LB) + ' at ' + m(nn(T.psi) + PSIU) + '. What is its footprint area?', label: '\\(A_p =\\)', answer: Wl / p, unit: 'in²' };
+          spec.hints = ['The footprint carries the load at the inflation pressure: \\(A_p \\approx W_w/p\\).', 'With proportional inflation, \\(A_p\\) equals the rated load over the rated pressure.'];
+          spec.solution = M('p = ' + nn(T.psi) + '\\,\\frac{' + g4(Wl) + '}{' + g4(T.load) + '} = ' + n4(p) + PSIU + ', \\qquad A_p = \\frac{' + g4(Wl) + '}{' + n4(p) + '} = ' + n4(Wl / p) + IN2);
+          right = { value: typed(Wl / p) }; wrong = { value: typed(wrongOf(Wl / p, [Wl / T.psi * 0.8, T.psi / T.load * 1000, Wl / p * 6.4516])) };
+        }
+        view = { title: 'Inflation for the load', aria: 'Inflation pressure against the load for this tire, with this problem marked.',
+          x: { label: 'Load (lb)', min: 0, max: upN(T.load * 1.1, 1000) }, y: { label: 'Inflation (psi)', min: 0, max: upN(T.psi * 1.15, 20) },
+          curves: [{ f: function (q) { return T.psi * q / T.load; }, color: 'z' }], hline: { y: T.psi, label: 'rated' }, marker: { at: [Wl, p], label: '' },
+          readouts: [{ label: 'Rating', tex: g4(T.load) + LB + ',\\ ' + nn(T.psi) + PSIU }, { label: '\\(p\\)', tex: n4(p) + PSIU }, { label: '\\(A_p\\)', tex: n4(Ap) + IN2 }],
+          note: 'At proportional inflation the footprint area and the deflection stay about the same.' };
+      } else if (kind === 'defl') {
+        var ST = T.OD / 2 - T.SLR;
+        spec = { type: 'numeric', prompt: 'The ' + name + ' tire has an outside diameter of ' + m(nn(T.OD) + INU) + ' and a static loaded radius of ' + m(nn(T.SLR) + INU) + '. What is its deflection under the rated load, in millimeters?', label: '\\(S_T =\\)', answer: ST * 25.4, unit: 'mm' };
+        spec.hints = ['The deflection is half the diameter less the static loaded radius.', '1 in = 25.4 mm.'];
+        spec.solution = M('S_T = \\frac{' + nn(T.OD) + '}{2} - ' + nn(T.SLR) + ' = ' + n4(ST) + INU + ' = ' + n4(ST * 25.4) + MMM);
+        right = { value: typed(ST * 25.4) }; wrong = { value: typed(wrongOf(ST * 25.4, [(T.OD - T.SLR) * 25.4, ST, (T.OD / 2 - T.SLR / 2) * 25.4])) };
+        view = { title: 'Tire deflection', aria: 'Deflection against the static loaded radius for this diameter, with this problem marked.',
+          x: { label: 'Static loaded radius (in)', min: r4(T.OD / 4), max: r4(T.OD / 2) }, y: { label: '\\(S_T\\) (mm)', min: 0, max: upN(T.OD / 4 * 25.4, 10) },
+          curves: [{ f: function (q) { return (T.OD / 2 - q) * 25.4; }, color: 'z' }], marker: { at: [T.SLR, ST * 25.4], label: '' },
+          readouts: [{ label: 'OD', tex: nn(T.OD) + INU }, { label: 'SLR', tex: nn(T.SLR) + INU }, { label: '\\(S_T\\)', tex: n4(ST * 25.4) + MMM }],
+          note: 'The tire\'s deflection absorbs part of the landing energy (Lesson 5).' };
+      } else {
+        var lim = 1.5 * T.load;
+        spec = { type: 'numeric', prompt: 'A nose tire is rated for ' + m(g4(T.load) + LB) + '. Under CS/FAR 25.733, what is the largest load it may carry in the 0.31&nbsp;g braking condition?', label: '\\(W_{n,\\text{brake}} \\le\\)', answer: lim, unit: 'lb' };
+        spec.hints = ['The braking condition allows more than the static rating.', 'A nose tire may carry 1.5 times its rated load while braking.'];
+        spec.solution = M('1.5(' + g4(T.load) + ') = ' + g4(lim) + LB);
+        right = { value: typed(lim) }; wrong = { value: typed(wrongOf(lim, [1.07 * T.load, T.load, 1.31 * T.load])) };
+        view = { title: 'The braking allowance', aria: 'Braking allowance against rated load, with this problem marked.',
+          x: { label: 'Rated load (lb)', min: 0, max: upN(T.load * 1.6, 1000) }, y: { label: 'Braking limit (lb)', min: 0, max: upN(lim * 1.6, 1000) },
+          curves: [{ f: function (q) { return 1.5 * q; }, color: 'z' }, { f: function (q) { return q; }, color: 'muted', dashed: true }], marker: { at: [T.load, lim], label: '' },
+          readouts: [{ label: 'Rated', tex: g4(T.load) + LB }, { label: 'Braking limit', tex: g4(lim) + LB }],
+          note: 'The catalog lists 1.5 times the rated load as the maximum braking load.' };
+      }
+    }
+    spec.explain = 'Tires are chosen from a catalog against their rated load, inflation and speed.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 The stroke (Lesson 5) ---------- */
+  function genStroke(rng) {
+    var kind = pickW(rng, [['S', 4], ['N', 3], ['h', 2]]), spec, right, wrong, view;
+    var fps = rng.pick(range(6, 14, 0.5)), V = fps * 0.3048, eta = rng.pick(range(0.6, 0.9, 0.01)), N = rng.pick(range(1.5, 5, 0.1)), eT = 0.47, ST = rng.pick(range(0.02, 0.12, 0.001));
+    var hgt = V * V / (2 * G), S0 = hgt / (eta * N) - eT / eta * ST;
+    if (S0 < 0.05) { N = Math.max(1.5, r4(hgt / (eta * (0.12 + eT / eta * ST)))); S0 = hgt / (eta * N) - eT / eta * ST; }
+    if (kind === 'S') {
+      spec = { type: 'numeric', prompt: 'A gear is designed for a descent velocity of ' + m(nn(fps) + FPS) + ' with a gear load factor of ' + m(nn(N)) + ', a shock-absorber efficiency of ' + m(nn(eta)) + ', a tire efficiency of 0.47 and a tire deflection of ' + m(nn(ST) + MM) + '. What stroke does the energy balance give, before any margin?', label: '\\(S =\\)', answer: S0, unit: 'm' };
+      spec.hints = ['\\(S = V_v^2/(2g\\eta N_g) - (\\eta_T/\\eta)S_T\\), with \\(V_v\\) in m/s.', '\\(V_v = ' + n4(V) + '\\) m/s, so \\(V_v^2/2g = ' + n4(hgt) + '\\) m.'];
+      spec.solution = M('S = \\frac{' + n4(hgt) + '}{' + nn(eta) + '(' + nn(N) + ')} - \\frac{0.47}{' + nn(eta) + '}(' + nn(ST) + ') = ' + n4(S0) + MM);
+      right = { value: typed(S0) }; wrong = { value: typed(wrongOf(S0, [hgt / (eta * N), fps * fps / (2 * 32.2 * eta * N), hgt / N - eT * ST])) };
+      view = { title: 'Stroke against descent velocity', aria: 'Stroke against descent velocity for these constants, with this problem marked.',
+        x: { label: '\\(V_v\\) (ft/s)', min: 4, max: 16 }, y: { label: '\\(S\\) (m)', min: 0, max: upN(Math.max(S0 * 2, (16 * 0.3048) * (16 * 0.3048) / (2 * G * eta * N)), 0.1) },
+        curves: [{ f: function (f) { var v = f * 0.3048; return Math.max(0, v * v / (2 * G * eta * N) - eT / eta * ST); }, color: 'z' }], marker: { at: [fps, S0], label: '' },
+        readouts: [{ label: '\\(\\eta,\\ N_g\\)', tex: nn(eta) + ',\\ ' + nn(N) }, { label: '\\(V_v^2/2g\\)', tex: n4(hgt) + MM }, { label: '\\(S\\)', tex: n4(S0) + MM }],
+        note: 'The energy grows with the square of the descent velocity.' };
+    } else if (kind === 'N') {
+      var S = r4(S0 + 0.0254), Nr = hgt / (eta * S + eT * ST);
+      spec = { type: 'numeric', prompt: 'A strut of stroke ' + m(nn(S) + MM) + ' and efficiency ' + m(nn(eta)) + ' stops a descent of ' + m(nn(fps) + FPS) + ' on a tire that deflects ' + m(nn(ST) + MM) + ' (efficiency 0.47), using the whole stroke. What gear load factor does it reach?', label: '\\(N_g =\\)', answer: Nr };
+      spec.hints = ['Solve the energy balance \\(V_v^2/2g = N_g(\\eta S + \\eta_T S_T)\\) for \\(N_g\\).', '\\(V_v^2/2g = ' + n4(hgt) + '\\) m.'];
+      spec.solution = M('N_g = \\frac{' + n4(hgt) + '}{' + nn(eta) + '(' + nn(S) + ') + 0.47(' + nn(ST) + ')} = ' + n4(Nr));
+      right = { value: typed(Nr) }; wrong = { value: typed(wrongOf(Nr, [hgt / (eta * S), hgt / S, (eta * S + eT * ST) / hgt])) };
+      view = { title: 'Load factor against stroke', aria: 'Gear load factor against stroke for this descent, with this problem marked.',
+        x: { label: '\\(S\\) (m)', min: 0.02, max: upN(S * 2, 0.1) }, y: { label: '\\(N_g\\)', min: 0, max: upN(Math.max(Nr * 2.5, 4), 1) },
+        curves: [{ f: function (s) { return hgt / (eta * s + eT * ST); }, color: 'z' }], marker: { at: [S, Nr], label: '' },
+        readouts: [{ label: '\\(V_v^2/2g\\)', tex: n4(hgt) + MM }, { label: '\\(S\\)', tex: nn(S) + MM }, { label: '\\(N_g\\)', tex: n4(Nr) }],
+        note: 'A longer stroke lowers the load on the airframe.' };
+    } else {
+      spec = { type: 'numeric', prompt: 'An aircraft touches down at a vertical speed of ' + m(nn(fps) + FPS) + '. With lift equal to weight, the gear must absorb the kinetic energy of the descent. How high a drop, ' + m('V_v^2/2g') + ', does that energy equal?', label: '\\(V_v^2/2g =\\)', answer: hgt, unit: 'm' };
+      spec.hints = ['Convert to m/s: 1 ft/s = 0.3048 m/s.', '\\(V_v = ' + n4(V) + '\\) m/s.'];
+      spec.solution = M('\\frac{V_v^2}{2g} = \\frac{' + n4(V) + '^2}{2(9.81)} = ' + n4(hgt) + MM);
+      right = { value: typed(hgt) }; wrong = { value: typed(wrongOf(hgt, [fps * fps / (2 * G), V * V / G, V / (2 * G)])) };
+      view = { title: 'Energy of the descent', aria: 'Equivalent drop height against descent velocity, with this problem marked.',
+        x: { label: '\\(V_v\\) (ft/s)', min: 0, max: 16 }, y: { label: '\\(V_v^2/2g\\) (m)', min: 0, max: 1.2 },
+        curves: [{ f: function (f) { var v = f * 0.3048; return v * v / (2 * G); }, color: 'z' }], marker: { at: [fps, hgt], label: '' },
+        readouts: [{ label: '\\(V_v\\)', tex: nn(fps) + FPS + ' = ' + n4(V) + MS }, { label: '\\(V_v^2/2g\\)', tex: n4(hgt) + MM }],
+        note: '10 ft/s is the limit case of CS/FAR 25.473, 12 ft/s the reserve-energy test.' };
+    }
+    spec.explain = 'The strut and tire absorb the descent\'s kinetic energy at a force of \\(N_g\\) times the weight.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Oleo struts and efficiency (Lesson 5) ---------- */
+  function genOleo(rng) {
+    var kind = pickW(rng, [['dp', 3], ['D', 3], ['len', 2], ['peak', 2]]), spec, right, wrong, view;
+    var L = rng.pick(range(5, 600, 0.5)), P = 12.4, dp = Math.sqrt(4 * L * 1000 / (Math.PI * P * 1e6)) * 1000, D = 1.3 * dp;
+    if (kind === 'dp' || kind === 'D') {
+      var ans = kind === 'dp' ? dp : D;
+      spec = { type: 'numeric', prompt: 'A strut carries a static load of ' + m(nn(L) + KN) + ' on its gas at ' + m(nn(P) + MPA) + '. Estimate its ' + (kind === 'dp' ? 'piston diameter' : 'outside diameter, taking it as 1.3 times the piston\'s') + '.', label: kind === 'dp' ? '\\(d_p =\\)' : '\\(D_{\\text{oleo}} =\\)', answer: ans, unit: 'mm' };
+      spec.hints = ['The gas carries the load: \\(L = P\\pi d_p^2/4\\).', '\\(d_p = \\sqrt{4L/(\\pi P)}\\), in newtons and pascals.'];
+      spec.solution = M('d_p = \\sqrt{\\frac{4(' + g4(L * 1000) + ')}{\\pi(' + nn(P) + '\\times10^6)}} = ' + n4(dp) + MMM) + (kind === 'D' ? M('D = 1.3(' + n4(dp) + ') = ' + n4(D) + MMM) : '');
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [kind === 'dp' ? D : dp, Math.sqrt(L * 1000 / (Math.PI * P * 1e6)) * 1000, ans * 2])) };
+      view = { title: 'Strut diameter against load', aria: 'Piston and outside diameter against strut load, with this problem marked.',
+        x: { label: 'Strut load \\(L\\) (kN)', min: 0, max: upN(L * 1.6, 10) }, y: { label: 'Diameter (mm)', min: 0, max: upN(1.3 * Math.sqrt(4 * L * 1600 / (Math.PI * P * 1e6)) * 1000 * 1.1, 10) },
+        curves: [{ f: function (q) { return Math.sqrt(4 * q * 1000 / (Math.PI * P * 1e6)) * 1000; }, color: 'z' }, { f: function (q) { return 1.3 * Math.sqrt(4 * q * 1000 / (Math.PI * P * 1e6)) * 1000; }, color: 'muted', dashed: true }],
+        marker: { at: [L, ans], label: '' },
+        readouts: [{ label: '\\(L\\)', tex: nn(L) + KN }, { label: '\\(d_p\\)', tex: n4(dp) + MMM }, { label: '\\(D\\)', tex: n4(D) + MMM }],
+        note: 'Solid: the piston; dashed: the outside. The diameter grows with the square root of the load.' };
+    } else if (kind === 'len') {
+      var S = rng.pick(range(0.12, 0.6, 0.005)), Lo = 2.5 * S;
+      spec = { type: 'numeric', prompt: 'A shock absorber has a stroke of ' + m(nn(S) + MM) + '. Estimate the oleo strut\'s length.', label: '\\(L_{\\text{oleo}} =\\)', answer: Lo, unit: 'm' };
+      spec.hints = ['The strut needs room for the stroke, the piston\'s bearings and the gas.', 'A first estimate is 2.5 times the stroke.'];
+      spec.solution = M('L_{\\text{oleo}} \\approx 2.5(' + nn(S) + ') = ' + n4(Lo) + MM);
+      right = { value: typed(Lo) }; wrong = { value: typed(wrongOf(Lo, [1.3 * S, S, 1.5 * S])) };
+      view = { title: 'Strut length', aria: 'Strut length against stroke, with this problem marked.',
+        x: { label: '\\(S\\) (m)', min: 0, max: 0.7 }, y: { label: '\\(L_{\\text{oleo}}\\) (m)', min: 0, max: 1.8 },
+        curves: [{ f: function (q) { return 2.5 * q; }, color: 'z' }], marker: { at: [S, Lo], label: '' },
+        readouts: [{ label: '\\(S\\)', tex: nn(S) + MM }, { label: '\\(L_{\\text{oleo}}\\)', tex: n4(Lo) + MM }],
+        note: 'Long strokes make long legs, which must still fold into their bays.' };
+    } else {
+      var eta = rng.pick(range(0.65, 0.95, 0.01)), r = eta / 0.5;
+      spec = { type: 'numeric', prompt: 'A linear spring (efficiency 0.5) and an oleo of efficiency ' + m(nn(eta)) + ' absorb the same energy over the same stroke. How many times larger is the spring\'s peak force?', label: '\\(F_{\\text{spring}}/F_{\\text{oleo}} =\\)', answer: r };
+      spec.hints = ['\\(\\eta = E/(F_{\\max}S)\\), so \\(F_{\\max} = E/(\\eta S)\\).', 'The ratio of peak forces is the inverse ratio of the efficiencies.'];
+      spec.solution = M('\\frac{F_{\\text{spring}}}{F_{\\text{oleo}}} = \\frac{' + nn(eta) + '}{0.5} = ' + n4(r));
+      right = { value: typed(r) }; wrong = { value: typed(wrongOf(r, [0.5 / eta, eta, 1 / eta])) };
+      view = { title: 'Peak force and efficiency', aria: 'Ratio of the spring\'s peak to the oleo\'s against the oleo efficiency, with this problem marked.',
+        x: { label: 'Oleo \\(\\eta\\)', min: 0.5, max: 1 }, y: { label: '\\(F_{\\text{spring}}/F_{\\text{oleo}}\\)', min: 0.8, max: 2.1 },
+        curves: [{ f: function (q) { return q / 0.5; }, color: 'z' }], marker: { at: [eta, r], label: '' },
+        readouts: [{ label: '\\(\\eta\\)', tex: nn(eta) }, { label: 'Ratio', tex: n4(r) }],
+        note: 'A flat force curve absorbs the most energy for its peak.' };
+    }
+    spec.explain = 'The gas carries the static load; the stroke and efficiency set the landing load.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Power systems (Lesson 7) ---------- */
+  function genSystems(rng) {
+    var kind = pickW(rng, [['bore', 3], ['pump', 3], ['amps', 2], ['vol', 2]]), spec, right, wrong, view;
+    if (kind === 'bore') {
+      var F = rng.pick(range(2, 250, 0.5)), ps = rng.pick([3000, 5000]), p = ps === 3000 ? 20.7 : 34.5, A = F * 1000 / (p * 1e6), d = Math.sqrt(4 * A / Math.PI) * 1000;
+      spec = { type: 'numeric', prompt: 'An actuator must push with ' + m(nn(F) + KN) + ' from a ' + ps + '&nbsp;psi (' + m(nn(p) + MPA) + ') system. What bore does it need?', label: '\\(d =\\)', answer: d, unit: 'mm' };
+      spec.hints = ['\\(A = F/p\\), in newtons and pascals.', '\\(d = \\sqrt{4A/\\pi}\\).'];
+      spec.solution = M('A = \\frac{' + g4(F * 1000) + '}{' + nn(p) + '\\times10^6} = ' + n4(A * 1e4) + CM2 + ', \\qquad d = ' + n4(d) + MMM);
+      right = { value: typed(d) }; wrong = { value: typed(wrongOf(d, [Math.sqrt(A / Math.PI) * 1000, A * 1e6, Math.sqrt(4 * F * 1000 / (Math.PI * p * 1e6 / 1.5)) * 1000])) };
+      view = { title: 'Actuator bore', aria: 'Bore against force at this pressure, with this problem marked.',
+        x: { label: '\\(F\\) (kN)', min: 0, max: upN(F * 1.6, 10) }, y: { label: '\\(d\\) (mm)', min: 0, max: upN(Math.sqrt(4 * F * 1600 / (Math.PI * p * 1e6)) * 1000 * 1.1, 10) },
+        curves: [{ f: function (q) { return Math.sqrt(4 * q * 1000 / (Math.PI * p * 1e6)) * 1000; }, color: 'z' }], marker: { at: [F, d], label: '' },
+        readouts: [{ label: '\\(p\\)', tex: nn(p) + MPA }, { label: '\\(A\\)', tex: n4(A * 1e4) + CM2 }, { label: '\\(d\\)', tex: n4(d) + MMM }],
+        note: 'A higher system pressure shrinks every actuator.' };
+    } else if (kind === 'pump') {
+      var Q = rng.pick(range(5, 250, 1)), p2 = rng.pick([20.7, 34.5]), P = p2 * 1e6 * Q / 60000 / 1000;
+      spec = { type: 'numeric', prompt: 'A hydraulic pump delivers ' + m(nn(Q) + LPM) + ' at ' + m(nn(p2) + MPA) + '. What hydraulic power does it supply?', label: '\\(P =\\)', answer: P, unit: 'kW' };
+      spec.hints = ['\\(P = pQ\\), with \\(Q\\) in m³/s.', nn(Q) + ' L/min = ' + n4(Q / 60000) + ' m³/s.'];
+      spec.solution = M('P = (' + nn(p2) + '\\times10^6)(' + n4(Q / 60000) + ') = ' + n4(P) + KW);
+      right = { value: typed(P) }; wrong = { value: typed(wrongOf(P, [p2 * Q, p2 * 1e6 * Q / 1000 / 1000, P * 60])) };
+      view = { title: 'Pump power', aria: 'Hydraulic power against flow at this pressure, with this problem marked.',
+        x: { label: '\\(Q\\) (L/min)', min: 0, max: upN(Q * 1.6, 20) }, y: { label: '\\(P\\) (kW)', min: 0, max: upN(P * 1.8, 5) },
+        curves: [{ f: function (q) { return p2 * 1e6 * q / 60000 / 1000; }, color: 'z' }], marker: { at: [Q, P], label: '' },
+        readouts: [{ label: '\\(p\\)', tex: nn(p2) + MPA }, { label: '\\(Q\\)', tex: nn(Q) + LPM }, { label: '\\(P\\)', tex: n4(P) + KW }],
+        note: 'The power is the pressure times the flow, before the pump\'s own losses.' };
+    } else if (kind === 'amps') {
+      var Pw = rng.pick(range(0.5, 90, 0.5)), V = rng.pick([28, 115, 230, 270]), I = Pw * 1000 / V;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(Pw) + KW) + ' load is fed at ' + m(nn(V) + VOLT) + '. What current does it draw (taking the power factor as 1)?', label: '\\(I =\\)', answer: I, unit: 'A' };
+      spec.hints = ['\\(P = VI\\).', 'Convert the power to watts.'];
+      spec.solution = M('I = \\frac{' + g4(Pw * 1000) + '}{' + nn(V) + '} = ' + n4(I) + AMP);
+      right = { value: typed(I) }; wrong = { value: typed(wrongOf(I, [Pw / V, V / Pw, Pw * 1000 / 28 * (V === 28 ? 2 : 1)])) };
+      view = { title: 'Current against voltage', aria: 'Current for this power against the voltage, with this problem marked.',
+        x: { label: '\\(V\\) (V)', min: 20, max: 300 }, y: { label: '\\(I\\) (A)', min: 0, max: upN(Pw * 1000 / 20 * 1.05, 50) },
+        curves: [{ f: function (v) { return Pw * 1000 / v; }, color: 'z' }], marker: { at: [V, I], label: '' },
+        readouts: [{ label: '\\(P\\)', tex: nn(Pw) + KW }, { label: '\\(V\\)', tex: nn(V) + VOLT }, { label: '\\(I\\)', tex: n4(I) + AMP }],
+        note: 'Cable size follows the current: higher voltages carry the same power with less copper.' };
+    } else {
+      var n = rng.pick([1, 2, 3, 4]), b = rng.pick(range(15, 120, 1)), s = rng.pick(range(0.05, 0.6, 0.01)), t = rng.pick(range(3, 15, 0.5)), Vol = n * Math.PI * b * b / 4e6 * s * 1000;
+      spec = { type: 'numeric', prompt: n + (n > 1 ? ' actuators' : ' actuator') + ' of ' + m(nn(b) + MMM) + ' bore and ' + m(nn(s) + MM) + ' stroke must complete ' + (n > 1 ? 'their strokes' : 'its stroke') + ' together in ' + m(nn(t) + '\\ \\text{s}') + '. What average flow, in L/min, must the pump supply?', label: '\\(Q =\\)', answer: Vol / t * 60, unit: 'L/min' };
+      spec.hints = ['The fluid volume is \\(n\\,(\\pi d^2/4)\\,s\\).', 'Divide by the time, and convert liters per second to liters per minute.'];
+      spec.solution = M('V = ' + n + '\\,\\frac{\\pi(' + nn(b / 1000) + ')^2}{4}(' + nn(s) + ') = ' + n4(Vol) + LIT + ', \\qquad Q = \\frac{' + n4(Vol) + '}{' + nn(t) + '}(60) = ' + n4(Vol / t * 60) + LPM);
+      right = { value: typed(Vol / t * 60) }; wrong = { value: typed(wrongOf(Vol / t * 60, [Vol / t, Vol * 60, Vol / t * 60 / n])) };
+      view = { title: 'Flow against time', aria: 'Flow needed against the time for the stroke, with this problem marked.',
+        x: { label: 'Time (s)', min: 1, max: 20 }, y: { label: '\\(Q\\) (L/min)', min: 0, max: upN(Vol * 60 * 1.05, 5) },
+        curves: [{ f: function (q) { return Vol / q * 60; }, color: 'z' }], marker: { at: [t, Vol / t * 60], label: '' },
+        readouts: [{ label: 'Volume', tex: n4(Vol) + LIT }, { label: '\\(Q\\)', tex: n4(Vol / t * 60) + LPM }],
+        note: 'An accumulator can store fluid to deliver a short burst faster than the pump.' };
+    }
+    spec.explain = 'Secondary power is sized from the forces and the speeds of the users it drives.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Pressurization and fresh air (Lesson 8) ---------- */
+  function genCabin(rng) {
+    var kind = pickW(rng, [['dp', 3], ['door', 2], ['hoop', 2], ['air', 2], ['pw', 2]]), spec, right, wrong, view;
+    var hk = rng.pick(range(6, 14, 0.1)), p = Math.round(GEAR.isaP(hk * 1000)), hcf = rng.pick(range(5000, 8000, 500)), pc = GEAR.isaP(hcf * 0.3048), dp = pc - p;
+    var pText = 'At ' + m(nn(hk) + '\\ \\text{km}') + ' the outside pressure is ' + m(g4(p) + PA) + '; the cabin is held at ' + m(g4(hcf) + '\\ \\text{ft}') + ' (' + m(g4(pc) + PA) + ' in the standard atmosphere). ';
+    if (kind === 'dp') {
+      spec = { type: 'numeric', prompt: 'A pressurized aircraft flies at ' + m(nn(hk) + '\\ \\text{km}') + ', where the pressure is ' + m(g4(p) + PA) + ', with its cabin at ' + m(g4(hcf) + '\\ \\text{ft}') + '. Find the cabin pressure from the standard atmosphere, \\(p = 101\\,325(1 - 2.2558\\times10^{-5}h)^{5.2559}\\) with \\(h\\) in meters, and the pressure differential.', label: '\\(\\Delta p =\\)', answer: dp / 1000, unit: 'kPa' };
+      spec.hints = ['Convert the cabin altitude to meters: 1 ft = 0.3048 m.', '\\(p_{\\text{cabin}} = ' + g4(pc) + '\\) Pa; subtract the outside pressure.'];
+      spec.solution = M('p_{\\text{cabin}} = 101\\,325(1 - 2.2558\\times10^{-5}(' + n4(hcf * 0.3048) + '))^{5.2559} = ' + g4(pc) + PA) + M('\\Delta p = ' + g4(pc) + ' - ' + g4(p) + ' = ' + n4(dp / 1000) + KPA);
+      right = { value: typed(dp / 1000) }; wrong = { value: typed(wrongOf(dp / 1000, [(101325 - p) / 1000, pc / 1000, (pc + p) / 1000])) };
+    } else if (kind === 'door') {
+      var w = rng.pick(range(0.3, 1.2, 0.01)), hh = rng.pick(range(0.4, 2.0, 0.01)), F = dp * w * hh / 1000;
+      spec = { type: 'numeric', prompt: pText + 'What load does the differential put on a door ' + m(nn(w) + MM) + ' by ' + m(nn(hh) + MM) + '?', label: '\\(F =\\)', answer: F, unit: 'kN' };
+      spec.hints = ['\\(\\Delta p = p_{\\text{cabin}} - p\\).', 'The load is \\(\\Delta p\\) times the area.'];
+      spec.solution = M('\\Delta p = ' + g4(pc) + ' - ' + g4(p) + ' = ' + g4(dp) + PA + ', \\qquad F = ' + g4(dp) + '(' + nn(w) + ')(' + nn(hh) + ') = ' + n4(F) + KN);
+      right = { value: typed(F) }; wrong = { value: typed(wrongOf(F, [pc * w * hh / 1000, dp * (w + hh) / 1000, F / 9.81])) };
+    } else if (kind === 'hoop') {
+      var r = rng.pick(range(0.6, 3.5, 0.01)), sg = rng.pick(range(60, 140, 5)), t = dp * r / (sg * 1e6) * 1000;
+      spec = { type: 'numeric', prompt: pText + 'The fuselage\'s radius is ' + m(nn(r) + MM) + '. What skin thickness carries the hoop stress at ' + m(nn(sg) + MPA) + '?', label: '\\(t =\\)', answer: t, unit: 'mm' };
+      spec.hints = ['\\(\\sigma_{\\text{hoop}} = \\Delta p\\,r/t\\).', '\\(\\Delta p = ' + g4(dp) + '\\) Pa.'];
+      spec.solution = M('t = \\frac{' + g4(dp) + '(' + nn(r) + ')}{' + nn(sg) + '\\times10^6} = ' + n4(t) + MMM);
+      right = { value: typed(t) }; wrong = { value: typed(wrongOf(t, [t / 2, pc * r / (sg * 1e6) * 1000, dp * 2 * r / (sg * 1e6) * 1000])) };
+    } else if (kind === 'air') {
+      var nOcc = rng.pick(range(4, 400, 1)), md = GEAR.freshAir(nOcc);
+      spec = { type: 'numeric', prompt: 'At the CS/FAR 25.831 minimum of 0.55&nbsp;lb of fresh air per minute per occupant, how much fresh air must the air conditioning supply for ' + m(nn(nOcc)) + ' occupants, in kg/s?', label: '\\(\\dot m =\\)', answer: md, unit: 'kg/s' };
+      spec.hints = ['1 lb = 0.4536 kg; one minute is 60 s.', '\\(\\dot m = n(0.55)(0.4536)/60\\).'];
+      spec.solution = M('\\dot m = ' + nn(nOcc) + '(0.55)(0.4536)/60 = ' + n4(md) + KGS);
+      right = { value: typed(md) }; wrong = { value: typed(wrongOf(md, [nOcc * 0.55 / 60, nOcc * 0.55 * 0.4536, md * 2.2046])) };
+    } else {
+      var n2 = rng.pick(range(4, 30, 1)), md2 = GEAR.freshAir(n2), T = GEAR.isaT(hk * 1000), Pw = GEAR.compression(md2, p, pc, T, 1) / 1000;
+      spec = { type: 'numeric', prompt: pText + 'The outside air is at ' + m(nn(+T.toFixed(2)) + KK) + '. What ideal power compresses the fresh air for ' + m(nn(n2)) + ' occupants (0.55&nbsp;lb/min each) from outside to the cabin pressure, ignoring the ram rise? Use \\(c_p = 1005\\) J/(kg K) and \\(\\gamma = 1.4\\).', label: '\\(P =\\)', answer: Pw, unit: 'kW' };
+      spec.hints = ['\\(\\dot m = n(0.55)(0.4536)/60\\).', '\\(P = \\dot m c_p T_1[(p_{\\text{cabin}}/p)^{0.2857} - 1]\\).'];
+      spec.solution = M('\\dot m = ' + n4(md2) + KGS + ', \\qquad \\frac{p_{\\text{cabin}}}{p} = ' + n4(pc / p)) + M('P = ' + n4(md2) + '(1005)(' + nn(+T.toFixed(2)) + ')(' + n4(pc / p) + '^{0.2857} - 1) = ' + n4(Pw) + KW);
+      right = { value: typed(Pw) }; wrong = { value: typed(wrongOf(Pw, [Pw / 0.2857 * 0.4, md2 * 1005 * T * (pc / p - 1) / 1000, Pw * 1000 / 1005])) };
+    }
+    var cab = hcf * 0.3048;
+    view = { title: 'Pressure differential', aria: 'Pressure differential against flight altitude for this cabin altitude, with the flight altitude marked.',
+      x: { label: 'Flight altitude (km)', min: 0, max: 15 }, y: { label: '\\(\\Delta p\\) (kPa)', min: 0, max: 80 },
+      curves: [{ f: function (h) { return Math.max(0, GEAR.isaP(cab) - GEAR.isaP(h * 1000)) / 1000; }, color: 'z' }], marker: { at: [hk, dp / 1000], label: '' },
+      readouts: [{ label: 'Cabin', tex: g4(hcf) + '\\ \\text{ft}' }, { label: '\\(p,\\ p_{\\text{cabin}}\\)', tex: g4(p) + ',\\ ' + g4(pc) + PA }, { label: '\\(\\Delta p\\)', tex: n4(dp / 1000) + KPA }],
+      note: 'The differential grows with altitude and loads every door, window and skin panel.' };
+    spec.explain = 'The cabin rules set the differential; the occupants set the fresh air.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-gear-arrangements.html', 'Landing Gear Arrangements'), l02: L(2, '02-gear-position.html', 'Placing the Gear'),
+    l03: L(3, '03-gear-loads.html', 'Gear Loads and Wheels'), l04: L(4, '04-tires.html', 'Tire Selection'),
+    l05: L(5, '05-shock-absorbers.html', 'Shock Absorbers'), l06: L(6, '06-retraction.html', 'Retraction and Stowage'),
+    l07: L(7, '07-power-systems.html', 'Hydraulic, Electrical and Pneumatic Power'), l08: L(8, '08-cabin-systems.html', 'Pressurization, Air and Ice Protection')
+  };
+  var CATS = [
+    { id: 'position', label: 'Placing the gear', gen: genPosition, lessons: [LES.l02] },
+    { id: 'tipover', label: 'Tipping over and clearance', gen: genTipOver, lessons: [LES.l02] },
+    { id: 'loads', label: 'Gear loads', gen: genLoads, lessons: [LES.l03] },
+    { id: 'tires', label: 'Tires', gen: genTires, lessons: [LES.l04] },
+    { id: 'stroke', label: 'The stroke', gen: genStroke, lessons: [LES.l05] },
+    { id: 'oleo', label: 'Oleo struts', gen: genOleo, lessons: [LES.l05] },
+    { id: 'systems', label: 'Power systems', gen: genSystems, lessons: [LES.l07] },
+    { id: 'cabin', label: 'Pressurization and air', gen: genCabin, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like range-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>
