@@ -1,6 +1,6 @@
 # Builds the course pages of openengineering.ca from the synced modules:
 #   <course>/index.html          one page per course (modules, lessons, progress, downloads)
-#   index.html                   the "Courses" section and download list of the home page (between markers)
+#   index.html                   the "Courses" section of the home page (between markers); each course's first modules
 #   404.html                     redirects for old module URLs and upper-case course codes
 #   sitemap.xml                  every page of the site
 # Run after scripts/sync-modules.sh:  python3 scripts/courses.py
@@ -420,11 +420,17 @@ def course_page(c):
            order='' if planned else ' Take them in the order shown; each builds on the ones before it.', avail='Available now' if planned else 'Modules',
            cards=cards, coming=coming, dls=dls, notation=c['notation'], cc=CC, js=PROGRESS_JS)
 
-# ------------------------------------------------------------------ home page: Courses section and downloads
+# ------------------------------------------------------------------ home page: Courses section
+HOME_MODS = 4    # a home-page card lists its course's first modules only; the course page lists them all (and the downloads)
+
+def more_mods(href, n):
+    return '<li class="more"><a href="%s">+ %d more module%s</a></li>' % (href, n, '' if n == 1 else 's') if n > 0 else ''
+
 def home_courses():
     out = []
     for c in COURSES:
-        mods = ''.join('<li><a href="%s/%s/">%s</a> <span class="min">%d lessons</span></li>' % (c['slug'], m['slug'], esc(m['title']), len(m['lessons'])) for m in c['mods'])
+        mods = ''.join('<li><a href="%s/%s/">%s</a> <span class="min">%d lessons</span></li>' % (c['slug'], m['slug'], esc(m['title']), len(m['lessons'])) for m in c['mods'][:HOME_MODS])
+        mods += more_mods(c['slug'] + '/', len(c['mods']) - HOME_MODS)
         left = len([w for w in c.get('planned', {}) if w not in {m.get('week') for m in c['mods']}])
         meta = '<li>%d module%s</li><li>%d lessons</li>' % (len(c['mods']), '' if len(c['mods']) == 1 else 's', sum(len(m['lessons']) for m in c['mods']))
         if left: meta += '<li>%d more planned</li>' % left
@@ -452,8 +458,9 @@ def standalone_card(c):
     base = c['slug'] + '/'
     mods = ''.join('<li><a href="%s%s"><span class="n">%d</span>%s</a> <span class="min">%s</span></li>' % (
         base, m['lessons'][0]['file'], m['number'], esc(m['title']),
-        ('%d lessons' % m['total']) if len(m['lessons']) == m['total'] else ('%d of %d lessons' % (len(m['lessons']), m['total']))) for m in c['mods'])
-    if c['planned_mods']:
+        ('%d lessons' % m['total']) if len(m['lessons']) == m['total'] else ('%d of %d lessons' % (len(m['lessons']), m['total']))) for m in c['mods'][:HOME_MODS])
+    mods += more_mods(base, len(c['mods']) - HOME_MODS)
+    if c['planned_mods'] and len(c['mods']) <= HOME_MODS:      # the planned ones only when the card lists every module (the meta line counts them)
         mods += '<li class="planned"><span>Coming next: %s</span></li>' % ' · '.join(esc(m['title']) for m in c['planned_mods'])
     meta = '<li>%d modules</li><li>%d lessons</li>' % (len(c['mods']), sum(len(m['lessons']) for m in c['mods']))
     if c['planned_mods']: meta += '<li>%d more planned</li>' % len(c['planned_mods'])
@@ -475,10 +482,6 @@ def standalone_card(c):
             </div>
           </article>''' % (c['mark'], esc(c['level']), base, esc(c['title']), c['blurb'], meta, mods, extras, base)
 
-def home_downloads():
-    return '\n'.join(['            <li><a href="%s/downloads/%s.zip" download>%s <span>%s · zip · %s</span></a></li>' % (c['slug'], m['slug'], esc(m['title']), c['code'], m['zip']) for c in COURSES for m in c['mods']] +
-                     ['            <li><a href="%s/downloads/%s" download>%s <span>%s · zip · %s</span></a></li>' % (c['slug'], m['zipname'], esc(m['title']), c['dl'], m['zip']) for c in STANDALONE for m in c['mods']])
-
 def splice(s, name, body):
     a, b = '<!--%s-->' % name, '<!--/%s-->' % name
     assert s.count(a) == 1 and s.count(b) == 1, name
@@ -487,7 +490,7 @@ def splice(s, name, body):
 # ------------------------------------------------------------------ write
 for c in COURSES:
     open(os.path.join(SITE, c['slug'], 'index.html'), 'w', encoding='utf-8').write(course_page(c))
-s = splice(splice(MAIN, 'COURSES', home_courses()), 'DOWNLOADS', home_downloads())
+s = splice(MAIN, 'COURSES', home_courses())
 ALL = COURSES + STANDALONE
 nmod = sum(len(c['mods']) for c in ALL); nles = sum(len(m['lessons']) for c in ALL for m in c['mods'])
 s = re.sub(r'<li><span><strong>\d+</strong> courses</span></li>', '<li><span><strong>%d</strong> courses</span></li>' % len(ALL), s)
