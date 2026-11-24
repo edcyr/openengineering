@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balanced Maneuver Loads · Loads and Structures</title>
+<meta name="description" content="The aircraft in equilibrium at a load factor: the wing's lift and pitching moment, the tail load that balances them about the center of gravity, and the wing and tail loads at the corners of the business jet's flight envelope at its forward and aft CG, after 14 CFR 25.331(b).">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/wing.js"></script>
+<script src="../assets/js/loads.js"></script>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 35 min</p>
+    <h1>Balanced Maneuver Loads</h1>
+    <p class="lede">A load factor says how much lift the aircraft makes in all, not how that lift is shared. The wing makes most of it, but its lift acts at its aerodynamic center, not at the center of gravity, and it pitches the aircraft nose-down; the horizontal tail balances both. This lesson finds the wing and tail loads in a balanced maneuver at each corner of the business jet's envelopes.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Write the equilibrium of an aircraft at a load factor, with the wing's lift and pitching moment and the tail load.</li>
+      <li>Find the tail load and the wing lift in a balanced maneuver.</li>
+      <li>Explain how the CG position and the speed change the tail load.</li>
+      <li>Find the largest balanced wing and tail loads over the business jet's flight envelope.</li>
+    </ul>
+  </section>
+
+  <section id="balance">
+    <h2>The aircraft in balance</h2>
+    <p>14&nbsp;CFR 25.331(b) asks that the maneuvering conditions at the corners of the envelope be investigated "in equilibrium with zero pitching acceleration": a <strong>balanced maneuver</strong>, a steady pull-up or turn in which the aircraft does not rotate. Three things act in the aircraft's plane of symmetry:</p>
+    <ul>
+      <li>the weight times the load factor, \(nW\), at the center of gravity \(x_{cg}\);</li>
+      <li>the wing's lift \(L_w\) at its aerodynamic center \(x_{ac}\), with its pitching moment about that point, \(M_{ac} = q S \bar c\,C_{M,ac}\), which does not change with the lift;</li>
+      <li>the horizontal tail's load \(L_t\) at its aerodynamic center, a tail arm \(l_t\) behind the wing's.</li>
+    </ul>
+    <p>Taking forces up and moments nose-up as positive, and the fuselage's and the engines' pitching moments as small (this lesson neglects them), equilibrium of forces and of moments about the wing's aerodynamic center give:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Wing and tail loads in a balanced maneuver</p>
+      \[ L_t = \frac{nW\,(x_{cg} - x_{ac}) + M_{ac}}{l_t}, \qquad L_w = nW - L_t \]
+      <p>\(x_{cg} - x_{ac}\) is positive when the CG is behind the wing's aerodynamic center; \(M_{ac}\) is negative (nose-down) for a cambered wing. A negative \(L_t\) is a download, which the wing must make up.</p>
+    </div>
+    <p>The business jet's wing has its aerodynamic center at the quarter of its MAC, station 6.975&nbsp;m; its tail's is at 14.26&nbsp;m, so \(l_t = 7.285\)&nbsp;m (Module 6). Its CG range is the 15 to 35% of the 2.015&nbsp;m MAC that Module 8 assumed: 0.202&nbsp;m ahead of the aerodynamic center to 0.201&nbsp;m behind it. Its supercritical airfoil pitches strongly nose-down: assume \(c_{m,0} = -0.10\), which for the wing's aspect ratio and sweep gives \(C_{M,ac} = c_{m,0}A\cos^2\Lambda/(A + 2\cos\Lambda) = -0.067\) (Module 12 uses the same value).</p>
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> The business jet in a balanced maneuver at its takeoff weight: the wing's lift and pitching moment, the tail load and \(nW\) at the CG, to scale with one another (the tail load drawn three times larger, as marked). Choose a corner of the envelopes, or set the load factor, speed and CG.</figcaption>
+    </figure>
+  </section>
+
+  <section id="cases">
+    <h2>The tail load across the envelope</h2>
+    <p>The tail load has two parts. The first, \(nW(x_{cg} - x_{ac})/l_t\), grows with the load factor and changes sign with the CG: a forward CG needs a download, an aft CG an upload. The second, \(M_{ac}/l_t\), is a download that grows with the dynamic pressure, so with the square of the speed, whatever the load factor. The largest download therefore comes at high speed with the CG forward, and the largest upload at high load factor and low speed with the CG aft.</p>
+    <div class="example">
+      <p class="example-title">Example 6.1 — Point A at the forward CG</p>
+      <p>Find the tail load and the wing lift at point A (\(n = 3.048\), \(V_A = 96.3\)&nbsp;m/s) at the takeoff weight of 6943&nbsp;kg, with the CG at 15% of the MAC.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ q = \tfrac12(1.225)(96.3)^2 = 5680\ \text{Pa} \]
+          \[ M_{ac} = 5680(28)(2.0154)(-0.067) = -21.47\ \text{kN·m} \]
+          \[ nW = 3.048(6943)(9.807) = 207.55\ \text{kN} \]
+          \[ L_t = \frac{207.55(-0.2017) - 21.47}{7.285} = \frac{-41.86 - 21.47}{7.285} = -8.69\ \text{kN} \]
+          \[ L_w = 207.55 + 8.69 = 216.2\ \text{kN} \]
+          <p>The wing must lift 4.2% more than \(nW\), because the tail pushes down. At the aft CG the tail would instead lift 2.79&nbsp;kN.</p>
+        </div>
+      </details>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 6.2 — Point D at the forward CG</p>
+      <p>Repeat at point D: the same load factor at \(V_D = 173.6\)&nbsp;m/s.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ q = \tfrac12(1.225)(173.6)^2 = 18\,460\ \text{Pa} \]
+          \[ M_{ac} = -69.78\ \text{kN·m} \]
+          \[ L_t = \frac{-41.86 - 69.78}{7.285} = -15.32\ \text{kN} \]
+          \[ L_w = 222.9\ \text{kN} \]
+          <p>The largest balanced download, 15.3&nbsp;kN, at a tail lift coefficient of \(-15\,320/(18\,460 \times 5.42) = -0.153\): well within what the tail can make, so the tail does not limit this maneuver, but it is a load the tail and the rear fuselage must carry.</p>
+        </div>
+      </details>
+    </div>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Table 6.1 Balanced loads at the corners of the business jet's envelopes, takeoff weight (kN; the gust points at 20&nbsp;000&nbsp;ft)</caption>
+        <thead><tr><th scope="col">Point</th><th scope="col">\(V_E\) (m/s)</th><th scope="col">\(n\)</th><th scope="col">\(L_t\), CG 15%</th><th scope="col">\(L_t\), CG 35%</th><th scope="col">\(L_w\), CG 15%</th><th scope="col">\(L_w\), CG 35%</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">A</th><td>96.3</td><td>3.048</td><td>−8.69</td><td>+2.79</td><td>216.2</td><td>204.8</td></tr>
+          <tr><th scope="row">D</th><td>173.6</td><td>3.048</td><td>−15.32</td><td>−3.84</td><td>222.9</td><td>211.4</td></tr>
+          <tr><th scope="row">E</th><td>173.6</td><td>0</td><td>−9.58</td><td>−9.58</td><td>9.6</td><td>9.6</td></tr>
+          <tr><th scope="row">F</th><td>138.9</td><td>−1</td><td>−4.25</td><td>−8.01</td><td>−63.8</td><td>−60.1</td></tr>
+          <tr><th scope="row">G</th><td>70.4</td><td>−1</td><td>+0.31</td><td>−3.46</td><td>−68.4</td><td>−64.6</td></tr>
+          <tr><th scope="row">Gust, \(V_C\) up</th><td>138.9</td><td>3.255</td><td>−12.27</td><td>0.00</td><td>233.9</td><td>221.6</td></tr>
+          <tr><th scope="row">Gust, \(V_C\) down</th><td>138.9</td><td>−1.255</td><td>−3.77</td><td>−8.49</td><td>−81.7</td><td>−76.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The wing's largest lift is in the upward gust at 20&nbsp;000&nbsp;ft with the CG forward, 233.9&nbsp;kN; the tail's largest balanced download is at D, 15.3&nbsp;kN. These are not yet the tail's design loads. 25.331(c) adds <strong>pitching maneuvers</strong>, in which the pilot moves the elevator abruptly and the tail load leads the aircraft's response, and a gust also strikes the tail directly. Those dynamic cases usually size the horizontal tail; balanced maneuvers size the wing. The vertical tail is sized by yawing maneuvers and lateral gusts (25.351 and 25.341), and by the engine failure of Module 12.</p>
+    <p>Two results here depend on choices later modules revisit. The CG range will come from Module 11's weight statement, with the wing moved; and the tail arm and area will be set by Module 12's stability analysis. Both change these tail loads in proportion.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>In a balanced maneuver: \(L_t = [nW(x_{cg} - x_{ac}) + M_{ac}]/l_t\) and \(L_w = nW - L_t\).</li>
+      <li>The tail's download grows with the speed (from \(M_{ac}\)) and with the load factor at a forward CG; an aft CG at high load factor and low speed gives an upload.</li>
+      <li>The business jet: the wing's largest lift is 233.9&nbsp;kN in the gust at 20&nbsp;000&nbsp;ft with the CG forward; the tail's largest balanced download is 15.3&nbsp;kN at D.</li>
+      <li>Pitching maneuvers and direct gusts usually size the tail; balanced maneuvers size the wing.</li>
+      <li>Next, <a href="07-wing-loads.html">Lesson 7</a> spreads the wing's lift along its span to find its shear and bending.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 6.1: the balanced aircraft ---------- */
+CYL.ready(function () {
+  'use strict';
+  var ac = LOADS.preset('bizjet'), W0 = ac.W0, sp0 = LOADS.speeds(ac, W0, 0), ge = LOADS.gustEnv(ac, W0, 6096);
+  var PTS = [
+    { id: 'A', n: sp0.n, V: sp0.VA }, { id: 'D', n: sp0.n, V: sp0.VD }, { id: 'E', n: 0, V: sp0.VD }, { id: 'F', n: -1, V: sp0.VC },
+    { id: 'G', n: -1, V: sp0.VG }, { id: 'Gust up', n: ge.C[0], V: ge.VC }, { id: '1 g at V_C', n: 1, V: sp0.VC }
+  ];
+  var st = { n: sp0.n, V: sp0.VA, cg: 0.15, pick: 'A' };
+  var ls = LAYOUT.preset('bizjet'); ls.eng.D = 0.7971; ls.eng.l = 1.7702;
+  var G = LAYOUT.evaluate(ls).G;
+  var plane = CYL2D.plane(document.getElementById('fig61-stage'), { xRange: [-0.3, 16.0], yRange: [-3.2, 4.4], grid: 'none', axes: false, ticks: false, maxHeight: 420, ariaLabel: 'Forces on the business jet in a balanced maneuver.' });
+  var g0 = plane.group(), gF = plane.group();
+  LAYOUT.drawSide(g0, G, { cabin: false });
+  var panel = document.getElementById('fig61-controls'), row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Point' }), chips = {};
+  PTS.forEach(function (p) { var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: p.id.replace('V_C', 'VC') }); b.addEventListener('click', function () { st.pick = p.id; st.n = p.n; st.V = p.V; S.n.set(st.n, true); S.V.set(st.V, true); draw(); }); chips[p.id] = b; row.appendChild(b); });
+  function sl(k, label, min, max, step, unit, color, dec) { return CYL.slider({ label: label, min: min, max: max, step: step, value: st[k], unit: unit || '', color: color, format: function (v) { return CYL.fmtFixed(v, dec); }, onInput: function (v) { st[k] = v; st.pick = null; draw(); } }); }
+  var S = { n: sl('n', 'Load factor \\(n\\)', -1.5, 3.5, 0.001, '', 't', 3), V: sl('V', 'Equivalent airspeed \\(V_E\\)', 40, 180, 0.1, ' m/s', 'v', 1), cg: sl('cg', 'CG (fraction of the MAC)', 0.10, 0.40, 0.005, '', 'r', 3) };
+  var ro = { w: CYL.readout('\\(nW\\)', { color: 't' }), m: CYL.readout('\\(M_{ac}\\)'), t: CYL.readout('Tail load \\(L_t\\)', { color: 'z' }), l: CYL.readout('Wing lift \\(L_w\\)', { color: 'z' }), c: CYL.readout('\\(C_{L,w}\\), \\(C_{L,h}\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Point of the envelopes' })); panel.appendChild(row);
+  [S.n.el, S.V.el, S.cg.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.w.el, ro.m.el, ro.t.el, ro.l.el, ro.c.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  var K = 1 / 90000;   // metres of arrow per newton
+  function draw() {
+    gF.clear();
+    var b = LOADS.balance(ac, { n: st.n, W: W0, Ve: st.V, xcg: st.cg }), zW = G.wing.z, zT = G.ht.z, zc = -0.10;
+    // n W at the CG: arrowhead ends at the CG
+    var lw = b.nW * K;
+    if (Math.abs(lw) > 0.05) gF.line([b.xcg, zc + lw], [b.xcg, zc], { color: 't', width: 3, arrow: 'end' });
+    // the CG mark
+    gF.circle({ center: [b.xcg, zc], r: 0.13, color: 'ink', width: 1.4, fill: 'surface', fillOpacity: 1 });
+    // wing lift and tail load start at their aerodynamic centers
+    var Lw = b.Lw * K, Lt = 3 * b.Lt * K;
+    if (Math.abs(Lw) > 0.05) gF.line([ac.xAc, zW], [ac.xAc, zW + Lw], { color: 'z', width: 3, arrow: 'end' });
+    if (Math.abs(Lt) > 0.05) gF.line([ac.xAcH, zT], [ac.xAcH, zT + Lt], { color: 'z', width: 3, arrow: 'end' });
+    // M_ac as a nose-down arc at the wing's aerodynamic center
+    var mm = Math.min(1, Math.abs(b.Mac) / 70000);
+    if (mm > 0.02) gF.arc({ center: [ac.xAc, zW], r: 0.75, theta0: Math.PI * 1.1, theta1: Math.PI * (1.1 + 0.8 * mm), color: 'warn', width: 2.4, arrow: true });   // nose-down: counterclockwise with the nose on the left
+    var wide = plane.el.clientWidth >= 520;
+    if (wide) {
+      var aft = b.xcg > ac.xAc;   // CG behind the aerodynamic center: the two labels swap sides, each outside its arrow
+      gF.label([ac.xAc, zW + Lw], 'L_w', { anchor: (Lw >= 0 ? 'n' : 's') + (aft ? 'w' : 'e'), offset: [aft ? -3 : 3, 0] });
+      // under the download's tip, and never above the tail cone's lower line (an upload's label goes there too, clear of the fin)
+      gF.label([ac.xAcH, Math.min(zT - 0.35, zT + Math.min(Lt, 0))], 'L_t\\ (\\times 3)', { anchor: 's', offset: [0, 4] });
+      // at negative n the arrow is under the CG, beside the M_ac arc: label it above the CG instead
+      if (lw >= 0) gF.label([b.xcg, zc + lw], 'nW', { anchor: aft ? 'ne' : 'nw', offset: [aft ? 3 : -3, 0] });
+      else gF.label([b.xcg, zc], 'nW', { anchor: 'nw', offset: [-6, -2] });
+      if (mm > 0.02) gF.label([ac.xAc - 0.75, zW - 0.3], 'M_{ac}', { anchor: 'sw', offset: [-2, 2] });   // below-left of the arc's start, under the fuselage line
+    }
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === st.pick)); });
+    ro.w.set(CYL.fmtFixed(b.nW / 1000, 1) + ' kN'); ro.m.set(CYL.fmtFixed(b.Mac / 1000, 2) + ' kN·m'); ro.t.set((b.Lt >= 0 ? '+' : '') + CYL.fmtFixed(b.Lt / 1000, 2) + ' kN');
+    ro.l.set(CYL.fmtFixed(b.Lw / 1000, 1) + ' kN'); ro.c.set(CYL.fmtFixed(b.CLw, 3) + ', ' + CYL.fmtFixed(b.CLh, 3));
+    plane.svg.setAttribute('aria-label', 'At n ' + st.n.toFixed(3) + ', ' + st.V.toFixed(1) + ' m/s and the CG at ' + (100 * st.cg).toFixed(1) + '% MAC the tail load is ' + (b.Lt / 1000).toFixed(2) + ' kN and the wing lift ' + (b.Lw / 1000).toFixed(1) + ' kN.');
+  }
+  draw();
+  var wide0 = plane.el.clientWidth >= 520;
+  if (window.ResizeObserver) new ResizeObserver(function () { var w = plane.el.clientWidth >= 520; if (w !== wide0) { wide0 = w; draw(); } }).observe(plane.el);
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1',
+    type: 'numeric',
+    prompt: 'An aircraft pulls \\(nW = 400\\) kN with its CG 0.30&nbsp;m ahead of the wing\'s aerodynamic center. The wing\'s pitching moment is \\(M_{ac} = -60\\) kN·m and the tail arm 12&nbsp;m. What is the balanced tail load (positive up)?',
+    label: '\\(L_t =\\)', answer: (400 * -0.30 - 60) / 12, unit: 'kN',
+    hints: ['\\(x_{cg} - x_{ac} = -0.30\\) m.', '\\(L_t = [nW(x_{cg} - x_{ac}) + M_{ac}]/l_t\\).'],
+    explain: 'A download: the forward CG and the nose-down moment both need it.',
+    solution: '\\[ L_t = \\frac{400(-0.30) - 60}{12} = -15.0\\ \\text{kN} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2',
+    type: 'numeric',
+    prompt: 'For that aircraft, what lift must the wing make?',
+    label: '\\(L_w =\\)', answer: 415, unit: 'kN',
+    hints: ['\\(L_w = nW - L_t\\), and \\(L_t\\) is negative.'],
+    explain: 'The tail\'s download adds to the wing\'s load.',
+    solution: '\\[ L_w = 400 - (-15) = 415\\ \\text{kN} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3',
+    type: 'mc',
+    prompt: 'Why does the business jet\'s largest balanced tail download come at point D with the CG forward?',
+    choices: [
+      { html: 'The wing\'s nose-down moment grows with the dynamic pressure, largest at \\(V_D\\), and a forward CG adds a download that grows with \\(n\\)', correct: true, feedback: 'Yes: at D both parts of the download are largest.' },
+      { html: 'The load factor is largest at D', feedback: 'It is the same at A and D, 3.048; the speed is what differs.' },
+      { html: 'The tail stalls at D', feedback: 'Its lift coefficient there is only −0.153.' },
+      { html: 'The CG moves forward at high speed', feedback: 'The CG depends on the loading, not the speed.' }
+    ],
+    explain: '\\(L_t = [nW(x_{cg} - x_{ac}) + qS\\bar c\\,C_{M,ac}]/l_t\\).'
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Closure · Performance, Cost and Trade Studies</title>
+<meta name="description" content="A design-closure tool: the business jet's design loop closed for any wing loading, thrust, flaps, cruise and requirements, with its weights, performance, field lengths, acquisition and operating cost, and every requirement checked.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/weights.js"></script>
+<script src="../assets/js/stability.js"></script>
+<script src="../assets/js/drag.js"></script>
+<script src="../assets/js/design.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table tr.grp td { font-weight: 700; }
+</style>
+</head>
+<body data-page="closure" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Performance and Cost</p>
+    <h1>Design Closure</h1>
+    <p class="lede">The course on one page: choose the business jet's wing loading, thrust, flaps, cruise and requirements, close its design loop (layout, drag polar, mission fuel, group weights and, if you wish, the engines), and read its performance, field lengths, price and operating cost, with every requirement checked.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="cl-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="cl-presets" role="group" aria-labelledby="cl-presets-label"></div>
+    <div class="sc-grid" id="cl-grid"></div>
+    <p class="small muted" id="cl-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="cl-totals"></div>
+    <figure class="figure wide" aria-labelledby="cl-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="cl-stage1"></div>
+      </div>
+      <figcaption id="cl-fig1-cap"><strong>Figure T.1</strong> Each requirement as a share of its limit: below 100% it is met. Thrust requirements are the \(T/W\) each needs over the \(T/W\) installed; the others are the distance or volume over the limit.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="cl-fig2-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="cl-stage2"></div>
+      </div>
+      <figcaption id="cl-fig2-cap"><strong>Figure T.2</strong> The closed design in side and top views, to scale.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="cl-table">
+        <caption>The closed design</caption>
+        <thead><tr><th scope="col">Quantity</th><th scope="col">Value</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="cl-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>The loop (Lesson 1): from a guess of \(W_0\), the wing at the wing loading chosen, rubber engines at the \(T/W\) chosen (Module 7: weight ∝ thrust\(^{1.1}\)), tails at Module 12's volume coefficients, the fuselage of Module 6; Module 9's drag build-up; Module 3's mission flown with that polar, the cruise in 20 steps at constant altitude and Mach; Module 11's group weights with its calibration \(k = 1.151\), at Module 10's design load factor (the larger of the maneuvering and gust limits, recomputed for each wing); \(W_0 = 980 + W_f + W_e\), repeated until it changes by less than 0.05&nbsp;kg.</li>
+      <li>Sizing the engines: with "sized to the requirements", \(T/W\) is raised or lowered until the most demanding of cruise (Mach and altitude chosen, from \(0.9555\,W_0\)), the cruise ceiling (the climb rate chosen at the cruise altitude or 12&nbsp;km, whichever is higher), the 2.4% one-engine-out gradient (\(L/D = 12\) with takeoff flaps) and the takeoff field length is just met. Thrust falls with altitude as \(\sigma\).</li>
+      <li>Field lengths (Lesson 5): Torenbeek's method as in AeroSandbox, with 90% of the static thrust on the run, \(C_{D0} = 0.035\) with flaps and gear down, \(\mu = 0.02\), 4.5&nbsp;s to react and 0.37&nbsp;g of braking; landing at \(0.9\,W_0\) from 50&nbsp;ft on a 3° approach, touchdown at \(1.15\,V_S\).</li>
+      <li>Cost (Lessons 6 and 7): DAPCA IV in metric form at the maximum level speed between 6 and 10&nbsp;km, in 2024 dollars; the engines priced in proportion to thrust; the operating cost per flight of the design mission after AeroSandbox's model, with a loan repaid over the life.</li>
+      <li>Not iterated: the CG and loading (Module 11), the scissor plot (Module 12) and the landing gear (Module 8) for the new size, and the weight of more powerful flaps. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var PRE = {
+    baseline: { label: 'Closed baseline (Lessons 1-7)', ws: 250, twMode: 'auto', tw: 0.346, h: 12000, M: 0.80, R: 4600, clL: 2.1, clTO: 1.7, fpm: 300, tofl: 1200, land: 840 },
+    final: { label: 'Final design (Lesson 8)', ws: 230, twMode: 'auto', tw: 0.386, h: 13000, M: 0.80, R: 4600, clL: 2.4, clTO: 1.7, fpm: 300, tofl: 1200, land: 840 },
+    m5: { label: 'Module 5\'s design point (T/W 0.31)', ws: 250, twMode: 'fixed', tw: 0.31, h: 12000, M: 0.80, R: 4600, clL: 2.1, clTO: 1.7, fpm: 300, tofl: 1200, land: 840 }
+  };
+  var COSTDEF = { Q: 500, eng: 1.2, avi: 0.8, profit: 15, hours: 450, fuel: 0.85, crew: 150 };
+  function copy(id) { return Object.assign({ id: id }, PRE[id], COSTDEF); }
+  var KEY = 'closure:inputs', st = Object.assign(copy('final'), CYL.store.get(KEY, {}) || {});
+  if (!PRE[st.id]) st = copy('final');
+  function save() { CYL.store.set(KEY, st); }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('cl-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { t: 'Design', f: [opt('twMode', 'Engines', [['auto', 'Sized to the requirements'], ['fixed', 'Fixed T/W']], true), num('ws', 'Wing loading (kg/m²)'), num('tw', 'Fixed \\(T/W\\)'), num('clL', '\\(C_{L\\max}\\), landing'), num('clTO', '\\(C_{L\\max}\\), takeoff')] },
+    { t: 'Mission and requirements', f: [num('h', 'Cruise altitude (m)'), num('M', 'Cruise Mach'), num('R', 'Range (km)'), num('fpm', 'Ceiling climb (ft/min)'), num('tofl', 'Takeoff field (m)'), num('land', 'Landing distance (m)')] },
+    { t: 'Cost', f: [num('Q', 'Aircraft built'), num('eng', 'Engine price per 15.4 kN ($ M)'), num('avi', 'Avionics ($ M)'), num('profit', 'Profit (%)'), num('hours', 'Hours flown a year'), num('fuel', 'Fuel ($/kg)'), num('crew', 'Cost per pilot a year ($k)')] }
+  ];
+  function ok(k, v) { var R = { ws: [150, 400], tw: [0.2, 0.8], clL: [1.5, 3.5], clTO: [1.2, 2.8], h: [6000, 15000], M: [0.5, 0.86], R: [1000, 8000], fpm: [0, 1000], tofl: [600, 3000], land: [500, 2000], Q: [10, 5000], eng: [0.1, 10], avi: [0, 10], profit: [0, 100], hours: [50, 4000], fuel: [0.1, 5], crew: [0, 1000] }; return !R[k] || (v >= R[k][0] && v <= R[k][1]); }
+  var timer = null;
+  function later() { clearTimeout(timer); timer = setTimeout(update, 200); }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'cl-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () { st[q.k] = el.value; save(); dis(); update(); });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); later(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f])));
+  });
+  CYL.renderMath(grid);
+  function dis() { inputs.tw.disabled = st.twMode !== 'fixed'; }
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = st[k]; }); dis(); }
+  var pre = document.getElementById('cl-presets'), chips = {};
+  Object.keys(PRE).forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: PRE[id].label });
+    b.addEventListener('click', function () { load(id); document.getElementById('cl-msg').textContent = 'Loaded: ' + PRE[id].label + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+  function load(id) { st = copy(id); save(); fill(); update(); }
+
+  /* ---------- figures ---------- */
+  var plane = CYL2D.plane(document.getElementById('cl-stage2'), { xRange: [-0.5, 16.5], yRange: [-10.5, 14.6], grid: 'none', axes: false, ticks: false, maxHeight: 520, ariaLabel: 'Side and top views of the closed design.' });
+  var gV = plane.group();
+
+  /* ---------- results ---------- */
+  var R;
+  function spec() {
+    var d = DESIGN.base(); d.ws = st.ws; d.tw = st.twMode === 'auto' ? 'auto' : st.tw; d.mission.h = st.h; d.mission.M = st.M; d.mission.R = st.R;
+    d.clmax.land = st.clL; d.clmax.to = st.clTO; d.req = Object.assign({}, DESIGN.REQ, { ceilFpm: st.fpm, bfl: st.tofl, land: st.land });
+    return d;
+  }
+  function compute() {
+    var d = spec(), c = DESIGN.size(d);
+    if (!c.ok) return { fail: true };
+    var F = DESIGN.fieldOf(c), r = DESIGN.twRequired(c), e = DESIGN.economics(c, { Q: st.Q, engineRef: st.eng * 1e6, avionics: st.avi * 1e6, profit: st.profit / 100, hoursYear: st.hours, fuelPrice: st.fuel, crewYear: st.crew * 1000 });
+    var Wc = 0.9555 * c.W0, ceil = DESIGN.ceiling(c, Wc, 100), climb = DESIGN.climbTo(c, st.h, 0.97 * c.W0, 0.65), pr = DESIGN.payloadRange(c);
+    return { c: c, F: F, r: r, e: e, ceil: ceil, climb: climb, pr: pr };
+  }
+  function f0(v) { return Math.round(v).toLocaleString('en-US'); }
+  function update() {
+    dis();
+    Object.keys(PRE).forEach(function (id) { var p = PRE[id], same = Object.keys(p).every(function (k) { return k === 'label' || (k === 'tw' && p.twMode === 'auto') || String(p[k]) === String(st[k]); }); chips[id].setAttribute('aria-pressed', String(same)); });
+    R = compute();
+    var T = document.getElementById('cl-totals'); T.innerHTML = '';
+    function tile(lab, val, warn) { T.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', text: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    if (R.fail) { tile('Design loop', 'does not close'); document.getElementById('cl-msg').textContent = 'The loop does not close with these inputs: the mission needs more fuel than any size of this aircraft can carry.'; return R; }
+    var c = R.c, F = R.F, e = R.e, tw = c.d.tw, req = c.d.req;
+    var thrustOk = tw >= Math.max(R.r.each.cruise, R.r.each.ceiling, R.r.each.oei) - 1e-4, fieldOk = F.FAR <= req.bfl + 0.5, landOk = F.land.total <= req.land + 0.5, fuelOk = c.vFuel <= c.vTank;
+    tile('Takeoff weight (kg)', f0(c.W0)); tile('Empty weight (kg)', f0(c.We)); tile('Fuel with reserves (kg)', f0(c.M.Wf));
+    tile('Wing area (m²)', c.S.toFixed(1)); tile('Span (m)', c.b.toFixed(2)); tile('T/W', tw.toFixed(3), !thrustOk); tile('Thrust per engine (kN)', (c.T / 1000).toFixed(1));
+    tile('Cruise L/D', c.M.LDcruise.toFixed(2)); tile('Takeoff field (m)', f0(F.FAR), !fieldOk); tile('Landing (m)', f0(F.land.total), !landOk);
+    tile('Fuel volume / tanks (m³)', c.vFuel.toFixed(2) + ' / ' + c.vTank.toFixed(2), !fuelOk); tile('Price ($ M)', (e.price / 1e6).toFixed(2)); tile('Cost per flight hour ($)', f0(e.op.perHour));
+    document.getElementById('cl-msg').textContent = (thrustOk && fieldOk && landOk && fuelOk) ? 'This design meets every requirement.' : 'This design misses: ' + [thrustOk ? null : 'thrust', fieldOk ? null : 'takeoff field', landOk ? null : 'landing', fuelOk ? null : 'fuel volume'].filter(Boolean).join(', ') + '.';
+    // Figure T.1: requirements as a share of their limits
+    var rows = [['Cruise thrust', R.r.each.cruise / tw], ['Ceiling thrust', R.r.each.ceiling / tw], ['Engine-out climb', R.r.each.oei / tw], ['Takeoff field', F.FAR / req.bfl], ['Landing distance', F.land.total / req.land], ['Fuel volume', c.vFuel / c.vTank]]
+      .map(function (q) { var p = 100 * q[1]; return { label: q[0], segs: [{ v: p, col: p > 100.05 ? 'r' : 'good', op: 0.75 }], text: p.toFixed(1) + '%' }; });
+    WEIGHTS.hbars(document.getElementById('cl-stage1'), rows, { max: 130, refs: [{ v: 100, label: 'limit' }], aria: 'Requirements as a share of their limits.' });
+    // Figure T.2: views
+    gV.clear(); LAYOUT.drawSide(gV, c.R.G, { cabin: false, at: [0, 10.8] }); LAYOUT.drawTop(gV, c.R.G, { at: [0, 0] });
+    var span = c.b / 2; plane.setRange([-0.5, Math.max(16.5, c.R.lF + 0.5)], [-Math.max(9.4, span + 0.4), 14.6]);
+    plane.svg.setAttribute('aria-label', 'The closed design: wing ' + c.S.toFixed(1) + ' square meters, span ' + c.b.toFixed(2) + ' m.');
+    // table
+    var tb = document.querySelector('#cl-table tbody'); tb.innerHTML = '';
+    function tr(a, b, cls) { tb.appendChild(CYL.el('tr', cls ? { class: cls } : null, [CYL.el('td', { html: a }), CYL.el('td', { html: b })])); }
+    tr('<strong>Weights</strong>', '', 'grp');
+    tr('Takeoff weight', f0(c.W0) + ' kg'); tr('Empty weight', f0(c.We) + ' kg (' + (c.We / c.W0).toFixed(3) + ')');
+    tr('Structure, propulsion, equipment', f0(c.Wt.groups.struct) + ', ' + f0(c.Wt.groups.prop) + ', ' + f0(c.Wt.groups.equip) + ' kg');
+    tr('Fuel fraction', c.ff.toFixed(4)); tr('Engines', '2 × ' + (c.T / 1000).toFixed(2) + ' kN, ' + c.eng.W.toFixed(0) + ' kg each');
+    tr('<strong>Aerodynamics</strong>', '', 'grp');
+    tr('\\(C_{D0}\\) in cruise, \\(K\\)', c.A.cd0(st.h, st.M).toFixed(5) + ', ' + c.A.K.toFixed(5)); tr('\\((L/D)_{\\max}\\), cruise \\(L/D\\)', c.A.ldMax(st.h, st.M).toFixed(2) + ', ' + c.M.LDcruise.toFixed(2) + ' (' + c.M.LDstart.toFixed(2) + ' to ' + c.M.LDend.toFixed(2) + ')');
+    tr('Tails', c.R.SHT.toFixed(2) + ' and ' + c.R.SVT.toFixed(2) + ' m²');
+    tr('<strong>Performance</strong>', '', 'grp');
+    tr('\\(T/W\\) needed: cruise, ceiling, engine out, takeoff', R.r.each.cruise.toFixed(3) + ', ' + R.r.each.ceiling.toFixed(3) + ', ' + R.r.each.oei.toFixed(3) + ', ' + R.r.each.takeoff.toFixed(3));
+    tr('Service ceiling at the start of cruise', R.ceil != null ? (R.ceil / 1000).toFixed(2) + ' km' : 'none');
+    tr('Climb to cruise altitude', R.climb ? R.climb.min.toFixed(1) + ' min, ' + f0(R.climb.fuel) + ' kg' : 'cannot');
+    tr('Takeoff: to 35 ft, balanced field', f0(F.takeoff) + ' m, ' + f0(F.BFL) + ' m'); tr('Landing from 50 ft', f0(F.land.total) + ' m (' + f0(F.land.air) + ' + ' + f0(F.land.ground) + ')');
+    var P = R.pr.points; tr('Full-payload range, ferry range', f0(P[1].R) + ' km' + (P[1].tankLimited ? ' (tanks)' : '') + ', ' + f0(P[P.length - 1].R) + ' km');
+    tr('<strong>Cost</strong>', '', 'grp');
+    tr('Cost per aircraft, price', '$' + (e.unit / 1e6).toFixed(2) + ' M, $' + (e.price / 1e6).toFixed(2) + ' M');
+    tr('Design mission: per flight, per hour', '$' + f0(e.op.total) + ', $' + f0(e.op.perHour));
+    tr('Per km, per seat-km', '$' + e.perKm.toFixed(2) + ', $' + e.perSeatKm.toFixed(3));
+    CYL.renderMath(document.getElementById('result'));
+    return R;
+  }
+  fill(); update();
+
+  /* ---------- CSV ---------- */
+  document.getElementById('cl-csv').addEventListener('click', function () {
+    if (!R || R.fail) return;
+    var c = R.c, F = R.F, e = R.e, rows = [['quantity', 'value', 'unit']];
+    Object.keys(st).forEach(function (k) { rows.push(['input ' + k, st[k], '']); });
+    rows.push(['W0', c.W0.toFixed(1), 'kg'], ['empty weight', c.We.toFixed(1), 'kg'], ['fuel fraction', c.ff.toFixed(5), ''], ['fuel with reserves', c.M.Wf.toFixed(1), 'kg'],
+      ['wing area', c.S.toFixed(3), 'm2'], ['span', c.b.toFixed(3), 'm'], ['T/W', c.d.tw.toFixed(4), ''], ['thrust per engine', c.T.toFixed(0), 'N'], ['engine weight', c.eng.W.toFixed(1), 'kg'],
+      ['horizontal tail', c.R.SHT.toFixed(3), 'm2'], ['vertical tail', c.R.SVT.toFixed(3), 'm2'], ['CD0 cruise', c.A.cd0(st.h, st.M).toFixed(5), ''], ['K', c.A.K.toFixed(5), ''],
+      ['cruise L/D average', c.M.LDcruise.toFixed(3), ''], ['T/W cruise', R.r.each.cruise.toFixed(4), ''], ['T/W ceiling', R.r.each.ceiling.toFixed(4), ''], ['T/W engine out', R.r.each.oei.toFixed(4), ''], ['T/W takeoff', R.r.each.takeoff.toFixed(4), ''],
+      ['takeoff to 35 ft', F.takeoff.toFixed(0), 'm'], ['balanced field length', F.BFL.toFixed(0), 'm'], ['landing from 50 ft', F.land.total.toFixed(0), 'm'], ['fuel volume', c.vFuel.toFixed(3), 'm3'], ['tank volume', c.vTank.toFixed(3), 'm3'],
+      ['cost per aircraft', e.unit.toFixed(0), '$'], ['price', e.price.toFixed(0), '$'], ['operating cost per flight', e.op.total.toFixed(0), '$'], ['operating cost per hour', e.op.perHour.toFixed(0), '$']);
+    Object.keys(c.Wt.groups).forEach(function (k) { rows.push(['group ' + k, c.Wt.groups[k].toFixed(1), 'kg']); });
+    c.Wt.rows.forEach(function (r) { rows.push(['weight ' + r.name, r.kg.toFixed(1), 'kg']); });
+    Object.keys(e.op.items).forEach(function (k) { rows.push(['operating ' + k, e.op.items[k].toFixed(0), '$ per flight']); });
+    var csv = rows.map(function (r) { return r.map(function (x) { x = String(x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'design-closure.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  window.__closure = { compute: compute, state: function () { return st; }, load: load, set: function (o) { Object.assign(st, o); save(); fill(); return update(); }, result: function () { return R; } };
+});
+</script>
+</body>
+</html>

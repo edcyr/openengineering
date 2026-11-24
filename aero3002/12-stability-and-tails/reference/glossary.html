@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary · Stability, Control and Tail Sizing</title>
+<meta name="description" content="Short definitions of the terms and symbols of the Stability, Control and Tail Sizing module, from the aerodynamic center to windmilling drag, each linked to its lesson.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Glossary page (page-specific styles; colors come from module.css tokens) ---------- */
+.gl-tools {
+  --gl-i-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+  margin: 0 0 32px;
+  padding: 16px 16px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.gl-controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+.gl-controls > .field { flex: 1 1 250px; }
+.gl-controls > .gl-lesson-field { flex: 1 1 220px; }
+@container cylmain (min-width: 700px) { .gl-controls > .gl-lesson-field { flex: 0 1 260px; } }
+.gl-search { position: relative; }
+.gl-search::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  pointer-events: none;
+  background-color: var(--ink-faint);
+  -webkit-mask: var(--gl-i-search) center / contain no-repeat;
+  mask: var(--gl-i-search) center / contain no-repeat;
+}
+.gl-search input { width: 100%; min-height: 44px; padding-left: 38px; font-size: 1rem; }
+.gl-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.gl-lesson-field select { width: 100%; min-height: 44px; }
+.gl-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  min-height: 34px;
+  margin-top: 10px;
+}
+.gl-count { margin: 0; color: var(--ink-muted); font-size: 0.9rem; }
+.gl-az {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+@container cylmain (min-width: 700px) { .gl-az { grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 3px; } }
+.gl-az > a, .gl-az > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+.gl-az > a { color: var(--accent); background: var(--accent-soft); }
+.gl-az > a:hover { color: var(--accent-ink); background: var(--accent); }
+.gl-az > a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gl-az > span, .gl-az > a.is-off, .gl-az > a.is-off:hover {
+  color: var(--ink-faint);
+  background: transparent;
+  opacity: 0.55;
+  cursor: default;
+}
+.gl-empty { margin: 0 0 32px; }
+.gl-empty .btn { margin-top: 2px; }
+
+.gl-group { margin: 0 0 28px; }
+.gl-letter-row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.gl-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.gl-rule { flex: 1 1 auto; height: 1px; background: var(--line); }
+.gl-top { flex: none; font-size: 0.84rem; font-weight: 600; text-decoration: none; }
+.gl-top:hover { text-decoration: underline; }
+.gl-terms {
+  margin: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.gl-entry { padding: 14px 18px 15px; border-top: 1px solid var(--line); }
+.gl-entry.is-first { border-top: 0; border-top-left-radius: calc(var(--radius) - 1px); border-top-right-radius: calc(var(--radius) - 1px); }
+.gl-entry.is-last { border-bottom-left-radius: calc(var(--radius) - 1px); border-bottom-right-radius: calc(var(--radius) - 1px); }
+.gl-entry:target { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); }
+.gl-entry > dt { margin: 0; color: var(--ink); font-size: 1.06rem; font-weight: 700; line-height: 1.35; }
+.gl-entry dfn { font-style: normal; }
+.gl-qual { color: var(--ink-muted); font-size: 0.92em; font-weight: 500; }
+.gl-entry > dd { margin: 4px 0 0; }
+.gl-entry > dd.gl-see {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+}
+.gl-lesson-link {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.gl-lesson-link:hover { background: var(--accent); color: var(--accent-ink); }
+/* the highlighted (:target) entry has the pills' own tint, so the pills switch to the card color there */
+.gl-entry:target .gl-lesson-link { background: var(--bg-elev); }
+.gl-entry:target .gl-lesson-link:hover { background: var(--accent); }
+/* rendered math is inline-block, which a text underline skips: underline links that contain math with a border */
+a.gl-mlink { text-decoration: none; border-bottom: 1px solid currentColor; }
+a.gl-mlink:hover { border-bottom-width: 2px; }
+mark.gl-hit {
+  padding: 0 1px;
+  margin: 0 -1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--c-warn) 24%, transparent);
+  color: inherit;
+}
+.gl-symbols { margin-top: 3rem; }
+.gl-symbols tbody th[scope="row"] { white-space: nowrap; }
+
+@media print {
+  .gl-tools, .gl-top, .gl-empty { display: none !important; }
+  .gl-list [hidden] { display: block !important; }
+  .gl-terms { box-shadow: none; }
+  .gl-entry, .gl-entry.is-first, .gl-entry.is-last { border-top: 1px solid var(--line); border-radius: 0; break-inside: avoid; page-break-inside: avoid; }
+  .gl-entry:first-child { border-top: 0; }
+  .gl-letter-row { break-after: avoid; page-break-after: avoid; }
+  .gl-letter { background: none; color: inherit; border: 1px solid var(--line-strong); }
+  mark.gl-hit { background: none; }
+  .gl-lesson-link { padding: 0; background: none; }
+  .gl-lesson-link:not(:last-of-type)::after { content: ","; }
+}
+</style>
+</head>
+<body data-page="glossary" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Reference · 62 terms</p>
+    <h1>Glossary</h1>
+    <p class="lede">Short, precise definitions of the words and symbols used in this module, each linked to the lesson where it is taught. Filter the list as you type, jump to a letter, or look a symbol up in <a href="#symbols">Symbols at a glance</a>.</p>
+  </header>
+
+  <div class="gl-tools" id="gl-tools">
+    <div class="gl-controls" role="search" aria-label="Glossary filter">
+      <div class="field gl-filter-field">
+        <label for="gl-filter">Filter terms</label>
+        <div class="gl-search">
+          <input type="search" id="gl-filter" placeholder="Try neutral point, downwash or rudder" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="gl-count" aria-controls="gl-list">
+        </div>
+      </div>
+      <div class="field gl-lesson-field">
+        <label for="gl-lesson">Taught in</label>
+        <select id="gl-lesson" aria-controls="gl-list">
+          <option value="">All lessons</option>
+        </select>
+      </div>
+    </div>
+    <div class="gl-status">
+      <p class="gl-count" id="gl-count">Showing all 62 terms</p>
+      <button type="button" class="btn small" id="gl-clear" hidden>Clear filter</button>
+    </div>
+    <p class="visually-hidden" id="gl-live" aria-live="polite" aria-atomic="true"></p>
+    <nav class="gl-az" id="gl-az" aria-label="Jump to a letter">
+      <a href="#letter-a" data-letter="A">A</a>
+      <span class="is-empty" aria-hidden="true">B</span>
+      <a href="#letter-c" data-letter="C">C</a>
+      <a href="#letter-d" data-letter="D">D</a>
+      <a href="#letter-e" data-letter="E">E</a>
+      <a href="#letter-f" data-letter="F">F</a>
+      <a href="#letter-g" data-letter="G">G</a>
+      <a href="#letter-h" data-letter="H">H</a>
+      <span class="is-empty" aria-hidden="true">I</span>
+      <span class="is-empty" aria-hidden="true">J</span>
+      <span class="is-empty" aria-hidden="true">K</span>
+      <a href="#letter-l" data-letter="L">L</a>
+      <a href="#letter-m" data-letter="M">M</a>
+      <a href="#letter-n" data-letter="N">N</a>
+      <span class="is-empty" aria-hidden="true">O</span>
+      <a href="#letter-p" data-letter="P">P</a>
+      <span class="is-empty" aria-hidden="true">Q</span>
+      <a href="#letter-r" data-letter="R">R</a>
+      <a href="#letter-s" data-letter="S">S</a>
+      <a href="#letter-t" data-letter="T">T</a>
+      <span class="is-empty" aria-hidden="true">U</span>
+      <a href="#letter-v" data-letter="V">V</a>
+      <a href="#letter-w" data-letter="W">W</a>
+      <span class="is-empty" aria-hidden="true">X</span>
+      <span class="is-empty" aria-hidden="true">Y</span>
+      <span class="is-empty" aria-hidden="true">Z</span>
+    </nav>
+  </div>
+
+  <div class="callout note gl-empty" id="gl-empty" hidden>
+    <p class="callout-title">No matches</p>
+    <p><span id="gl-empty-msg">No terms match this filter.</span> Check the spelling, or type just the first few letters of a word.</p>
+    <p><button type="button" class="btn small" id="gl-empty-clear">Clear filter</button></p>
+  </div>
+
+  <div class="gl-list" id="gl-list">
+  <div class="gl-group" id="letter-a" data-letter="A">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">A</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-ac" data-lessons="2" data-keys="aerodynamic center ac quarter chord moment">
+        <dt><dfn class="gl-name">Aerodynamic center</dfn></dt>
+        <dd>The point about which a lifting surface's pitching moment does not change with angle of attack. For wings of aspect ratio 5 or more and moderate sweep it lies close to the quarter-chord of the mean aerodynamic chord, \(\bar x_{ac,W} \approx 0.25\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#sum">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cm-w">Wing pitching moment \(C_{M,W}\)</a>, <a href="#term-np">Neutral point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-aft-limit" data-lessons="3 6" data-keys="aft CG limit stability rearmost">
+        <dt><dfn class="gl-name">Aft CG limit</dfn></dt>
+        <dd>The rearmost CG the aircraft may fly with: the required static margin ahead of the neutral point, in the most critical flight condition (cruise, for the business jet). After this module, the business jet's is 37.1% of the MAC.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-neutral-point.html#np">Lesson 3</a>, <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#lines">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sm">Static margin</a>, <a href="#term-np">Neutral point</a>, <a href="#term-stab-line">Stability line</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-anhedral" data-lessons="7" data-keys="anhedral negative dihedral high wing">
+        <dt><dfn class="gl-name">Anhedral</dfn></dt>
+        <dd>Negative dihedral: wing tips lower than the root. Swept high wings, whose position and sweep already give a strong dihedral effect, often use it to keep the dihedral effect from growing too large.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-dihedral">Dihedral \(\Gamma\)</a>, <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-c" data-letter="C">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">C</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-control-line" data-lessons="5 6" data-keys="control line forward CG tail area">
+        <dt><dfn class="gl-name">Control line</dfn></dt>
+        <dd>The horizontal tail area that trims the aircraft at a forward CG in its critical condition, with the tail at \(C_{L,H} = -0.5\): a straight line falling as the CG moves aft. It sets the forward limit of the scissor plot.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-control.html#requirement">Lesson 5</a>, <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#lines">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-fwd-limit">Forward CG limit</a>, <a href="#term-scissor">Scissor plot</a>, <a href="#term-stab-line">Stability line</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tau" data-lessons="4" data-keys="tau effectiveness flap chord ratio elevator rudder">
+        <dt><dfn class="gl-name">Control-surface effectiveness \(\tau\)</dfn></dt>
+        <dd>The fraction of a whole-surface rotation that a plain flap's deflection gives: \(\tau = 1.576(c_f/c)^3 - 3.458(c_f/c)^2 + 2.882(c_f/c)\); 0.596 for a 30% elevator or rudder.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-trim.html#elevator">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-elevator">Elevator</a>, <a href="#term-rudder">Rudder</a>, <a class="gl-mlink" href="#term-cndr">Rudder power \(C_{n\delta_r}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-crosswind" data-lessons="8" data-keys="crosswind sideslip rudder 20 percent takeoff speed">
+        <dt><dfn class="gl-name">Crosswind case</dfn></dt>
+        <dd>Holding the aircraft aligned with the runway in a crosswind of 20% of the takeoff speed, a sideslip of \(11.3^\circ\), with the rudder within about \(20^\circ\): \(\delta_r = C_{n\beta}\beta/C_{n\delta_r}\). The business jet needs \(17.9^\circ\). More directional stability needs more rudder.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#crosswind">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-rudder">Rudder</a>, <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a class="gl-mlink" href="#term-sideslip">Sideslip \(\beta\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-d" data-letter="D">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">D</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-datcom" data-lessons="2 7" data-keys="DATCOM USAF stability and control data compendium">
+        <dt><dfn class="gl-name">DATCOM</dfn></dt>
+        <dd>The US Air Force's Stability and Control Data Compendium, the source of the downwash formula, the sidewash fit and the second fuselage \(C_{n\beta}\) method used here.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#tail">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#fuselage">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-downwash">Downwash \(\varepsilon\)</a>, <a class="gl-mlink" href="#term-sidewash">Sidewash \(\sigma\)</a>, <a class="gl-mlink" href="#term-fus-cnb">Fuselage yawing moment \(C_{n\beta,F}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-design-loop" data-lessons="8" data-keys="design loop iteration drag weight converge tails">
+        <dt><dfn class="gl-name">Design loop</dfn></dt>
+        <dd>The cycle in which every change feeds the others. The scissor plot enlarged the business jet's horizontal tail to 6.75 m² and moved its wing; the larger tails raise \(C_{D0}\) to 0.0207, lower \((L/D)_{\max}\) to 15.67 and add about 172 kg to \(\Wo\) in one turn, which changes the CG range, and the scissor plot, again. Module 13 runs the loop to the end.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#loop">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-scissor">Scissor plot</a>, <a href="#term-wing-position">Wing position</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-dihedral" data-lessons="7" data-keys="dihedral angle Gamma lateral stability">
+        <dt><dfn class="gl-name">Dihedral \(\Gamma\)</dfn></dt>
+        <dd>The upward angle of the wing from root to tip. Its rolling moment in a sideslip is \(-(C_{L\alpha,W}\Gamma/4)\cdot 2(1 + 2\lambda)/(3(1 + \lambda))\), per radian of \(\Gamma\). The business jet has \(3^\circ\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a>, <a href="#term-anhedral">Anhedral</a>, <a href="#term-wing-fuselage">Wing position (rolling moment)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-clb" data-lessons="7" data-keys="dihedral effect Clbeta rolling moment sideslip lateral stability">
+        <dt><dfn class="gl-name">Dihedral effect \(C_{l\beta}\)</dfn></dt>
+        <dd>The rolling-moment derivative in a sideslip, per radian; negative is stable (the wing into the wind rises). It adds the dihedral's term, the wing's position on the fuselage and the fin's. The business jet's is \(-0.071\) with \(3^\circ\) of dihedral; wing sweep, not computed here, adds more.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-dihedral">Dihedral \(\Gamma\)</a>, <a href="#term-wing-fuselage">Wing position (rolling moment)</a>, <a href="#term-lateral">Lateral stability</a>, <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-directional" data-lessons="1 7" data-keys="directional stability yaw weathercock 25.177">
+        <dt><dfn class="gl-name">Directional stability</dfn></dt>
+        <dd>The tendency of an aircraft in a sideslip to turn its nose back into the wind, as a weathervane does. Measured by \(C_{n\beta} \gt 0\); Part 25 (25.177) requires it to be positive with the rudder free.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#kinds">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#sideslip">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a href="#term-fin">Vertical tail (fin)</a>, <a href="#term-lateral">Lateral stability</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-downwash" data-lessons="2" data-keys="downwash epsilon gradient tail deps dalpha">
+        <dt><dfn class="gl-name">Downwash \(\varepsilon\)</dfn></dt>
+        <dd>The downward turn the wing gives the flow at the tail. Its gradient \(\partial\varepsilon/\partial\alpha\) from DATCOM's formula grows with the wing's lift slope and falls as the tail moves up out of the wake; the tail's angle grows by only \(1 - \partial\varepsilon/\partial\alpha\) for each degree of the aircraft's. The business jet's: 0.335 at low speed, 0.443 in cruise.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#tail">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-eta-h">Tail dynamic-pressure ratio \(\eta_H\)</a>, <a class="gl-mlink" href="#term-tail-term">Tail term \(T\)</a>, <a href="#term-t-tail">T-tail</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-dutch-roll" data-lessons="1 7" data-keys="Dutch roll lateral directional oscillation">
+        <dt><dfn class="gl-name">Dutch roll</dfn></dt>
+        <dd>A combined yawing and rolling oscillation; a large dihedral effect with weak directional stability makes it lightly damped. Part 25 requires it to be positively damped.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#rules">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a>, <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a href="#term-spiral">Spiral mode</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-dynamic" data-lessons="1" data-keys="dynamic stability oscillation damped motion">
+        <dt><dfn class="gl-name">Dynamic stability</dfn></dt>
+        <dd>What the motion does after a disturbance: whether it dies out (stable) or grows (unstable). Static stability is necessary for it, but not enough.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#kinds">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-static">Static stability</a>, <a href="#term-short-period">Short-period oscillation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-e" data-letter="E">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">E</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-fin-ar" data-lessons="7" data-keys="effective aspect ratio fin end plate 1.55">
+        <dt><dfn class="gl-name">Effective aspect ratio (fin)</dfn></dt>
+        <dd>The aspect ratio a fin acts with, larger than its geometric one because the fuselage below and the horizontal tail act as end plates. This module assumes 1.55 times the geometric aspect ratio; the business jet's fin, with \(A_V = 1.5\), has \(C_{L\alpha,V} = 2.693\) per radian.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#cnb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-fin">Vertical tail (fin)</a>, <a class="gl-mlink" href="#term-cla">Lift-curve slope \(C_{L\alpha}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-elevator" data-lessons="4" data-keys="elevator control surface pitch">
+        <dt><dfn class="gl-name">Elevator</dfn></dt>
+        <dd>The plain flap on the horizontal tail's trailing edge. It travels about \(\pm 25^\circ\) to \(30^\circ\); the business jet's takes 30% of the chord, so \(\tau = 0.596\) and \(25^\circ\) adds \(\Delta C_{L,H} = -0.932\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-trim.html#elevator">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tau">Control-surface effectiveness \(\tau\)</a>, <a class="gl-mlink" href="#term-clh">Tail lift coefficient \(C_{L,H}\)</a>, <a href="#term-trim">Trim</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cme" data-lessons="2 5" data-keys="engine thrust moment CME thrust line">
+        <dt><dfn class="gl-name">Engine pitching moment \(C_{M,E}\)</dfn></dt>
+        <dd>The thrust's moment about the CG: \(C_{M,E} = -Tz_E/(qS\cbar)\), with \(z_E\) the thrust line's height above the CG. Largest at low speed and full thrust: \(-0.098\) for the business jet in a go-around.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#engines">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/05-control.html#requirement">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-go-around">Go-around</a>, <a href="#term-fwd-limit">Forward CG limit</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-ne" data-lessons="8" data-keys="engine out yawing moment NE asymmetric thrust">
+        <dt><dfn class="gl-name">Engine-out yawing moment \(N_E\)</dfn></dt>
+        <dd>The live engine's thrust times its lateral distance from the plane of symmetry, \(N_E = Ty_E\). The business jet's rear engines, 1.254 m out, give 13 245 N·m.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#vmc">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-windmill">Windmilling drag \(N_D\)</a>, <a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a>, <a href="#term-rudder">Rudder</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-f" data-letter="F">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">F</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-flap-moment" data-lessons="5" data-keys="flap moment delta cm Fowler slotted nose down">
+        <dt><dfn class="gl-name">Flap pitching moment \(\Delta c_m\)</dfn></dt>
+        <dd>The nose-down moment flaps add to the section: \(\Delta c_m = \Delta c_l(0.25 - 0.44\,c'/c)\) for Fowler and slotted flaps. This module scales it by the flapped share of the wing (an assumption). The business jet's: \(-0.383\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-control.html#requirement">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cm-w">Wing pitching moment \(C_{M,W}\)</a>, <a href="#term-control-line">Control line</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-fwd-limit" data-lessons="5" data-keys="forward CG limit control nose up">
+        <dt><dfn class="gl-name">Forward CG limit</dfn></dt>
+        <dd>The foremost CG the aircraft may fly with: the tail must still hold the nose up at high lift with flaps down. Control, through the control line, sets it. After this module, the business jet's is 21.5% of the MAC.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-control.html#cases">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-control-line">Control line</a>, <a href="#term-go-around">Go-around</a>, <a href="#term-aft-limit">Aft CG limit</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-kf" data-lessons="2" data-keys="Kf fuselage factor wing position">
+        <dt><dfn class="gl-name">Fuselage factor \(K_f\)</dfn></dt>
+        <dd>An empirical factor for the fuselage's pitching-moment slope, \(0.01 - 0.063\,x_0 + 0.211\,x_0^2\) per degree, with \(x_0\) the wing root's quarter-chord as a fraction of the fuselage's length (0.1 to 0.62). Moving the wing aft raises it. FAST-GA's fit of Raymer's chart.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#fuselage">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cmfus">Fuselage pitching-moment slope \(C_{M\alpha,\text{fus}}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cmfus" data-lessons="2" data-keys="fuselage pitching moment slope Kf destabilizing">
+        <dt><dfn class="gl-name">Fuselage pitching-moment slope \(C_{M\alpha,\text{fus}}\)</dfn></dt>
+        <dd>The fuselage's contribution to \(C_{M\alpha}\), always destabilizing: \(K_fW_f^2L_f/(\cbar S)\) per degree. The business jet's is \(+0.707\) per radian.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#fuselage">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-kf">Fuselage factor \(K_f\)</a>, <a class="gl-mlink" href="#term-cma">Pitch stiffness \(C_{M\alpha}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-fus-cnb" data-lessons="7" data-keys="fuselage Cnbeta volume method DATCOM kN kRl">
+        <dt><dfn class="gl-name">Fuselage yawing moment \(C_{n\beta,F}\)</dfn></dt>
+        <dd>The fuselage's destabilizing yawing-moment derivative. The volume method gives \(-1.3\,\text{Vol}_F/(Sb)\,(d/w)\); DATCOM's, \(-(180/\pi)k_Nk_{Rl}l_F^2d/(Sb)\). For the business jet they give \(-0.068\) and \(-0.117\): they differ by a factor of 1.7.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#fuselage">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a href="#term-datcom">DATCOM</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-g" data-letter="G">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">G</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-go-around" data-lessons="5" data-keys="go-around missed approach balked landing takeoff thrust">
+        <dt><dfn class="gl-name">Go-around</dfn> <span class="gl-qual">missed approach</span></dt>
+        <dd>Climbing away from an aborted landing with full flaps and takeoff thrust. For rear engines, whose thrust line is above the CG, it is the critical control case: taken here at \(1.3V_S\), \(C_L = C_{L\max}/1.69\), at the landing weight.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-control.html#cases">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cme">Engine pitching moment \(C_{M,E}\)</a>, <a href="#term-fwd-limit">Forward CG limit</a>, <a href="#term-control-line">Control line</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-h" data-letter="H">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">H</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-cht" data-lessons="6" data-keys="volume coefficient cHT tail volume">
+        <dt><dfn class="gl-name">Horizontal tail volume coefficient \(c_{HT}\)</dfn></dt>
+        <dd>\(c_{HT} = S_Hl_H/(S\cbar)\): the tail's area times its arm, made dimensionless. Module 4 took 0.70 from statistics; the scissor plot gives the business jet 0.82.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#scissor">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-scissor">Scissor plot</a>, <a class="gl-mlink" href="#term-tail-arm">Tail arm \(l_H\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-l" data-letter="L">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">L</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-lateral" data-lessons="1 7" data-keys="lateral stability roll dihedral effect">
+        <dt><dfn class="gl-name">Lateral stability</dfn></dt>
+        <dd>The tendency of an aircraft in a sideslip to roll its low wing back up, away from the slip. Measured by \(C_{l\beta} \lt 0\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#kinds">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a>, <a href="#term-directional">Directional stability</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cla" data-lessons="2" data-keys="lift curve slope CLalpha per radian compressibility">
+        <dt><dfn class="gl-name">Lift-curve slope \(C_{L\alpha}\)</dfn></dt>
+        <dd>The rate at which a surface's lift coefficient grows with angle of attack, per radian, from Module 4's formula with the half-chord sweep and the Mach number. The business jet's wing: 4.507 at Mach 0.2, 5.969 at Mach 0.80.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#wing">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-downwash">Downwash \(\varepsilon\)</a>, <a href="#term-np">Neutral point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-longitudinal" data-lessons="1" data-keys="longitudinal stability pitch">
+        <dt><dfn class="gl-name">Longitudinal stability</dfn></dt>
+        <dd>Stability in pitch: a nose-up disturbance must bring a nose-down moment. The horizontal tail does most of the work.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#kinds">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cma">Pitch stiffness \(C_{M\alpha}\)</a>, <a href="#term-sm">Static margin</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-m" data-letter="M">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">M</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-mac" data-lessons="1" data-keys="mean aerodynamic chord MAC xbar position percent">
+        <dt><dfn class="gl-name">Mean aerodynamic chord (MAC)</dfn></dt>
+        <dd>The reference chord, \(\cbar\), along which CG and neutral-point positions are given, as fractions \(\bar x\) (or percentages) from its leading edge. The business jet's is 2.015 m.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#margin">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sm">Static margin</a>, <a href="#term-np">Neutral point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-vmc" data-lessons="8" data-keys="minimum control speed VMC 25.149 engine failure">
+        <dt><dfn class="gl-name">Minimum control speed \(V_{MC}\)</dfn></dt>
+        <dd>The lowest speed at which full rudder (with no more than \(5^\circ\) of bank) can hold the aircraft straight with an engine failed. 14 CFR 25.149 requires it no higher than \(1.13\,V_{SR}\); 25.107 puts the rotation and takeoff safety speeds at least 5% and 10% above it. The business jet's: 54.6 m/s.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#vmc">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-rudder">Rudder</a>, <a class="gl-mlink" href="#term-ne">Engine-out yawing moment \(N_E\)</a>, <a class="gl-mlink" href="#term-vsr">Reference stall speed \(V_{SR}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cm0" data-lessons="1" data-keys="CM0 zero lift moment trim positive">
+        <dt><dfn class="gl-name">Moment at zero angle of attack \(C_{M0}\)</dfn></dt>
+        <dd>The pitching-moment coefficient about the CG at zero angle of attack. With \(C_{M\alpha} \lt 0\), a positive \(C_{M0}\) puts the trim point at a positive angle of attack, where the wing lifts.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#curve">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-cm-curve">Pitching-moment curve</a>, <a class="gl-mlink" href="#term-cma">Pitch stiffness \(C_{M\alpha}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-n" data-letter="N">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">N</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-np" data-lessons="1 3" data-keys="neutral point NP stick fixed aerodynamic center aircraft">
+        <dt><dfn class="gl-name">Neutral point</dfn> <span class="gl-qual">stick-fixed</span></dt>
+        <dd>The CG position at which \(C_{M\alpha} = 0\): the aerodynamic center of the whole aircraft, a weighted average of the wing's and tail's, pulled forward by the fuselage. Higher Mach moves it forward. The business jet's, after this module: 46.7% of the MAC at low speed, 42.1% in cruise.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#margin">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/03-neutral-point.html#np">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sm">Static margin</a>, <a class="gl-mlink" href="#term-tail-term">Tail term \(T\)</a>, <a href="#term-stick-free">Stick-free neutral point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-neutral" data-lessons="1" data-keys="neutral stability no moment">
+        <dt><dfn class="gl-name">Neutral stability</dfn></dt>
+        <dd>No moment results from a disturbance: the aircraft stays where it was put. In pitch, the CG at the neutral point.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#kinds">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-static">Static stability</a>, <a href="#term-np">Neutral point</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-p" data-letter="P">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">P</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-cfr" data-lessons="1" data-keys="CFR Part 25 certification 25.171 25.173 25.177 25.181">
+        <dt><dfn class="gl-name">Part 25 stability rules</dfn> <span class="gl-qual">14 CFR 25.171–25.181</span></dt>
+        <dd>The transport rules state stability as what the pilot feels: a stick-force gradient in pitch (25.173), recovery from a skid and a rising low wing in a sideslip (25.177), and damped short-period and Dutch-roll oscillations (25.181).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#rules">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-stick-force">Stick-force gradient</a>, <a href="#term-directional">Directional stability</a>, <a href="#term-dutch-roll">Dutch roll</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cma" data-lessons="1 3" data-keys="CMalpha pitch stiffness slope longitudinal stability">
+        <dt><dfn class="gl-name">Pitch stiffness \(C_{M\alpha}\)</dfn></dt>
+        <dd>The slope of the pitching-moment curve about the CG, per radian; negative is stable. \(C_{M\alpha} = -C_{L\alpha}\,\text{SM}\). The business jet's, with Module 11's layout at its aft CG, is \(-0.401\) at low speed.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#curve">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/03-neutral-point.html#np">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sm">Static margin</a>, <a href="#term-cm-curve">Pitching-moment curve</a>, <a href="#term-np">Neutral point</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cm-curve" data-lessons="1" data-keys="pitching moment curve CM alpha trim point">
+        <dt><dfn class="gl-name">Pitching-moment curve</dfn></dt>
+        <dd>\(C_{M,cg}\) plotted against the angle of attack. The aircraft trims where it crosses zero; its slope is \(C_{M\alpha}\), and its value at zero angle of attack \(C_{M0}\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#curve">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cma">Pitch stiffness \(C_{M\alpha}\)</a>, <a class="gl-mlink" href="#term-cm0">Moment at zero angle of attack \(C_{M0}\)</a>, <a href="#term-trim">Trim</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-r" data-letter="R">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">R</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-vsr" data-lessons="8" data-keys="reference stall speed VSR">
+        <dt><dfn class="gl-name">Reference stall speed \(V_{SR}\)</dfn></dt>
+        <dd>The stall speed in the configuration considered, \(\sqrt{2W/(\rho_0SC_{L\max})}\); in the takeoff configuration at the maximum takeoff weight it bounds \(V_{MC}\). The business jet's: 48.33 m/s.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#vmc">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-rudder" data-lessons="8" data-keys="rudder deflection deltar plain flap">
+        <dt><dfn class="gl-name">Rudder</dfn></dt>
+        <dd>The plain flap on the fin. With an engine failed at \(V_{MC}\) it must balance \(N_E + N_D\) within about \(25^\circ\): \(\delta_r = (N_E + N_D)/(qSb\,C_{n\delta_r})\). The business jet's 30% rudder needs \(14.9^\circ\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#rudder">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cndr">Rudder power \(C_{n\delta_r}\)</a>, <a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a>, <a href="#term-crosswind">Crosswind case</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cndr" data-lessons="8" data-keys="rudder power Cndeltar rudder effectiveness">
+        <dt><dfn class="gl-name">Rudder power \(C_{n\delta_r}\)</dfn></dt>
+        <dd>The yawing moment per radian of rudder: \(0.9\,C_{L\alpha,V}(S_V/S)(l_V/b)\tau_r\). The business jet's is 0.0834.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#rudder">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-rudder">Rudder</a>, <a class="gl-mlink" href="#term-tau">Control-surface effectiveness \(\tau\)</a>, <a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-s" data-letter="S">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">S</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-scissor" data-lessons="6" data-keys="scissor plot tail sizing X plot">
+        <dt><dfn class="gl-name">Scissor plot</dfn></dt>
+        <dd>The control line and the stability line drawn together against the CG position. They open like scissors; the smallest tail is the one at which the gap is as wide as the CG range the loading needs. The business jet's: 6.75 m², with the CG from 21.5% to 37.1% of the MAC.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#scissor">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-control-line">Control line</a>, <a href="#term-stab-line">Stability line</a>, <a href="#term-wing-position">Wing position</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-short-period" data-lessons="1" data-keys="short period pitch oscillation damping">
+        <dt><dfn class="gl-name">Short-period oscillation</dfn></dt>
+        <dd>A quick pitching oscillation at nearly constant speed; Part 25 requires it to be heavily damped.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#rules">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-dynamic">Dynamic stability</a>, <a href="#term-dutch-roll">Dutch roll</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-sideslip" data-lessons="7" data-keys="sideslip beta yaw angle relative wind">
+        <dt><dfn class="gl-name">Sideslip \(\beta\)</dfn></dt>
+        <dd>The angle between the relative wind and the plane of symmetry, positive when the wind comes from the right.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#sideslip">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a>, <a href="#term-crosswind">Crosswind case</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-sidewash" data-lessons="7" data-keys="sidewash sigma fin dynamic pressure eta V">
+        <dt><dfn class="gl-name">Sidewash \(\sigma\)</dfn></dt>
+        <dd>The sideways turn the wing and fuselage give the flow at the fin. With the fin's dynamic-pressure ratio it is estimated from a DATCOM fit: \((1 + \partial\sigma/\partial\beta)\eta_V = 0.724 + 3.06(S_V/S)/(1 + \cos\Lambda) + 0.4z_w/d + 0.009A\); 1.156 for the business jet.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#cnb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a href="#term-fin">Vertical tail (fin)</a>, <a href="#term-datcom">DATCOM</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-spiral" data-lessons="7" data-keys="spiral divergence mode">
+        <dt><dfn class="gl-name">Spiral mode</dfn></dt>
+        <dd>A slow divergence in which the aircraft drifts into a tightening, descending turn; a small dihedral effect with strong directional stability encourages it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-dutch-roll">Dutch roll</a>, <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stab-line" data-lessons="6" data-keys="stability line aft CG tail area static margin">
+        <dt><dfn class="gl-name">Stability line</dfn></dt>
+        <dd>The horizontal tail area that keeps the required static margin behind an aft CG; it rises as the CG moves aft. It must hold at low speed and in cruise; for the business jet, cruise decides. It sets the aft limit of the scissor plot.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#lines">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-scissor">Scissor plot</a>, <a href="#term-control-line">Control line</a>, <a href="#term-aft-limit">Aft CG limit</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-sm" data-lessons="1" data-keys="static margin SM percent MAC">
+        <dt><dfn class="gl-name">Static margin</dfn></dt>
+        <dd>The distance from the CG forward to the neutral point, as a fraction of the MAC: \(\text{SM} = \bar x_{np} - \bar x_{cg}\). Business jets and transports need 5% at the aft CG, light propeller aircraft 10% (Scholz, after Roskam); engines take 1% to 3% of it on jets.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#margin">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-np">Neutral point</a>, <a class="gl-mlink" href="#term-cma">Pitch stiffness \(C_{M\alpha}\)</a>, <a href="#term-aft-limit">Aft CG limit</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-static" data-lessons="1" data-keys="static stability first tendency">
+        <dt><dfn class="gl-name">Static stability</dfn></dt>
+        <dd>The first tendency after a disturbance: stable if the first moment pushes the aircraft back toward where it was, unstable if it pushes it further away.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#kinds">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-dynamic">Dynamic stability</a>, <a href="#term-neutral">Neutral stability</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stick-force" data-lessons="1 3" data-keys="stick force gradient 25.173 pull push speed">
+        <dt><dfn class="gl-name">Stick-force gradient</dfn></dt>
+        <dd>The pull needed per knot to fly slower than the trim speed. Part 25 (25.173) requires at least 1 lb per 6 knots on average; near the neutral point it vanishes.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-static-stability.html#rules">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/03-neutral-point.html#feel">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sm">Static margin</a>, <a href="#term-cfr">Part 25 stability rules</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stick-free" data-lessons="3" data-keys="stick free neutral point elevator floats">
+        <dt><dfn class="gl-name">Stick-free neutral point</dfn></dt>
+        <dd>The neutral point with the elevator free to float with the flow: the tail does a little less, so it lies a few percent of the MAC ahead of the stick-fixed one.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-neutral-point.html#np">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-np">Neutral point</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-t" data-letter="T">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">T</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-t-tail" data-lessons="2" data-keys="T-tail high tail downwash">
+        <dt><dfn class="gl-name">T-tail</dfn></dt>
+        <dd>A horizontal tail on top of the fin, out of the wing's wake and downwash: a smaller \(\partial\varepsilon/\partial\alpha\) and a higher \(\eta_H\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#tail">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-downwash">Downwash \(\varepsilon\)</a>, <a class="gl-mlink" href="#term-eta-h">Tail dynamic-pressure ratio \(\eta_H\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tail-arm" data-lessons="2 6" data-keys="tail arm lH lever">
+        <dt><dfn class="gl-name">Tail arm \(l_H\)</dfn></dt>
+        <dd>The distance from the wing's aerodynamic center to the tail's. Moving the wing changes it; the business jet's is 6.855 m after this module.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#sum">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#scissor">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cht">Horizontal tail volume coefficient \(c_{HT}\)</a>, <a class="gl-mlink" href="#term-tail-term">Tail term \(T\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-eta-h" data-lessons="2" data-keys="eta H dynamic pressure ratio tail efficiency wake">
+        <dt><dfn class="gl-name">Tail dynamic-pressure ratio \(\eta_H\)</dfn></dt>
+        <dd>\(q_H/q\): the wing's wake lowers the dynamic pressure at the tail, to 0.85–0.95 of the free stream. This module takes 0.9.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#tail">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-downwash">Downwash \(\varepsilon\)</a>, <a class="gl-mlink" href="#term-tail-term">Tail term \(T\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-clh" data-lessons="4 5" data-keys="tail lift coefficient CLH download -0.5">
+        <dt><dfn class="gl-name">Tail lift coefficient \(C_{L,H}\)</dfn></dt>
+        <dd>The horizontal tail's lift coefficient on its own area; negative when it pushes down. Control sizing asks no more than \(C_{L,H} = -0.5\) (an assumption that keeps the tail well short of its stall).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-trim.html#trim">Lesson 4</a>, <a class="gl-lesson-link" href="../lessons/05-control.html#requirement">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-trim">Trim</a>, <a href="#term-control-line">Control line</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tail-term" data-lessons="3" data-keys="tail term T effectiveness">
+        <dt><dfn class="gl-name">Tail term \(T\)</dfn></dt>
+        <dd>The horizontal tail's weight in the neutral-point equation: \(T = \eta_H(S_H/S)C_{L\alpha,H}(1 - \partial\varepsilon/\partial\alpha)\); 0.449 for the business jet at low speed with Module 11's tail.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-neutral-point.html#np">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-np">Neutral point</a>, <a class="gl-mlink" href="#term-downwash">Downwash \(\varepsilon\)</a>, <a class="gl-mlink" href="#term-eta-h">Tail dynamic-pressure ratio \(\eta_H\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-trim" data-lessons="4" data-keys="trim trimmed zero moment">
+        <dt><dfn class="gl-name">Trim</dfn></dt>
+        <dd>Flight at zero pitching moment about the CG at the lift needed, with no force on the controls. The tail lift for trim is \(C_{L,H} = (C_{M,W} + C_L\bar x_{cg-ac} + C_{M,E})/(\eta_H(S_H/S)(l_H/\cbar))\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-trim.html#trim">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-clh">Tail lift coefficient \(C_{L,H}\)</a>, <a href="#term-trim-drag">Trim drag</a>, <a href="#term-cm-curve">Pitching-moment curve</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-trim-drag" data-lessons="4" data-keys="trim drag induced drag tail download">
+        <dt><dfn class="gl-name">Trim drag</dfn></dt>
+        <dd>The extra induced drag when the tail pushes down and the wing must lift more than the weight. At the business jet's forward CG in cruise the wing carries 110.3% of the weight, with 21.6% more induced drag.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-trim.html#trim">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-trim">Trim</a>, <a class="gl-mlink" href="#term-clh">Tail lift coefficient \(C_{L,H}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-v" data-letter="V">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">V</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-fin" data-lessons="7 8" data-keys="fin vertical tail SV directional stability">
+        <dt><dfn class="gl-name">Vertical tail (fin)</dfn></dt>
+        <dd>The surface that provides directional stability and carries the rudder. It is sized by the largest of directional stability, engine failure and crosswind. The business jet's, 3.67 m² at Module 4's volume coefficient of 0.060, meets all three.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#cnb">Lesson 7</a>, <a class="gl-lesson-link" href="../lessons/08-engine-out.html#rudder">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a>, <a href="#term-rudder">Rudder</a>, <a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-w" data-letter="W">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">W</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-cnb" data-lessons="7" data-keys="Cnbeta weathercock directional stability yawing moment sideslip 0.0571">
+        <dt><dfn class="gl-name">Weathercock derivative \(C_{n\beta}\)</dfn></dt>
+        <dd>The yawing-moment derivative in a sideslip, per radian; positive turns the nose into the wind. The wing adds a little, the fuselage subtracts, the fin provides the rest. Target: at least 0.0571 (0.001 per degree). The business jet's is 0.064 to 0.113 at low speed.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#cnb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-directional">Directional stability</a>, <a class="gl-mlink" href="#term-fus-cnb">Fuselage yawing moment \(C_{n\beta,F}\)</a>, <a class="gl-mlink" href="#term-sidewash">Sidewash \(\sigma\)</a>, <a href="#term-fin">Vertical tail (fin)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-windmill" data-lessons="8" data-keys="windmilling drag ND kD failed engine">
+        <dt><dfn class="gl-name">Windmilling drag \(N_D\)</dfn></dt>
+        <dd>The failed engine's drag, which yaws the aircraft the same way as the live engine's thrust: \(N_D = k_DN_E\), with \(k_D\) about 0.15 for low-bypass and 0.25 for high-bypass turbofans (0.25 assumed for the business jet).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-engine-out.html#vmc">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-ne">Engine-out yawing moment \(N_E\)</a>, <a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cm-w" data-lessons="2" data-keys="wing pitching moment CMW cm0 airfoil">
+        <dt><dfn class="gl-name">Wing pitching moment \(C_{M,W}\)</dfn></dt>
+        <dd>The wing's moment about its aerodynamic center: the airfoil's \(c_{m,0}\) times \(A\cos^2\Lambda/(A + 2\cos\Lambda)\). With the assumed \(c_{m,0} = -0.10\) of its supercritical airfoil, the business jet's is \(-0.067\); with flaps down, \(-0.228\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-pitch-contributions.html#wing">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-ac">Aerodynamic center</a>, <a class="gl-mlink" href="#term-flap-moment">Flap pitching moment \(\Delta c_m\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-wing-position" data-lessons="6" data-keys="wing position shift iterate scissor CG range">
+        <dt><dfn class="gl-name">Wing position</dfn></dt>
+        <dd>Moving the wing moves the CG range along the MAC (Module 11), and changes the tail's arm and \(K_f\), so the tail and the wing are iterated together. The business jet's wing ends at 7.405 m, 47.8% of the fuselage, 0.12 m forward of Module 11's place.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-scissor-plot.html#scissor">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-scissor">Scissor plot</a>, <a href="#term-design-loop">Design loop</a>, <a class="gl-mlink" href="#term-tail-arm">Tail arm \(l_H\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-wing-fuselage" data-lessons="7" data-keys="wing fuselage interference low wing high wing Clbeta">
+        <dt><dfn class="gl-name">Wing position (rolling moment)</dfn></dt>
+        <dd>A wing low on the fuselage makes a destabilizing rolling moment in a sideslip, a high wing a stabilizing one: \(1.2\sqrt A(z_w/b)((d + w)/b)\), with \(z_w\) positive below the axis. \(+0.029\) for the business jet's low wing.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-directional-stability.html#clb">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a>, <a class="gl-mlink" href="#term-dihedral">Dihedral \(\Gamma\)</a>, <a href="#term-anhedral">Anhedral</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  </div>
+
+  <section id="symbols" class="gl-symbols">
+    <h2>Symbols at a glance</h2>
+    <p>Met a symbol in a lesson or in another textbook and not sure what it stands for? Find it here, then follow the link to its entry.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Symbols used in this module</caption>
+        <thead>
+          <tr><th scope="col">Symbol</th><th scope="col">Meaning</th><th scope="col">Entry</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">\(\text{SM},\ \bar x_{np},\ \bar x_{cg}\)</th><td>Static margin, neutral point and CG along the MAC</td><td><a class="gl-mlink" href="#term-sm">Static margin</a></td></tr>
+          <tr><th scope="row">\(C_{M\alpha},\ C_{M0}\)</th><td>Pitch stiffness, moment at zero angle of attack</td><td><a class="gl-mlink" href="#term-cma">Pitch stiffness \(C_{M\alpha}\)</a></td></tr>
+          <tr><th scope="row">\(C_{M,W},\ c_{m,0},\ \Delta c_m\)</th><td>Wing moment, airfoil moment, flaps' moment</td><td><a class="gl-mlink" href="#term-cm-w">Wing pitching moment \(C_{M,W}\)</a></td></tr>
+          <tr><th scope="row">\(C_{M\alpha,\text{fus}},\ K_f,\ x_0\)</th><td>Fuselage slope, its factor, wing root position</td><td><a class="gl-mlink" href="#term-cmfus">Fuselage pitching-moment slope \(C_{M\alpha,\text{fus}}\)</a></td></tr>
+          <tr><th scope="row">\(\varepsilon,\ \eta_H,\ T\)</th><td>Downwash, tail dynamic-pressure ratio, tail term</td><td><a class="gl-mlink" href="#term-downwash">Downwash \(\varepsilon\)</a></td></tr>
+          <tr><th scope="row">\(C_{M,E},\ z_E\)</th><td>Engine moment, thrust line above the CG</td><td><a class="gl-mlink" href="#term-cme">Engine pitching moment \(C_{M,E}\)</a></td></tr>
+          <tr><th scope="row">\(C_{L,H},\ \tau,\ \delta_e\)</th><td>Tail lift coefficient, flap effectiveness, elevator</td><td><a class="gl-mlink" href="#term-clh">Tail lift coefficient \(C_{L,H}\)</a></td></tr>
+          <tr><th scope="row">\(l_H,\ \bar x_{ac,H},\ c_{HT}\)</th><td>Tail arm, tail aerodynamic center, volume coefficient</td><td><a class="gl-mlink" href="#term-tail-arm">Tail arm \(l_H\)</a></td></tr>
+          <tr><th scope="row">\(\beta,\ \sigma,\ \eta_V\)</th><td>Sideslip, sidewash, fin dynamic-pressure ratio</td><td><a class="gl-mlink" href="#term-sideslip">Sideslip \(\beta\)</a></td></tr>
+          <tr><th scope="row">\(C_{n\beta},\ C_{n\beta,F},\ k_N,\ k_{Rl}\)</th><td>Weathercock derivative, fuselage term, DATCOM factors</td><td><a class="gl-mlink" href="#term-cnb">Weathercock derivative \(C_{n\beta}\)</a></td></tr>
+          <tr><th scope="row">\(C_{l\beta},\ \Gamma,\ z_w\)</th><td>Dihedral effect, dihedral angle, wing below the axis</td><td><a class="gl-mlink" href="#term-clb">Dihedral effect \(C_{l\beta}\)</a></td></tr>
+          <tr><th scope="row">\(V_{MC},\ V_{SR}\)</th><td>Minimum control speed, reference stall speed</td><td><a class="gl-mlink" href="#term-vmc">Minimum control speed \(V_{MC}\)</a></td></tr>
+          <tr><th scope="row">\(N_E,\ N_D,\ k_D,\ y_E\)</th><td>Engine-out yawing moment, windmilling drag, its factor, engine arm</td><td><a class="gl-mlink" href="#term-ne">Engine-out yawing moment \(N_E\)</a></td></tr>
+          <tr><th scope="row">\(C_{n\delta_r},\ \delta_r,\ l_V\)</th><td>Rudder power, rudder deflection, fin arm</td><td><a class="gl-mlink" href="#term-cndr">Rudder power \(C_{n\delta_r}\)</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">The methods are after D. Scholz, <em>Aircraft Design</em> lecture notes, Chapter 11 (the stability and control lines, the required margins and the \(C_{n\beta}\) target, after Roskam), D. P. Raymer, <em>Aircraft Design: A Conceptual Approach</em>, Chapter 16 (the fuselage's moments and the lateral-directional terms), and DATCOM (downwash, sidewash and the fuselage's \(C_{n\beta}\)), as the lessons give them; the rules are from 14 CFR 25.107, 25.149 and 25.171 to 25.181.</p>
+  </section>
+</main>
+
+<script>
+/* Glossary filter: filters as you type (term names and synonyms first; definitions when no name matches),
+   optional "Taught in" lesson filter, A–Z index that greys out empty letters, and links to hidden terms
+   clear the filter first. URL options: ?q=helix and ?lesson=8 pre-fill the filter. */
+CYL.ready(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+  function each(nodes, fn) { Array.prototype.forEach.call(nodes, fn); }
+  var list = $('gl-list'), input = $('gl-filter'), lessonSel = $('gl-lesson'), clearBtn = $('gl-clear'),
+      countEl = $('gl-count'), liveEl = $('gl-live'), emptyEl = $('gl-empty'), emptyMsg = $('gl-empty-msg'),
+      az = $('gl-az'), main = $('main');
+
+  // ---- Text normalization: lower case, Greek letters spelled out, subscripts joined (e_r → er,
+  //      I_z → iz, u_θ → utheta), accents dropped (ê → e), other punctuation → spaces
+  var GREEK = { 'θ': 'theta', 'ϑ': 'theta', 'ρ': 'rho', 'φ': 'phi', 'ϕ': 'phi', 'π': 'pi',
+                'ω': 'omega', 'τ': 'tau', 'δ': 'delta', 'α': 'alpha' };
+  var GREEK_WORDS = ' theta rho phi pi omega tau delta alpha ';
+  var GR = '\u0001', SUB = '\u0002';        // tag query words typed as a Greek letter / with a subscript
+  function fold(s, tag) {
+    s = String(s || '').toLowerCase().replace(/[θϑρφϕπωτδα]/g,
+      function (c) { return ' ' + (tag ? GR : '') + GREEK[c] + ' '; });
+    s = s.replace(/\s*_\s*\{?\s*/g, tag ? SUB : '');
+    if (s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return s;
+  }
+  function norm(s) { return ' ' + fold(s).replace(/[^a-z0-9]+/g, ' ').trim() + ' '; }
+
+  // A query word matches when one of its forms starts a word of the haystack. Forms: the word plus
+  // simple singulars (vectors → vector, axes → axis). A word typed as a Greek letter (π → "pi") or
+  // as a subscripted symbol (a_r → "ar") must match a whole word, so π does not find "pipe" and
+  // a_r does not find "arc".
+  var IRREGULAR = { axes: 'axis', radii: 'radius', tori: 'torus', helices: 'helix', vertices: 'vertex' };
+  function tokensOf(q) {
+    var s = fold(String(q || '').replace(/[\u0001\u0002]/g, ''), true)
+      .replace(/[^a-z0-9\u0001\u0002]+/g, ' ').trim();
+    if (!s) return [];
+    return s.split(' ').map(function (w) {
+      var greek = w.charAt(0) === GR && GREEK_WORDS.indexOf(' ' + w.slice(1) + ' ') >= 0;
+      var sub = /\u0002\u0001?[a-z0-9]/.test(w);      // e_r, u_θ (not a bare "e_" while typing)
+      w = w.replace(/[\u0001\u0002]/g, '');
+      var forms = [w];
+      if (!greek && !sub) {
+        if (IRREGULAR[w]) forms.push(IRREGULAR[w]);
+        if (w.length > 4 && /ies$/.test(w)) forms.push(w.slice(0, -3) + 'y');
+        if (w.length > 4 && /(s|x|z|ch|sh)es$/.test(w)) forms.push(w.slice(0, -2));
+        if (w.length > 3 && /[^isu]s$/.test(w)) forms.push(w.slice(0, -1));
+      }
+      return { forms: forms, whole: greek || sub, greek: greek };
+    }).filter(function (t) { return t.forms[0]; });
+  }
+  function hasToken(hay, t, whole) {
+    for (var i = 0; i < t.forms.length; i++) {
+      if (hay.indexOf(' ' + t.forms[i] + (whole ? ' ' : '')) >= 0) return true;
+    }
+    return false;
+  }
+  // every query word must match. In definitions, one-letter words must be whole words ("I z" must
+  // not match every word that starts with i)
+  function hasAll(hay, tokens, inText) {
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (!hasToken(hay, t, t.whole || (inText && t.forms[0].length === 1))) return false;
+    }
+    return true;
+  }
+  // visible text of rendered math = its MathML text (drop KaTeX's visual HTML and TeX source)
+  function plainText(el) {
+    var c = el.cloneNode(true);
+    each(c.querySelectorAll('.katex-html, annotation'), function (n) { n.parentNode.removeChild(n); });
+    return c.textContent;
+  }
+
+  // ---- Index the entries
+  var groups = [], entries = [];
+  each(list.querySelectorAll('.gl-group'), function (gEl) {
+    var g = { el: gEl, link: az.querySelector('a[data-letter="' + gEl.getAttribute('data-letter') + '"]'), entries: [] };
+    each(gEl.querySelectorAll('.gl-entry'), function (eEl) {
+      var name = eEl.querySelector('.gl-name'), def = eEl.querySelector('dd:not(.gl-see)');
+      var it = {
+        el: eEl, name: name, def: def, nameHTML: name.innerHTML, defHTML: def.innerHTML, marked: null,
+        nameHay: norm(plainText(eEl.querySelector('dt')) + ' ' + (eEl.getAttribute('data-keys') || '')),
+        defHay: norm(plainText(def)),
+        lessons: ' ' + (eEl.getAttribute('data-lessons') || '') + ' '
+      };
+      g.entries.push(it);
+      entries.push(it);
+    });
+    groups.push(g);
+  });
+  var TOTAL = entries.length;
+  function taughtIn(it, n) { return !n || it.lessons.indexOf(' ' + n + ' ') >= 0; }
+
+  // "Taught in" options come from the page registry, so titles always match the lessons
+  CYL.PAGES.forEach(function (p) {
+    if (p.group !== 'lessons' || p.num == null) return;
+    var n = String(p.num);
+    if (!entries.some(function (it) { return taughtIn(it, n); })) return;
+    lessonSel.appendChild(CYL.el('option', { value: n, text: 'Lesson ' + n + ' · ' + p.title }));
+  });
+
+  // ---- Highlight word-start matches in plain text (never inside rendered math; Greek letters are
+  //      only ever in math, so their words are not highlighted)
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function mark(el, tokens, inText) {
+    var alts = [];
+    tokens.forEach(function (t) {
+      if (t.greek) return;
+      var whole = t.whole || (inText && t.forms[0].length === 1);
+      t.forms.forEach(function (f) { alts.push({ f: f, re: escRe(f) + (whole ? '(?![a-z0-9])' : '') }); });
+    });
+    if (!alts.length) return false;
+    alts.sort(function (a, b) { return b.f.length - a.f.length; });
+    var re = new RegExp('(^|[^a-z0-9])(' + alts.map(function (a) { return a.re; }).join('|') + ')', 'gi');
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n, hit = false;
+    while ((n = walker.nextNode())) if (!n.parentNode.closest('.katex')) nodes.push(n);
+    nodes.forEach(function (node) {
+      var text = node.data, m, last = 0, frag = null;
+      re.lastIndex = 0;
+      while ((m = re.exec(text))) {
+        var start = m.index + m[1].length, end = start + m[2].length;
+        frag = frag || document.createDocumentFragment();
+        if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+        frag.appendChild(CYL.el('mark', { class: 'gl-hit', text: text.slice(start, end) }));
+        last = end;
+      }
+      if (frag) {
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+        hit = true;
+      }
+    });
+    return hit;
+  }
+  function unmark(it) {
+    if (it.marked === 'name') it.name.innerHTML = it.nameHTML;
+    else if (it.marked === 'def') it.def.innerHTML = it.defHTML;
+    it.marked = null;
+  }
+
+  // ---- Apply the filter
+  var lastStatus = '';
+  var announce = CYL.debounce(function () { liveEl.textContent = lastStatus; }, 600);
+  function plural(k, word) { return k + ' ' + word + (k === 1 ? '' : 's'); }
+
+  function apply(quiet) {
+    var raw = input.value, tokens = tokensOf(raw), lesson = lessonSel.value;
+    var mode = 'name';
+    var shown = entries.filter(function (it) {
+      return taughtIn(it, lesson) && (!tokens.length || hasAll(it.nameHay, tokens));
+    });
+    if (tokens.length && !shown.length) {           // no term name matches: fall back to the definitions
+      mode = 'def';
+      shown = entries.filter(function (it) { return taughtIn(it, lesson) && hasAll(it.defHay, tokens, true); });
+    }
+    entries.forEach(function (it) {
+      var on = shown.indexOf(it) >= 0;
+      it.el.hidden = !on;
+      unmark(it);
+      if (on && tokens.length) {
+        if (mode === 'name' && mark(it.name, tokens, false)) it.marked = 'name';
+        else if (mode === 'def' && mark(it.def, tokens, true)) it.marked = 'def';
+      }
+    });
+    groups.forEach(function (g) {
+      var vis = g.entries.filter(function (it) { return !it.el.hidden; });
+      g.el.hidden = !vis.length;
+      g.entries.forEach(function (it) { it.el.classList.remove('is-first', 'is-last'); });
+      if (vis.length) {
+        vis[0].el.classList.add('is-first');
+        vis[vis.length - 1].el.classList.add('is-last');
+      }
+      if (g.link) {
+        g.link.classList.toggle('is-off', !vis.length);
+        if (vis.length) { g.link.removeAttribute('aria-disabled'); g.link.removeAttribute('tabindex'); }
+        else { g.link.setAttribute('aria-disabled', 'true'); g.link.setAttribute('tabindex', '-1'); }
+      }
+    });
+
+    var n = shown.length, inL = lesson ? ' in Lesson ' + lesson : '';
+    var quoted = '“' + raw.trim() + '”';
+    var status;
+    if (!tokens.length && !lesson) status = 'Showing all ' + plural(TOTAL, 'term');
+    else if (!n) status = 'No matches';
+    else if (mode === 'def') {
+      status = 'No term names match ' + quoted + inL + ', so showing ' + plural(n, 'term') +
+        (n === 1 ? ' whose definition mentions it' : ' whose definitions mention it');
+    } else if (tokens.length) status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' matching ' + quoted + inL;
+    else status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' taught in Lesson ' + lesson;
+    countEl.textContent = status;
+    emptyEl.hidden = n > 0;
+    if (!n) emptyMsg.textContent = 'No terms match ' + (tokens.length ? quoted : 'this filter') + inL + '.';
+    clearBtn.hidden = !(raw.length || lesson);
+    if (!quiet) { lastStatus = n ? status + '.' : emptyMsg.textContent; announce(); }
+  }
+
+  function reset() { input.value = ''; lessonSel.value = ''; apply(); }
+  function clearAndFocus() { reset(); input.focus(); }
+
+  input.addEventListener('input', function () { apply(); });
+  input.addEventListener('keydown', function (e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') && input.value) {
+      e.preventDefault();
+      e.stopPropagation();
+      input.value = '';
+      apply();
+    }
+  });
+  lessonSel.addEventListener('change', function () { apply(); });
+  clearBtn.addEventListener('click', clearAndFocus);
+  $('gl-empty-clear').addEventListener('click', clearAndFocus);
+
+  // Greyed-out letters do nothing
+  az.addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (a && a.getAttribute('aria-disabled') === 'true') e.preventDefault();
+  });
+
+  // A link to a term the filter is hiding (Related, Symbols) clears the filter before the jump
+  function targetOf(hash) {
+    if (!hash || hash.length < 2) return null;
+    var id = hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+    return document.getElementById(id);
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || az.contains(a)) return;
+    var t = targetOf(a.getAttribute('href'));
+    if (t && list.contains(t) && t.closest('[hidden]')) reset();
+  });
+  window.addEventListener('hashchange', function () {
+    var t = targetOf(location.hash);
+    if (t && list.contains(t) && t.closest('[hidden]')) { reset(); t.scrollIntoView({ block: 'start' }); }
+  });
+
+  // Optional pre-fill from the URL: glossary.html?q=helix or ?lesson=8
+  try {
+    var params = new URLSearchParams(location.search);
+    if (params.get('q')) input.value = params.get('q');
+    var pl = params.get('lesson');
+    if (pl && lessonSel.querySelector('option[value="' + pl.replace(/[^0-9]/g, '') + '"]')) lessonSel.value = pl.replace(/[^0-9]/g, '');
+  } catch (e) { /* old browser: no pre-fill */ }
+  apply(true);
+
+  // Deep link (#term-helix): the shell and the math change the layout after the browser's first jump,
+  // so jump again, instantly (the page otherwise scrolls smoothly)
+  var t0 = targetOf(location.hash);
+  if (t0 && main.contains(t0)) {
+    if (t0.closest('[hidden]')) reset();
+    requestAnimationFrame(function () {
+      var rootStyle = document.documentElement.style, prev = rootStyle.scrollBehavior;
+      rootStyle.scrollBehavior = 'auto';
+      t0.scrollIntoView({ block: 'start' });
+      rootStyle.scrollBehavior = prev;
+    });
+  }
+});
+</script>
+</body>
+</html>

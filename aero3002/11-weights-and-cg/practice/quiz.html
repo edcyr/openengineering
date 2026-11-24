@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Check Quiz · Component Weights and Center of Gravity</title>
+<meta name="description" content="Fifteen fixed questions on Lessons 1–8 of the Component Weights and Center of Gravity module, with a score, a worked solution for every question and a printable results sheet.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/weights.js"></script>
+<style>
+  /* ---- Page-specific styles (design tokens only) ---- */
+  .quiz-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0;
+    list-style: none;
+  }
+  .quiz-facts > li {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .quiz-fact-value { display: block; font-size: 1.3rem; font-weight: 750; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .quiz-fact-label { display: block; margin-top: 2px; font-size: 0.84rem; color: var(--ink-muted); }
+
+  .quiz-rules { margin: 0; padding-left: 1.2em; }
+  .quiz-rules > li { margin: 0 0 0.45em; }
+  .quiz-rules > li:last-child { margin-bottom: 0; }
+  .quiz-subhead { margin: 0 0 8px; font-size: 1.02rem; font-weight: 700; }
+  .quiz-type-table { margin: 0; }
+  .quiz-type-table td code { white-space: nowrap; }
+
+  .quiz-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+  }
+  .quiz-toolbar-label { font-size: 0.84rem; font-weight: 650; color: var(--ink-muted); }
+  .quiz-host .q-set { margin-top: 0; }
+  .quiz-host .q-solution-body .quiz-review-link { margin-top: 0.6em; font-size: 0.9em; color: var(--ink-muted); }
+
+  .quiz-breakdown { margin: 18px 0 22px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .quiz-breakdown-title { margin: 0 0 4px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .quiz-breakdown-summary { margin: 0 0 10px; color: var(--ink-muted); font-size: 0.92rem; }
+  .quiz-breakdown .table-wrap { margin: 0; }
+  .quiz-breakdown td, .quiz-breakdown th { vertical-align: top; }
+  .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 7px 12px; }
+  /* table.data in module.css sets tbody th to 650: match its specificity so the muted titles stay regular weight */
+  .quiz-breakdown table.data tbody th { font-weight: 400; }
+  .quiz-breakdown table.data tbody th a { font-weight: 650; }
+  .quiz-breakdown .quiz-lesson-title { color: var(--ink-muted); }
+  .quiz-breakdown .quiz-score-cell { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Phones: the long lesson titles would wrap to 3–5 lines each; "Lesson N" (a link) is enough there */
+  @media (max-width: 560px) {
+    .quiz-breakdown .quiz-lesson-title { display: none; }
+    .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 6px 10px; }
+  }
+
+  .quiz-next { margin: 0; padding-left: 1.2em; }
+  .quiz-next > li { margin: 0 0 0.45em; }
+
+  @media print {
+    .quiz-toolbar { display: none !important; }
+    /* Printing before submitting gives every question on paper, whichever layout is on screen */
+    .quiz-host[data-state="open"] .q-set .q-card[hidden] { display: block !important; }
+    .quiz-host[data-state="open"] .q-set-dots,
+    .quiz-host[data-state="open"] .q-set-progress,
+    .quiz-host[data-state="open"] .q-set-confirm { display: none !important; }
+  }
+</style>
+</head>
+<body data-page="quiz" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 35 min</p>
+    <h1>Self-Check Quiz</h1>
+    <p class="lede">Fifteen questions on the core skills of Lessons 1–8: weight limits and fuel, approximate group weights, the ultimate load factor from the maneuvering and gust limits, the wing, fuselage and landing gear equations, the installed engine, calibration and the sizing loop, the center of gravity as a percentage of the MAC, loading, and moving the wing. Submit to see your score and a worked solution for every question.</p>
+  </header>
+
+  <section id="before">
+    <h2>Before you start</h2>
+
+    <ul class="quiz-facts" aria-label="Quiz at a glance">
+      <li><span class="quiz-fact-value">15</span><span class="quiz-fact-label">questions</span></li>
+      <li><span class="quiz-fact-value">≈ 35 min</span><span class="quiz-fact-label">estimated time</span></li>
+      <li><span class="quiz-fact-value">L1–L8</span><span class="quiz-fact-label">lessons covered</span></li>
+      <li><span class="quiz-fact-value">Instant</span><span class="quiz-fact-label">score and solutions</span></li>
+    </ul>
+
+    <div class="two-col">
+      <div>
+        <p class="quiz-subhead">How it works</p>
+        <ul class="quiz-rules">
+          <li>Work on your own with a calculator and scrap paper. Try it without notes first: that shows you what you really know.</li>
+          <li>Nothing is marked until you press <strong>Submit quiz</strong>. Until then you can move between questions and change any answer.</li>
+          <li>Each question is either right or wrong. When a question has several boxes, every box must be right.</li>
+          <li>After you submit, you see your score, a review of every question with a worked solution, and a results sheet you can print or save as a PDF.</li>
+          <li id="quiz-l10-note">Use SI units, except where a question uses the statistical equations in their own units (pounds, feet, square feet); each box shows the unit it expects.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="quiz-subhead">Typing answers</p>
+        <div class="table-wrap quiz-type-table">
+          <table class="data">
+            <caption class="visually-hidden">How to type common answers</caption>
+            <thead><tr><th scope="col">To enter</th><th scope="col">Type</th></tr></thead>
+            <tbody>
+              <tr><td>\(84\,000^{0.557}\)</td><td><code>84000^0.557</code></td></tr>
+              <tr><td>\(12\,000/0.4536\)</td><td><code>12000/0.4536</code></td></tr>
+              <tr><td>\(\tan 30^\circ/32\)</td><td><code>tan(30°)/32</code></td></tr>
+              <tr><td>\((4.882/4.573)^{0.557}\)</td><td><code>(4.882/4.573)^0.557</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Each box shows how it read your entry (for example <span class="nowrap">= 7.2</span>), so you can check it before you submit. Type only the number; the unit is shown next to the box.</p>
+      </div>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">How close is close enough?</p>
+      <p>Answers are accepted within \(1\%\) of the exact value, so three or four significant figures are plenty. Typing the calculation itself, such as <code>(2400*6.2+900*11+500*2)/3800</code>, avoids rounding errors. Watch the units: the statistical equations take pounds, feet and square feet (1&nbsp;kg = 2.2046&nbsp;lb, 1&nbsp;m = 3.2808&nbsp;ft); the load factor formula takes the weight in pounds; angles inside <code>cos</code> and <code>tan</code> need <code>°</code> after them.</p>
+    </aside>
+  </section>
+
+  <section id="quiz">
+    <h2>The quiz</h2>
+    <div class="quiz-toolbar" id="quiz-toolbar" hidden>
+      <span class="quiz-toolbar-label" id="quiz-layout-label">Show</span>
+      <div class="chip-row" role="group" aria-labelledby="quiz-layout-label">
+        <button type="button" class="chip" data-layout="paged" aria-pressed="true">One at a time</button>
+        <button type="button" class="chip" data-layout="all" aria-pressed="false">All on one page</button>
+      </div>
+    </div>
+    <div class="quiz-host" id="quiz-host"></div>
+    <noscript><p class="callout warning">This quiz needs JavaScript. Turn it on in your browser settings and reload the page.</p></noscript>
+  </section>
+
+  <section id="after">
+    <h2>After the quiz</h2>
+    <p>Use your results to decide what to do next. After you submit, the <strong>Results by lesson</strong> table under your score links straight to the lessons behind any questions you missed.</p>
+    <ul class="quiz-next">
+      <li>Missed a question? Read its worked solution, then revisit the lesson it points to.</li>
+      <li>Want more practice? The <a href="practice-lab.html">Practice Lab</a> generates unlimited problems on every skill in this quiz (the weight statement, load factors, the wing and tails, the fuselage and gear, propulsion and equipment, calibration, the center of gravity and loading), each with hints and a full solution.</li>
+      <li>Prefer pen and paper? Try the <a href="worksheet.html">Printable Worksheet</a>.</li>
+      <li>Keep the <a href="../reference/cheat-sheet.html">Formula Sheet</a> next to you while you review.</li>
+      <li>Then press <strong>Retake quiz</strong> and aim for 15 out of 15.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ==========================================================================================
+   Self-Check Quiz: the 15 fixed questions.
+   Keep ids, order and choices stable.
+   Question order is fixed, and every mc question sets shuffle:false, so its choices appear on screen
+   exactly in the order listed here.
+   Standard CYLQuiz question fields (short = the title printed in the Question column of the results
+   sheet) plus custom fields that CYLQuiz ignores:
+     lesson       registry id of the lesson the question tests ('l01' … 'l07')
+     finalAnswer  the expected final answer (HTML with TeX), stated explicitly
+     choices[].aria  plain-text wording of a choice for screen readers
+   The numbers deliberately differ from every worked example and lesson check.
+   ========================================================================================== */
+window.CYL_QUIZ_QUESTIONS = (function () {
+  'use strict';
+  var T = String.raw;
+  function review(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return '<p class="quiz-review-link">Review: <a href="' + CYL.url(p.href) + '">Lesson ' + p.num + ' · ' + p.title + '</a></p>';
+  }
+  var LB = WEIGHTS.LB, FT2 = 0.3048 * 0.3048;
+  var q3 = WEIGHTS.nUlt(12000);
+  var q4 = 1.5 * Math.max(WEIGHTS.nLimit(9000), 3.25);
+  var q5 = 100 * (Math.pow(1.2, 0.557) - 1);
+  var q6 = WEIGHTS.eq.wing({ Wdg: 20000 * LB, Nz: 4.2, S: 350 * FT2, A: 9, tc: 0.13, lam: 0.3, sweep: 20, Scsw: 70 * FT2 }) / LB;
+  var q7 = WEIGHTS.eq.Kws(0.3, 30, 30, 32);
+  var q9 = WEIGHTS.eq.Wec({ Wen: 1500 * LB, Kp: 1, Ktr: 1.18 }) / LB;
+  var q10 = (6100 - 900) / (5200 - 900);
+  var q12 = (2400 * 6.2 + 900 * 11.0 + 500 * 2.0) / 3800;
+  var q13 = 100 * (13.85 - 13.10) / 3.60;
+  var q14 = (4800 * 7.45 + 320 * 5.9) / 5120;
+  var q15 = (1.05 - 0.25 * 2.0) / (1 - 0.30);
+
+  return [
+    /* ---------- Q1 · Lesson 1 · fuel at maximum payload ---------- */
+    {
+      id: 'quiz-q01', lesson: 'l01', type: 'numeric',
+      short: 'Fuel with the maximum payload',
+      prompt: T`An illustrative midsize jet has a maximum takeoff weight of \(10\,400\ \text{kg}\), a maximum zero-fuel weight of \(7300\ \text{kg}\) and a basic operating weight of \(5900\ \text{kg}\). With its maximum payload aboard, how much fuel can it take off with?`,
+      label: T`\(W_{\text{fuel}} =\)`, answer: 3100, unit: 'kg',
+      finalAnswer: T`\(W_{\text{fuel}} = 3100\ \text{kg}\)`,
+      explain: T`<p>With the maximum payload aboard the aircraft is at its maximum zero-fuel weight; the fuel fills the rest up to the maximum takeoff weight.</p>`,
+      solution: T`\[ W_{\text{payload,max}} = 7300 - 5900 = 1400\ \text{kg} \]\[ W_{\text{fuel}} = 10\,400 - 7300 = 3100\ \text{kg} \]` + review('l01')
+    },
+    /* ---------- Q2 · Lesson 1 · approximate group weights ---------- */
+    {
+      id: 'quiz-q02', lesson: 'l01', type: 'mc', shuffle: false,
+      short: 'Why approximate weights do not fit',
+      prompt: T`Approximate group weights put the business jet's empty weight at 73% of \(\Wo\) with the transport values and at 36% with the general-aviation values. Why does neither fit?`,
+      choices: [
+        { html: T`Weight per unit area grows with an aircraft's size, and the values come from aircraft much larger and much smaller than the business jet`, aria: 'Weight per area grows with size', correct: true },
+        { html: T`The business jet is built of composites`, aria: 'Composites', feedback: T`The course's business jet is aluminum; composites would change all the methods alike.` },
+        { html: T`The values are in pounds per square foot and must be converted`, aria: 'Units', feedback: T`Converted correctly (1&nbsp;lb/ft² = 4.882&nbsp;kg/m²), they still do not fit.` },
+        { html: T`The business jet's engines are on the fuselage`, aria: 'Engine position', feedback: T`Engine position moves the center of gravity, not the empty weight.` }
+      ],
+      finalAnswer: T`A: weight per unit area grows with size`,
+      explain: T`<p>A wing's bending moment grows with the weight it carries times its span, so a larger aircraft needs more structure for every square meter.</p>`,
+      solution: T`<p>A per-area weight is only constant across aircraft of similar size. The transport values (wing 48.8&nbsp;kg/m²) come from aircraft many times the business jet's weight; the general-aviation values (12.2&nbsp;kg/m²) from aircraft a fraction of it. The statistical group weight equations carry the size and load explicitly.</p>` + review('l01')
+    },
+    /* ---------- Q3 · Lesson 2 · ultimate load factor ---------- */
+    {
+      id: 'quiz-q03', lesson: 'l02', type: 'numeric',
+      short: 'Ultimate load factor',
+      prompt: T`A transport aircraft has a design takeoff weight of \(12\,000\ \text{kg}\). Find its ultimate load factor \(N_z\) from 14&nbsp;CFR 25.337 and the factor of safety.`,
+      label: T`\(N_z =\)`, answer: q3,
+      finalAnswer: T`\(N_z = 4.138\)`,
+      explain: T`<p>\(n_{\text{limit}} = 2.1 + 24\,000/(W + 10\,000)\) with \(W\) in pounds, between 2.5 and 3.8; \(N_z = 1.5\,n_{\text{limit}}\).</p>`,
+      solution: T`\[ W = \frac{12\,000}{0.4536} = 26\,455\ \text{lb} \]\[ n_{\text{limit}} = 2.1 + \frac{24\,000}{36\,455} = 2.758, \qquad N_z = 1.5(2.758) = 4.138 \]` + review('l02')
+    },
+    /* ---------- Q4 · Lesson 2 · the design load factor ---------- */
+    {
+      id: 'quiz-q04', lesson: 'l02', type: 'numeric',
+      short: 'The design load factor',
+      prompt: T`A business jet has a design takeoff weight of \(9000\ \text{kg}\). A gust analysis (Module 10) gives a limit load factor of 3.25 at that weight. What ultimate load factor \(N_z\) do its weight equations take?`,
+      label: T`\(N_z =\)`, answer: q4,
+      finalAnswer: T`\(N_z = 4.875\)`,
+      explain: T`<p>The weight equations take 1.5 times the larger of the maneuvering limit of 25.337 and the gust's limit load factor.</p>`,
+      solution: T`\[ W = \frac{9000}{0.4536} = 19\,842\ \text{lb}, \qquad n_{\text{limit}} = 2.1 + \frac{24\,000}{29\,842} = 2.904 \]\[ N_z = 1.5\max(2.904,\ 3.25) = 1.5(3.25) = 4.875 \]<p>The gust sets it; the maneuvering limit alone would give 4.356.</p>` + review('l02')
+    },
+    /* ---------- Q5 · Lesson 3 · wing weight sensitivity ---------- */
+    {
+      id: 'quiz-q05', lesson: 'l03', type: 'numeric',
+      short: 'Wing weight and load factor',
+      prompt: T`Everything else fixed, a transport's ultimate load factor rises from 3.75 to 4.5. By what percentage does the wing weight equation say its wing gets heavier?`,
+      label: T`Increase =`, answer: q5, unit: '%',
+      finalAnswer: T`\(+10.69\%\)`,
+      explain: T`<p>The wing's weight goes as \((W_{dg}N_z)^{0.557}\): the exponent is the sensitivity.</p>`,
+      solution: T`\[ \left(\frac{4.5}{3.75}\right)^{0.557} = 1.2^{0.557} = 1.1069 \quad \Rightarrow \quad +10.69\% \]<p>Weight follows load, but less than in proportion.</p>` + review('l03')
+    },
+    /* ---------- Q6 · Lesson 3 · the wing equation ---------- */
+    {
+      id: 'quiz-q06', lesson: 'l03', type: 'numeric',
+      short: 'A transport\'s wing weight',
+      prompt: T`A transport has \(W_{dg} = 20\,000\ \text{lb}\), \(N_z = 4.2\), \(S_w = 350\ \text{ft}^2\), \(A = 9\), \(t/c = 0.13\), \(\lambda = 0.3\), a quarter-chord sweep of \(20^\circ\) and \(S_{csw} = 70\ \text{ft}^2\). Find its wing weight in pounds.`,
+      label: T`\(W_{\text{wing}} =\)`, answer: q6, unit: 'lb',
+      finalAnswer: T`\(W_{\text{wing}} = 1432\ \text{lb}\)`,
+      explain: T`<p>\(W_{\text{wing}} = 0.0051(W_{dg}N_z)^{0.557}S_w^{0.649}A^{0.5}(t/c)^{-0.4}(1+\lambda)^{0.1}(\cos\Lambda)^{-1}S_{csw}^{0.1}\), in pounds and square feet.</p>`,
+      solution: T`\[ (84\,000)^{0.557} = 553.1, \qquad 350^{0.649} = 44.78, \qquad 9^{0.5} = 3 \]\[ 0.13^{-0.4} = 2.262, \qquad 1.3^{0.1} = 1.027, \qquad \frac{1}{\cos 20^\circ} = 1.064, \qquad 70^{0.1} = 1.529 \]\[ W_{\text{wing}} = 0.0051(553.1)(44.78)(3)(2.262)(1.027)(1.064)(1.529) = 1432\ \text{lb} \]` + review('l03')
+    },
+    /* ---------- Q7 · Lesson 4 · the wing-sweep factor ---------- */
+    {
+      id: 'quiz-q07', lesson: 'l04', type: 'numeric',
+      short: 'The fuselage\'s wing-sweep factor',
+      prompt: T`A transport's wing spans \(30\ \text{m}\), with a taper ratio of 0.3 and a quarter-chord sweep of \(30^\circ\); its fuselage is \(32\ \text{m}\) long. Find \(K_{ws}\) for the fuselage weight equation.`,
+      label: T`\(K_{ws} =\)`, answer: q7,
+      finalAnswer: T`\(K_{ws} = 0.4996\)`,
+      explain: T`<p>\(K_{ws} = 0.75[(1 + 2\lambda)/(1 + \lambda)]B_w\tan\Lambda/L\); the span and length in the same units.</p>`,
+      solution: T`\[ K_{ws} = 0.75\left(\frac{1.6}{1.3}\right)\frac{30\tan 30^\circ}{32} = 0.75(1.231)(0.5413) = 0.4996 \]<p>It adds \(1.4996^{0.04} = 1.016\): 1.6% to the fuselage.</p>` + review('l04')
+    },
+    /* ---------- Q8 · Lesson 4 · main gear driver ---------- */
+    {
+      id: 'quiz-q08', lesson: 'l04', type: 'mc', shuffle: false,
+      short: 'What drives the main gear\'s weight',
+      prompt: T`In the main landing gear weight equation, which input drives the weight most strongly?`,
+      choices: [
+        { html: T`The landing design weight \(W_l\), with an exponent of 0.888`, aria: 'Landing weight', correct: true },
+        { html: T`The stall speed, with an exponent of 0.1`, aria: 'Stall speed', feedback: T`An exponent of 0.1: doubling the stall speed adds only 7%.` },
+        { html: T`The number of main wheels, with an exponent of 0.321`, aria: 'Wheels', feedback: T`More wheels add weight, but less than in proportion.` },
+        { html: T`The gear's length, with an exponent of 0.4`, aria: 'Length', feedback: T`Long legs matter (Module 8), but less than the landing weight.` }
+      ],
+      finalAnswer: T`A: the landing weight`,
+      explain: T`<p>The main gear carries nearly all the landing load, so its weight follows the landing weight almost in proportion.</p>`,
+      solution: T`<p>The exponents are the sensitivities: 10% more landing weight adds \(1.1^{0.888} - 1 = 8.8\%\) to the main gear; 10% more length adds 3.9%; 10% more stall speed 1.0%.</p>` + review('l04')
+    },
+    /* ---------- Q9 · Lesson 5 · engine and contents ---------- */
+    {
+      id: 'quiz-q09', lesson: 'l05', type: 'numeric',
+      short: 'An installed engine\'s weight',
+      prompt: T`A turbofan weighs \(1500\ \text{lb}\) dry and has a thrust reverser. Find \(W_{ec}\), the weight of the engine with its contents, for the nacelle group equation.`,
+      label: T`\(W_{ec} =\)`, answer: q9, unit: 'lb',
+      finalAnswer: T`\(W_{ec} = 2000\ \text{lb}\)`,
+      explain: T`<p>\(W_{ec} = 2.331\,W_{\text{engine}}^{0.901}K_pK_{tr}\), with \(K_{tr} = 1.18\) for a thrust reverser and \(K_p = 1\) without a propeller.</p>`,
+      solution: T`\[ W_{ec} = 2.331(1500)^{0.901}(1.18) = 2.331(727.2)(1.18) = 2000\ \text{lb} \]<p>A third more than the dry engine: accessories, fluids and the reverser.</p>` + review('l05')
+    },
+    /* ---------- Q10 · Lesson 6 · calibration factor ---------- */
+    {
+      id: 'quiz-q10', lesson: 'l06', type: 'numeric',
+      short: 'Calibration factor',
+      prompt: T`A design's group weight equations sum to \(5200\ \text{kg}\), of which \(900\ \text{kg}\) is its engines' catalog weight. A similar aircraft in service has an empty weight of \(6100\ \text{kg}\). What calibration factor \(k\) makes the equations reproduce it?`,
+      label: T`\(k =\)`, answer: q10,
+      finalAnswer: T`\(k = 1.209\)`,
+      explain: T`<p>\(k = (W_{e,\text{target}} - W_{\text{catalog}})/W_{\text{statistical}}\): the catalog weights are not scaled.</p>`,
+      solution: T`\[ W_{\text{statistical}} = 5200 - 900 = 4300\ \text{kg} \]\[ k = \frac{6100 - 900}{4300} = 1.209 \]` + review('l06')
+    },
+    /* ---------- Q11 · Lesson 6 · a step of the sizing loop ---------- */
+    {
+      id: 'quiz-q11', lesson: 'l06', type: 'numeric',
+      short: 'One step of the sizing loop',
+      prompt: T`A design carries \(1200\ \text{kg}\) of crew and payload, and its fuel is 30% of its takeoff weight. At a guess of \(\Wo = 8000\ \text{kg}\) the group weights, resized to that weight, give \(\We = 4500\ \text{kg}\). What is the next estimate of \(\Wo\)?`,
+      label: T`\(\Wo =\)`, answer: 8100, unit: 'kg',
+      finalAnswer: T`\(\Wo = 8100\ \text{kg}\)`,
+      explain: T`<p>\(\Wo = W_{\text{crew}} + W_{\text{payload}} + (W_f/\Wo)\Wo + \We(\Wo)\), evaluated at the guess.</p>`,
+      solution: T`\[ \Wo = 1200 + 0.30(8000) + 4500 = 8100\ \text{kg} \]<p>Higher than the guess, so the loop moves up.</p>` + review('l06')
+    },
+    /* ---------- Q12 · Lesson 7 · CG by moments ---------- */
+    {
+      id: 'quiz-q12', lesson: 'l07', type: 'numeric',
+      short: 'Center of gravity by moments',
+      prompt: T`An aircraft is made of three groups: \(2400\ \text{kg}\) at \(6.2\ \text{m}\), \(900\ \text{kg}\) at \(11.0\ \text{m}\) and \(500\ \text{kg}\) at \(2.0\ \text{m}\) from the nose. Where is its center of gravity?`,
+      label: T`\(x_{cg} =\)`, answer: q12, unit: 'm',
+      finalAnswer: T`\(x_{cg} = 6.784\ \text{m}\)`,
+      explain: T`<p>\(x_{cg} = \sum W_ix_i/\sum W_i\).</p>`,
+      solution: T`\[ x_{cg} = \frac{2400(6.2) + 900(11.0) + 500(2.0)}{3800} = \frac{25\,780}{3800} = 6.784\ \text{m} \]` + review('l07')
+    },
+    /* ---------- Q13 · Lesson 7 · percent of the MAC ---------- */
+    {
+      id: 'quiz-q13', lesson: 'l07', type: 'numeric',
+      short: 'CG as a percentage of the MAC',
+      prompt: T`An aircraft's CG is at \(13.85\ \text{m}\). Its mean aerodynamic chord's leading edge is at \(13.10\ \text{m}\) and the MAC is \(3.60\ \text{m}\) long. Where is the CG as a percentage of the MAC?`,
+      label: T`CG =`, answer: q13, unit: '% MAC',
+      finalAnswer: T`\(20.83\%\ \text{MAC}\)`,
+      explain: T`<p>\(\%\,\text{MAC} = 100(x_{cg} - x_{\text{LE,MAC}})/\cbar\).</p>`,
+      solution: T`\[ 100\,\frac{13.85 - 13.10}{3.60} = 20.83\% \]` + review('l07')
+    },
+    /* ---------- Q14 · Lesson 8 · a loading step ---------- */
+    {
+      id: 'quiz-q14', lesson: 'l08', type: 'numeric',
+      short: 'A step of the loading diagram',
+      prompt: T`An aircraft weighs \(4800\ \text{kg}\) with its CG at \(7.45\ \text{m}\). Four passengers, \(320\ \text{kg}\) together, sit down in the front rows at \(5.9\ \text{m}\). Where is the CG now?`,
+      label: T`\(x_{cg} =\)`, answer: q14, unit: 'm',
+      finalAnswer: T`\(x_{cg} = 7.353\ \text{m}\)`,
+      explain: T`<p>Add the passengers' moment to the aircraft's and divide by the new weight.</p>`,
+      solution: T`\[ x_{cg} = \frac{4800(7.45) + 320(5.9)}{5120} = \frac{37\,648}{5120} = 7.353\ \text{m} \]<p>Passengers ahead of the CG pull it forward.</p>` + review('l08')
+    },
+    /* ---------- Q15 · Lesson 8 · the wing shift ---------- */
+    {
+      id: 'quiz-q15', lesson: 'l08', type: 'numeric',
+      short: 'Moving the wing',
+      prompt: T`An aircraft's CG is \(1.05\ \text{m}\) behind its MAC's leading edge; the MAC is \(2.0\ \text{m}\) long. The wing group is 30% of the weight. How far must the wing move aft to put the CG at 25% of the MAC?`,
+      label: T`\(\Delta x =\)`, answer: q15, unit: 'm',
+      finalAnswer: T`\(\Delta x = 0.786\ \text{m}\)`,
+      explain: T`<p>\(\Delta x = (x_{cg} - x_{\text{LE,MAC}} - p\cbar)/(1 - W_{wg}/W)\): the MAC moves by all of \(\Delta x\), the CG by only the wing group's share.</p>`,
+      solution: T`\[ \Delta x = \frac{1.05 - 0.25(2.0)}{1 - 0.30} = \frac{0.55}{0.70} = 0.786\ \text{m} \]<p>The CG starts at 52.5% of the MAC; the wing must move more than the 0.55&nbsp;m gap because it carries 30% of the weight with it.</p>` + review('l08')
+    }
+  ];
+})();
+</script>
+
+<script>
+/* ---------- The quiz: CYLQuiz.set in quiz mode, with a paged / all-on-one-page layout switch ---------- */
+CYL.ready(function () {
+  'use strict';
+  var QUESTIONS = window.CYL_QUIZ_QUESTIONS;
+  var host = document.getElementById('quiz-host');
+  var toolbar = document.getElementById('quiz-toolbar');
+  var chips = Array.prototype.slice.call(toolbar.querySelectorAll('[data-layout]'));
+  var l10Note = document.getElementById('quiz-l10-note');
+  var LAYOUT_KEY = 'quiz:selfcheck:layout';
+  var STORAGE_KEY = 'selfcheck-v1';       // bump if the questions ever change (saved answers are keyed by it)
+
+  // Rules list: add a line about saving (only when the browser really keeps it across reloads).
+  if (CYL.store.available()) {
+    l10Note.parentNode.insertBefore(CYL.el('li', {
+      text: 'Your answers are saved in this browser as you go, so reloading the page does not lose them.'
+    }), l10Note);
+  }
+
+  var layout = CYL.store.get(LAYOUT_KEY, 'paged') === 'all' ? 'all' : 'paged';
+  var set = null;
+
+  function build() {
+    var responses = null;
+    if (set) {
+      responses = set.questions.map(function (q) { return q.getResponse(); });
+      set.el.parentNode.removeChild(set.el);
+    }
+    set = CYLQuiz.set(host, QUESTIONS, {
+      mode: 'quiz',
+      layout: layout,
+      storageKey: STORAGE_KEY,
+      intro: 'Answer in any order and change answers freely: nothing is marked until you press <strong>Submit quiz</strong>.',
+      onComplete: function () { refresh(); }
+    });
+    // The previous layout's answers win over the (possibly 250 ms old) saved copy.
+    if (responses) set.questions.forEach(function (q, i) { q.setResponse(responses[i]); });
+    var retake = set.retake;
+    set.retake = function () { var r = retake.apply(set, arguments); refresh(); return r; };
+    refresh();
+  }
+
+  // The layout switch only matters before submitting (the review always lists every question).
+  function refresh() {
+    var done = set.isSubmitted();
+    toolbar.hidden = done;
+    host.setAttribute('data-state', done ? 'submitted' : 'open');   // print CSS: before submitting, print every question
+    var intro = set.el.querySelector('.q-set-intro');           // "nothing is marked until…" no longer applies
+    if (intro) intro.hidden = done;
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-layout') === layout ? 'true' : 'false'); });
+    labelChoices();
+    if (done) renderBreakdown();
+  }
+
+  /* Accessible names for the radio buttons and checkboxes. CYLQuiz names each one from its <label>, but
+     browsers take little or no text from KaTeX output (Chrome gives "" for \(5\ \text{m}\)), so every choice
+     spec carries a plain-text 'aria' string. After submitting, the review tag ("Correct answer", "Your
+     answer") is added to the name, as it is to the visible label. */
+  var SPEC_BY_ID = {};
+  QUESTIONS.forEach(function (q) { SPEC_BY_ID[q.id] = q; });
+  function labelChoices() {
+    Array.prototype.forEach.call(set.el.querySelectorAll('.q-card'), function (card) {
+      var spec = SPEC_BY_ID[card.getAttribute('data-qid')];
+      if (!spec || !spec.choices) return;
+      Array.prototype.forEach.call(card.querySelectorAll('.q-choice'), function (lab) {
+        var input = lab.querySelector('input');
+        var c = input && spec.choices[+input.value];
+        if (!c || !c.aria) return;
+        var tag = lab.querySelector('.q-choice-tag');
+        input.setAttribute('aria-label', c.aria + (tag ? ' (' + tag.textContent + ')' : ''));
+      });
+    });
+  }
+
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      var want = c.getAttribute('data-layout');
+      if (want === layout || set.isSubmitted()) return;
+      layout = want;
+      CYL.store.set(LAYOUT_KEY, layout);
+      build();
+      c.focus();
+    });
+  });
+
+  /* Results by lesson: a small table added to the score summary after submitting. */
+  function lessonInfo(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return p ? { num: p.num, title: p.title, href: CYL.url(p.href) } : { num: '', title: id, href: '#' };
+  }
+  function renderBreakdown() {
+    var results = set.el.querySelector('.q-set-results');
+    if (!results) return;
+    var old = results.querySelector('.quiz-breakdown');
+    if (old) old.parentNode.removeChild(old);
+
+    var sc = set.score();
+    var groups = [], byId = {};
+    sc.results.forEach(function (r) {
+      var id = QUESTIONS[r.index].lesson;
+      if (!byId[id]) { byId[id] = { id: id, nums: [], correct: 0 }; groups.push(byId[id]); }
+      byId[id].nums.push(r.position + 1);
+      if (r.correct) byId[id].correct += 1;
+    });
+
+    var tbody = CYL.el('tbody');
+    var toReview = [];
+    groups.forEach(function (g) {
+      var info = lessonInfo(g.id);
+      var all = g.correct === g.nums.length;
+      if (!all) toReview.push('<a href="' + info.href + '">Lesson ' + info.num + '</a>');
+      tbody.appendChild(CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'row', html: '<a href="' + info.href + '">Lesson ' + info.num + '</a>' +
+          ' <span class="quiz-lesson-title">· ' + info.title + '</span>' }),
+        CYL.el('td', { text: g.nums.join(', ') }),
+        CYL.el('td', { class: 'quiz-score-cell ' + (all ? 'c-good' : 'c-bad'),
+          text: (all ? '✓ ' : '✗ ') + g.correct + ' of ' + g.nums.length })
+      ]));
+    });
+
+    var table = CYL.el('table', { class: 'data' }, [
+      CYL.el('caption', { class: 'visually-hidden', text: 'Quiz results grouped by lesson' }),
+      CYL.el('thead', {}, [CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'col', text: 'Lesson' }),
+        CYL.el('th', { scope: 'col', text: 'Questions' }),
+        CYL.el('th', { scope: 'col', text: 'Correct' })
+      ])]),
+      tbody
+    ]);
+    var summary = toReview.length
+      ? 'Revisit ' + (toReview.length === 1 ? toReview[0] : toReview.slice(0, -1).join(', ') + ' and ' + toReview[toReview.length - 1]) +
+        ', then open the worked solutions below.'
+      : 'Every lesson is fully correct. Well done.';
+    var box = CYL.el('div', { class: 'quiz-breakdown' }, [
+      CYL.el('p', { class: 'quiz-breakdown-title', text: 'Results by lesson' }),
+      CYL.el('p', { class: 'quiz-breakdown-summary', html: summary }),
+      CYL.el('div', { class: 'table-wrap' }, [table])
+    ]);
+    // Above the name / print row, so the "Show only questions I missed" chip stays next to the cards it filters.
+    var namebox = results.querySelector('.q-set-namebox');
+    results.insertBefore(box, namebox || results.querySelector('.q-set-review-note') || null);
+  }
+
+  build();
+  toolbar.hidden = set.isSubmitted();
+});
+</script>
+</body>
+</html>

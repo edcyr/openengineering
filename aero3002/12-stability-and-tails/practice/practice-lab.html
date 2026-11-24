@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Stability, Control and Tail Sizing</title>
+<meta name="description" content="Unlimited randomized problems on stability, control and tail sizing: the static margin, the contributions to the pitching moment, the neutral point, trim and the elevator, control at the forward CG, the scissor plot, directional and lateral stability, and engine failure, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: the static margin, the pitching moment's contributions, the neutral point, trim and the elevator, the control and stability lines, the scissor plot, directional and lateral stability, and engine failure, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>scissor-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. scissor-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>0.9*0.2095*3.583*(1-0.335)</code></td><td>\(0.4493\)</td></tr>
+          <tr><td><code>(4.507*0.25-0.707+0.449*3.592)/(4.507+0.449)</code></td><td>\(0.4101\)</td></tr>
+          <tr><td><code>6.75*6.855/(28*2.015)</code></td><td>\(0.8201\)</td></tr>
+          <tr><td><code>-1.3*21.90/(28*14.97)</code></td><td>\(-0.06792\)</td></tr>
+          <tr><td><code>16556/(1826*28*14.97*0.0834)*180/pi</code></td><td>\(14.86\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(g = 9.81\ \text{m/s}^2\) and \(\rho_0 = 1.225\ \text{kg/m}^3\). Coefficients are per radian unless the box says otherwise; positions along the MAC are fractions of it unless the box shows %. <code>sqrt</code>, <code>^</code>, <code>pi</code>, <code>cos</code> and <code>atan</code>, <code>deg</code> after an angle in degrees, and powers of ten all work. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>(4.507*0.25-0.707+0.449*3.592)/(4.507+0.449)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  function r4(x) { return +x.toPrecision(4); }                                       // a given value rounded to 4 significant figures
+  var G = 9.81, RHO0 = 1.225, P0 = 101325;
+  var KG = '\\ \\text{kg}', KGS = '\\ \\text{kg/s}', MM = '\\ \\text{m}', MS = '\\ \\text{m/s}', NN = '\\ \\text{N}', KN = '\\ \\text{kN}', KW = '\\ \\text{kW}', PA = '\\ \\text{Pa}',
+    KPA = '\\ \\text{kPa}', MPA = '\\ \\text{MPa}', MMM = '\\ \\text{mm}', DEG = '^\\circ', LB = '\\ \\text{lb}', PSIU = '\\ \\text{psi}', INU = '\\ \\text{in}', IN2 = '\\ \\text{in}^2',
+    FPS = '\\ \\text{ft/s}', LPM = '\\ \\text{L/min}', AMP = '\\ \\text{A}', VOLT = '\\ \\text{V}', M2 = '\\ \\text{m}^2', CM2 = '\\ \\text{cm}^2', LIT = '\\ \\text{L}', KK = '\\ \\text{K}';
+  var D2R = Math.PI / 180, PSI = 6894.757, LBF = 4.4482216;
+  var FT2 = '\\ \\text{ft}^2', FTU = '\\ \\text{ft}', KTU = '\\ \\text{kt}', GALU = '\\ \\text{gal}', KGM = '\\ \\text{kg}\\cdot\\text{m}', KGM2 = '\\ \\text{kg/m}^2', PCT = '\\%', KVA = '\\ \\text{kV}\\cdot\\text{A}';
+  var LBKG = 0.45359237, FTM = 0.3048;
+  function deg(r) { return r / D2R; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function upN(v, st) { return Math.ceil(v / st) * st; }                               // a tidy axis maximum in steps of st
+  function sci(x) { var e = Math.floor(Math.log10(x)), c = x / Math.pow(10, e); return nn(+c.toFixed(2)) + '\\times 10^{' + e + '}'; }   // 3.2 × 10^7 (TeX)
+  function r3(x) { return +(+x).toFixed(3); }
+  var KNMU = '\\ \\text{kN}\\cdot\\text{m}', PR = '\\ \\text{per rad}';
+  function cmF(A, sw) { var c = Math.cos(sw * D2R); return A * c * c / (A + 2 * c); }
+  function tauOf(x) { return 1.576 * x * x * x - 3.458 * x * x + 2.882 * x; }
+  function sgn(x) { return x < 0 ? ' - ' + nn(-x) : ' + ' + nn(x); }                      // " + 0.12" or " - 0.12" (TeX)
+  function niceAx(label, lo, hi, pad) {                                                 // an axis with tidy limits around [lo, hi]
+    if (!(hi > lo)) hi = lo + 1;
+    var p = (hi - lo) * (pad == null ? 0.12 : pad), a = lo - p, b = hi + p, raw = (b - a) / 5, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag, st = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+    return { label: label, min: +(Math.floor(a / st) * st).toPrecision(10), max: +(Math.ceil(b / st) * st).toPrecision(10) };
+  }
+  function yAx(label, fs, x0, x1, extra) {                                              // a y axis that holds the curves over [x0, x1] and the extra values
+    var v = (extra || []).slice(); fs.forEach(function (f) { for (var i = 0; i <= 40; i++) { var y = f(x0 + (x1 - x0) * i / 40); if (isFinite(y)) v.push(y); } });
+    return niceAx(label, Math.min.apply(null, v), Math.max.apply(null, v), 0.08);
+  }
+
+  /* ================================================================ 2. Generators */
+  /* ---------- 2.1 Static stability (Lesson 1) ---------- */
+  function genStatic(rng) {
+    var kind = pickW(rng, [['sm', 3], ['cma', 3], ['aft', 2]]), spec, right, wrong, view;
+    if (kind === 'sm') {
+      var mac = rng.pick(range(1.2, 6, 0.005)), le = rng.pick(range(3, 25, 0.005)), np = rng.pick(range(0.30, 0.60, 0.001)), s0 = rng.pick(range(0.02, 0.25, 0.001));
+      var xnp = r3(le + np * mac), xcg = r3(le + (np - s0) * mac), sm = 100 * (xnp - xcg) / mac;
+      spec = { type: 'numeric', prompt: 'An aircraft\'s mean aerodynamic chord is \\(' + nn(mac) + MM + '\\) long. Its neutral point is \\(' + nn(xnp) + MM + '\\) from the nose and its CG \\(' + nn(xcg) + MM + '\\). What is its static margin?', label: 'SM =', answer: sm, unit: '% of the MAC' };
+      spec.hints = ['The static margin is the distance from the CG forward to the neutral point, as a fraction of the MAC.', '\\(\\text{SM} = (x_{np} - x_{cg})/\\cbar\\).'];
+      spec.solution = M('\\text{SM} = \\frac{' + nn(xnp) + ' - ' + nn(xcg) + '}{' + nn(mac) + '} = ' + n4(sm / 100) + ' = ' + n4(sm) + '\\%');
+      right = { value: typed(sm) }; wrong = { value: typed(wrongOf(sm, [100 * (xnp - xcg), 100 * (xnp - xcg) / xnp, sm / 2])) };
+      var f1 = function (x) { return 100 * (xnp - x) / mac; }, xa = r3(xnp - 0.45 * mac), xb = r3(xnp + 0.12 * mac);
+      view = { title: 'Static margin against CG position', aria: 'Static margin against CG position, with this aircraft marked.',
+        x: { label: 'CG from the nose (m)', min: xa, max: xb }, y: yAx('Static margin (% MAC)', [f1], xa, xb, [0]),
+        curves: [{ f: f1, color: 'z' }], hline: { y: 0, label: 'neutral' }, marker: { at: [xcg, sm], label: '' },
+        readouts: [{ label: '\\(x_{np} - x_{cg}\\)', tex: n4(xnp - xcg) + MM }, { label: 'SM', tex: n4(sm) + PCT }], note: 'The margin falls to zero as the CG moves aft to the neutral point.' };
+    } else if (kind === 'cma') {
+      var cla = rng.pick(range(3.5, 7, 0.001)), s2 = rng.pick(range(0.02, 0.25, 0.001)), cma = -cla * s2;
+      spec = { type: 'numeric', prompt: 'An aircraft\'s lift-curve slope, wing and tail together, is \\(' + nn(cla) + PR + '\\), and its static margin is ' + nn(100 * s2) + '% of the MAC. What is its \\(C_{M\\alpha}\\)?', label: '\\(C_{M\\alpha} =\\)', answer: cma, unit: 'per rad' };
+      spec.hints = ['\\(C_{M\\alpha} = -C_{L\\alpha}\\,\\text{SM}\\), with SM as a fraction.', 'A positive margin gives a negative, stable slope.'];
+      spec.solution = M('C_{M\\alpha} = -' + nn(cla) + '(' + nn(s2) + ') = ' + n4(cma) + PR);
+      right = { value: typed(cma) }; wrong = { value: typed(wrongOf(cma, [-cma, 100 * cma, -s2 / cla])) };
+      var f2 = function (s) { return -cla * s / 100; };
+      view = { title: 'Pitch stiffness against static margin', aria: 'C M alpha against static margin, with this aircraft marked.',
+        x: { label: 'Static margin (% MAC)', min: -5, max: 30 }, y: yAx('\\(C_{M\\alpha}\\) (per rad)', [f2], -5, 30, [cma]),
+        curves: [{ f: f2, color: 'z' }], hline: { y: 0, label: '' }, marker: { at: [100 * s2, cma], label: '' },
+        readouts: [{ label: '\\(C_{L\\alpha}\\)', tex: nn(cla) + PR }, { label: '\\(C_{M\\alpha}\\)', tex: n4(cma) + PR }], note: 'The stiffer the aircraft in pitch, the more elevator it takes to change its trim.' };
+    } else {
+      var mac3 = rng.pick(range(1.2, 6, 0.005)), le3 = rng.pick(range(3, 25, 0.005)), np3 = rng.pick(range(0.30, 0.60, 0.001)), req = rng.pick([0.05, 0.05, 0.08, 0.10, 0.15]);
+      var xa3 = le3 + (np3 - req) * mac3, xnp3 = le3 + np3 * mac3, f3 = function (x) { return 100 * (xnp3 - x) / mac3; }, lo = r3(xnp3 - 0.45 * mac3), hi = r3(xnp3 + 0.12 * mac3);
+      spec = { type: 'numeric', prompt: 'An aircraft\'s mean aerodynamic chord starts \\(' + nn(le3) + MM + '\\) from the nose and is \\(' + nn(mac3) + MM + '\\) long. Its neutral point is at ' + nn(100 * np3) + '% of the MAC. How far from the nose may its CG go, keeping a static margin of ' + nn(100 * req) + '%?', label: '\\(x_{cg} =\\)', answer: xa3, unit: 'm' };
+      spec.hints = ['The aft limit is the required margin ahead of the neutral point: at ' + nn(100 * np3) + ' − ' + nn(100 * req) + ' % of the MAC.', '\\(x_{cg} = x_{LE} + (\\bar x_{np} - \\text{SM})\\cbar\\).'];
+      spec.solution = M('x_{cg} = ' + nn(le3) + ' + (' + nn(np3) + ' - ' + nn(req) + ')(' + nn(mac3) + ') = ' + n4(xa3) + MM);
+      right = { value: typed(xa3) }; wrong = { value: typed(wrongOf(xa3, [le3 + (np3 + req) * mac3, (np3 - req) * mac3, le3 + np3 * mac3])) };
+      view = { title: 'The aft CG limit', aria: 'Static margin against CG position, with the required margin and the aft limit marked.',
+        x: { label: 'CG from the nose (m)', min: lo, max: hi }, y: yAx('Static margin (% MAC)', [f3], lo, hi, [0]),
+        curves: [{ f: f3, color: 'z' }], hline: { y: 100 * req, label: 'required' }, marker: { at: [xa3, 100 * req], label: '' },
+        readouts: [{ label: 'Neutral point', tex: n4(xnp3) + MM }, { label: 'Aft limit', tex: n4(xa3) + MM }], note: 'Aft of the limit, the margin is less than required.' };
+    }
+    spec.explain = 'A positive static margin means a negative \\(C_{M\\alpha}\\): disturbed nose up, the aircraft noses back down.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Contributions to the pitching moment (Lesson 2) ---------- */
+  function genContrib(rng) {
+    var kind = pickW(rng, [['wing', 2], ['fus', 3], ['eng', 2], ['dw', 2]]), spec, right, wrong, view;
+    if (kind === 'wing') {
+      var cm0 = rng.pick(range(-0.12, -0.02, 0.005)), A = rng.pick(range(5, 12, 0.1)), sw = rng.pick(range(0, 35, 0.5)), fa = cmF(A, sw), cmw = cm0 * fa;
+      spec = { type: 'numeric', prompt: 'A wing of aspect ratio ' + nn(A) + ' and quarter-chord sweep \\(' + nn(sw) + DEG + '\\) uses an airfoil with \\(c_{m0} = ' + nn(cm0) + '\\). What is the wing\'s pitching-moment coefficient about its aerodynamic center?', label: '\\(C_{M,W} =\\)', answer: cmw };
+      spec.hints = ['\\(C_{M,W} = c_{m0}\\,\\dfrac{A\\cos^2\\Lambda}{A + 2\\cos\\Lambda}\\).', 'The factor is \\(' + n4(fa) + '\\).'];
+      spec.solution = M('C_{M,W} = ' + nn(cm0) + '\\,\\frac{' + nn(A) + '\\cos^2 ' + nn(sw) + '^\\circ}{' + nn(A) + ' + 2\\cos ' + nn(sw) + '^\\circ} = ' + n4(cmw));
+      right = { value: typed(cmw) }; wrong = { value: typed(wrongOf(cmw, [cm0, -cmw, cm0 * A / (A + 2)])) };
+      var fw = function (a) { return cm0 * cmF(a, sw); };
+      view = { title: 'Wing moment against aspect ratio', aria: 'Wing pitching-moment coefficient against aspect ratio for this airfoil and sweep, with this wing marked.',
+        x: { label: 'Aspect ratio \\(A\\)', min: 4, max: 14 }, y: yAx('\\(C_{M,W}\\)', [fw], 4, 14, [0, cmw]),
+        curves: [{ f: fw, color: 'z' }], marker: { at: [A, cmw], label: '' },
+        readouts: [{ label: 'Factor', tex: n4(fa) }, { label: '\\(C_{M,W}\\)', tex: n4(cmw) }], note: 'Sweep and low aspect ratio reduce the wing\'s moment below the airfoil\'s.' };
+    } else if (kind === 'fus') {
+      var Wf = rng.pick(range(1.2, 6, 0.01)), Lf = r3(Wf * rng.pick(range(6, 12, 0.1))), x0 = rng.pick(range(0.25, 0.55, 0.001)), A2 = rng.pick(range(7, 11, 0.1));
+      var S = rng.pick(range(Math.round(1.2 * Lf * Wf), Math.round(4 * Lf * Wf), 0.5)), mac = r3(1.05 * Math.sqrt(S / A2));
+      var Kf = 0.01 - 0.063 * x0 + 0.211 * x0 * x0, cm = Kf * Wf * Wf * Lf / (mac * S) * 180 / Math.PI;
+      spec = { type: 'numeric', prompt: 'A fuselage is \\(' + nn(Lf) + MM + '\\) long and \\(' + nn(Wf) + MM + '\\) wide. The wing root\'s quarter-chord is at ' + nn(100 * x0) + '% of its length; the wing has \\(S = ' + nn(S) + M2 + '\\) and \\(\\cbar = ' + nn(mac) + MM + '\\). What is the fuselage\'s \\(C_{M\\alpha,\\text{fus}}\\) per radian?', label: '\\(C_{M\\alpha,\\text{fus}} =\\)', answer: cm, unit: 'per rad' };
+      spec.hints = ['\\(K_f = 0.01 - 0.063\\,x_0 + 0.211\\,x_0^2 = ' + n4(Kf) + '\\) per degree.', '\\(C_{M\\alpha,\\text{fus}} = K_f W_f^2 L_f/(\\cbar S)\\) per degree; multiply by \\(180/\\pi\\).'];
+      spec.solution = M('K_f = 0.01 - 0.063(' + nn(x0) + ') + 0.211(' + nn(x0) + ')^2 = ' + n4(Kf)) + M('C_{M\\alpha,\\text{fus}} = \\frac{' + n4(Kf) + '(' + nn(Wf) + ')^2(' + nn(Lf) + ')}{' + nn(mac) + '(' + nn(S) + ')}\\cdot\\frac{180}{\\pi} = ' + n4(cm) + PR);
+      right = { value: typed(cm) }; wrong = { value: typed(wrongOf(cm, [cm * Math.PI / 180, -cm, Kf * Wf * Lf / (mac * S) * 180 / Math.PI])) };
+      var fk = function (x) { return 0.01 - 0.063 * x + 0.211 * x * x; };
+      view = { title: 'The fuselage factor \\(K_f\\)', aria: 'The fuselage factor K f against the wing root position, with this fuselage marked.',
+        x: { label: 'Wing root quarter-chord, \\(x_0\\) (fraction of \\(L_f\\))', min: 0.1, max: 0.62 }, y: yAx('\\(K_f\\) (per deg)', [fk], 0.1, 0.62, [0]),
+        curves: [{ f: fk, color: 'z' }], marker: { at: [x0, Kf], label: '' },
+        readouts: [{ label: '\\(K_f\\)', tex: n4(Kf) }, { label: '\\(C_{M\\alpha,\\text{fus}}\\)', tex: n4(cm) + PR }], note: 'The farther aft the wing, the more fuselage ahead of it, and the more destabilizing the fuselage.' };
+    } else if (kind === 'eng') {
+      var S3 = rng.pick(range(15, 150, 0.5)), T = Math.round(2 * S3 * rng.pick(range(0.5, 1.5, 0.01))) / 2, zE = rng.pick(range(-0.8, 0.8, 0.01)), V = rng.pick(range(50, 90, 0.5)), mac3 = r3(1.05 * Math.sqrt(S3 / 8.5));
+      if (Math.abs(zE) < 0.1) zE = 0.35;
+      var q = 0.5 * RHO0 * V * V, cmE = -T * 1000 * zE / (q * S3 * mac3);
+      spec = { type: 'numeric', prompt: 'An aircraft\'s engines give \\(' + nn(T) + KN + '\\) of thrust together, acting \\(' + nn(Math.abs(zE)) + MM + '\\) ' + (zE > 0 ? 'above' : 'below') + ' its CG. At \\(' + nn(V) + MS + '\\) at sea level, with \\(S = ' + nn(S3) + M2 + '\\) and \\(\\cbar = ' + nn(mac3) + MM + '\\), what pitching-moment coefficient do they give?', label: '\\(C_{M,E} =\\)', answer: cmE };
+      spec.hints = ['\\(C_{M,E} = -T z_E/(q S \\cbar)\\), with \\(z_E\\) positive when the thrust line is above the CG (nose down).', '\\(q = \\tfrac12(1.225)(' + nn(V) + ')^2 = ' + n4(q) + PA + '\\).'];
+      spec.solution = M('C_{M,E} = -\\frac{' + g4(T * 1000) + '(' + nn(zE) + ')}{' + n4(q) + '(' + nn(S3) + ')(' + nn(mac3) + ')} = ' + n4(cmE));
+      right = { value: typed(cmE) }; wrong = { value: typed(wrongOf(cmE, [-cmE, cmE / 1000, -T * zE / (q * S3 * mac3)])) };
+      var fe = function (v) { return -T * 1000 * zE / (0.5 * RHO0 * v * v * S3 * mac3); };
+      view = { title: 'Thrust moment against speed', aria: 'The engines\' pitching-moment coefficient against airspeed, with this problem marked.',
+        x: { label: 'Airspeed (m/s)', min: 30, max: 120 }, y: yAx('\\(C_{M,E}\\)', [fe], 30, 120, [0, cmE]),
+        curves: [{ f: fe, color: 'z' }], marker: { at: [V, cmE], label: '' },
+        readouts: [{ label: '\\(q\\)', tex: n4(q) + PA }, { label: '\\(C_{M,E}\\)', tex: n4(cmE) }], note: 'The thrust\'s moment matters most at low speed, where \\(q\\) is small: in a go-around.' };
+    } else {
+      var A4 = rng.pick(range(6, 12, 0.1)), lam = rng.pick(range(0.2, 0.5, 0.01)), sw4 = rng.pick(range(0, 35, 0.5)), b = rng.pick(range(10, 40, 0.01)), zr = rng.pick(range(0, 0.3, 0.001)), lr = rng.pick(range(0.35, 0.6, 0.001));
+      var zH = r3(zr * b), lH = r3(lr * b), kA = 1 / A4 - 1 / (1 + Math.pow(A4, 1.7)), kL = (10 - 3 * lam) / 7;
+      var kHf = function (z) { return (1 - Math.abs(z)) / Math.cbrt(2 * lH / b); }, dwf = function (z) { return 4.44 * Math.pow(kA * kL * kHf(z) * Math.sqrt(Math.cos(sw4 * D2R)), 1.19); }, dw = dwf(zH / b);
+      spec = { type: 'numeric', prompt: 'A wing has \\(A = ' + nn(A4) + '\\), \\(\\lambda = ' + nn(lam) + '\\), \\(\\Lambda_{c/4} = ' + nn(sw4) + DEG + '\\) and \\(b = ' + nn(b) + MM + '\\). The horizontal tail is \\(' + nn(zH) + MM + '\\) above the wing\'s root chord and \\(' + nn(lH) + MM + '\\) behind its aerodynamic center. At low speed, what is \\(\\partial\\varepsilon/\\partial\\alpha\\)?', label: '\\(\\partial\\varepsilon/\\partial\\alpha =\\)', answer: dw };
+      spec.hints = ['\\(k_A = 1/A - 1/(1 + A^{1.7}) = ' + n4(kA) + '\\), \\(k_\\lambda = (10 - 3\\lambda)/7 = ' + n4(kL) + '\\), \\(k_H = (1 - |z_H/b|)/\\sqrt[3]{2l_H/b} = ' + n4(kHf(zH / b)) + '\\).', '\\(\\partial\\varepsilon/\\partial\\alpha = 4.44[k_A k_\\lambda k_H\\sqrt{\\cos\\Lambda_{c/4}}]^{1.19}\\).'];
+      spec.solution = M('k_A = ' + n4(kA) + ',\\quad k_\\lambda = ' + n4(kL) + ',\\quad k_H = ' + n4(kHf(zH / b))) + M('\\frac{\\partial\\varepsilon}{\\partial\\alpha} = 4.44\\left[' + n4(kA * kL * kHf(zH / b) * Math.sqrt(Math.cos(sw4 * D2R))) + '\\right]^{1.19} = ' + n4(dw));
+      right = { value: typed(dw) }; wrong = { value: typed(wrongOf(dw, [4.44 * kA * kL * kHf(zH / b), 2 * 4.5 / (Math.PI * A4), 1 - dw])) };
+      view = { title: 'Downwash against tail height', aria: 'Downwash gradient against the tail\'s height as a fraction of the span, with this tail marked.',
+        x: { label: 'Tail height \\(z_H/b\\)', min: 0, max: 0.35 }, y: yAx('\\(\\partial\\varepsilon/\\partial\\alpha\\)', [dwf], 0, 0.35, [0]),
+        curves: [{ f: dwf, color: 'z' }], marker: { at: [zH / b, dw], label: '' },
+        readouts: [{ label: '\\(k_A k_\\lambda k_H\\)', tex: n4(kA * kL * kHf(zH / b)) }, { label: '\\(\\partial\\varepsilon/\\partial\\alpha\\)', tex: n4(dw) }], note: 'A tail out of the wing\'s wake sees less downwash: a T-tail\'s advantage.' };
+    }
+    spec.explain = 'The wing and fuselage destabilize (the wing only through the CG\'s place behind its aerodynamic center); the tail must make up the difference.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 The neutral point (Lesson 3) ---------- */
+  function genNP(rng) {
+    var kind = pickW(rng, [['np', 3], ['cma', 2]]), spec, right, wrong, view, claW, claH, dw, s, xh, cf, T, np, t = 0;
+    do {
+      claW = rng.pick(range(4, 6.5, 0.001)); claH = rng.pick(range(3, 4.8, 0.001)); dw = rng.pick(range(0.25, 0.5, 0.001)); s = rng.pick(range(0.12, 0.35, 0.0001));
+      xh = rng.pick(range(2.5, 4.5, 0.001)); cf = rng.pick(range(0.1, 0.9, 0.001)); T = 0.9 * s * claH * (1 - dw); np = (0.25 * claW - cf + T * xh) / (claW + T); t++;
+    } while ((np < 0.2 || np > 0.65) && t < 60);
+    var given = '\\(C_{L\\alpha,W} = ' + nn(claW) + '\\), \\(C_{L\\alpha,H} = ' + nn(claH) + '\\) per rad, \\(\\partial\\varepsilon/\\partial\\alpha = ' + nn(dw) + '\\), \\(\\eta_H = 0.9\\), \\(S_H/S = ' + nn(s) + '\\), \\(C_{M\\alpha,\\text{fus}} = ' + nn(cf) + '\\); the tail\'s aerodynamic center is at \\(\\bar x_{ac,H} = ' + nn(xh) + '\\) (in MACs from the MAC\'s leading edge), the wing\'s at 0.25.';
+    var fnp = function (ss) { var TT = 0.9 * ss * claH * (1 - dw); return (0.25 * claW - cf + TT * xh) / (claW + TT); };
+    if (kind === 'np') {
+      spec = { type: 'numeric', prompt: 'An aircraft has ' + given + ' Where is its neutral point?', label: '\\(\\bar x_{np} =\\)', answer: np, unit: 'MAC' };
+      spec.hints = ['\\(T = \\eta_H (S_H/S) C_{L\\alpha,H}(1 - \\partial\\varepsilon/\\partial\\alpha) = ' + n4(T) + '\\).', '\\(\\bar x_{np} = (C_{L\\alpha,W}\\bar x_{ac,W} - C_{M\\alpha,\\text{fus}} + T\\bar x_{ac,H})/(C_{L\\alpha,W} + T)\\).'];
+      spec.solution = M('T = 0.9(' + nn(s) + ')(' + nn(claH) + ')(1 - ' + nn(dw) + ') = ' + n4(T)) + M('\\bar x_{np} = \\frac{' + nn(claW) + '(0.25) - ' + nn(cf) + ' + ' + n4(T) + '(' + nn(xh) + ')}{' + nn(claW) + ' + ' + n4(T) + '} = ' + n4(np));
+      right = { value: typed(np) }; wrong = { value: typed(wrongOf(np, [(0.25 * claW + cf + T * xh) / (claW + T), (0.25 * claW - cf + 0.9 * s * claH * xh) / (claW + 0.9 * s * claH), 100 * np])) };
+      view = { title: 'Neutral point against tail size', aria: 'Neutral point against horizontal tail area ratio, with this aircraft marked.',
+        x: { label: '\\(S_H/S\\)', min: 0, max: 0.45 }, y: yAx('\\(\\bar x_{np}\\) (MAC)', [fnp], 0, 0.45, [np]),
+        curves: [{ f: fnp, color: 'z' }], marker: { at: [s, np], label: '' },
+        readouts: [{ label: '\\(T\\)', tex: n4(T) }, { label: '\\(\\bar x_{np}\\)', tex: n4(np) }], note: 'More tail moves the neutral point aft, and with it the aft CG limit.' };
+    } else {
+      var xc = r3(np - rng.pick(range(0.02, 0.2, 0.001))), cma = -(claW + T) * (np - xc);
+      spec = { type: 'numeric', prompt: 'An aircraft has ' + given + ' What is its \\(C_{M\\alpha}\\) with the CG at ' + nn(100 * xc) + '% of the MAC?', label: '\\(C_{M\\alpha} =\\)', answer: cma, unit: 'per rad' };
+      spec.hints = ['Find the neutral point first: \\(T = ' + n4(T) + '\\) and \\(\\bar x_{np} = ' + n4(np) + '\\).', '\\(C_{M\\alpha} = -(C_{L\\alpha,W} + T)(\\bar x_{np} - \\bar x_{cg})\\).'];
+      spec.solution = M('\\bar x_{np} = \\frac{' + nn(claW) + '(0.25) - ' + nn(cf) + ' + ' + n4(T) + '(' + nn(xh) + ')}{' + nn(claW) + ' + ' + n4(T) + '} = ' + n4(np)) + M('C_{M\\alpha} = -(' + nn(claW) + ' + ' + n4(T) + ')(' + n4(np) + ' - ' + nn(xc) + ') = ' + n4(cma) + PR);
+      right = { value: typed(cma) }; wrong = { value: typed(wrongOf(cma, [-cma, -claW * (np - xc), -(claW + T) * (np - xc) * 100])) };
+      var fc = function (x) { return -(claW + T) * (np - x / 100); };
+      view = { title: '\\(C_{M\\alpha}\\) against CG position', aria: 'C M alpha against CG position, with the neutral point where it crosses zero and this CG marked.',
+        x: { label: 'CG (% MAC)', min: 0, max: 70 }, y: yAx('\\(C_{M\\alpha}\\) (per rad)', [fc], 0, 70, [cma]),
+        curves: [{ f: fc, color: 'z' }], hline: { y: 0, label: 'neutral point' }, marker: { at: [100 * xc, cma], label: '' },
+        readouts: [{ label: '\\(\\bar x_{np}\\)', tex: n4(np) }, { label: '\\(C_{M\\alpha}\\)', tex: n4(cma) + PR }], note: 'The slope of this line is the aircraft\'s whole lift-curve slope.' };
+    }
+    spec.explain = 'The neutral point is the CG at which the aircraft would be neutrally stable: the aerodynamic center of the whole aircraft.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Trim and the elevator (Lesson 4) ---------- */
+  function genTrim(rng) {
+    var kind = pickW(rng, [['clh', 3], ['tau', 2], ['share', 2]]), spec, right, wrong, view;
+    var cmw = rng.pick(range(-0.25, -0.02, 0.001)), CL = rng.pick(range(0.2, 2.2, 0.001)), x = rng.pick(range(0.10, 0.45, 0.001)), cmE = rng.pick([0, 0, rng.pick(range(-0.1, 0.05, 0.001))]), s = rng.pick(range(0.15, 0.35, 0.0001)), lh = rng.pick(range(2.5, 5, 0.001));
+    var clh = (cmw + CL * (x - 0.25) + cmE) / (0.9 * s * lh);
+    if (kind === 'clh') {
+      spec = { type: 'numeric', prompt: 'An aircraft flies at \\(C_L = ' + nn(CL) + '\\) with its CG at ' + nn(100 * x) + '% of the MAC. \\(C_{M,W} = ' + nn(cmw) + '\\), the engines add \\(C_{M,E} = ' + nn(cmE) + '\\), \\(S_H/S = ' + nn(s) + '\\), \\(l_H/\\cbar = ' + nn(lh) + '\\) and \\(\\eta_H = 0.9\\). What tail lift coefficient trims it?', label: '\\(C_{L,H} =\\)', answer: clh };
+      spec.hints = ['\\(C_{L,H} = (C_{M,W} + C_L\\bar x_{cg-ac} + C_{M,E})/(\\eta_H (S_H/S)(l_H/\\cbar))\\).', '\\(\\bar x_{cg-ac} = ' + nn(x) + ' - 0.25 = ' + n4(x - 0.25) + '\\).'];
+      spec.solution = M('C_{L,H} = \\frac{' + nn(cmw) + ' + ' + nn(CL) + '(' + n4(x - 0.25) + ')' + sgn(cmE) + '}{0.9(' + nn(s) + ')(' + nn(lh) + ')} = ' + n4(clh));
+      right = { value: typed(clh) }; wrong = { value: typed(wrongOf(clh, [-clh, (cmw + CL * (x - 0.25) + cmE) / (s * lh), (cmw + CL * x + cmE) / (0.9 * s * lh)])) };
+      var fl = function (p) { return (cmw + CL * (p / 100 - 0.25) + cmE) / (0.9 * s * lh); };
+      view = { title: 'Tail lift for trim against CG', aria: 'Tail lift coefficient for trim against CG position, with this problem marked.',
+        x: { label: 'CG (% MAC)', min: 0, max: 60 }, y: yAx('\\(C_{L,H}\\)', [fl], 0, 60, [0, clh]),
+        curves: [{ f: fl, color: 'z' }], hline: { y: 0, label: '' }, marker: { at: [100 * x, clh], label: '' },
+        readouts: [{ label: '\\(C_{L,H}\\)', tex: n4(clh) }], note: 'A forward CG asks the tail to push down harder.' };
+    } else if (kind === 'tau') {
+      var cf = rng.pick(range(0.15, 0.45, 0.01)), claH = rng.pick(range(3, 4.8, 0.001)), de = rng.pick(range(5, 25, 0.5)), ta = tauOf(cf), dcl = claH * ta * de * D2R;
+      spec = { type: 'numeric', prompt: 'An elevator takes ' + nn(100 * cf) + '% of its tail\'s chord. The tail\'s lift slope is \\(' + nn(claH) + PR + '\\). How much tail lift coefficient does \\(' + nn(de) + DEG + '\\) of elevator add?', label: '\\(\\Delta C_{L,H} =\\)', answer: dcl };
+      spec.hints = ['\\(\\tau = 1.576(c_f/c)^3 - 3.458(c_f/c)^2 + 2.882(c_f/c) = ' + n4(ta) + '\\).', '\\(\\Delta C_{L,H} = C_{L\\alpha,H}\\,\\tau\\,\\delta_e\\), with \\(\\delta_e\\) in radians.'];
+      spec.solution = M('\\tau = ' + n4(ta)) + M('\\Delta C_{L,H} = ' + nn(claH) + '(' + n4(ta) + ')(' + nn(de) + '\\cdot\\tfrac{\\pi}{180}) = ' + n4(dcl));
+      right = { value: typed(dcl) }; wrong = { value: typed(wrongOf(dcl, [claH * ta * de, claH * de * D2R, claH * cf * de * D2R])) };
+      view = { title: 'Elevator effectiveness', aria: 'Elevator effectiveness tau against chord share, with this elevator marked.',
+        x: { label: 'Elevator chord share \\(c_f/c\\)', min: 0, max: 0.7 }, y: { label: '\\(\\tau\\)', min: 0, max: 1 },
+        curves: [{ f: tauOf, color: 'z' }], marker: { at: [cf, ta], label: '' },
+        readouts: [{ label: '\\(\\tau\\)', tex: n4(ta) }, { label: '\\(\\Delta C_{L,H}\\)', tex: n4(dcl) }], note: 'Effectiveness rises quickly at first: a 30% elevator gives 60% of what moving the whole tail would.' };
+    } else {
+      var share = 100 * (CL - 0.9 * s * clh) / CL;
+      spec = { type: 'numeric', prompt: 'At \\(C_L = ' + nn(CL) + '\\), an aircraft\'s tail trims with \\(C_{L,H} = ' + n4(clh) + '\\). With \\(S_H/S = ' + nn(s) + '\\) and \\(\\eta_H = 0.9\\), what share of the aircraft\'s lift does the wing carry?', label: 'Wing\'s share =', answer: share, unit: '%' };
+      spec.hints = ['The tail\'s lift, as a coefficient on the wing\'s area, is \\(\\eta_H (S_H/S) C_{L,H}\\).', 'The wing carries the rest: \\(C_{L,W} = C_L - \\eta_H(S_H/S)C_{L,H}\\).'];
+      spec.solution = M('C_{L,W} = ' + nn(CL) + ' - 0.9(' + nn(s) + ')(' + n4(clh) + ') = ' + n4(CL - 0.9 * s * clh)) + M('\\frac{C_{L,W}}{C_L} = ' + n4(share) + '\\%');
+      right = { value: typed(share) }; wrong = { value: typed(wrongOf(share, [100 * (CL + 0.9 * s * clh) / CL, 100 * (CL - s * clh) / CL * 1.04, 100 - share])) };
+      var fs = function (c) { return 100 * (CL - 0.9 * s * c) / CL; };
+      view = { title: 'The wing\'s share of the lift', aria: 'The wing\'s share of the lift against the tail lift coefficient, with this problem marked.',
+        x: { label: '\\(C_{L,H}\\)', min: -1, max: 0.5 }, y: yAx('Wing\'s share (%)', [fs], -1, 0.5, [100, share]),
+        curves: [{ f: fs, color: 'z' }], hline: { y: 100, label: '' }, marker: { at: [clh, share], label: '' },
+        readouts: [{ label: 'Wing', tex: n4(share) + PCT }, { label: 'Tail', tex: n4(100 - share) + PCT }], note: 'A tail pushing down makes the wing lift more than the weight: trim drag.' };
+    }
+    spec.explain = 'The tail\'s lift balances the moments about the CG; its sign and size depend on where the CG is.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 Control at the forward CG (Lesson 5) ---------- */
+  function genControl(rng) {
+    var kind = pickW(rng, [['sh', 3], ['flap', 2]]), spec, right, wrong, view;
+    if (kind === 'sh') {
+      var CL, x, cmw, cmE, lh, sr, S, t = 0;
+      do { CL = rng.pick(range(1.0, 2.8, 0.001)); x = rng.pick(range(0.05, 0.30, 0.001)); cmw = rng.pick(range(-0.40, -0.10, 0.001)); cmE = rng.pick([0, rng.pick(range(-0.12, 0, 0.001))]); lh = rng.pick(range(2.5, 5, 0.001)); sr = (CL * (x - 0.25) + cmw + cmE) / (-0.5 * 0.9 * lh); t++; } while ((sr < 0.1 || sr > 0.6) && t < 60);
+      S = rng.pick(range(15, 150, 0.5)); var Sh = sr * S;
+      spec = { type: 'numeric', prompt: 'With flaps down at its forward CG, ' + nn(100 * x) + '% of the MAC, an aircraft flies at \\(C_L = ' + nn(CL) + '\\) with \\(C_{M,W} = ' + nn(cmw) + '\\) and \\(C_{M,E} = ' + nn(cmE) + '\\). Its tail arm is \\(l_H/\\cbar = ' + nn(lh) + '\\), \\(\\eta_H = 0.9\\) and \\(S = ' + nn(S) + M2 + '\\). What horizontal tail area trims it with \\(C_{L,H} = -0.5\\)?', label: '\\(S_H =\\)', answer: Sh, unit: 'm²' };
+      spec.hints = ['\\(S_H/S = [C_L\\bar x_{cg-ac} + C_{M,W} + C_{M,E}]/[C_{L,H}\\eta_H (l_H/\\cbar)]\\), with \\(C_{L,H} = -0.5\\).', '\\(\\bar x_{cg-ac} = ' + nn(x) + ' - 0.25 = ' + n4(x - 0.25) + '\\).'];
+      spec.solution = M('\\frac{S_H}{S} = \\frac{' + nn(CL) + '(' + n4(x - 0.25) + ') ' + sgn(cmw) + sgn(cmE) + '}{-0.5(0.9)(' + nn(lh) + ')} = ' + n4(sr)) + M('S_H = ' + n4(sr) + '(' + nn(S) + ') = ' + n4(Sh) + M2);
+      right = { value: typed(Sh) }; wrong = { value: typed(wrongOf(Sh, [sr, (CL * (x - 0.25) + cmw) / (-0.5 * 0.9 * lh) * S * 1.06, (CL * x + cmw + cmE) / (-0.5 * 0.9 * lh) * S])) };
+      var fc = function (p) { return (CL * (p / 100 - 0.25) + cmw + cmE) / (-0.5 * 0.9 * lh) * S; };
+      view = { title: 'The control line', aria: 'Horizontal tail area for control against CG position, with this problem marked.',
+        x: { label: 'CG (% MAC)', min: 0, max: 50 }, y: yAx('\\(S_H\\) (m²)', [fc], 0, 50, [0, Sh]),
+        curves: [{ f: fc, color: 'r' }], marker: { at: [100 * x, Sh], label: '' },
+        readouts: [{ label: '\\(S_H/S\\)', tex: n4(sr) }, { label: '\\(S_H\\)', tex: n4(Sh) + M2 }], note: 'The farther forward the CG, the more tail it takes to hold the nose up.' };
+    } else {
+      var dcl = rng.pick(range(0.8, 1.8, 0.005)), cr = rng.pick(range(1.0, 1.25, 0.01)), sf = rng.pick(range(0.4, 0.8, 0.001)), cm0 = rng.pick(range(-0.12, -0.02, 0.005)), A = rng.pick(range(6, 11, 0.1)), sw = rng.pick(range(0, 30, 0.5));
+      var dcm = dcl * (0.25 - 0.44 * cr), fa = cmF(A, sw), cmw2 = (cm0 + sf * dcm) * fa;
+      spec = { type: 'numeric', prompt: 'A wing\'s flaps add \\(\\Delta c_l = ' + nn(dcl) + '\\) and extend its chord to \\(c\'/c = ' + nn(cr) + '\\), over ' + nn(100 * sf) + '% of its area. Its airfoil has \\(c_{m0} = ' + nn(cm0) + '\\); \\(A = ' + nn(A) + '\\), \\(\\Lambda_{c/4} = ' + nn(sw) + DEG + '\\). What is \\(C_{M,W}\\) with the flaps down?', label: '\\(C_{M,W} =\\)', answer: cmw2 };
+      spec.hints = ['The flaps\' section moment: \\(\\Delta c_m = \\Delta c_l(0.25 - 0.44\\,c\'/c) = ' + n4(dcm) + '\\), scaled by the flapped share.', '\\(C_{M,W} = (c_{m0} + (S_{\\text{flapped}}/S)\\Delta c_m)\\,A\\cos^2\\Lambda/(A + 2\\cos\\Lambda)\\); the factor is \\(' + n4(fa) + '\\).'];
+      spec.solution = M('\\Delta c_m = ' + nn(dcl) + '(0.25 - 0.44(' + nn(cr) + ')) = ' + n4(dcm)) + M('C_{M,W} = \\left(' + nn(cm0) + ' + ' + nn(sf) + '(' + n4(dcm) + ')\\right)(' + n4(fa) + ') = ' + n4(cmw2));
+      right = { value: typed(cmw2) }; wrong = { value: typed(wrongOf(cmw2, [cm0 * fa, (cm0 + dcm) * fa, cm0 + sf * dcm])) };
+      var ff = function (z) { return (cm0 + z * dcm) * fa; };
+      view = { title: 'Flapped wing moment', aria: 'The wing\'s pitching moment against the flapped share of its area, with this wing marked.',
+        x: { label: 'Flapped share of the wing', min: 0, max: 1 }, y: yAx('\\(C_{M,W}\\)', [ff], 0, 1, [0, cmw2]),
+        curves: [{ f: ff, color: 'z' }], marker: { at: [sf, cmw2], label: '' },
+        readouts: [{ label: '\\(\\Delta c_m\\)', tex: n4(dcm) }, { label: '\\(C_{M,W}\\)', tex: n4(cmw2) }], note: 'Flaps load the wing\'s trailing edge: a strong nose-down moment the tail must hold.' };
+    }
+    spec.explain = 'Control sets the forward CG limit: the tail must hold the nose up at the forward CG with the flaps down.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 The scissor plot (Lesson 6) ---------- */
+  function genScissor(rng) {
+    var kind = pickW(rng, [['stab', 3], ['vol', 2], ['gap', 3]]), spec, right, wrong, view;
+    if (kind === 'stab') {
+      var claW, k, cf, xh, x, sm, sr, t = 0;
+      do { claW = rng.pick(range(4, 6.5, 0.001)); k = rng.pick(range(1.5, 2.8, 0.001)); cf = rng.pick(range(0.2, 0.9, 0.001)); xh = rng.pick(range(2.5, 4.5, 0.001)); x = rng.pick(range(0.25, 0.45, 0.001)); sm = rng.pick([0.05, 0.05, 0.08, 0.10]); sr = (claW * (x + sm - 0.25) + cf) / (k * (xh - x - sm)); t++; } while ((sr < 0.08 || sr > 0.5) && t < 60);
+      spec = { type: 'numeric', prompt: 'For an aircraft in cruise, \\(C_{L\\alpha,W} = ' + nn(claW) + '\\), \\(\\eta_H C_{L\\alpha,H}(1 - \\partial\\varepsilon/\\partial\\alpha) = ' + nn(k) + '\\), \\(C_{M\\alpha,\\text{fus}} = ' + nn(cf) + '\\) and \\(\\bar x_{ac,H} = ' + nn(xh) + '\\). What \\(S_H/S\\) keeps a static margin of ' + nn(100 * sm) + '% with the CG at ' + nn(100 * x) + '% of the MAC?', label: '\\(S_H/S =\\)', answer: sr };
+      spec.hints = ['The stability line: \\(S_H/S = [C_{L\\alpha,W}(\\bar x_{cg} + \\text{SM} - \\bar x_{ac,W}) + C_{M\\alpha,\\text{fus}}]/[\\eta_H C_{L\\alpha,H}(1 - \\partial\\varepsilon/\\partial\\alpha)(\\bar x_{ac,H} - \\bar x_{cg} - \\text{SM})]\\).', 'With \\(\\bar x_{ac,W} = 0.25\\): the numerator is \\(' + n4(claW * (x + sm - 0.25) + cf) + '\\).'];
+      spec.solution = M('\\frac{S_H}{S} = \\frac{' + nn(claW) + '(' + n4(x + sm - 0.25) + ') + ' + nn(cf) + '}{' + nn(k) + '(' + n4(xh - x - sm) + ')} = ' + n4(sr));
+      right = { value: typed(sr) }; wrong = { value: typed(wrongOf(sr, [(claW * (x - 0.25) + cf) / (k * (xh - x)), (claW * (x + sm - 0.25) - cf) / (k * (xh - x - sm)), (claW * (x + sm - 0.25) + cf) / (k * xh)])) };
+      var fs = function (p) { var xx = p / 100; return xx + sm >= xh - 0.2 ? NaN : (claW * (xx + sm - 0.25) + cf) / (k * (xh - xx - sm)); };
+      view = { title: 'The stability line', aria: 'Horizontal tail area ratio for stability against aft CG position, with this problem marked.',
+        x: { label: 'Aft CG (% MAC)', min: 0, max: 60 }, y: yAx('\\(S_H/S\\)', [fs], 0, 60, [0, sr]),
+        curves: [{ f: fs, color: 'z' }], marker: { at: [100 * x, sr], label: '' },
+        readouts: [{ label: '\\(S_H/S\\)', tex: n4(sr) }], note: 'Each step aft costs tail area, and more as the CG nears the tail.' };
+    } else if (kind === 'vol') {
+      var S = rng.pick(range(15, 150, 0.5)), A = rng.pick(range(7, 11, 0.1)), mac = r3(1.05 * Math.sqrt(S / A)), cht = rng.pick(range(0.6, 1.2, 0.001)), lh = r3(mac * rng.pick(range(2.6, 4.5, 0.01))), Sh = r3(cht * S * mac / lh), c = Sh * lh / (S * mac);
+      spec = { type: 'numeric', prompt: 'A horizontal tail of \\(' + nn(Sh) + M2 + '\\) sits \\(' + nn(lh) + MM + '\\) behind the wing\'s aerodynamic center. The wing has \\(S = ' + nn(S) + M2 + '\\) and \\(\\cbar = ' + nn(mac) + MM + '\\). What is the tail\'s volume coefficient?', label: '\\(c_{HT} =\\)', answer: c };
+      spec.hints = ['\\(c_{HT} = S_H l_H/(S\\cbar)\\) (Module 4).', 'Here \\(S_H l_H = ' + n4(Sh * lh) + '\\ \\text{m}^3\\) and \\(S\\cbar = ' + n4(S * mac) + '\\ \\text{m}^3\\).'];
+      spec.solution = M('c_{HT} = \\frac{' + nn(Sh) + '(' + nn(lh) + ')}{' + nn(S) + '(' + nn(mac) + ')} = ' + n4(c));
+      right = { value: typed(c) }; wrong = { value: typed(wrongOf(c, [Sh / S, Sh * lh / S, Sh * mac / (S * lh)])) };
+      var fv = function (a) { return a * lh / (S * mac); };
+      view = { title: 'Volume coefficient against tail area', aria: 'Horizontal tail volume coefficient against tail area at this arm, with this tail marked.',
+        x: { label: '\\(S_H\\) (m²)', min: 0, max: upN(1.6 * Sh, 1) }, y: yAx('\\(c_{HT}\\)', [fv], 0, upN(1.6 * Sh, 1), [0]),
+        curves: [{ f: fv, color: 'z' }], marker: { at: [Sh, c], label: '' },
+        readouts: [{ label: '\\(c_{HT}\\)', tex: n4(c) }], note: 'The scissor plot sizes the tail; the volume coefficient compares it with others.' };
+    } else {
+      var a, b, cc, d, w, s, xf, xa, t2 = 0;
+      do {
+        b = rng.pick(range(0.8, 1.6, 0.01)); d = rng.pick(range(0.7, 1.4, 0.01)); a = rng.pick(range(0.35, 0.6, 0.001)); cc = rng.pick(range(-0.25, -0.05, 0.001)); w = rng.pick(range(0.12, 0.35, 0.005));
+        s = (w + a / b + cc / d) / (1 / b + 1 / d); xf = (a - s) / b; xa = (s - cc) / d; t2++;
+      } while ((s < 0.1 || s > 0.7 || xf < 0.02 || xa > 0.6) && t2 < 80);
+      spec = { type: 'numeric', prompt: 'On a scissor plot, the control line is \\(S_H/S = ' + nn(a) + ' - ' + nn(b) + '\\,\\bar x_{cg}\\) and the stability line \\(S_H/S = ' + nn(cc) + ' + ' + nn(d) + '\\,\\bar x_{cg}\\), with \\(\\bar x_{cg}\\) as a fraction of the MAC. The loading needs a CG range ' + nn(100 * w) + '% of the MAC wide. What is the smallest \\(S_H/S\\) that allows it?', label: '\\(S_H/S =\\)', answer: s };
+      spec.hints = ['At a tail \\(s = S_H/S\\), the forward limit is \\((' + nn(a) + ' - s)/' + nn(b) + '\\) and the aft limit \\((s - (' + nn(cc) + '))/' + nn(d) + '\\).', 'Set aft minus forward equal to ' + nn(w) + ' and solve for \\(s\\).'];
+      spec.solution = M('\\frac{s ' + sgn(-cc) + '}{' + nn(d) + '} - \\frac{' + nn(a) + ' - s}{' + nn(b) + '} = ' + nn(w)) + M('s = \\frac{' + nn(w) + ' + ' + nn(a) + '/' + nn(b) + sgn(cc) + '/' + nn(d) + '}{1/' + nn(b) + ' + 1/' + nn(d) + '} = ' + n4(s)) + '<p>The CG may then range from ' + n4(100 * xf) + '% to ' + n4(100 * xa) + '% of the MAC.</p>';
+      right = { value: typed(s) }; wrong = { value: typed(wrongOf(s, [(a / b + cc / d) / (1 / b + 1 / d), (w + a / b - cc / d) / (1 / b + 1 / d), (a * d + cc * b) / (b + d)])) };
+      var fC = function (p) { return a - b * p / 100; }, fS = function (p) { return cc + d * p / 100; };
+      view = { title: 'The scissor plot', aria: 'Control and stability lines against CG position, with the smallest tail and its CG range marked.',
+        x: { label: 'CG (% MAC)', min: 0, max: 70 }, y: { label: '\\(S_H/S\\)', min: 0, max: upN(1.6 * s, 0.1) },
+        curves: [{ f: fC, color: 'r' }, { f: fS, color: 'z' }], lines: [{ pts: [[100 * xf, s], [100 * xa, s]], color: 'ink', width: 4 }], marker: { at: [100 * xa, s], label: '' },
+        readouts: [{ label: '\\(S_H/S\\)', tex: n4(s) }, { label: 'CG range', tex: n4(100 * xf) + '\\text{ to }' + n4(100 * xa) + PCT }], note: 'Below the crossing there is no CG at which the aircraft is both stable and controllable.' };
+    }
+    spec.explain = 'The smallest tail is the one whose blades open just as wide as the CG range.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Directional and lateral stability (Lesson 7) ---------- */
+  function genDirectional(rng) {
+    var kind = pickW(rng, [['cnv', 3], ['fus', 2], ['sv', 2], ['clb', 2]]), spec, right, wrong, view;
+    if (kind === 'cnv') {
+      var cla = rng.pick(range(2, 3.2, 0.001)), sw = rng.pick(range(0.9, 1.3, 0.001)), sv = rng.pick(range(0.08, 0.25, 0.001)), lb = rng.pick(range(0.3, 0.6, 0.001)), cn = cla * sw * sv * lb;
+      spec = { type: 'numeric', prompt: 'A vertical tail has \\(C_{L\\alpha,V} = ' + nn(cla) + PR + '\\) and a sidewash factor \\((1 + \\partial\\sigma/\\partial\\beta)\\eta_V = ' + nn(sw) + '\\). \\(S_V/S = ' + nn(sv) + '\\) and \\(l_V/b = ' + nn(lb) + '\\). What is its \\(C_{n\\beta,V}\\)?', label: '\\(C_{n\\beta,V} =\\)', answer: cn, unit: 'per rad' };
+      spec.hints = ['\\(C_{n\\beta,V} = C_{L\\alpha,V}(1 + \\partial\\sigma/\\partial\\beta)\\eta_V\\,(S_V/S)(l_V/b)\\).', 'The fin\'s lift slope times the sidewash factor is \\(' + n4(cla * sw) + '\\).'];
+      spec.solution = M('C_{n\\beta,V} = ' + nn(cla) + '(' + nn(sw) + ')(' + nn(sv) + ')(' + nn(lb) + ') = ' + n4(cn) + PR);
+      right = { value: typed(cn) }; wrong = { value: typed(wrongOf(cn, [cla * sv * lb, -cn, cla * sw * sv / lb])) };
+      var fv = function (z) { return cla * sw * z * lb; };
+      view = { title: 'The fin\'s yawing moment', aria: 'The vertical tail\'s C n beta against its area ratio, with this tail marked.',
+        x: { label: '\\(S_V/S\\)', min: 0, max: 0.3 }, y: yAx('\\(C_{n\\beta,V}\\) (per rad)', [fv], 0, 0.3, [0]),
+        curves: [{ f: fv, color: 'z' }], hline: { y: 0.0571, label: 'target' }, marker: { at: [sv, cn], label: '' },
+        readouts: [{ label: '\\(C_{n\\beta,V}\\)', tex: n4(cn) + PR }], note: 'The fin must also overcome the fuselage, so it needs more than the target alone.' };
+    } else if (kind === 'fus') {
+      var vol = rng.pick(range(8, 400, 0.1)), S = r3(vol * rng.pick(range(0.8, 2.5, 0.01))), b = r3(Math.sqrt(S * rng.pick(range(7, 11, 0.1)))), dw = rng.pick([1, 1, 1, rng.pick(range(0.9, 1.25, 0.01))]), cf = -1.3 * vol / (S * b) * dw;
+      spec = { type: 'numeric', prompt: 'A fuselage has a volume of \\(' + nn(vol) + '\\ \\text{m}^3\\)' + (dw === 1 ? ' and a round section' : ' and a depth ' + nn(dw) + ' times its width') + '. The wing has \\(S = ' + nn(S) + M2 + '\\) and \\(b = ' + nn(b) + MM + '\\). By the volume method, what is the fuselage\'s \\(C_{n\\beta,F}\\)?', label: '\\(C_{n\\beta,F} =\\)', answer: cf, unit: 'per rad' };
+      spec.hints = ['\\(C_{n\\beta,F} = -1.3\\,\\text{Vol}_F/(S b)\\,(d/w)\\).', 'Here \\(S b = ' + n4(S * b) + '\\ \\text{m}^3\\); the result is negative.'];
+      spec.solution = M('C_{n\\beta,F} = -1.3\\,\\frac{' + nn(vol) + '}{' + nn(S) + '(' + nn(b) + ')}' + (dw === 1 ? '' : '(' + nn(dw) + ')') + ' = ' + n4(cf) + PR);
+      right = { value: typed(cf) }; wrong = { value: typed(wrongOf(cf, [-cf, -1.3 * vol / (S * b * b) * dw * 10, -vol / (S * b) * dw * 1.6])) };
+      var ff = function (v) { return -1.3 * v / (S * b) * dw; };
+      view = { title: 'Fuselage yawing moment against volume', aria: 'The fuselage\'s C n beta against its volume for this wing, with this fuselage marked.',
+        x: { label: 'Fuselage volume (m³)', min: 0, max: upN(1.5 * vol, 10) }, y: yAx('\\(C_{n\\beta,F}\\) (per rad)', [ff], 0, upN(1.5 * vol, 10), [0]),
+        curves: [{ f: ff, color: 'r' }], marker: { at: [vol, cf], label: '' },
+        readouts: [{ label: '\\(C_{n\\beta,F}\\)', tex: n4(cf) + PR }], note: 'Negative: the fuselage turns the nose away from the wind.' };
+    } else if (kind === 'sv') {
+      var cla2 = rng.pick(range(2, 3.2, 0.001)), sw2 = rng.pick(range(0.9, 1.3, 0.001)), lb2 = rng.pick(range(0.3, 0.6, 0.001)), cfu = rng.pick(range(-0.15, -0.03, 0.0001)), cw = rng.pick(range(0.0003, 0.002, 0.0001)), S2 = rng.pick(range(15, 150, 0.5));
+      var ratio = (0.0571 - cw - cfu) / (cla2 * sw2 * lb2), Sv = ratio * S2;
+      spec = { type: 'numeric', prompt: 'An aircraft\'s wing gives \\(C_{n\\beta,W} = ' + nn(cw) + '\\) and its fuselage \\(C_{n\\beta,F} = ' + nn(cfu) + '\\) per rad. Its fin has \\(C_{L\\alpha,V} = ' + nn(cla2) + '\\), a sidewash factor of ' + nn(sw2) + ' (take it as fixed) and \\(l_V/b = ' + nn(lb2) + '\\); \\(S = ' + nn(S2) + M2 + '\\). What fin area gives \\(C_{n\\beta} = 0.0571\\) per rad?', label: '\\(S_V =\\)', answer: Sv, unit: 'm²' };
+      spec.hints = ['The fin must supply \\(0.0571 - C_{n\\beta,W} - C_{n\\beta,F} = ' + n4(0.0571 - cw - cfu) + '\\).', 'Divide by \\(C_{L\\alpha,V}(1 + \\partial\\sigma/\\partial\\beta)\\eta_V(l_V/b)\\) to get \\(S_V/S\\).'];
+      spec.solution = M('\\frac{S_V}{S} = \\frac{0.0571 - ' + nn(cw) + ' + ' + nn(-cfu) + '}{' + nn(cla2) + '(' + nn(sw2) + ')(' + nn(lb2) + ')} = ' + n4(ratio)) + M('S_V = ' + n4(ratio) + '(' + nn(S2) + ') = ' + n4(Sv) + M2);
+      right = { value: typed(Sv) }; wrong = { value: typed(wrongOf(Sv, [(0.0571 - cw + cfu) / (cla2 * sw2 * lb2) * S2, ratio, 0.0571 / (cla2 * sw2 * lb2) * S2])) };
+      var ft = function (a) { return cw + cfu + cla2 * sw2 * (a / S2) * lb2; };
+      view = { title: '\\(C_{n\\beta}\\) against fin area', aria: 'The aircraft\'s C n beta against vertical tail area, with the target and the fin needed marked.',
+        x: { label: '\\(S_V\\) (m²)', min: 0, max: upN(1.8 * Sv, 1) }, y: yAx('\\(C_{n\\beta}\\) (per rad)', [ft], 0, upN(1.8 * Sv, 1), [0]),
+        curves: [{ f: ft, color: 'z' }], hline: { y: 0.0571, label: 'target' }, marker: { at: [Sv, 0.0571], label: '' },
+        readouts: [{ label: '\\(S_V/S\\)', tex: n4(ratio) }, { label: '\\(S_V\\)', tex: n4(Sv) + M2 }], note: 'The line crosses zero where the fin just cancels the fuselage.' };
+    } else {
+      var claW = rng.pick(range(4, 6, 0.001)), gam = rng.pick(range(0.5, 8, 0.1)), lam = rng.pick(range(0.2, 1, 0.01)), fct = 2 * (1 + 2 * lam) / (3 * (1 + lam)), cl = -(claW * gam * D2R / 4) * fct;
+      spec = { type: 'numeric', prompt: 'A wing has \\(C_{L\\alpha,W} = ' + nn(claW) + PR + '\\), \\(' + nn(gam) + DEG + '\\) of dihedral and a taper ratio of ' + nn(lam) + '. What does the dihedral contribute to \\(C_{l\\beta}\\)?', label: '\\(C_{l\\beta,\\Gamma} =\\)', answer: cl, unit: 'per rad' };
+      spec.hints = ['\\(C_{l\\beta,\\Gamma} = -\\dfrac{C_{L\\alpha,W}\\Gamma}{4}\\cdot\\dfrac{2(1 + 2\\lambda)}{3(1 + \\lambda)}\\), with \\(\\Gamma\\) in radians.', 'The taper factor is \\(' + n4(fct) + '\\).'];
+      spec.solution = M('C_{l\\beta,\\Gamma} = -\\frac{' + nn(claW) + '(' + n4(gam * D2R) + ')}{4}(' + n4(fct) + ') = ' + n4(cl) + PR);
+      right = { value: typed(cl) }; wrong = { value: typed(wrongOf(cl, [-cl, -(claW * gam / 4) * fct, -(claW * gam * D2R / 4)])) };
+      var fg = function (g) { return -(claW * g * D2R / 4) * fct; };
+      view = { title: 'Dihedral effect against dihedral', aria: 'The dihedral\'s contribution to C l beta against dihedral angle, with this wing marked.',
+        x: { label: 'Dihedral \\(\\Gamma\\) (deg)', min: -2, max: 10 }, y: yAx('\\(C_{l\\beta,\\Gamma}\\) (per rad)', [fg], -2, 10, [0]),
+        curves: [{ f: fg, color: 'z' }], hline: { y: 0, label: '' }, marker: { at: [gam, cl], label: '' },
+        readouts: [{ label: '\\(C_{l\\beta,\\Gamma}\\)', tex: n4(cl) + PR }], note: 'Negative is stable: the wing into the wind rises.' };
+    }
+    spec.explain = 'Directional stability: \\(C_{n\\beta} > 0\\). Lateral stability: \\(C_{l\\beta} \\lt 0\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Engine failure and the vertical tail (Lesson 8) ---------- */
+  function genEngineOut(rng) {
+    var kind = pickW(rng, [['mom', 2], ['vmc', 2], ['rud', 3], ['xw', 2], ['sveo', 2]]), spec, right, wrong, view;
+    if (kind === 'mom') {
+      var T = rng.pick(range(5, 150, 0.1)), y = rng.pick(range(0.8, 12, 0.01)), kD = rng.pick([0.15, 0.25]), N = (1 + kD) * T * y;
+      spec = { type: 'numeric', prompt: 'A twin\'s engines each give \\(' + nn(T) + KN + '\\) at takeoff, \\(' + nn(y) + MM + '\\) either side of the centerline. Its fans are ' + (kD === 0.25 ? 'high' : 'low') + '-bypass (\\(k_D = ' + nn(kD) + '\\)). What yawing moment must the rudder balance when one fails?', label: '\\(N_E + N_D =\\)', answer: N, unit: 'kN·m' };
+      spec.hints = ['\\(N_E = T y_E\\) for the live engine.', '\\(N_D = k_D N_E\\) for the failed one; both yaw the same way.'];
+      spec.solution = M('N_E + N_D = (1 + ' + nn(kD) + ')(' + nn(T) + ')(' + nn(y) + ') = ' + n4(N) + KNMU);
+      right = { value: typed(N) }; wrong = { value: typed(wrongOf(N, [T * y, 2 * T * y, (1 - kD) * T * y])) };
+      var fm = function (z) { return (1 + kD) * T * z; };
+      view = { title: 'Yawing moment against engine position', aria: 'Engine-out yawing moment against the engines\' lateral position, with this aircraft marked.',
+        x: { label: '\\(y_E\\) (m)', min: 0, max: upN(1.5 * y, 1) }, y: yAx('\\(N_E + N_D\\) (kN·m)', [fm], 0, upN(1.5 * y, 1), [0]),
+        curves: [{ f: fm, color: 'z' }], marker: { at: [y, N], label: '' },
+        readouts: [{ label: '\\(N_E\\)', tex: n4(T * y) + KNMU }, { label: '\\(N_E + N_D\\)', tex: n4(N) + KNMU }], note: 'Engines close to the centerline need little rudder.' };
+    } else if (kind === 'vmc') {
+      var W = rng.pick(range(3000, 80000, 10)), ws = rng.pick(range(250, 600, 1)), S = r3(W / ws), cl = rng.pick(range(1.5, 2.6, 0.01)), vsr = Math.sqrt(2 * W * G / (RHO0 * S * cl)), vmc = 1.13 * vsr;
+      spec = { type: 'numeric', prompt: 'An aircraft of \\(' + g4(W) + KG + '\\) has \\(S = ' + nn(S) + M2 + '\\) and a takeoff \\(C_{L\\max}\\) of ' + nn(cl) + '. What is the highest minimum control speed 25.149 allows, at sea level?', label: '\\(V_{MC} =\\)', answer: vmc, unit: 'm/s' };
+      spec.hints = ['\\(V_{SR} = \\sqrt{2Wg/(\\rho_0 S C_{L\\max})}\\).', '\\(V_{MC} \\le 1.13\\,V_{SR}\\).'];
+      spec.solution = M('V_{SR} = \\sqrt{\\frac{2(' + g4(W) + ')(9.81)}{1.225(' + nn(S) + ')(' + nn(cl) + ')}} = ' + n4(vsr) + MS) + M('V_{MC} = 1.13(' + n4(vsr) + ') = ' + n4(vmc) + MS);
+      right = { value: typed(vmc) }; wrong = { value: typed(wrongOf(vmc, [vsr, 1.2 * vsr * 1.03, 1.13 * Math.sqrt(2 * W / (RHO0 * S * cl))])) };
+      var fv = function (w) { return 1.13 * Math.sqrt(2 * w * G / (RHO0 * cl)); };
+      view = { title: 'Minimum control speed against wing loading', aria: 'The highest allowed minimum control speed against wing loading, with this aircraft marked.',
+        x: { label: 'Wing loading (kg/m²)', min: 150, max: 700 }, y: yAx('\\(V_{MC}\\) (m/s)', [fv], 150, 700, [0]),
+        curves: [{ f: fv, color: 'z' }], marker: { at: [W / S, vmc], label: '' },
+        readouts: [{ label: '\\(V_{SR}\\)', tex: n4(vsr) + MS }, { label: '\\(V_{MC}\\)', tex: n4(vmc) + MS }], note: 'A higher wing loading raises the stall speed, and with it the speed at which the rudder must work.' };
+    } else if (kind === 'rud') {
+      var N2, q, S2, b2, cnd, dr, t = 0;
+      do { N2 = rng.pick(range(10, 2000, 1)); q = rng.pick(range(1200, 3500, 1)); S2 = rng.pick(range(15, 150, 0.5)); b2 = r3(Math.sqrt(S2 * rng.pick(range(7, 11, 0.1)))); cnd = rng.pick(range(0.05, 0.15, 0.0001)); dr = N2 * 1000 / (q * S2 * b2 * cnd) / D2R; t++; } while ((dr < 5 || dr > 35) && t < 80);
+      spec = { type: 'numeric', prompt: 'With an engine failed, the rudder must balance \\(' + g4(N2) + KNMU + '\\) at \\(V_{MC}\\), where \\(q = ' + g4(q) + PA + '\\). The aircraft has \\(S = ' + nn(S2) + M2 + '\\), \\(b = ' + nn(b2) + MM + '\\) and \\(C_{n\\delta_r} = ' + nn(cnd) + PR + '\\). What rudder deflection does it need?', label: '\\(\\delta_r =\\)', answer: dr, unit: '°' };
+      spec.hints = ['\\(\\delta_r = (N_E + N_D)/(q S b\\,C_{n\\delta_r})\\), in radians.', 'The moment in N·m: \\(' + g4(N2 * 1000) + '\\).'];
+      spec.solution = M('\\delta_r = \\frac{' + g4(N2 * 1000) + '}{' + g4(q) + '(' + nn(S2) + ')(' + nn(b2) + ')(' + nn(cnd) + ')} = ' + n4(dr * D2R) + '\\ \\text{rad} = ' + n4(dr) + DEG);
+      right = { value: typed(dr) }; wrong = { value: typed(wrongOf(dr, [dr * D2R, dr / 1000, N2 / (q * S2 * cnd) / D2R])) };
+      var fd = function (qq) { return N2 * 1000 / (qq * S2 * b2 * cnd) / D2R; };
+      view = { title: 'Rudder against dynamic pressure', aria: 'Rudder deflection needed against dynamic pressure, with the limit and this problem marked.',
+        x: { label: 'Dynamic pressure \\(q\\) (Pa)', min: 800, max: 4500 }, y: { label: 'Rudder (deg)', min: 0, max: upN(Math.max(1.3 * dr, 30, fd(4500)) , 10) },
+        curves: [{ f: fd, color: 'z' }], hline: { y: 25, label: 'limit' }, marker: { at: [q, dr], label: '' },
+        readouts: [{ label: '\\(\\delta_r\\)', tex: n4(dr) + DEG }], note: 'Below the minimum control speed, full rudder is not enough.' };
+    } else if (kind === 'xw') {
+      var cnb = rng.pick(range(0.06, 0.25, 0.001)), cnd2 = rng.pick(range(0.05, 0.15, 0.0001)), fr = rng.pick(range(0.15, 0.25, 0.01)), beta = Math.atan(fr) / D2R, dx = cnb * beta / cnd2;
+      spec = { type: 'numeric', prompt: 'An aircraft has \\(C_{n\\beta} = ' + nn(cnb) + '\\) and \\(C_{n\\delta_r} = ' + nn(cnd2) + '\\) per rad. What rudder deflection holds it straight in a crosswind of ' + nn(100 * fr) + '% of its takeoff speed?', label: '\\(\\delta_r =\\)', answer: dx, unit: '°' };
+      spec.hints = ['The sideslip is \\(\\beta = \\arctan ' + nn(fr) + ' = ' + n4(beta) + DEG + '\\).', 'In a steady sideslip \\(C_{n\\beta}\\beta + C_{n\\delta_r}\\delta_r = 0\\).'];
+      spec.solution = M('\\beta = \\arctan ' + nn(fr) + ' = ' + n4(beta) + DEG) + M('\\delta_r = \\frac{' + nn(cnb) + '(' + n4(beta) + '^\\circ)}{' + nn(cnd2) + '} = ' + n4(dx) + DEG);
+      right = { value: typed(dx) }; wrong = { value: typed(wrongOf(dx, [cnb * fr / cnd2, cnd2 * beta / cnb, cnb * 100 * fr / cnd2])) };
+      var fx = function (c) { return c * beta / cnd2; };
+      view = { title: 'Crosswind rudder against directional stability', aria: 'Rudder deflection for the crosswind against C n beta, with this aircraft marked.',
+        x: { label: '\\(C_{n\\beta}\\) (per rad)', min: 0, max: 0.3 }, y: { label: 'Rudder (deg)', min: 0, max: upN(Math.max(1.3 * dx, fx(0.3), 25), 10) },
+        curves: [{ f: fx, color: 'z' }], hline: { y: 20, label: 'limit' }, marker: { at: [cnb, dx], label: '' },
+        readouts: [{ label: '\\(\\beta\\)', tex: n4(beta) + DEG }, { label: '\\(\\delta_r\\)', tex: n4(dx) + DEG }], note: 'The more directionally stable the aircraft, the more rudder a crosswind takes.' };
+    } else {
+      var N3, q3, lV, clv, cr, ta, Sv, t3 = 0;
+      do { N3 = rng.pick(range(10, 2000, 1)); q3 = rng.pick(range(1200, 3500, 1)); lV = rng.pick(range(4, 30, 0.01)); clv = rng.pick(range(2, 3.2, 0.001)); cr = rng.pick(range(0.25, 0.40, 0.01)); ta = tauOf(cr); Sv = N3 * 1000 / (0.9 * q3 * lV * clv * ta * 25 * D2R); t3++; } while ((Sv < 1 || Sv > 60) && t3 < 80);
+      spec = { type: 'numeric', prompt: 'With an engine failed, the rudder must balance \\(' + g4(N3) + KNMU + '\\) at \\(V_{MC}\\), where \\(q = ' + g4(q3) + PA + '\\). The fin\'s arm is \\(' + nn(lV) + MM + '\\), its \\(C_{L\\alpha,V} = ' + nn(clv) + PR + '\\), and the rudder takes ' + nn(100 * cr) + '% of its chord. What fin area keeps the rudder within \\(25^\\circ\\)?', label: '\\(S_V =\\)', answer: Sv, unit: 'm²' };
+      spec.hints = ['\\(\\tau_r = ' + n4(ta) + '\\) for a ' + nn(100 * cr) + '% rudder (Lesson 4\'s formula).', '\\(S_V = (N_E + N_D)/(0.9\\,q\\,l_V C_{L\\alpha,V}\\tau_r\\delta_{r,\\max})\\), with \\(\\delta_{r,\\max}\\) in radians.'];
+      spec.solution = M('\\tau_r = ' + n4(ta)) + M('S_V = \\frac{' + g4(N3 * 1000) + '}{0.9(' + g4(q3) + ')(' + nn(lV) + ')(' + nn(clv) + ')(' + n4(ta) + ')(0.4363)} = ' + n4(Sv) + M2);
+      right = { value: typed(Sv) }; wrong = { value: typed(wrongOf(Sv, [Sv * 25 * D2R, N3 * 1000 / (0.9 * q3 * lV * clv * 25 * D2R), Sv / 0.9 * 1.2])) };
+      var fe = function (d) { return N3 * 1000 / (0.9 * q3 * lV * clv * ta * d * D2R); };
+      view = { title: 'Fin area against the rudder allowed', aria: 'Fin area needed against the rudder deflection allowed, with this problem marked.',
+        x: { label: 'Rudder allowed (deg)', min: 10, max: 35 }, y: yAx('\\(S_V\\) (m²)', [fe], 10, 35, [0]),
+        curves: [{ f: fe, color: 'z' }], marker: { at: [25, Sv], label: '' },
+        readouts: [{ label: '\\(\\tau_r\\)', tex: n4(ta) }, { label: '\\(S_V\\)', tex: n4(Sv) + M2 }], note: 'Allowing more rudder saves fin, but leaves less margin to the stop.' };
+    }
+    spec.explain = 'The fin is sized by the largest of directional stability, engine failure and crosswind.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-static-stability.html', 'Static Stability and Trim'), l02: L(2, '02-pitch-contributions.html', 'Contributions to the Pitching Moment'),
+    l03: L(3, '03-neutral-point.html', 'The Neutral Point and Static Margin'), l04: L(4, '04-trim.html', 'Trim and the Elevator'),
+    l05: L(5, '05-control.html', 'Control at the Forward CG'), l06: L(6, '06-scissor-plot.html', 'Sizing the Horizontal Tail'),
+    l07: L(7, '07-directional-stability.html', 'Directional and Lateral Stability'), l08: L(8, '08-engine-out.html', 'Engine Failure and the Vertical Tail')
+  };
+  var CATS = [
+    { id: 'static', label: 'Static margin', gen: genStatic, lessons: [LES.l01] },
+    { id: 'moments', label: 'Pitching-moment contributions', gen: genContrib, lessons: [LES.l02] },
+    { id: 'np', label: 'The neutral point', gen: genNP, lessons: [LES.l03] },
+    { id: 'trim', label: 'Trim and the elevator', gen: genTrim, lessons: [LES.l04] },
+    { id: 'control', label: 'Control at the forward CG', gen: genControl, lessons: [LES.l05] },
+    { id: 'scissor', label: 'The scissor plot', gen: genScissor, lessons: [LES.l06] },
+    { id: 'yaw', label: 'Directional and lateral', gen: genDirectional, lessons: [LES.l07] },
+    { id: 'engine', label: 'Engine failure', gen: genEngineOut, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like range-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Check Quiz · Stability, Control and Tail Sizing</title>
+<meta name="description" content="Fifteen fixed questions on Lessons 1–8 of the Stability, Control and Tail Sizing module, with a score, a worked solution for every question and a printable results sheet.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<style>
+  /* ---- Page-specific styles (design tokens only) ---- */
+  .quiz-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+    gap: 10px;
+    margin: 1.4rem 0 1.6rem;
+    padding: 0;
+    list-style: none;
+  }
+  .quiz-facts > li {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .quiz-fact-value { display: block; font-size: 1.3rem; font-weight: 750; line-height: 1.2; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .quiz-fact-label { display: block; margin-top: 2px; font-size: 0.84rem; color: var(--ink-muted); }
+
+  .quiz-rules { margin: 0; padding-left: 1.2em; }
+  .quiz-rules > li { margin: 0 0 0.45em; }
+  .quiz-rules > li:last-child { margin-bottom: 0; }
+  .quiz-subhead { margin: 0 0 8px; font-size: 1.02rem; font-weight: 700; }
+  .quiz-type-table { margin: 0; }
+  .quiz-type-table td code { white-space: nowrap; }
+
+  .quiz-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-sunken);
+  }
+  .quiz-toolbar-label { font-size: 0.84rem; font-weight: 650; color: var(--ink-muted); }
+  .quiz-host .q-set { margin-top: 0; }
+  .quiz-host .q-solution-body .quiz-review-link { margin-top: 0.6em; font-size: 0.9em; color: var(--ink-muted); }
+
+  .quiz-breakdown { margin: 18px 0 22px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .quiz-breakdown-title { margin: 0 0 4px; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .quiz-breakdown-summary { margin: 0 0 10px; color: var(--ink-muted); font-size: 0.92rem; }
+  .quiz-breakdown .table-wrap { margin: 0; }
+  .quiz-breakdown td, .quiz-breakdown th { vertical-align: top; }
+  .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 7px 12px; }
+  /* table.data in module.css sets tbody th to 650: match its specificity so the muted titles stay regular weight */
+  .quiz-breakdown table.data tbody th { font-weight: 400; }
+  .quiz-breakdown table.data tbody th a { font-weight: 650; }
+  .quiz-breakdown .quiz-lesson-title { color: var(--ink-muted); }
+  .quiz-breakdown .quiz-score-cell { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Phones: the long lesson titles would wrap to 3–5 lines each; "Lesson N" (a link) is enough there */
+  @media (max-width: 560px) {
+    .quiz-breakdown .quiz-lesson-title { display: none; }
+    .quiz-breakdown table.data th, .quiz-breakdown table.data td { padding: 6px 10px; }
+  }
+
+  .quiz-next { margin: 0; padding-left: 1.2em; }
+  .quiz-next > li { margin: 0 0 0.45em; }
+
+  @media print {
+    .quiz-toolbar { display: none !important; }
+    /* Printing before submitting gives every question on paper, whichever layout is on screen */
+    .quiz-host[data-state="open"] .q-set .q-card[hidden] { display: block !important; }
+    .quiz-host[data-state="open"] .q-set-dots,
+    .quiz-host[data-state="open"] .q-set-progress,
+    .quiz-host[data-state="open"] .q-set-confirm { display: none !important; }
+  }
+</style>
+</head>
+<body data-page="quiz" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 35 min</p>
+    <h1>Self-Check Quiz</h1>
+    <p class="lede">Fifteen questions on the core skills of Lessons 1–8: the static margin and static and dynamic stability, the wing's and fuselage's pitching moments, the neutral point and what moves it, the tail lift for trim, the flapped wing and the control requirement, the stability line and the scissor plot, the weathercock derivative and the dihedral effect, and the rudder and fin for an engine failure. Submit to see your score and a worked solution for every question.</p>
+  </header>
+
+  <section id="before">
+    <h2>Before you start</h2>
+
+    <ul class="quiz-facts" aria-label="Quiz at a glance">
+      <li><span class="quiz-fact-value">15</span><span class="quiz-fact-label">questions</span></li>
+      <li><span class="quiz-fact-value">≈ 35 min</span><span class="quiz-fact-label">estimated time</span></li>
+      <li><span class="quiz-fact-value">L1–L8</span><span class="quiz-fact-label">lessons covered</span></li>
+      <li><span class="quiz-fact-value">Instant</span><span class="quiz-fact-label">score and solutions</span></li>
+    </ul>
+
+    <div class="two-col">
+      <div>
+        <p class="quiz-subhead">How it works</p>
+        <ul class="quiz-rules">
+          <li>Work on your own with a calculator and scrap paper. Try it without notes first: that shows you what you really know.</li>
+          <li>Nothing is marked until you press <strong>Submit quiz</strong>. Until then you can move between questions and change any answer.</li>
+          <li>Each question is either right or wrong. When a question has several boxes, every box must be right.</li>
+          <li>After you submit, you see your score, a review of every question with a worked solution, and a results sheet you can print or save as a PDF.</li>
+          <li id="quiz-l10-note">Use SI units; derivatives are per radian and positions along the MAC are fractions of it, unless a box shows otherwise. Give angles in degrees.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="quiz-subhead">Typing answers</p>
+        <div class="table-wrap quiz-type-table">
+          <table class="data">
+            <caption class="visually-hidden">How to type common answers</caption>
+            <thead><tr><th scope="col">To enter</th><th scope="col">Type</th></tr></thead>
+            <tbody>
+              <tr><td>\(\cos^2 30^\circ\)</td><td><code>cos(30°)^2</code></td></tr>
+              <tr><td>\(\sqrt[3]{0.96}\)</td><td><code>0.96^(1/3)</code></td></tr>
+              <tr><td>\(5^\circ\) in rad</td><td><code>5*pi/180</code></td></tr>
+              <tr><td>\(0.4\) rad in deg</td><td><code>0.4*180/pi</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Each box shows how it read your entry (for example <span class="nowrap">= 7.2</span>), so you can check it before you submit. Type only the number; the unit is shown next to the box.</p>
+      </div>
+    </div>
+
+    <aside class="callout tip">
+      <p class="callout-title">How close is close enough?</p>
+      <p>Answers are accepted within \(1\%\) of the exact value, so three or four significant figures are plenty. Typing the calculation itself, such as <code>(5*0.25-0.5+0.513*3.2)/(5+0.513)</code>, avoids rounding errors. Watch the units: derivatives are per radian, so convert angles in degrees with <code>pi/180</code>; positions along the MAC are fractions of it unless the box shows %; angles inside <code>cos</code> need <code>°</code> after them.</p>
+    </aside>
+  </section>
+
+  <section id="quiz">
+    <h2>The quiz</h2>
+    <div class="quiz-toolbar" id="quiz-toolbar" hidden>
+      <span class="quiz-toolbar-label" id="quiz-layout-label">Show</span>
+      <div class="chip-row" role="group" aria-labelledby="quiz-layout-label">
+        <button type="button" class="chip" data-layout="paged" aria-pressed="true">One at a time</button>
+        <button type="button" class="chip" data-layout="all" aria-pressed="false">All on one page</button>
+      </div>
+    </div>
+    <div class="quiz-host" id="quiz-host"></div>
+    <noscript><p class="callout warning">This quiz needs JavaScript. Turn it on in your browser settings and reload the page.</p></noscript>
+  </section>
+
+  <section id="after">
+    <h2>After the quiz</h2>
+    <p>Use your results to decide what to do next. After you submit, the <strong>Results by lesson</strong> table under your score links straight to the lessons behind any questions you missed.</p>
+    <ul class="quiz-next">
+      <li>Missed a question? Read its worked solution, then revisit the lesson it points to.</li>
+      <li>Want more practice? The <a href="practice-lab.html">Practice Lab</a> generates unlimited problems on every skill in this quiz (the static margin, the pitching-moment contributions, the neutral point, trim, control at the forward CG, the scissor plot, directional and lateral stability, and engine failure), each with hints and a full solution.</li>
+      <li>Prefer pen and paper? Try the <a href="worksheet.html">Printable Worksheet</a>.</li>
+      <li>Keep the <a href="../reference/cheat-sheet.html">Formula Sheet</a> next to you while you review.</li>
+      <li>Then press <strong>Retake quiz</strong> and aim for 15 out of 15.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ==========================================================================================
+   Self-Check Quiz: the 15 fixed questions.
+   Keep ids, order and choices stable.
+   Question order is fixed, and every mc question sets shuffle:false, so its choices appear on screen
+   exactly in the order listed here.
+   Standard CYLQuiz question fields (short = the title printed in the Question column of the results
+   sheet) plus custom fields that CYLQuiz ignores:
+     lesson       registry id of the lesson the question tests ('l01' … 'l07')
+     finalAnswer  the expected final answer (HTML with TeX), stated explicitly
+     choices[].aria  plain-text wording of a choice for screen readers
+   The numbers deliberately differ from every worked example and lesson check.
+   ========================================================================================== */
+window.CYL_QUIZ_QUESTIONS = (function () {
+  'use strict';
+  var T = String.raw;
+  function review(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return '<p class="quiz-review-link">Review: <a href="' + CYL.url(p.href) + '">Lesson ' + p.num + ' · ' + p.title + '</a></p>';
+  }
+  var D2R = Math.PI / 180;
+  function cmF(A, sw) { var c = Math.cos(sw * D2R); return A * c * c / (A + 2 * c); }
+  function tau(x) { return 1.576 * x * x * x - 3.458 * x * x + 2.882 * x; }
+  var q1 = -5.5 * (0.45 - 0.36);
+  var q3 = -0.06 * cmF(10, 30);
+  var q4 = (0.01 - 0.063 * 0.40 + 0.211 * 0.16) * 2.0 * 2.0 * 18 / (2.4 * 40) * 180 / Math.PI;
+  var T5 = 0.9 * 0.25 * 3.8 * (1 - 0.40), q5 = (0.25 * 5.0 - 0.5 + T5 * 3.2) / (5.0 + T5);
+  var q7 = (-0.08 + 0.4 * (0.30 - 0.25)) / (0.9 * 0.22 * 3.6);
+  var q8 = (-0.05 + 0.6 * 1.2 * (0.25 - 0.44 * 1.2)) * cmF(9, 20);
+  var q9 = 50 * (1.6 * (0.12 - 0.25) - 0.30 - 0.06) / (-0.5 * 0.9 * 3.8);
+  var q10 = (5.5 * (0.35 + 0.05 - 0.25) + 0.6) / (2.0 * (3.4 - 0.35 - 0.05));
+  var q11 = (0.20 + 0.55 / 1.2 - 0.10 / 0.9) / (1 / 1.2 + 1 / 0.9);
+  var q12 = 0.001 - 1.3 * 40 / (45 * 20) + 2.6 * 1.1 * 0.16 * 0.40;
+  var q13 = -(5.2 * 5 * D2R / 4) * 2 * (1 + 2 * 0.3) / (3 * 1.3);
+  var q14 = 1.25 * 60000 * 5.0 / (2600 * 100 * 30 * 0.12) / D2R;
+  var q15 = 200000 / (0.9 * 2200 * 14 * 2.8 * tau(0.35) * 25 * D2R);
+
+  return [
+    /* ---------- Q1 · Lesson 1 · C_M-alpha from the static margin ---------- */
+    {
+      id: 'quiz-q01', lesson: 'l01', type: 'numeric',
+      short: 'Pitch stiffness from the static margin',
+      prompt: T`An aircraft's neutral point is at 45% of the MAC and its CG at 36%. Its lift-curve slope, wing and tail together, is \(5.5\) per radian. What is its \(C_{M\alpha}\)?`,
+      label: T`\(C_{M\alpha} =\)`, answer: q1, unit: 'per rad',
+      finalAnswer: T`\(C_{M\alpha} = -0.495\ \text{per rad}\)`,
+      explain: T`<p>\(C_{M\alpha} = -C_{L\alpha}\,\text{SM}\), with the static margin as a fraction of the MAC.</p>`,
+      solution: T`\[ \text{SM} = 0.45 - 0.36 = 0.09 \]\[ C_{M\alpha} = -5.5(0.09) = -0.495\ \text{per rad} \]<p>Negative: stable.</p>` + review('l01')
+    },
+    /* ---------- Q2 · Lesson 1 · static and dynamic stability ---------- */
+    {
+      id: 'quiz-q02', lesson: 'l01', type: 'mc', shuffle: false,
+      short: 'Static and dynamic stability',
+      prompt: T`Disturbed nose-up by a gust, an aircraft first pitches nose-down, then overshoots and oscillates in pitch with a growing amplitude. How is it best described?`,
+      choices: [
+        { html: T`Statically stable but dynamically unstable`, aria: 'Statically stable, dynamically unstable', correct: true },
+        { html: T`Statically unstable but dynamically stable`, aria: 'Statically unstable, dynamically stable', feedback: T`Its first moment is back toward trim: that is static stability.` },
+        { html: T`Stable both statically and dynamically`, aria: 'Stable both ways', feedback: T`An oscillation that grows is dynamically unstable.` },
+        { html: T`Neutrally stable`, aria: 'Neutral', feedback: T`A neutral aircraft makes no moment at all after the disturbance.` }
+      ],
+      finalAnswer: T`A: statically stable, dynamically unstable`,
+      explain: T`<p>Static stability is the first tendency after a disturbance; dynamic stability is what the motion does next.</p>`,
+      solution: T`<p>The first moment pushes the aircraft back toward trim, so it is statically stable. The oscillation that follows grows instead of dying out, so it is dynamically unstable. Static stability is necessary for dynamic stability, but not enough.</p>` + review('l01')
+    },
+    /* ---------- Q3 · Lesson 2 · the wing's moment ---------- */
+    {
+      id: 'quiz-q03', lesson: 'l02', type: 'numeric',
+      short: 'The wing\'s pitching moment',
+      prompt: T`A wing of aspect ratio 10 with \(30^\circ\) of quarter-chord sweep uses an airfoil with \(c_{m,0} = -0.06\). What is the wing's pitching-moment coefficient about its aerodynamic center, \(C_{M,W}\)?`,
+      label: T`\(C_{M,W} =\)`, answer: q3,
+      finalAnswer: T`\(C_{M,W} = -0.03836\)`,
+      explain: T`<p>\(C_{M,W} = c_{m,0}\,A\cos^2\Lambda_{c/4}/(A + 2\cos\Lambda_{c/4})\): aspect ratio and sweep reduce the airfoil's moment.</p>`,
+      solution: T`\[ \frac{10\cos^2 30^\circ}{10 + 2\cos 30^\circ} = \frac{7.5}{11.732} = 0.6393 \]\[ C_{M,W} = -0.06(0.6393) = -0.03836 \]` + review('l02')
+    },
+    /* ---------- Q4 · Lesson 2 · the fuselage's slope ---------- */
+    {
+      id: 'quiz-q04', lesson: 'l02', type: 'numeric',
+      short: 'The fuselage\'s pitching-moment slope',
+      prompt: T`A fuselage is \(18\ \text{m}\) long and \(2.0\ \text{m}\) wide; the wing root's quarter-chord is at 40% of its length. The wing has \(S = 40\ \text{m}^2\) and \(\cbar = 2.4\ \text{m}\). Find \(C_{M\alpha,\text{fus}}\) per radian.`,
+      label: T`\(C_{M\alpha,\text{fus}} =\)`, answer: q4, unit: 'per rad',
+      finalAnswer: T`\(C_{M\alpha,\text{fus}} = 0.7976\ \text{per rad}\)`,
+      explain: T`<p>\(K_f = 0.01 - 0.063\,x_0 + 0.211\,x_0^2\), and \(C_{M\alpha,\text{fus}} = K_fW_f^2L_f/(\cbar S)\) per degree.</p>`,
+      solution: T`\[ K_f = 0.01 - 0.063(0.40) + 0.211(0.40)^2 = 0.01856 \]\[ C_{M\alpha,\text{fus}} = \frac{0.01856(2.0)^2(18)}{2.4(40)} = 0.01392\ \text{per deg} = 0.7976\ \text{per rad} \]<p>Positive: the fuselage destabilizes.</p>` + review('l02')
+    },
+    /* ---------- Q5 · Lesson 3 · the neutral point ---------- */
+    {
+      id: 'quiz-q05', lesson: 'l03', type: 'numeric',
+      short: 'The neutral point',
+      prompt: T`An aircraft has \(C_{L\alpha,W} = 5.0\) and \(C_{L\alpha,H} = 3.8\) per radian, \(\partial\varepsilon/\partial\alpha = 0.40\), \(\eta_H = 0.9\), \(S_H/S = 0.25\) and \(C_{M\alpha,\text{fus}} = 0.5\) per radian. The wing's aerodynamic center is at 25% of the MAC and the tail's at \(\bar x_{ac,H} = 3.2\). Where is the neutral point, as a fraction of the MAC?`,
+      label: T`\(\bar x_{np} =\)`, answer: q5,
+      finalAnswer: T`\(\bar x_{np} = 0.4338\)`,
+      explain: T`<p>\(T = \eta_H(S_H/S)C_{L\alpha,H}(1 - \partial\varepsilon/\partial\alpha)\); \(\bar x_{np} = (C_{L\alpha,W}\bar x_{ac,W} - C_{M\alpha,\text{fus}} + T\bar x_{ac,H})/(C_{L\alpha,W} + T)\).</p>`,
+      solution: T`\[ T = 0.9(0.25)(3.8)(1 - 0.40) = 0.513 \]\[ \bar x_{np} = \frac{5.0(0.25) - 0.5 + 0.513(3.2)}{5.0 + 0.513} = \frac{2.392}{5.513} = 0.4338 \]` + review('l03')
+    },
+    /* ---------- Q6 · Lesson 3 · what moves the neutral point aft ---------- */
+    {
+      id: 'quiz-q06', lesson: 'l03', type: 'mc', shuffle: false,
+      short: 'What moves the neutral point aft',
+      prompt: T`Which one of these changes moves an aircraft's neutral point aft, everything else unchanged?`,
+      choices: [
+        { html: T`A larger horizontal tail on the same arm`, aria: 'Larger horizontal tail', correct: true },
+        { html: T`Flying at a higher Mach number`, aria: 'Higher Mach number', feedback: T`Compressibility raises the wing's lift slope and the downwash more than the tail's slope: the neutral point moves forward.` },
+        { html: T`A longer fuselage nose ahead of the wing`, aria: 'Longer nose', feedback: T`More fuselage ahead of the wing is more destabilizing: forward.` },
+        { html: T`A wing of higher aspect ratio`, aria: 'Higher aspect ratio', feedback: T`The wing's larger lift slope weighs its aerodynamic center more heavily, and its downwash grows: forward.` }
+      ],
+      finalAnswer: T`A: a larger horizontal tail`,
+      explain: T`<p>The neutral point is a weighted average of the wing's and the tail's aerodynamic centers, pulled forward by the fuselage; anything that adds to the tail's weight in that average moves it aft.</p>`,
+      solution: T`<p>A larger tail raises \(T\), and with it the weight of \(\bar x_{ac,H}\) in \(\bar x_{np} = (C_{L\alpha,W}\bar x_{ac,W} - C_{M\alpha,\text{fus}} + T\bar x_{ac,H})/(C_{L\alpha,W} + T)\). The other three all move it forward.</p>` + review('l03')
+    },
+    /* ---------- Q7 · Lesson 4 · the tail lift for trim ---------- */
+    {
+      id: 'quiz-q07', lesson: 'l04', type: 'numeric',
+      short: 'The tail lift for trim',
+      prompt: T`An aircraft with \(C_{M,W} = -0.08\), \(S_H/S = 0.22\), \(l_H/\cbar = 3.6\) and \(\eta_H = 0.9\) cruises at \(C_L = 0.40\) with its CG at 30% of the MAC. Its engines' moment is negligible. What tail lift coefficient trims it?`,
+      label: T`\(C_{L,H} =\)`, answer: q7,
+      finalAnswer: T`\(C_{L,H} = -0.08418\)`,
+      explain: T`<p>\(C_{L,H} = (C_{M,W} + C_L\bar x_{cg-ac} + C_{M,E})/(\eta_H(S_H/S)(l_H/\cbar))\), with \(\bar x_{cg-ac} = \bar x_{cg} - 0.25\).</p>`,
+      solution: T`\[ C_{L,H} = \frac{-0.08 + 0.40(0.30 - 0.25)}{0.9(0.22)(3.6)} = \frac{-0.060}{0.7128} = -0.08418 \]<p>Negative: even with the CG behind the wing's aerodynamic center, the wing's nose-down moment makes the tail push down.</p>` + review('l04')
+    },
+    /* ---------- Q8 · Lesson 5 · the flapped wing ---------- */
+    {
+      id: 'quiz-q08', lesson: 'l05', type: 'numeric',
+      short: 'The flapped wing\'s moment',
+      prompt: T`A wing's slotted flaps add \(\Delta c_l = 1.2\) and extend its chord to \(c'/c = 1.2\), over 60% of its area. Its airfoil has \(c_{m,0} = -0.05\); \(A = 9\) and \(\Lambda_{c/4} = 20^\circ\). Scaling the flaps' moment by the flapped share, what is \(C_{M,W}\) with the flaps down?`,
+      label: T`\(C_{M,W} =\)`, answer: q8,
+      finalAnswer: T`\(C_{M,W} = -0.1827\)`,
+      explain: T`<p>\(\Delta c_m = \Delta c_l(0.25 - 0.44\,c'/c)\); \(C_{M,W} = (c_{m,0} + (S_{\text{flapped}}/S)\Delta c_m)\,A\cos^2\Lambda/(A + 2\cos\Lambda)\).</p>`,
+      solution: T`\[ \Delta c_m = 1.2(0.25 - 0.44(1.2)) = -0.3336 \]\[ c_m = -0.05 + 0.6(-0.3336) = -0.2502 \]\[ C_{M,W} = -0.2502\,\frac{9\cos^2 20^\circ}{9 + 2\cos 20^\circ} = -0.2502(0.7305) = -0.1827 \]` + review('l05')
+    },
+    /* ---------- Q9 · Lesson 5 · the control requirement ---------- */
+    {
+      id: 'quiz-q09', lesson: 'l05', type: 'numeric',
+      short: 'The tail for control',
+      prompt: T`At its forward CG, 12% of the MAC, an aircraft goes around at \(C_L = 1.6\) with \(C_{M,W} = -0.30\) and \(C_{M,E} = -0.06\). With \(l_H/\cbar = 3.8\), \(\eta_H = 0.9\), \(C_{L,H} = -0.5\) and \(S = 50\ \text{m}^2\), what horizontal tail area does it need?`,
+      label: T`\(S_H =\)`, answer: q9, unit: 'm²',
+      finalAnswer: T`\(S_H = 16.61\ \text{m}^2\)`,
+      explain: T`<p>\(S_H/S = [C_L\bar x_{cg-ac} + C_{M,W} + C_{M,E}]/(C_{L,H}\eta_H l_H/\cbar)\).</p>`,
+      solution: T`\[ \frac{S_H}{S} = \frac{1.6(0.12 - 0.25) - 0.30 - 0.06}{-0.5(0.9)(3.8)} = \frac{-0.568}{-1.71} = 0.3322 \]\[ S_H = 0.3322(50) = 16.61\ \text{m}^2 \]` + review('l05')
+    },
+    /* ---------- Q10 · Lesson 6 · the stability line ---------- */
+    {
+      id: 'quiz-q10', lesson: 'l06', type: 'numeric',
+      short: 'The stability line',
+      prompt: T`In cruise an aircraft has \(C_{L\alpha,W} = 5.5\), \(\eta_H C_{L\alpha,H}(1 - \partial\varepsilon/\partial\alpha) = 2.0\), \(C_{M\alpha,\text{fus}} = 0.6\) and \(\bar x_{ac,H} = 3.4\). What \(S_H/S\) keeps a static margin of 5% with the CG at 35% of the MAC?`,
+      label: T`\(S_H/S =\)`, answer: q10,
+      finalAnswer: T`\(S_H/S = 0.2375\)`,
+      explain: T`<p>\(S_H/S = [C_{L\alpha,W}(\bar x_{cg} + \text{SM} - \bar x_{ac,W}) + C_{M\alpha,\text{fus}}]/[\eta_H C_{L\alpha,H}(1 - \partial\varepsilon/\partial\alpha)(\bar x_{ac,H} - \bar x_{cg} - \text{SM})]\).</p>`,
+      solution: T`\[ \frac{S_H}{S} = \frac{5.5(0.35 + 0.05 - 0.25) + 0.6}{2.0(3.4 - 0.35 - 0.05)} = \frac{1.425}{6.0} = 0.2375 \]` + review('l06')
+    },
+    /* ---------- Q11 · Lesson 6 · the scissor plot ---------- */
+    {
+      id: 'quiz-q11', lesson: 'l06', type: 'numeric',
+      short: 'The smallest tail on the scissor plot',
+      prompt: T`On a scissor plot the control line is \(S_H/S = 0.55 - 1.2\,\bar x_{cg}\) and the stability line \(S_H/S = -0.10 + 0.9\,\bar x_{cg}\), with \(\bar x_{cg}\) as a fraction of the MAC. The loading needs a CG range 20% of the MAC wide. What is the smallest \(S_H/S\)?`,
+      label: T`\(S_H/S =\)`, answer: q11,
+      finalAnswer: T`\(S_H/S = 0.2814\)`,
+      explain: T`<p>At a tail \(s\), the forward limit is \((0.55 - s)/1.2\) and the aft limit \((s + 0.10)/0.9\); set their difference to 0.20.</p>`,
+      solution: T`\[ \frac{s + 0.10}{0.9} - \frac{0.55 - s}{1.2} = 0.20 \]\[ s = \frac{0.20 + 0.55/1.2 - 0.10/0.9}{1/1.2 + 1/0.9} = \frac{0.5472}{1.9444} = 0.2814 \]<p>The CG may then range from 22.4% to 42.4% of the MAC.</p>` + review('l06')
+    },
+    /* ---------- Q12 · Lesson 7 · C_n-beta ---------- */
+    {
+      id: 'quiz-q12', lesson: 'l07', type: 'numeric',
+      short: 'The weathercock derivative',
+      prompt: T`An aircraft's wing gives \(C_{n\beta,W} = 0.001\) per radian. Its fuselage has a volume of \(40\ \text{m}^3\) and a round section; the wing has \(S = 45\ \text{m}^2\) and \(b = 20\ \text{m}\). Its fin has \(C_{L\alpha,V} = 2.6\) per radian, a sidewash factor of 1.1, \(S_V/S = 0.16\) and \(l_V/b = 0.40\). By the volume method for the fuselage, what is its \(C_{n\beta}\)?`,
+      label: T`\(C_{n\beta} =\)`, answer: q12, unit: 'per rad',
+      finalAnswer: T`\(C_{n\beta} = 0.1263\ \text{per rad}\)`,
+      explain: T`<p>\(C_{n\beta} = C_{n\beta,W} + C_{n\beta,F} + C_{n\beta,V}\), with \(C_{n\beta,F} = -1.3\,\text{Vol}_F/(Sb)\) and \(C_{n\beta,V} = C_{L\alpha,V}(1 + \partial\sigma/\partial\beta)\eta_V(S_V/S)(l_V/b)\).</p>`,
+      solution: T`\[ C_{n\beta,F} = -1.3\,\frac{40}{45(20)} = -0.05778 \]\[ C_{n\beta,V} = 2.6(1.1)(0.16)(0.40) = 0.1830 \]\[ C_{n\beta} = 0.001 - 0.05778 + 0.1830 = 0.1263\ \text{per rad} \]<p>Well above the target of 0.0571.</p>` + review('l07')
+    },
+    /* ---------- Q13 · Lesson 7 · dihedral effect ---------- */
+    {
+      id: 'quiz-q13', lesson: 'l07', type: 'numeric',
+      short: 'The dihedral\'s rolling moment',
+      prompt: T`A wing has \(C_{L\alpha,W} = 5.2\) per radian, \(5^\circ\) of dihedral and a taper ratio of 0.3. What does the dihedral contribute to \(C_{l\beta}\)?`,
+      label: T`\(C_{l\beta,\Gamma} =\)`, answer: q13, unit: 'per rad',
+      finalAnswer: T`\(C_{l\beta,\Gamma} = -0.09308\ \text{per rad}\)`,
+      explain: T`<p>\(C_{l\beta,\Gamma} = -(C_{L\alpha,W}\Gamma/4)\cdot 2(1 + 2\lambda)/(3(1 + \lambda))\), with \(\Gamma\) in radians.</p>`,
+      solution: T`\[ \frac{2(1.6)}{3(1.3)} = 0.8205, \qquad \Gamma = 5^\circ = 0.08727\ \text{rad} \]\[ C_{l\beta,\Gamma} = -\frac{5.2(0.08727)}{4}(0.8205) = -0.09308\ \text{per rad} \]<p>Negative: stable.</p>` + review('l07')
+    },
+    /* ---------- Q14 · Lesson 8 · rudder at the minimum control speed ---------- */
+    {
+      id: 'quiz-q14', lesson: 'l08', type: 'numeric',
+      short: 'Rudder with an engine failed',
+      prompt: T`A twin's engines each give \(60\ \text{kN}\) at takeoff, \(5.0\ \text{m}\) either side of the centerline, with \(k_D = 0.25\). At \(V_{MC}\), \(q = 2600\ \text{Pa}\). The aircraft has \(S = 100\ \text{m}^2\), \(b = 30\ \text{m}\) and \(C_{n\delta_r} = 0.12\) per radian. What rudder deflection holds it straight when one engine fails?`,
+      label: T`\(\delta_r =\)`, answer: q14, unit: '°',
+      finalAnswer: T`\(\delta_r = 22.96^\circ\)`,
+      explain: T`<p>\(N_E + N_D = (1 + k_D)Ty_E\); \(\delta_r = (N_E + N_D)/(qSb\,C_{n\delta_r})\).</p>`,
+      solution: T`\[ N_E + N_D = 1.25(60\,000)(5.0) = 375\,000\ \text{N·m} \]\[ \delta_r = \frac{375\,000}{2600(100)(30)(0.12)} = 0.4006\ \text{rad} = 22.96^\circ \]<p>Just inside \(25^\circ\).</p>` + review('l08')
+    },
+    /* ---------- Q15 · Lesson 8 · the fin for engine failure ---------- */
+    {
+      id: 'quiz-q15', lesson: 'l08', type: 'numeric',
+      short: 'The fin for engine failure',
+      prompt: T`With an engine failed, the rudder must balance \(200\ \text{kN·m}\) at \(V_{MC}\), where \(q = 2200\ \text{Pa}\). The fin's arm is \(14\ \text{m}\), its \(C_{L\alpha,V} = 2.8\) per radian, and the rudder takes 35% of its chord. What fin area keeps the rudder within \(25^\circ\)?`,
+      label: T`\(S_V =\)`, answer: q15, unit: 'm²',
+      finalAnswer: T`\(S_V = 9.048\ \text{m}^2\)`,
+      explain: T`<p>\(S_V = (N_E + N_D)/(0.9\,q\,l_V\,C_{L\alpha,V}\,\tau_r\,\delta_{r,\max})\), with \(\tau_r\) from the chord share (Lesson 4) and \(\delta_{r,\max}\) in radians.</p>`,
+      solution: T`\[ \tau_r = 1.576(0.35)^3 - 3.458(0.35)^2 + 2.882(0.35) = 0.6527 \]\[ S_V = \frac{200\,000}{0.9(2200)(14)(2.8)(0.6527)(0.4363)} = 9.048\ \text{m}^2 \]` + review('l08')
+    }
+  ];
+})();
+</script>
+
+<script>
+/* ---------- The quiz: CYLQuiz.set in quiz mode, with a paged / all-on-one-page layout switch ---------- */
+CYL.ready(function () {
+  'use strict';
+  var QUESTIONS = window.CYL_QUIZ_QUESTIONS;
+  var host = document.getElementById('quiz-host');
+  var toolbar = document.getElementById('quiz-toolbar');
+  var chips = Array.prototype.slice.call(toolbar.querySelectorAll('[data-layout]'));
+  var l10Note = document.getElementById('quiz-l10-note');
+  var LAYOUT_KEY = 'quiz:selfcheck:layout';
+  var STORAGE_KEY = 'selfcheck-v1';       // bump if the questions ever change (saved answers are keyed by it)
+
+  // Rules list: add a line about saving (only when the browser really keeps it across reloads).
+  if (CYL.store.available()) {
+    l10Note.parentNode.insertBefore(CYL.el('li', {
+      text: 'Your answers are saved in this browser as you go, so reloading the page does not lose them.'
+    }), l10Note);
+  }
+
+  var layout = CYL.store.get(LAYOUT_KEY, 'paged') === 'all' ? 'all' : 'paged';
+  var set = null;
+
+  function build() {
+    var responses = null;
+    if (set) {
+      responses = set.questions.map(function (q) { return q.getResponse(); });
+      set.el.parentNode.removeChild(set.el);
+    }
+    set = CYLQuiz.set(host, QUESTIONS, {
+      mode: 'quiz',
+      layout: layout,
+      storageKey: STORAGE_KEY,
+      intro: 'Answer in any order and change answers freely: nothing is marked until you press <strong>Submit quiz</strong>.',
+      onComplete: function () { refresh(); }
+    });
+    // The previous layout's answers win over the (possibly 250 ms old) saved copy.
+    if (responses) set.questions.forEach(function (q, i) { q.setResponse(responses[i]); });
+    var retake = set.retake;
+    set.retake = function () { var r = retake.apply(set, arguments); refresh(); return r; };
+    refresh();
+  }
+
+  // The layout switch only matters before submitting (the review always lists every question).
+  function refresh() {
+    var done = set.isSubmitted();
+    toolbar.hidden = done;
+    host.setAttribute('data-state', done ? 'submitted' : 'open');   // print CSS: before submitting, print every question
+    var intro = set.el.querySelector('.q-set-intro');           // "nothing is marked until…" no longer applies
+    if (intro) intro.hidden = done;
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-layout') === layout ? 'true' : 'false'); });
+    labelChoices();
+    if (done) renderBreakdown();
+  }
+
+  /* Accessible names for the radio buttons and checkboxes. CYLQuiz names each one from its <label>, but
+     browsers take little or no text from KaTeX output (Chrome gives "" for \(5\ \text{m}\)), so every choice
+     spec carries a plain-text 'aria' string. After submitting, the review tag ("Correct answer", "Your
+     answer") is added to the name, as it is to the visible label. */
+  var SPEC_BY_ID = {};
+  QUESTIONS.forEach(function (q) { SPEC_BY_ID[q.id] = q; });
+  function labelChoices() {
+    Array.prototype.forEach.call(set.el.querySelectorAll('.q-card'), function (card) {
+      var spec = SPEC_BY_ID[card.getAttribute('data-qid')];
+      if (!spec || !spec.choices) return;
+      Array.prototype.forEach.call(card.querySelectorAll('.q-choice'), function (lab) {
+        var input = lab.querySelector('input');
+        var c = input && spec.choices[+input.value];
+        if (!c || !c.aria) return;
+        var tag = lab.querySelector('.q-choice-tag');
+        input.setAttribute('aria-label', c.aria + (tag ? ' (' + tag.textContent + ')' : ''));
+      });
+    });
+  }
+
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      var want = c.getAttribute('data-layout');
+      if (want === layout || set.isSubmitted()) return;
+      layout = want;
+      CYL.store.set(LAYOUT_KEY, layout);
+      build();
+      c.focus();
+    });
+  });
+
+  /* Results by lesson: a small table added to the score summary after submitting. */
+  function lessonInfo(id) {
+    var p = CYL.PAGES.filter(function (x) { return x.id === id; })[0];
+    return p ? { num: p.num, title: p.title, href: CYL.url(p.href) } : { num: '', title: id, href: '#' };
+  }
+  function renderBreakdown() {
+    var results = set.el.querySelector('.q-set-results');
+    if (!results) return;
+    var old = results.querySelector('.quiz-breakdown');
+    if (old) old.parentNode.removeChild(old);
+
+    var sc = set.score();
+    var groups = [], byId = {};
+    sc.results.forEach(function (r) {
+      var id = QUESTIONS[r.index].lesson;
+      if (!byId[id]) { byId[id] = { id: id, nums: [], correct: 0 }; groups.push(byId[id]); }
+      byId[id].nums.push(r.position + 1);
+      if (r.correct) byId[id].correct += 1;
+    });
+
+    var tbody = CYL.el('tbody');
+    var toReview = [];
+    groups.forEach(function (g) {
+      var info = lessonInfo(g.id);
+      var all = g.correct === g.nums.length;
+      if (!all) toReview.push('<a href="' + info.href + '">Lesson ' + info.num + '</a>');
+      tbody.appendChild(CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'row', html: '<a href="' + info.href + '">Lesson ' + info.num + '</a>' +
+          ' <span class="quiz-lesson-title">· ' + info.title + '</span>' }),
+        CYL.el('td', { text: g.nums.join(', ') }),
+        CYL.el('td', { class: 'quiz-score-cell ' + (all ? 'c-good' : 'c-bad'),
+          text: (all ? '✓ ' : '✗ ') + g.correct + ' of ' + g.nums.length })
+      ]));
+    });
+
+    var table = CYL.el('table', { class: 'data' }, [
+      CYL.el('caption', { class: 'visually-hidden', text: 'Quiz results grouped by lesson' }),
+      CYL.el('thead', {}, [CYL.el('tr', {}, [
+        CYL.el('th', { scope: 'col', text: 'Lesson' }),
+        CYL.el('th', { scope: 'col', text: 'Questions' }),
+        CYL.el('th', { scope: 'col', text: 'Correct' })
+      ])]),
+      tbody
+    ]);
+    var summary = toReview.length
+      ? 'Revisit ' + (toReview.length === 1 ? toReview[0] : toReview.slice(0, -1).join(', ') + ' and ' + toReview[toReview.length - 1]) +
+        ', then open the worked solutions below.'
+      : 'Every lesson is fully correct. Well done.';
+    var box = CYL.el('div', { class: 'quiz-breakdown' }, [
+      CYL.el('p', { class: 'quiz-breakdown-title', text: 'Results by lesson' }),
+      CYL.el('p', { class: 'quiz-breakdown-summary', html: summary }),
+      CYL.el('div', { class: 'table-wrap' }, [table])
+    ]);
+    // Above the name / print row, so the "Show only questions I missed" chip stays next to the cards it filters.
+    var namebox = results.querySelector('.q-set-namebox');
+    results.insertBefore(box, namebox || results.querySelector('.q-set-review-note') || null);
+  }
+
+  build();
+  toolbar.hidden = set.isSubmitted();
+});
+</script>
+</body>
+</html>

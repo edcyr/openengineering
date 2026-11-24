@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engine Failure and the Vertical Tail · Stability, Control and Tail Sizing</title>
+<meta name="description" content="The minimum control speed with an engine failed, the rudder deflection and vertical tail area it needs, the crosswind check, and what the business jet's resized tails cost in drag and weight around the design loop.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/weights.js"></script>
+<script src="../assets/js/stability.js"></script>
+<style>
+  .loop { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 10px; margin: 0; padding: 14px; }
+  .loop li { counter-increment: step; position: relative; margin: 0; padding: 10px 12px 10px 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev); font-size: 0.9rem; line-height: 1.45; }
+  .loop li::before { content: counter(step); position: absolute; left: 11px; top: 10px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 750; font-size: 0.8rem; line-height: 24px; text-align: center; }
+  .loop li strong { display: block; color: var(--ink); }
+  .loop li .where { color: var(--ink-muted); font-size: 0.82rem; }
+  .loop li.back { border-style: dashed; }
+</style>
+</head>
+<body data-page="l08" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 8 · 40 min</p>
+    <h1>Engine Failure and the Vertical Tail</h1>
+    <p class="lede">When an engine fails on takeoff, the other one pushes the aircraft into a yaw, and the dead one drags on the same side. The rudder must hold it straight down to a minimum control speed the regulations tie to the stall speed. For most twins this, not stability, sizes the vertical tail. This lesson checks the business jet's, then takes stock of what the resized tails cost around the design loop.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Find the yawing moment of a failed engine, and the minimum control speed at which the rudder must balance it.</li>
+      <li>Find the rudder deflection that balances it, and the vertical tail area that keeps the deflection within its limit; check the crosswind case.</li>
+      <li>Trace the resized tails through drag, lift-to-drag ratio and takeoff weight: one more turn of the design loop.</li>
+    </ul>
+  </section>
+
+  <section id="vmc">
+    <h2>The minimum control speed</h2>
+    <p>With one engine failed, the live engine's thrust \(T\) acts at its lateral distance \(y_E\) from the plane of symmetry, and the failed engine's drag adds to the same yawing moment:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Yawing moment with an engine failed</p>
+      \[ N_E = T\,y_E, \qquad N_D = k_D\,N_E \]
+      <p>\(T\): takeoff thrust of one engine. \(k_D\): the failed engine's windmilling drag as a share of \(N_E\), about 0.15 for a low-bypass and 0.25 for a high-bypass turbofan (Scholz, Ch. 11). This module takes 0.25 for the business jet.</p>
+    </div>
+    <p>The rudder's yawing moment grows with the dynamic pressure, so there is a speed below which full rudder can no longer hold the aircraft straight: the <strong>minimum control speed</strong> \(V_{MC}\). Part 25 (25.149) requires \(V_{MC}\) no higher than 1.13 times the reference stall speed \(V_{SR}\) in the takeoff configuration, with no more than \(5^\circ\) of bank and no more than 150&nbsp;lb on the rudder pedals; 25.107 then sets the rotation and takeoff safety speeds at least 5% and 10% above it. The conceptual check: at \(V_{MC} = 1.13\,V_{SR}\), wings level (the bank's help ignored), the rudder must balance \(N_E + N_D\) at no more than about \(25^\circ\).</p>
+    <div class="example">
+      <p class="example-title">Example 8.1 — The business jet's engine-out moment</p>
+      <p>The business jet: \(W_0 = 6943\)&nbsp;kg, \(S = 28\)&nbsp;m², takeoff \(C_{L\max} = 1.7\) (Module 5). Each engine gives 10.56&nbsp;kN at takeoff (Module 7) on a lateral arm of 1.254&nbsp;m (Module 6). Find \(V_{MC}\), its dynamic pressure, and the yawing moment to balance.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ V_{SR} = \sqrt{\frac{2(6943)(9.807)}{1.225(28)(1.7)}} = 48.33\ \text{m/s} \]
+          \[ V_{MC} = 1.13(48.33) = 54.61\ \text{m/s}, \qquad q = \tfrac12(1.225)(54.61)^2 = 1826\ \text{Pa} \]
+          \[ N_E = 10\,560(1.254) = 13\,245\ \text{N·m}, \qquad N_D = 0.25\,N_E = 3311\ \text{N·m} \]
+          <p>The rudder must balance 16&nbsp;556&nbsp;N·m at 54.6&nbsp;m/s (106&nbsp;kt).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="rudder">
+    <h2>The rudder</h2>
+    <p>The rudder is a plain flap on the vertical tail; its effectiveness \(\tau\) comes from its chord share, as the elevator's did (Lesson 4). Its yawing moment per radian of deflection, and the balance at \(V_{MC}\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Rudder power and the vertical tail for engine failure</p>
+      \[ C_{n\delta_r} = 0.9\,C_{L\alpha,V}\,\frac{S_V}{S}\,\frac{l_V}{b}\,\tau_r \]
+      \[ \delta_r = \frac{N_E + N_D}{q\,S\,b\,C_{n\delta_r}} \le \delta_{r,\max} \]
+      \[ S_V \ge \frac{N_E + N_D}{0.9\,q\,l_V\,C_{L\alpha,V}\,\tau_r\,\delta_{r,\max}} \]
+      <p>The factor 0.9 allows for the rudder's partial span and the tail's dynamic pressure. \(\delta_{r,\max}\): about \(25^\circ\), leaving a margin to the rudder's stop. After Scholz, Ch. 11, and Nicolai and Carichner, <em>Fundamentals of Aircraft and Airship Design</em>, Ch. 21, as given in the Iowa State Computational Design Laboratory's lecture notes.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 8.2 — The business jet's rudder</p>
+      <p>The rudder spans the fin and takes 30% of its chord. With Lesson 7's fin (\(S_V/S = 0.1310\), \(l_V = 6.611\)&nbsp;m at the aft CG, \(b = 14.97\)&nbsp;m; \(C_{L\alpha,V} = 2.687\) at Mach 0.16), find the rudder deflection at \(V_{MC}\) and the smallest fin that keeps it to \(25^\circ\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>For a 30% chord, \(\tau_r = 0.596\) (Lesson 4):</p>
+          \[ C_{n\delta_r} = 0.9(2.687)(0.1310)\frac{6.611}{14.97}(0.596) = 0.0834 \]
+          \[ \delta_r = \frac{16\,556}{1826(28)(14.97)(0.0834)} = 0.259\ \text{rad} = 14.9^\circ \]
+          \[ S_V \ge \frac{16\,556}{0.9(1826)(6.611)(2.687)(0.596)(0.436)} = 2.18\ \text{m}^2 \]
+          <p>The 3.67&nbsp;m² fin uses only \(14.9^\circ\) of rudder: engine failure does not size it. The rear engines sit 1.25&nbsp;m from the centerline, a short arm. The same engines under the wing, at 35% of the semispan (2.62&nbsp;m), would need \(31^\circ\) of rudder, and a fin of 4.55&nbsp;m² to bring it back to \(25^\circ\). That is one reason business jets put their engines on the rear fuselage.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig81-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig81-stage"></div>
+        <div class="viz-controls" id="fig81-controls"></div>
+      </div>
+      <figcaption id="fig81-cap"><strong>Figure 8.1</strong> The rudder deflection that holds the business jet straight at \(V_{MC}\) with one engine failed, against the engines' lateral position, for the fin chosen. The left dashed line marks the business jet's rear engines; the right one, engines under the wing at 35% of the semispan.</figcaption>
+    </figure>
+  </section>
+
+  <section id="crosswind">
+    <h2>Crosswind</h2>
+    <p>The rudder has a second job. Landing or taking off in a crosswind, the aircraft is held aligned with the runway in a sideslip, and the rudder must hold it against the directional stability of Lesson 7. A common sizing case is a crosswind of 20% of the takeoff speed, a sideslip of \(\beta = \arctan 0.2 = 11.3^\circ\), with the rudder within about \(20^\circ\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Rudder for a steady sideslip</p>
+      \[ \delta_r = \frac{C_{n\beta}\,\beta}{C_{n\delta_r}} \]
+      <p>Too much directional stability makes this harder: a fin sized generously for stability needs a rudder to match. After the Iowa State Computational Design Laboratory's lecture notes on lateral-directional trim.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 8.3 — The business jet in a crosswind</p>
+      <p>At takeoff, \(C_L = 1.7/1.1^2 = 1.40\). With the volume method for the fuselage, the business jet's \(C_{n\beta}\) at the aft CG is then 0.132 (Lesson 7, with the larger wing term). Find the rudder deflection for an \(11.3^\circ\) sideslip.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \delta_r = \frac{0.132(11.31^\circ)}{0.0834} = 17.9^\circ \]
+          <p>Inside \(20^\circ\), with 2° to spare: the tighter of the two rudder cases for the business jet, but still met. With DATCOM's fuselage estimate, \(C_{n\beta} = 0.083\) and the rudder needs \(11.2^\circ\): the pessimistic method for stability is the optimistic one here.</p>
+        </div>
+      </details>
+    </div>
+    <p>The vertical tail is sized by the largest of three requirements: directional stability (Lesson 7, 2.66 to 3.56&nbsp;m² by the two fuselage methods), engine failure (2.18&nbsp;m²) and crosswind (met with the fin as it is). The 3.67&nbsp;m² fin from Module 4's volume coefficient of 0.060 passes all three, and stays.</p>
+  </section>
+
+  <section id="loop">
+    <h2>Around the design loop again</h2>
+    <p>Module 11 moved the wing to center the CG range on 25% of the MAC and enlarged the tails to keep their volume coefficients. This module has done the job properly: the scissor plot moved the wing 0.12&nbsp;m forward again and enlarged the horizontal tail to 6.75&nbsp;m²; the fin, at its old volume coefficient on the slightly longer arm, shrank a little to 3.67&nbsp;m². Those tails replace Module 11's in the drag and weight estimates.</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>The business jet's layout, module by module</caption>
+        <thead><tr><th scope="col"></th><th scope="col">Module 6</th><th scope="col">Module 11</th><th scope="col">Module 12</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Wing quarter-MAC (m)</th><td>6.975</td><td>7.526</td><td>7.405</td></tr>
+          <tr><th scope="row">Share of fuselage</th><td>45.0%</td><td>48.6%</td><td>47.8%</td></tr>
+          <tr><th scope="row">CG range (% MAC)</th><td>34.9–52.1</td><td>17.1–32.9</td><td>21.5–37.1</td></tr>
+          <tr><th scope="row">Tail arm (m)</th><td>7.285</td><td>6.734</td><td>6.855</td></tr>
+          <tr><th scope="row">\(S_H\) (m²), \(c_{HT}\)</th><td>5.42, 0.70</td><td>5.87, 0.70</td><td>6.75, 0.82</td></tr>
+          <tr><th scope="row">\(S_V\) (m²), \(c_{VT}\)</th><td>3.45, 0.060</td><td>3.73, 0.060</td><td>3.67, 0.060</td></tr>
+          <tr><th scope="row">\(C_{D0}\)</th><td>0.02023</td><td>0.02047</td><td>0.02074</td></tr>
+          <tr><th scope="row">\((L/D)_{\max}\)</th><td>15.87</td><td>15.78</td><td>15.67</td></tr>
+          <tr><th scope="row">Cruise \(L/D\), 12&nbsp;km</th><td>10.80</td><td>10.69</td><td>10.57</td></tr>
+          <tr><th scope="row">\(W_0\) after one turn</th><td>—</td><td>+80&nbsp;kg</td><td>+172&nbsp;kg</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 8.4 — What the resized tails cost</p>
+      <p>Module 9's build-up gives the business jet's horizontal tail and fin, as Module 6 drew them, drag coefficients of 0.00189 and 0.00114 (on the wing's reference area), with 5% added for leakage and protuberances, and \(K = 0.04909\). The horizontal tail is now 24.5% larger than Module 6's and the fin 6.3%. Estimate the new zero-lift drag and \((L/D)_{\max}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Each tail's drag grows with its wetted area, so with its planform area:</p>
+          \[ \Delta C_{D0} = 1.05\left[0.00189(0.245) + 0.00114(0.063)\right] = 0.00056 \]
+          \[ C_{D0} = 0.02023 + 0.00056 = 0.02079 \]
+          \[ \left(\frac LD\right)_{\max} = \frac{1}{2\sqrt{0.02079(0.04909)}} = 15.65 \]
+          <p>The full build-up, in which the larger tail's longer chords give it slightly less friction, gives 0.02074 and 15.67; the cruise \(L/D\) at 12&nbsp;km falls from 10.80 to 10.57. The tails weigh 11.9&nbsp;kg more than Module 6's (Module 11's equations, calibrated). Through Module 3's sizing, the takeoff weight rises by about 172&nbsp;kg: 2.5%, 104&nbsp;kg of it from the drag. Twice Module 11's turn, because the stability requirement asked for more tail than the volume coefficient did.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig82-cap">
+      <div class="viz stacked">
+        <ol class="loop" role="list" aria-label="One turn of the design loop">
+          <li><strong>Stability and control</strong>The CG range must fit the scissor plot: the horizontal tail grows from 5.87 to 6.75&nbsp;m². <span class="where">Lessons 3 to 6</span></li>
+          <li><strong>Wing position</strong>0.12&nbsp;m forward of Module 11's, to 47.8% of the fuselage; the main gear moves with it. <span class="where">Lesson 6; Modules 8 and 11</span></li>
+          <li><strong>Vertical tail</strong>3.67&nbsp;m² meets directional stability, engine failure and crosswind. <span class="where">Lessons 7 and 8</span></li>
+          <li><strong>Wetted area and tail weight</strong>3.2&nbsp;m² more wetted area and 11.9&nbsp;kg more tail than Module 6's. <span class="where">Modules 6 and 11</span></li>
+          <li><strong>Drag and lift-to-drag ratio</strong>\(C_{D0}\) from 0.0202 to 0.0207; \((L/D)_{\max}\) from 15.87 to 15.67. <span class="where">Module 9</span></li>
+          <li><strong>Fuel fraction and takeoff weight</strong>About 172&nbsp;kg more \(W_0\) through the sizing equation. <span class="where">Module 3</span></li>
+          <li><strong>Wing, engines and group weights</strong>A larger wing at the same \(W/S\), larger engines at the same \(T/W\), heavier groups. <span class="where">Modules 5, 7 and 11</span></li>
+          <li class="back"><strong>CG, loading and tails</strong>The CG range moves, so the scissor plot is drawn again: back to step 1. <span class="where">Module 11; this module</span></li>
+        </ol>
+      </div>
+      <figcaption id="fig82-cap"><strong>Figure 8.2</strong> The turn of the design loop that sizing the business jet's tails sets off, with the numbers of Example 8.4. It replaces Module 11's turn: the tails are no longer set by volume coefficients. Module 13 runs the loop to the end.</figcaption>
+    </figure>
+    <p>Larger still is the turn Module 11 already pointed to: every weight so far rests on Module 3's fuel fraction, which assumed a cruise \(L/D\) of 14.6, while Module 9 found the business jet cruising at 10.8 (now 10.57) at 12&nbsp;km. Fed through the sizing, that alone takes the takeoff weight to about 10&nbsp;700&nbsp;kg (Module 9, Lesson 8). A heavier aircraft with a larger wing and engines has a different CG range, a different scissor plot and different tails. No estimate is final until all of them agree.</p>
+    <aside class="callout note">
+      <p class="callout-title">What the course carries forward</p>
+      <p>The business jet after this module: a horizontal tail of 6.75&nbsp;m² (volume coefficient 0.82) with a 30% elevator, and a vertical tail of 3.67&nbsp;m² (0.060) with a 30% rudder. The wing's quarter-MAC is at 7.405&nbsp;m, 47.8% of the fuselage, the main gear at 8.08&nbsp;m, and the CG ranges from 21.5% to 37.1% of the MAC. The neutral point is at 46.7% of the MAC at low speed and 42.1% in cruise, a static margin of 5% at the aft CG in cruise. The rudder needs \(14.9^\circ\) at \(V_{MC} = 54.6\)&nbsp;m/s with an engine failed and \(17.9^\circ\) in a 20% crosswind. These tails raise the zero-lift drag to 0.0207 and lower \((L/D)_{\max}\) to 15.67 and the cruise \(L/D\) to 10.57; one turn of the loop adds about 172&nbsp;kg to \(W_0\). The earlier modules' numbers are the design as it stood then: Module 11's weights, CG range and wing position, Module 9's drag and Module 3's takeoff weight all predate these tails. Module 13 brings the drag, the weights, the engines and the tails together and closes the design.</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>With an engine failed, the rudder must balance \(N_E + N_D = (1 + k_D)\,T\,y_E\) at \(V_{MC}\), no more than \(1.13\,V_{SR}\) (25.149), within about \(25^\circ\).</li>
+      <li>The engines' lateral position drives it: the business jet's rear engines need \(14.9^\circ\); under the wing they would need \(31^\circ\).</li>
+      <li>The crosswind case needs \(\delta_r = C_{n\beta}\beta/C_{n\delta_r}\): \(17.9^\circ\) for the business jet in a 20% crosswind.</li>
+      <li>The vertical tail takes the largest of the stability, engine-failure and crosswind requirements; the business jet's 3.67&nbsp;m² fin meets all three.</li>
+      <li>Resizing the tails costs drag and weight: \(C_{D0}\) 0.0207, \((L/D)_{\max}\) 15.67 and about 172&nbsp;kg more \(W_0\) in one turn of the loop, which Module 13 closes.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* a row of chips, one pressed: opts [[value, text], …] */
+function chipGroup(label, opts, get, set) {
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': label }), bs = [];
+  function sync() { bs.forEach(function (p) { p[1].setAttribute('aria-pressed', String(p[0] === get())); }); }
+  opts.forEach(function (o) { var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: o[1] }); b.addEventListener('click', function () { set(o[0]); sync(); }); bs.push([o[0], b]); row.appendChild(b); });
+  sync(); return { el: row, sync: sync };
+}
+
+/* ---------- Figure 8.1: rudder against the engines' lateral position ---------- */
+CYL.ready(function () {
+  'use strict';
+  var sp = STAB.preset('bizjet'), D = STAB.design(sp), g0 = D.g, YR = g0.yE, YW = 0.35 * g0.b / 2, st = { Sv: g0.Sv, y: YR, kD: sp.wind };
+  function eo(y) { return STAB.engineOut(Object.assign({}, g0, { yE: y, Sv: st.Sv, sp: Object.assign({}, sp, { wind: st.kD }) })); }
+  var chart = AERO.chart(document.getElementById('fig81-stage'), {
+    x: { label: 'Engines\' lateral position \\(y_E\\) (m)', min: 0, max: 4 }, y: { label: 'Rudder at \\(V_{MC}\\) (deg)', min: 0, max: 50 }, height: 320,
+    ariaLabel: 'Rudder deflection at the minimum control speed against the engines\' lateral position.',
+    legend: [{ label: 'Rudder needed', color: 'z', line: true }, { label: '25° limit', color: 'r', line: true, dashed: true }]
+  });
+  var fR = chart.fn(function (y) { return eo(y).dr; }, { color: 'z', width: 2.6, samples: 40 });
+  chart.hline(25, { color: 'r', dashed: true, width: 1.6 });
+  chart.vline(YR, { color: 'muted', dashed: true, width: 1.2 });
+  chart.vline(YW, { color: 'muted', dashed: true, width: 1 });
+  var mk = chart.marker([st.y, eo(st.y).dr], { color: 'ink', r: 6 });
+  var panel = document.getElementById('fig81-controls');
+  var sV = CYL.slider({ label: 'Vertical tail \\(S_V\\)', min: 1.5, max: 6, step: 0.01, value: st.Sv, unit: ' m²', color: 'z', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.Sv = v; fR.draw(); draw(); } });
+  var sY = CYL.slider({ label: 'Engines at \\(y_E\\)', min: 0, max: 4, step: 0.01, value: st.y, unit: ' m', color: 'ink', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.y = v; draw(); } });
+  var row = CYL.el('div', { class: 'chip-row' });
+  row.appendChild(CYL.button('Rear engines', function () { st.y = YR; sY.set(YR, true); draw(); }, { small: true }));
+  row.appendChild(CYL.button('Under the wing', function () { st.y = YW; sY.set(YW, true); draw(); }, { small: true }));
+  var tK = chipGroup('Windmilling drag', [[0.15, 'Low bypass, 0.15'], [0.25, 'High bypass, 0.25']], function () { return st.kD; }, function (v) { st.kD = v; fR.draw(); draw(); });
+  var ro = { m: CYL.readout('\\(N_E + N_D\\)'), r: CYL.readout('Rudder at \\(V_{MC}\\)'), s: CYL.readout('\\(S_V\\) for 25°') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Fin and engines' }));
+  [sV.el, sY.el, row, tK.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.m.el, ro.r.el, ro.s.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var e = eo(st.y);
+    mk.set([st.y, Math.min(e.dr, 50)]);
+    ro.m.set(CYL.fmtFixed((e.NE + e.ND) / 1000, 2) + ' kN·m'); ro.r.set(CYL.fmtFixed(e.dr, 1) + '°' + (e.dr <= 25 ? '' : ': too much')); ro.s.set(CYL.fmtFixed(e.SvNeed, 2) + ' m²');
+    chart.setAriaLabel('Rudder at the minimum control speed: with a ' + st.Sv.toFixed(2) + ' square-meter fin and engines ' + st.y.toFixed(2) + ' m from the centerline, ' + e.dr.toFixed(1) + ' degrees; a fin of ' + e.SvNeed.toFixed(2) + ' square meters would need 25.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l08-q1',
+    type: 'numeric',
+    prompt: 'A twin has engines of 20&nbsp;kN takeoff thrust, 4.0&nbsp;m either side of the centerline, with high-bypass fans (\\(k_D = 0.25\\)). What yawing moment must the rudder balance when one fails?',
+    label: '\\(N_E + N_D =\\)', answer: 1.25 * 20 * 4, unit: 'kN·m',
+    hints: ['\\(N_E = T y_E\\) for the live engine.', '\\(N_D = k_D N_E\\) for the failed one, on the same side.'],
+    explain: 'The live engine\'s thrust and the dead engine\'s drag both yaw the aircraft toward the failed engine.',
+    solution: '\\[ N_E + N_D = 1.25(20)(4.0) = 100\\ \\text{kN·m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l08-q2',
+    type: 'numeric',
+    prompt: 'That moment, 100&nbsp;kN·m, must be balanced at \\(V_{MC}\\), where \\(q = 2000\\)&nbsp;Pa. The aircraft has \\(S = 60\\)&nbsp;m², \\(b = 22\\)&nbsp;m and \\(C_{n\\delta_r} = 0.09\\) per rad. What rudder deflection does it need?',
+    label: '\\(\\delta_r =\\)', answer: 100000 / (2000 * 60 * 22 * 0.09) * 180 / Math.PI, unit: '°',
+    hints: ['\\(\\delta_r = (N_E + N_D)/(q S b C_{n\\delta_r})\\), in radians.'],
+    explain: 'Just inside 25°: this aircraft\'s fin is sized by engine failure.',
+    solution: '\\[ \\delta_r = \\frac{100\\,000}{2000(60)(22)(0.09)} = 0.421\\ \\text{rad} = 24.1^\\circ \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l08-q3',
+    type: 'numeric',
+    prompt: 'An aircraft has \\(C_{n\\beta} = 0.12\\) and \\(C_{n\\delta_r} = 0.08\\) per rad. What rudder deflection holds it in a sideslip of \\(11.3^\\circ\\) for a crosswind landing?',
+    label: '\\(\\delta_r =\\)', answer: 0.12 * 11.3 / 0.08, unit: '°',
+    hints: ['In a steady sideslip the yawing moments balance: \\(C_{n\\beta}\\beta + C_{n\\delta_r}\\delta_r = 0\\).'],
+    explain: 'The ratio of the derivatives sets it; the speed does not matter. More directional stability needs more rudder.',
+    solution: '\\[ \\delta_r = \\frac{0.12(11.3^\\circ)}{0.08} = 17.0^\\circ \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l08-q4',
+    type: 'mc',
+    prompt: 'The scissor plot made the business jet\'s horizontal tail 15% larger than Module 11\'s. Why must its takeoff weight be estimated again?',
+    choices: [
+      { html: 'The larger tail adds wetted area and weight; the drag lowers \\(L/D\\), which raises the fuel fraction, and with the tail\'s weight that raises \\(W_0\\)', correct: true, feedback: 'Yes: 172&nbsp;kg for the business jet in one turn, 104&nbsp;kg of it through the drag.' },
+      { html: 'It does not: the tail\'s weight is too small to matter', feedback: 'The tail\'s 12&nbsp;kg is the smaller part; the drag costs more, through the fuel.' },
+      { html: 'A larger tail moves the neutral point aft, which needs more fuel', feedback: 'It does move the neutral point aft, but that costs no fuel by itself.' },
+      { html: 'The tail\'s lift adds to the wing\'s, so the wing can be smaller', feedback: 'A conventional tail usually lifts downward in trim (Lesson 4), and the wing is sized by wing loading.' }
+    ],
+    explain: 'Every number in a design is an input to another; the loop closes only when they agree.'
+  });
+});
+</script>
+</body>
+</html>
