@@ -1,6 +1,6 @@
 /*!
  * loads.js — LOADS: materials, design loads, the V-n diagram, gust loads, balanced maneuvers, wing shear and bending
- * and the wing box, for Module 11 of Conceptual Aircraft Design (Loads and Structures). Plain ES5; needs wing.js
+ * and the wing box, for Module 11 of Aerospace Design & Practice (Loads and Structures). Plain ES5; needs wing.js
  * (WING, Module 4) for the atmosphere, the planform, the lift-curve slope and Schrenk's span loading.
  *
  * Units: SI (m, kg, N, Pa, m/s); speeds are equivalent airspeeds (EAS) unless a name says TAS; stresses in MPa and

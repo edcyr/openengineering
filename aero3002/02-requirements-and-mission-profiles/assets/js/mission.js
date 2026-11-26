@@ -1,5 +1,5 @@
 /*!
- * mission.js — MISSION: requirements and mission-profile helpers for Module 2 of Conceptual Aircraft Design
+ * mission.js — MISSION: requirements and mission-profile helpers for Module 2 of Aerospace Design & Practice
  * (Design Requirements and Mission Profiles). Plain ES5, no dependencies; the figures draw with AERO.chart (aero.js).
  *
  *   MISSION.AIRPORTS        airports with latitude and longitude (degrees, north and east positive)

@@ -1,6 +1,6 @@
 /*
  * design.js — DESIGN: the business jet's design loop closed, its performance and its cost
- * (Module 14 of Conceptual Aircraft Design: Performance, Cost and Trade Studies).
+ * (Module 14 of Aerospace Design & Practice: Performance, Cost and Trade Studies).
  * Needs layout.js (LAYOUT), weights.js (WEIGHTS), stability.js (STAB) and drag.js (DRAG), loaded first.
  *
  *   DESIGN.base()                 the business jet as Modules 3 to 13 left it (design inputs d)

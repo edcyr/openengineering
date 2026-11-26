@@ -1,6 +1,6 @@
 /*!
  * aero.js — AERO: data, standard atmosphere, trend charts and to-scale planform drawings for the History of
- * Aircraft Design module (Module 1 of Conceptual Aircraft Design).
+ * Aircraft Design module (Module 1 of Aerospace Design & Practice).
  * Classic script (IIFE), attaches ONE global: AERO. Uses CYL (cyl-core.js) for formatting, TeX and errors, and
  * CYL2D (cyl-2d.js) for planform drawings. Every color is a CSS variable, so the light/dark switch needs nothing.
  *

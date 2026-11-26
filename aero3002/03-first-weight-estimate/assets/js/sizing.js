@@ -1,5 +1,5 @@
 /*!
- * sizing.js — SIZING: first-estimate sizing after Raymer, Chapter 3, for Module 3 of Conceptual Aircraft Design
+ * sizing.js — SIZING: first-estimate sizing after Raymer, Chapter 3, for Module 3 of Aerospace Design & Practice
  * (The First Estimate of Takeoff Weight). Plain ES5, no dependencies.
  *
  *   SIZING.CLASSES        empty-weight trends We/W0 = A W0^C Kvs, after Raymer Table 3.1 (A for W0 in lb), with A in kg

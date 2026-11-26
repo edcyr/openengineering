@@ -1,5 +1,5 @@
 PERFORMANCE, COST AND TRADE STUDIES
-Module 14 of Conceptual Aircraft Design: an interactive module for
+Module 14 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

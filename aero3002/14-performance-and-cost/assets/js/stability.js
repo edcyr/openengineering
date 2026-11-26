@@ -1,6 +1,6 @@
 /*!
  * stability.js — STAB: static longitudinal stability, trim, control, the scissor plot and the vertical tail, for
- * Module 13 of Conceptual Aircraft Design (Stability, Control and Tail Sizing). Plain ES5; needs layout.js (LAYOUT,
+ * Module 13 of Aerospace Design & Practice (Stability, Control and Tail Sizing). Plain ES5; needs layout.js (LAYOUT,
  * Module 6) and weights.js (WEIGHTS, Module 12), and starts from Module 12's layout with its wing moved.
  *
  * Units: SI; angles in radians unless a name says deg; positions along the MAC as fractions of the MAC from its

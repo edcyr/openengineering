@@ -1,6 +1,6 @@
 /*!
  * propulsion.js — ENGINE: engine data, the rubber engine, momentum thrust, propulsive efficiency, fuel flow, thrust
- * lapse, inlet capture area and propellers, for Module 7 of Conceptual Aircraft Design (Propulsion Selection and
+ * lapse, inlet capture area and propellers, for Module 7 of Aerospace Design & Practice (Propulsion Selection and
  * Integration). Plain ES5, no dependencies; every function is pure.
  *
  * Units: SI (N, kg, m, s, W) unless a name says kN or kW.

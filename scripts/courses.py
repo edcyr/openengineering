@@ -28,7 +28,7 @@ COURSES = [
        modules=[
          dict(slug='mass-moments-of-inertia', mark='[I]', desc='Moments of inertia by integration, the parallel-axis theorem and composite bodies, then products of inertia, the inertia tensor, the moment of inertia about any axis, and principal axes, with 3D figures you can turn.'),
          dict(slug='angular-momentum', mark='H', desc='From the angular momentum of a particle to systems of particles and rigid bodies: angular impulse, impact, angular momentum in three dimensions, Euler\'s equations and gyroscopic motion, with live simulations.')]),
-  dict(slug='aero3002', code='AERO 3002', title='Conceptual Aircraft Design', level='Third-year aerospace', notation='Raymer, <em>Aircraft Design: A Conceptual Approach</em>',
+  dict(slug='aero3002', code='AERO 3002', title='Aerospace Design & Practice', level='Third-year aerospace', notation='Raymer, <em>Aircraft Design: A Conceptual Approach</em>',
        lede='Interactive modules for AERO 3002. They teach how a new aircraft is sized and laid out, from the first weight estimate to wing loading, thrust, aerodynamics, loads and structures, weights, stability and performance, then electric and vertical flight and space vehicles, using real aircraft data, interactive figures, worked examples and questions with instant feedback.',
        hero='aero3002', kicker='Module', blurb='Fifteen modules on how a new aircraft is sized and laid out, following Raymer, from the history of aircraft design to electric and vertical flight and space vehicles.', mark_italic=False,
        modules=[
@@ -334,7 +334,7 @@ def course_page(c):
       <div>
         <a class="crumb" href="../">&larr; openengineering.ca</a>
         <p class="eyebrow"><span>%(code)s</span><span>%(level)s</span></p>
-        <h1>%(title)s</h1>
+        <h1>%(h1)s</h1>
         <p class="lede">%(lede)s</p>
         <div class="cta">
           <a class="btn primary" href="%(first)s/">Start with %(firsttitle)s %(arrow)s</a>
@@ -418,7 +418,7 @@ def course_page(c):
 %(js)s
 </body>
 </html>
-''' % dict(code=c['code'], title=c['title'], desc=esc(c['lede']), host=HOST, slug=c['slug'], css=CSS, extra=EXTRA_CSS, abbr=c['code'].split()[1],
+''' % dict(code=c['code'], title=esc(c['title']), h1=esc(c['title']).replace('&amp; ', '&amp;&nbsp;'), desc=esc(c['lede']), host=HOST, slug=c['slug'], css=CSS, extra=EXTRA_CSS, abbr=c['code'].split()[1],
            level=c['level'], lede=c['lede'], first=first['slug'], firsttitle=esc(first['title']), arrow=ARROW, facts=facts, svg=svg, keys=keys,
            order='' if planned else ' Take them in the order shown; each builds on the ones before it.', avail='Available now' if planned else 'Modules',
            refs=', with a numbered list of the sources it cites' if all(m.get('refs') for m in c['mods']) else '',

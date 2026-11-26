@@ -1,6 +1,6 @@
 /*!
  * drag.js — DRAG: maximum lift, skin friction, form factors, the parasite drag build-up, induced and wave drag and the
- * drag polar, for Module 10 of Conceptual Aircraft Design (Lift and the Drag Build-Up). Plain ES5; DRAG.components and
+ * drag polar, for Module 10 of Aerospace Design & Practice (Lift and the Drag Build-Up). Plain ES5; DRAG.components and
  * DRAG.evaluate use Module 6's LAYOUT for the geometry.
  *
  * Units: SI (m, m², Pa, kg); angles in degrees unless a name says radians.

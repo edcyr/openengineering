@@ -1,5 +1,5 @@
 DESIGN REQUIREMENTS AND MISSION PROFILES
-Module 2 of Conceptual Aircraft Design: an interactive module for
+Module 2 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

@@ -1,7 +1,7 @@
 /*!
  * weights.js — WEIGHTS: load factors, the approximate group weights, the statistical group-weight equations for
  * transport aircraft, the weight statement, calibration, the center of gravity, loading and wing placement, for
- * Module 12 of Conceptual Aircraft Design (Component Weights and Center of Gravity). Plain ES5; needs layout.js
+ * Module 12 of Aerospace Design & Practice (Component Weights and Center of Gravity). Plain ES5; needs layout.js
  * (LAYOUT, Module 6) for the geometry of the four aircraft.
  *
  * Units: SI (kg, m, m², m³, m/s) in and out. The statistical equations are evaluated in their native units

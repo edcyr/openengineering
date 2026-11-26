@@ -1,5 +1,5 @@
 PROPULSION SELECTION AND INTEGRATION
-Module 7 of Conceptual Aircraft Design: an interactive module for
+Module 7 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

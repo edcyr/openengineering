@@ -1,5 +1,5 @@
 LOADS AND STRUCTURES
-Module 11 of Conceptual Aircraft Design: an interactive module for
+Module 11 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

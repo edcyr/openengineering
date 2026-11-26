@@ -1,5 +1,5 @@
 THE FIRST ESTIMATE OF TAKEOFF WEIGHT
-Module 3 of Conceptual Aircraft Design: an interactive module for
+Module 3 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

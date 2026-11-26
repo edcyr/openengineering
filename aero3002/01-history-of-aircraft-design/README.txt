@@ -1,5 +1,5 @@
 THE HISTORY OF AIRCRAFT DESIGN
-Module 1 of Conceptual Aircraft Design: an interactive module for
+Module 1 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

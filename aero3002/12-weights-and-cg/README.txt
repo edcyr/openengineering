@@ -1,5 +1,5 @@
 COMPONENT WEIGHTS AND CENTER OF GRAVITY
-Module 12 of Conceptual Aircraft Design: an interactive module for
+Module 12 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

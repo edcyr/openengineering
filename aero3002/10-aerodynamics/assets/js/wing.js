@@ -1,5 +1,5 @@
 /*!
- * wing.js — WING: airfoil and wing-geometry calculations for Module 4 of Conceptual Aircraft Design (Airfoil and
+ * wing.js — WING: airfoil and wing-geometry calculations for Module 4 of Aerospace Design & Practice (Airfoil and
  * Wing Geometry). Plain ES5, no dependencies; every function is pure.
  *
  *   WING.naca4(code | {m, p, t}, n)  NACA 4-digit airfoil: {m, p, t, code, camber(x), slope(x), thick(x),

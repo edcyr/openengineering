@@ -1,7 +1,7 @@
 /*!
  * electric.js — ELEC: electric and hybrid-electric propulsion, batteries, electric range and sizing, distributed
  * propulsion, electric motors, momentum theory for hover and the VTOL variants of the business jet, for Module 9 of
- * Conceptual Aircraft Design (Electric Aircraft and Vertical Flight). Plain ES5, no dependencies.
+ * Aerospace Design & Practice (Electric Aircraft and Vertical Flight). Plain ES5, no dependencies.
  *
  * Units: SI (m, kg, N, W, J, s) unless a name says otherwise; specific energies in Wh/kg, specific powers in kW/kg,
  * ranges in km where the name ends in Km.

@@ -6,7 +6,7 @@ Source for **https://openengineering.ca**: interactive learning modules grouped 
 | --- | --- | --- |
 | ECOR 1034 · Particle Dynamics | `/ecor1034/` | curvilinear-motion, cylindrical-coordinates (`../<slug> student`) |
 | MAAE 2101 · Rigid-Body Dynamics | `/maae2101/` | mass-moments-of-inertia, angular-momentum (`../<slug> student`) |
-| AERO 3002 · Conceptual Aircraft Design | `/aero3002/` | 01-history-of-aircraft-design (`../conceptual-aircraft-design/<slug> student`) |
+| AERO 3002 · Aerospace Design & Practice | `/aero3002/` | 01-history-of-aircraft-design (`../conceptual-aircraft-design/<slug> student`) |
 | Race Vehicle Dynamics (standalone course) | `/race-vehicle-dynamics/` | the whole course folder, `../Ravens Racing/race-vehicle-dynamics-course/` |
 
 | Path | Purpose |

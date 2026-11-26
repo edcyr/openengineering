@@ -1,5 +1,5 @@
 AIRFOIL AND WING GEOMETRY
-Module 4 of Conceptual Aircraft Design: an interactive module for
+Module 4 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

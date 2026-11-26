@@ -1,5 +1,5 @@
 SPACE VEHICLES
-Module 15 of Conceptual Aircraft Design: an interactive module for
+Module 15 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

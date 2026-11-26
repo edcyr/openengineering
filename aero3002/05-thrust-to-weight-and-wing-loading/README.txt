@@ -1,5 +1,5 @@
 THRUST-TO-WEIGHT RATIO AND WING LOADING
-Module 5 of Conceptual Aircraft Design: an interactive module for
+Module 5 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 

@@ -1,5 +1,5 @@
 /*!
- * cyl-core.js — core library for the History of Aircraft Design module (Module 1 of Conceptual Aircraft Design; the
+ * cyl-core.js — core library for the History of Aircraft Design module (Module 1 of Aerospace Design & Practice; the
  * same framework as the dynamics modules (Cylindrical Coordinates, Angular Momentum, …); only the page registry, storage namespace, brand, colors and
  * TeX macros differ).
  * Classic script (no modules). Attaches ONE global: window.CYL. The file is split into sections (Errors,
@@ -1239,7 +1239,7 @@
   function buildFooter() {
     var sheet = findPage('cheatsheet');
     return el('footer', { class: 'cyl-footer' }, [
-      el('p', null, [el('strong', { text: 'The History of Aircraft Design' }), ' \u00b7 Module 1 of Conceptual Aircraft Design, for third-year aerospace engineering']),
+      el('p', null, [el('strong', { text: 'The History of Aircraft Design' }), ' \u00b7 Module 1 of Aerospace Design & Practice, for third-year aerospace engineering']),
       el('p', null, [
         el('a', { href: CYL.url('../index.html'), text: 'AERO 3002 on openengineering.ca' }),
         ' \u00b7 ',

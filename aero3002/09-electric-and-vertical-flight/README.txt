@@ -1,5 +1,5 @@
 ELECTRIC AIRCRAFT AND VERTICAL FLIGHT
-Module 9 of Conceptual Aircraft Design: an interactive module for
+Module 9 of Aerospace Design & Practice: an interactive module for
 third-year aerospace engineering
 =========================================================================
 
