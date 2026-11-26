@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electric Motors and Their Certification · Electric Aircraft and Vertical Flight</title>
+<meta name="description" content="Electric motors for aircraft: power, torque and speed, why motor mass follows torque and when a gearbox pays, the heat an electric drive must reject and its cooling, and how the FAA certifies electric engines through special conditions to 14 CFR Part 33, with the magniX and Safran engines as examples.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/electric.js"></script>
+</head>
+<body data-page="l06" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 6 · 30 min</p>
+    <h1>Electric Motors and Their Certification</h1>
+    <p class="lede">An electric motor's mass follows its torque, its losses come out as low-temperature heat that has to be carried away, and the rules that certify aircraft engines were written for engines that burn fuel. This lesson sizes the business jet's motors for torque and heat, and reads the special conditions under which the FAA has certified the first electric engines.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Relate a motor's power, torque and speed, and explain why its mass follows its torque.</li>
+      <li>Decide when a gearbox between a fast motor and a slow propeller saves weight.</li>
+      <li>Compute the heat an electric drive must reject and the coolant flow that carries it.</li>
+      <li>Describe how the FAA certifies electric engines, and what the special conditions add to 14&nbsp;CFR Part 33.</li>
+    </ul>
+  </section>
+
+  <section id="motors">
+    <h2>Power, torque and speed</h2>
+    <p>A motor's shaft power is its torque times its angular speed:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Motor power, torque and mass</p>
+      \[ P = Q\,\omega = Q\,\frac{2\pi N}{60}, \qquad \frac{m_1}{m_2} = \left(\frac{Q_1}{Q_2}\right)^{0.8587} \]
+      <p>\(Q\) in N·m, \(N\) in rpm. The second relation is an empirical motor-weight fit, weight proportional to \(Q^{0.8587}\), used with an extra 63% for the inverter, cooling, wiring and shielding (a "tech factor" of 1.63) in NASA's air-taxi study <a class="cite" href="../reference/references.html#r8">[8]</a>.</p>
+    </div>
+    <p>Aircraft motors are mostly permanent-magnet synchronous machines: magnets on the rotor, copper windings on the stator, fed by an inverter. The force between them per unit of rotor surface is limited by the magnets and the cooling, so the torque a motor can give grows with its rotor's size, and its mass with its torque. For a given power a fast motor is small and light; a propeller wants to turn slowly. Safran's ENGINeUS 100A1, for example, is a direct-drive, radial-flux, permanent-magnet motor in two sections, each a three-phase motor with its own inverter <a class="cite" href="../reference/references.html#r3">[3]</a>: direct drive, so no gearbox, and two of everything, so no single fault stops it.</p>
+    <div class="example">
+      <p class="example-title">Example 6.1 — Direct drive or gearbox?</p>
+      <p>Each of the all-electric business jet's two motors delivers 1.04&nbsp;MW (Lesson 4: 2083&nbsp;kW in all). Find its torque driving a fan directly at 2000&nbsp;rpm, and through a 5:1 gearbox at 10&nbsp;000&nbsp;rpm, and the ratio of the two motors' masses.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ Q_{2000} = \frac{1.04\times10^6}{2\pi(2000)/60} = 4966\ \text{N}\cdot\text{m}, \qquad Q_{10\,000} = 993.1\ \text{N}\cdot\text{m} \]
+          \[ \frac{m_{2000}}{m_{10\,000}} = 5^{0.8587} = 3.98 \]
+          <p>The direct-drive motor weighs four times the fast one. The gearbox gives some of that back in its own mass and in a 2% loss, and it multiplies the inertia the motor must accelerate by the square of the gear ratio, which slows a propeller controlled by its speed <a class="cite" href="../reference/references.html#r8">[8]</a>. Large, slow rotors (Lesson 7) favor gearboxes; small, fast propellers favor direct drive.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig61-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig61-stage"></div>
+        <div class="viz-controls" id="fig61-controls"></div>
+      </div>
+      <figcaption id="fig61-cap"><strong>Figure 6.1</strong> The torque a motor of the power you choose must give, against its shaft speed, and its mass relative to a direct-drive motor at the propeller's speed (the \(Q^{0.8587}\) fit of <a class="cite" href="../reference/references.html#r8">[8]</a>). Move the motor's speed; the gear ratio is the motor's speed over the propeller's.</figcaption>
+    </figure>
+  </section>
+
+  <section id="heat">
+    <h2>Heat</h2>
+    <p>A motor that delivers \(P\) at efficiency \(\eta\) takes \(P/\eta\) and turns the difference into heat, in its windings, magnets and iron:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Heat and coolant flow</p>
+      \[ \dot Q = P\,\frac{1 - \eta}{\eta}, \qquad \dot m = \frac{\dot Q}{c_p\,\Delta T} \]
+      <p>\(\dot m\) is the coolant flow that carries \(\dot Q\) away while warming by \(\Delta T\) (for a water-glycol mixture, \(c_p \approx 3500\)&nbsp;J/(kg·K)).</p>
+    </div>
+    <p>The inverter and the battery lose heat the same way. A turbofan also loses most of its fuel's energy as heat, but it carries it away in its hot exhaust. An electric drive's heat comes out at the temperature its magnets, semiconductors and cells can stand, typically well under 200&nbsp;°C, and for the battery near 60&nbsp;°C, and it has to be pushed through radiators into the air. The radiators and their ducts add mass and drag. SCEPTOR's cruise motors and controllers are air-cooled, with a radial inlet on each nacelle to feed the stator and magnets <a class="cite" href="../reference/references.html#r7">[7]</a>.</p>
+    <div class="example">
+      <p class="example-title">Example 6.2 — Cooling the business jet's motors</p>
+      <p>Each 1.04-MW motor is 95% efficient. How much heat does it reject, and what water-glycol flow carries it away with a 10-K rise? What is the whole drive's heat at takeoff (2083&nbsp;kW of shaft power, with the inverters at 98% and the battery at 95%)?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \dot Q_{\text{mot}} = 1.04\times10^6\,\frac{0.05}{0.95} = 54.7\ \text{kW}, \qquad \dot m = \frac{54\,700}{3500(10)} = 1.564\ \text{kg/s} \]
+          <p>For the drive at takeoff: the motors take \(2083/0.95 = 2193\)&nbsp;kW, the inverters \(2193/0.98 = 2238\)&nbsp;kW and the battery gives \(2238/0.95 = 2355\)&nbsp;kW, so</p>
+          <p>so the motors, inverters and battery lose</p>
+          \[ \dot Q = 109.6 + 44.7 + 117.8 = 272\ \text{kW} \]
+          <p>About 272&nbsp;kW of low-grade heat, 13% of the shaft power, to be rejected on a takeoff that may start on a hot day.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig62-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig62-stage"></div>
+        <div class="viz-controls" id="fig62-controls"></div>
+      </div>
+      <figcaption id="fig62-cap"><strong>Figure 6.2</strong> The heat the all-electric business jet's drive must reject, by component, for the shaft power you choose (takeoff 2083&nbsp;kW, cruise at 12&nbsp;km 828.6&nbsp;kW). Change the motor's efficiency and the coolant's temperature rise.</figcaption>
+    </figure>
+  </section>
+
+  <section id="certification">
+    <h2>Certifying an electric engine</h2>
+    <p>Aircraft engines are type-certificated to 14&nbsp;CFR Part 33, written in the 1960s for piston and turbine engines that burn fuel <a class="cite" href="../reference/references.html#r2">[2]</a>, <a class="cite" href="../reference/references.html#r3">[3]</a>. Its subparts B to G apply only to those, and they guard against the failures of combustion and of hot, highly stressed rotating parts. When an engine has a "novel or unusual design feature" that the rules do not cover, the FAA issues <strong>special conditions</strong> (14&nbsp;CFR 21.16) that set the extra standards it needs for an equivalent level of safety. For electric engines the novel feature is the same in both cases issued so far: an electric motor, its controller and high-voltage systems used as the primary source of propulsion <a class="cite" href="../reference/references.html#r2">[2]</a>, <a class="cite" href="../reference/references.html#r3">[3]</a>.</p>
+    <ul>
+      <li><strong>magniX magni350 and magni650</strong>, Special Conditions No. 33-022-SC, effective 27 October 2021 <a class="cite" href="../reference/references.html#r2">[2]</a>. magniX applied on 18 April 2019; the models were first called the magni250 and magni500.</li>
+      <li><strong>Safran ENGINeUS 100A1</strong>, Special Conditions No. 33-23-01-SC, effective 27 January 2025, for FAA validation of an engine for a single-engine airplane <a class="cite" href="../reference/references.html#r3">[3]</a>.</li>
+    </ul>
+    <p>Both were developed from the technical criteria of ASTM F3338-18, <em>Standard Specification for Design of Electric Propulsion Units for General Aviation Aircraft</em> <a class="cite" href="../reference/references.html#r4">[4]</a>, and Safran's also from magniX's <a class="cite" href="../reference/references.html#r3">[3]</a>. The special conditions keep the parts of Part 33 that still apply (materials, fire protection, cooling, mounts) and add or replace others:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Table 6.1 Selected special conditions for electric engines</caption>
+        <thead><tr><th scope="col">No.</th><th scope="col">Subject</th><th scope="col">What is new</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">2</th><td>Ratings and operating limits</td><td>Takeoff, maximum continuous and maximum temporary power, each with torque, speed and temperature; a declared duty cycle; the coolant; the power-supply requirements</td></tr>
+          <tr><th scope="row">4</th><td>Fire protection</td><td>High-voltage wiring protected against arc faults</td></tr>
+          <tr><th scope="row">9</th><td>Overspeed</td><td>A margin to burst above every overspeed a failure can cause</td></tr>
+          <tr><th scope="row">10</th><td>Engine control systems</td><td>A suitable rate of loss of power control; single-fault tolerance for electrical and electronic failures; design assurance for software and complex electronics</td></tr>
+          <tr><th scope="row">12</th><td>Stress analysis</td><td>Mechanical, thermal and electro&shy;magnetic stresses</td></tr>
+          <tr><th scope="row">17</th><td>Safety analysis</td><td>In Safran's, a total loss of power is not assumed to be a minor engine effect, as it is for turbines</td></tr>
+          <tr><th scope="row">21,&nbsp;23,&nbsp;24</th><td>Overtorque, endurance, temperature limit</td><td>Each shown by test at the engine's limits, repeated for each duty cycle that affects the temperatures</td></tr>
+          <tr><th scope="row">28</th><td>Rotor locking</td><td>If the rotor can be locked, reliable locking and unlocking without hazard</td></tr>
+          <tr><th scope="row">30</th><td>Containment</td><td>Rotor failures contained</td></tr>
+          <tr><th scope="row">33</th><td>Engine electrical systems</td><td>Safe generation and distribution of power, and a means to isolate a faulted energy store</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Source: <a class="cite" href="../reference/references.html#r2">[2]</a>, <a class="cite" href="../reference/references.html#r3">[3]</a>. Numbers as in <a class="cite" href="../reference/references.html#r2">[2]</a>; number 33 is in <a class="cite" href="../reference/references.html#r3">[3]</a> only.</p>
+    <p>Neither document states the engines' power ratings; those go in the type certificate data sheets <a class="cite" href="../reference/references.html#r2">[2]</a>. For the designer the message is that an electric engine is certified as an engine, with its controller and wiring, and that its duty cycle, cooling and power supply are part of its rating: the aircraft must provide them.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(P = Q\omega\); a motor's mass follows its torque, about as \(Q^{0.86}\), plus 63% for its accessories <a class="cite" href="../reference/references.html#r8">[8]</a>.</li>
+      <li>A 1.04-MW direct-drive motor at 2000&nbsp;rpm weighs about four times one at 10&nbsp;000&nbsp;rpm; a gearbox costs mass, 2% and responsiveness.</li>
+      <li>Heat \(P(1 - \eta)/\eta\) comes out at low temperature: the business jet's drive would reject 272&nbsp;kW at takeoff.</li>
+      <li>Electric engines are certified to Part 33 with special conditions: 33-022-SC (magniX) <a class="cite" href="../reference/references.html#r2">[2]</a> and 33-23-01-SC (Safran) <a class="cite" href="../reference/references.html#r3">[3]</a>, built on ASTM F3338-18 <a class="cite" href="../reference/references.html#r4">[4]</a>.</li>
+      <li>Next, <a href="07-vertical-flight.html">Lesson 7</a> turns to vertical flight, where electric power has made new configurations possible.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 6.1: torque and motor mass against speed ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { p: 1.04, np: 2000, nm: 10000 };
+  var chart = AERO.chart(document.getElementById('fig61-stage'), {
+    x: { label: 'Motor speed (rpm)', min: 500, max: 30000, log: true }, y: { label: 'Motor mass over direct drive', min: 0, max: 2.2 }, height: 320,
+    ariaLabel: 'Relative motor mass against motor speed.',
+    legend: [{ label: 'Relative motor mass', color: 'z', line: true }, { label: 'Direct drive', color: 'muted', line: true, dashed: true }]
+  });
+  var fm = chart.fn(function (n) { return Math.pow(st.np / n, ELEC.MOTOR_EXP); }, { color: 'z', width: 2.4, domain: [500, 30000] });
+  chart.hline(1, { color: 'muted', dashed: true });
+  var vd = chart.vline(st.np, { color: 'muted', dashed: true }), mk = chart.marker([0, 0], { color: 'r', r: 5 });
+  var panel = document.getElementById('fig61-controls');
+  var sP = CYL.slider({ label: 'Shaft power', min: 0.05, max: 3, step: 0.01, value: st.p, unit: ' MW', color: 'z', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.p = v; draw(); } });
+  var sN = CYL.slider({ label: 'Propeller speed', min: 1000, max: 6000, step: 100, value: st.np, unit: ' rpm', color: 'muted', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.np = v; draw(); } });
+  var sM = CYL.slider({ label: 'Motor speed', min: 1000, max: 30000, step: 100, value: st.nm, unit: ' rpm', color: 'r', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.nm = v; draw(); } });
+  var ro = { q0: CYL.readout('Torque, direct drive'), q: CYL.readout('Torque at motor speed'), g: CYL.readout('Gear ratio'), m: CYL.readout('Mass over direct drive') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Motor' }));
+  [sP.el, sN.el, sM.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.q0.el, ro.q.el, ro.g.el, ro.m.el])].forEach(function (e) { panel.appendChild(e); });
+  function draw() {
+    fm.setFn(function (n) { return Math.pow(st.np / n, ELEC.MOTOR_EXP); }); vd.set(st.np);
+    var r = Math.pow(st.np / st.nm, ELEC.MOTOR_EXP); mk.set([st.nm, Math.min(r, 2.19)]);
+    ro.q0.set(CYL.fmtFixed(ELEC.torque(st.p * 1e6, st.np), 0) + ' N\u00b7m'); ro.q.set(CYL.fmtFixed(ELEC.torque(st.p * 1e6, st.nm), 0) + ' N\u00b7m');
+    ro.g.set(CYL.fmtFixed(st.nm / st.np, 2)); ro.m.set(CYL.fmtFixed(r, 3));
+    chart.setAriaLabel('A ' + st.p.toFixed(2) + ' MW motor at ' + st.nm + ' rpm has ' + ELEC.torque(st.p * 1e6, st.nm).toFixed(0) + ' N m of torque and ' + r.toFixed(3) + ' times the mass of a direct-drive motor at ' + st.np + ' rpm.');
+  }
+  draw();
+});
+
+/* ---------- Figure 6.2: the drive's heat ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { p: 2083, em: 0.95, dt: 10 }, host = document.getElementById('fig62-stage'), panel = document.getElementById('fig62-controls');
+  var sP = CYL.slider({ label: 'Shaft power, both motors', min: 100, max: 2500, step: 10, value: st.p, unit: ' kW', color: 'z', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.p = v; draw(); } });
+  var sE = CYL.slider({ label: 'Motor efficiency', min: 0.88, max: 0.98, step: 0.005, value: st.em, color: 'r', format: function (v) { return CYL.fmtFixed(v, 3); }, onInput: function (v) { st.em = v; draw(); } });
+  var sT = CYL.slider({ label: 'Coolant temperature rise', min: 5, max: 30, step: 1, value: st.dt, unit: ' K', color: 'muted', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.dt = v; draw(); } });
+  var row = CYL.el('div', { class: 'chip-row' }, [CYL.button('Takeoff', function () { sP.set(2083); }, { small: true }), CYL.button('Cruise, 12 km', function () { sP.set(828.6); }, { small: true })]);
+  var ro = { q: CYL.readout('Total heat'), b: CYL.readout('Battery power'), m: CYL.readout('Coolant flow, all') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Drive' }));
+  [sP.el, row, sE.el, sT.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.q.el, ro.b.el, ro.m.el])].forEach(function (e) { panel.appendChild(e); });
+  function draw() {
+    var Pm = st.p / st.em, Pi = Pm / 0.98, Pb = Pi / 0.95, qm = Pm - st.p, qi = Pi - Pm, qb = Pb - Pi, tot = qm + qi + qb;
+    ELEC.hbars(host, [
+      { label: 'Motors', segs: [{ v: qm, col: 'r' }], text: CYL.fmtFixed(qm, 1) + ' kW' },
+      { label: 'Inverters', segs: [{ v: qi, col: 'r' }], text: CYL.fmtFixed(qi, 1) + ' kW' },
+      { label: 'Battery', segs: [{ v: qb, col: 'r' }], text: CYL.fmtFixed(qb, 1) + ' kW' },
+      { label: 'Total', segs: [{ v: qm, col: 'r' }, { v: qi, col: 'warn' }, { v: qb, col: 'v' }], text: CYL.fmtFixed(tot, 1) + ' kW', bold: true }
+    ], { max: 420, legend: [{ label: 'Motors', col: 'r' }, { label: 'Inverters', col: 'warn' }, { label: 'Battery', col: 'v' }], aria: 'At ' + st.p + ' kW of shaft power the drive rejects ' + tot.toFixed(1) + ' kW of heat.' });
+    ro.q.set(CYL.fmtFixed(tot, 1) + ' kW'); ro.b.set(CYL.fmtFixed(Pb, 0) + ' kW'); ro.m.set(CYL.fmtFixed(ELEC.coolant(tot * 1000, 3500, st.dt), 2) + ' kg/s');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l06-q1',
+    type: 'numeric',
+    prompt: 'A 250-kW motor drives a propeller directly at 2400&nbsp;rpm. What torque does it give?',
+    label: '\\(Q =\\)', answer: 250e3 / (2 * Math.PI * 2400 / 60), unit: 'N·m', tol: 1,
+    hints: ['\\(\\omega = 2\\pi N/60\\) in rad/s.', '\\(Q = P/\\omega = 250\\,000/251.3\\).'],
+    explain: 'About a kilonewton-meter: a direct-drive propeller motor is a high-torque machine, and so a heavy one for its power.',
+    solution: '\\[ \\omega = \\frac{2\\pi(2400)}{60} = 251.3\\ \\text{rad/s}, \\qquad Q = \\frac{250\\,000}{251.3} = 994.7\\ \\text{N}\\cdot\\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l06-q2',
+    type: 'numeric',
+    prompt: 'A motor delivers 400&nbsp;kW of shaft power at 96% efficiency. How much heat must its cooling system remove?',
+    label: '\\(\\dot Q =\\)', answer: 400 * 0.04 / 0.96, unit: 'kW', tol: 0.05,
+    hints: ['The motor takes \\(P/\\eta\\); the heat is the difference.', '\\(\\dot Q = P(1 - \\eta)/\\eta\\).'],
+    explain: 'Not 4% of 400 kW: the losses are a share of the input, which is larger than the output.',
+    solution: '\\[ \\dot Q = 400\\,\\frac{1 - 0.96}{0.96} = 16.67\\ \\text{kW} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l06-q3',
+    type: 'mc',
+    prompt: 'Which of these do the FAA\'s special conditions for electric engines add, because 14&nbsp;CFR Part 33 does not address it?',
+    choices: [
+      { html: 'Protection of the high-voltage wiring against arc faults', correct: true, feedback: 'Yes: special condition 4 adds it to Part 33\'s fire protection.' },
+      { html: 'A materials standard for the engine\'s parts', feedback: 'That is Part 33\'s own 33.15, which the special conditions simply apply.' },
+      { html: 'Strength of the engine mounts', feedback: 'That is 33.23, applied as it stands.' },
+      { html: 'Combustor and turbine-blade containment tests', feedback: 'Those are turbine requirements; an electric engine has no combustor.' }
+    ],
+    explain: 'The special conditions keep what still applies, drop what is specific to combustion, and add what is specific to electric power.'
+  });
+});
+</script>
+</body>
+</html>

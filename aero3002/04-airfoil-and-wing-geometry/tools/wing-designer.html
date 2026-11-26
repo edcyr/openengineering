@@ -41,13 +41,14 @@
   <header class="lesson-header">
     <p class="eyebrow">Tool · Wing and tail geometry</p>
     <h1>Wing Planform Designer</h1>
-    <p class="lede">The whole module on one page: describe the wing's planform, its airfoil and its cruise condition, and see it drawn to scale with its tails, its mean aerodynamic chord, its lift-curve slope, its cruise lift coefficient, the drag-divergence Mach number its thickness allows, where it stalls first, and the dihedral the guidelines suggest. Every number is shown, so you can check each one by hand.</p>
+    <p class="lede">All eight lessons on one page: describe the wing's planform, its airfoil and its cruise condition, and see it drawn to scale with its tails, its mean aerodynamic chord, its lift-curve slope, its cruise lift coefficient, the drag-divergence Mach number its thickness allows, where it stalls first, and the dihedral the guidelines suggest. Every number is shown, so you can check each one by hand.</p>
   </header>
 
   <section id="inputs">
     <h2>Inputs</h2>
     <p class="small muted" id="wd-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
     <div class="chip-row" id="wd-presets" role="group" aria-labelledby="wd-presets-label"></div>
+    <p class="small muted" style="margin:6px 0 0">The business jet preset is the design you follow through the lessons; the other five are illustrative, not real types.</p>
     <div class="sc-grid" id="wd-grid"></div>
     <p class="small muted" id="wd-msg" aria-live="polite"></p>
   </section>
@@ -95,10 +96,10 @@
     <h2>How it is calculated</h2>
     <ul>
       <li>Planform (Lesson 6): \(b = \sqrt{AS}\), \(c_r = 2S/[b(1 + \lambda)]\), \(\bar c = \tfrac23c_r(1 + \lambda + \lambda^2)/(1 + \lambda)\), \(\bar y = (b/6)(1 + 2\lambda)/(1 + \lambda)\), and sweep at any chord line from the quarter-chord sweep.</li>
-      <li>Lift-curve slope (Lesson 4): Helmbold's formula with \(\eta = 0.95\), the sweep of the 30% chord line, at low speed and at the cruise Mach number.</li>
-      <li>Cruise (Lesson 3): \(C_L = W/(\tfrac12\gamma pM^2S)\) in the standard atmosphere; the Reynolds number on the MAC (Lesson 2); \(\MDD\) from the Korn equation with the mid-chord sweep and the thickness at the MAC, interpolated between root and tip.</li>
+      <li>Lift-curve slope (Lesson 4): Helmbold's formula <a class="cite" href="../reference/references.html#r1">[1]</a> with \(\eta = 0.95\), the sweep of the 30% chord line, at low speed and at the cruise Mach number.</li>
+      <li>Cruise (Lesson 3): \(C_L = W/(\tfrac12\gamma pM^2S)\) in the standard atmosphere <a class="cite" href="../reference/references.html#r3">[3]</a>; the Reynolds number on the MAC (Lesson 2); \(\MDD\) from the Korn equation <a class="cite" href="../reference/references.html#r7">[7]</a> with the mid-chord sweep and the thickness at the MAC, interpolated between root and tip.</li>
       <li>Airfoil (Lessons 1 and 2): thin-airfoil theory for the NACA four-digit camber line gives \(\alpha_{L0}\) and the ideal \(c_l\); the incidence is \(\alpha_{L0} + C_L/\CLa\) (Lesson 7).</li>
-      <li>Span loading (Lesson 6): Schrenk's approximation for the untwisted, unswept planform. Dihedral (Lesson 7) and tail volume coefficients (Lesson 8) from the guideline tables; the tails use the middle of the tail aspect-ratio range for the class.</li>
+      <li>Span loading (Lesson 6): Schrenk's approximation <a class="cite" href="../reference/references.html#r5">[5]</a> for the untwisted, unswept planform. Dihedral (Lesson 7) and tail volume coefficients (Lesson 8) from the guideline tables of <a class="cite" href="../reference/references.html#r1">[1]</a>; the tails use the middle of the tail aspect-ratio range for the class.</li>
     </ul>
     <p>Your inputs are saved in this browser.</p>
   </section>
@@ -110,12 +111,12 @@ CYL.ready(function () {
   var BASE = { S: 28, A: 8, lam: 0.35, L: 25, G: 3, wash: 2, m: 2, p: 4, tr: 12, tt: 12, kappa: 'supercritical',
     W: 6634, M: 0.80, h: 12000, pos: 'low', cls: 'trainer', arm: 6.58 };
   var PRESETS = {
-    biz: { label: 'Business jet (this module)', v: {} },
-    light: { label: 'Light single (illustrative)', v: { S: 16.2, A: 7.5, lam: 0.6, L: 0, G: 1.7, wash: 3, m: 2, p: 4, tr: 15, tt: 12, kappa: 'conventional', W: 1100, M: 0.18, h: 2500, pos: 'high', cls: 'ga1', arm: 4.5 } },
-    tprop: { label: 'Regional turboprop (illustrative)', v: { S: 61, A: 12, lam: 0.5, L: 3, G: 1, wash: 2, m: 3, p: 4, tr: 18, tt: 13, kappa: 'conventional', W: 21000, M: 0.45, h: 7000, pos: 'high', cls: 'tprop', arm: 12 } },
-    airliner: { label: 'Narrow-body airliner (illustrative)', v: { S: 125, A: 9.5, lam: 0.25, L: 25, G: 6, wash: 3, m: 2, p: 4, tr: 15, tt: 11, kappa: 'supercritical', W: 70000, M: 0.78, h: 11000, pos: 'low', cls: 'jt', arm: 17 } },
-    fighter: { label: 'Fighter (illustrative)', v: { S: 28, A: 3.2, lam: 0.25, L: 32, G: 0, wash: 0, m: 0, p: 4, tr: 5, tt: 4, kappa: 'conventional', W: 13000, M: 0.85, h: 9000, pos: 'mid', cls: 'fighter', arm: 5 } },
-    sail: { label: 'Sailplane (illustrative)', v: { S: 10.5, A: 22, lam: 0.4, L: 0, G: 3, wash: 2, m: 4, p: 4, tr: 14, tt: 12, kappa: 'conventional', W: 450, M: 0.08, h: 1500, pos: 'mid', cls: 'sail', arm: 4.2 } }
+    biz: { label: 'Business jet (Lessons 1–8)', v: {} },
+    light: { label: 'Light single', v: { S: 16.2, A: 7.5, lam: 0.6, L: 0, G: 1.7, wash: 3, m: 2, p: 4, tr: 15, tt: 12, kappa: 'conventional', W: 1100, M: 0.18, h: 2500, pos: 'high', cls: 'ga1', arm: 4.5 } },
+    tprop: { label: 'Regional turboprop', v: { S: 61, A: 12, lam: 0.5, L: 3, G: 1, wash: 2, m: 3, p: 4, tr: 18, tt: 13, kappa: 'conventional', W: 21000, M: 0.45, h: 7000, pos: 'high', cls: 'tprop', arm: 12 } },
+    airliner: { label: 'Narrow-body airliner', v: { S: 125, A: 9.5, lam: 0.25, L: 25, G: 6, wash: 3, m: 2, p: 4, tr: 15, tt: 11, kappa: 'supercritical', W: 70000, M: 0.78, h: 11000, pos: 'low', cls: 'jt', arm: 17 } },
+    fighter: { label: 'Fighter', v: { S: 28, A: 3.2, lam: 0.25, L: 32, G: 0, wash: 0, m: 0, p: 4, tr: 5, tt: 4, kappa: 'conventional', W: 13000, M: 0.85, h: 9000, pos: 'mid', cls: 'fighter', arm: 5 } },
+    sail: { label: 'Sailplane', v: { S: 10.5, A: 22, lam: 0.4, L: 0, G: 3, wash: 2, m: 4, p: 4, tr: 14, tt: 12, kappa: 'conventional', W: 450, M: 0.08, h: 1500, pos: 'mid', cls: 'sail', arm: 4.2 } }
   };
   var KEY = 'designer:inputs';
   var st = Object.assign({}, BASE, CYL.store.get(KEY, {}) || {});

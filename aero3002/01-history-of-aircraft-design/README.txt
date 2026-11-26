@@ -15,7 +15,7 @@ WHAT IT IS
   The lessons have to-scale planform drawings, trend charts of 91
   aircraft from NASA data, worked examples and questions with instant
   feedback. There is also a Practice Lab, a Self-Check Quiz, a printable
-  worksheet, the Design Trends Explorer, a formula sheet and a glossary.
+  worksheet, the Design Trends Explorer, a formula sheet, a glossary and a references page.
 
   Everything runs in your web browser from this folder. No internet
   connection, installation or account is needed.
@@ -76,7 +76,7 @@ FOLDER OVERVIEW
   lessons/       Lessons 1-7
   practice/      Practice Lab, Self-Check Quiz, Printable Worksheet
   tools/         Design Trends Explorer (all the aircraft data)
-  reference/     Formula Sheet and Glossary
+  reference/     Formula Sheet, Glossary and References
   assets/        Styles, scripts, the aircraft data (assets/js/aero.js)
                  and the bundled math library (never edit
                  assets/vendor)

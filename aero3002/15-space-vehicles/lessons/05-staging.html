@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Rocket Equation and Staging · Space Vehicles</title>
+<meta name="description" content="The rocket equation and what it means for a launcher: mass ratio, structural coefficient and payload ratio, why one stage cannot reach orbit, why launchers stage, the optimal split of the delta-v between unequal stages, and the small launcher's masses and their sensitivities.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/space.js"></script>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 35 min</p>
+    <h1>The Rocket Equation and Staging</h1>
+    <p class="lede">The rocket equation plays the role for launchers that Breguet's range equation played for the business jet. It turns a \(\Delta v\) into a mass ratio. Its exponential makes reaching orbit with one stage nearly impossible, and it explains why every launcher drops its empty tanks on the way up. This lesson derives it, splits the small launcher's 9.20&nbsp;km/s between two stages in the lightest way, and finds the launcher's masses.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Derive the rocket equation and compute mass ratios and propellant fractions.</li>
+      <li>Define the structural coefficient and the payload ratio, and find the most \(\Delta v\) one stage can give.</li>
+      <li>Explain why launchers stage, and compute the payload fraction of identical stages.</li>
+      <li>Split the \(\Delta v\) between unequal stages optimally with a Lagrange multiplier, and find each stage's mass.</li>
+    </ul>
+  </section>
+
+  <section id="equation">
+    <h2>The rocket equation</h2>
+    <p>A rocket of mass \(m\) ejects propellant at the rate \(\dot m\) with an <strong>effective exhaust velocity</strong> \(c\) relative to itself. With no gravity or drag, its momentum balance over a time \(dt\) is \(m\,dv = -c\,dm\). Integrating from the initial mass \(m_0\) to the final mass \(m_f\) gives the rocket equation, published by Tsiolkovsky in 1903 <a class="cite" href="../reference/references.html#r5">[5]</a> and derived in Chapter 13 of <a class="cite" href="../reference/references.html#r1">[1]</a>:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The rocket equation</p>
+      \[ \Delta v = c\ln\frac{m_0}{m_f}, \qquad c = I_{sp}\,g_0, \qquad \frac{m_0}{m_f} = e^{\Delta v/c} \]
+      <p>\(I_{sp}\) is the specific impulse in seconds and \(g_0 = 9.80665\ \text{m/s}^2\). Gravity and drag appear as the losses of Lesson 4, already in the \(\Delta v\).</p>
+    </div>
+    <p>Compare Breguet's range for a jet, \(R = (V/C)(L/D)\ln(W_0/W_1)\), from Module 3. Both are logarithms of a mass ratio, because both vehicles burn the mass they carry. But the jet multiplies its fuel's effect by \(L/D\) and by \(V/C\), roughly 15 and 1300&nbsp;km for the business jet, so it needs to burn less than a third of its weight. The rocket has nothing to multiply with: it must reach 9.2&nbsp;km/s with exhaust velocities of about 3&nbsp;km/s.</p>
+    <div class="example">
+      <p class="example-title">Example 5.1 — The mass ratio of orbit</p>
+      <p>What mass ratio and propellant fraction does 9199&nbsp;m/s need with \(I_{sp} = 340\)&nbsp;s, a good kerosene engine in vacuum?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ c = 340(9.80665) = 3334\ \text{m/s} \]
+          \[ \frac{m_0}{m_f} = e^{9199/3334} = e^{2.759} = 15.79 \]
+          \[ \frac{m_p}{m_0} = 1 - \frac{1}{15.79} = 0.937 \]
+          <p>94% of the vehicle must be propellant, leaving 6% for the tanks, the engines and the payload together.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="single">
+    <h2>One stage</h2>
+    <p>Divide a stage's mass into propellant \(m_p\), structure and engines (its <strong>inert mass</strong>) \(m_s\), and the payload \(m_{pl}\) it carries. Two ratios describe it:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Structural coefficient and payload ratio</p>
+      \[ \varepsilon = \frac{m_s}{m_s + m_p}, \qquad \lambda = \frac{m_{pl}}{m_s + m_p}, \qquad \Delta v = c\ln\frac{1 + \lambda}{\varepsilon + \lambda} \]
+      <p>With no payload (\(\lambda = 0\)) a stage reaches its largest \(\Delta v\), \(c\ln(1/\varepsilon)\).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 5.2 — Can one stage reach orbit?</p>
+      <p>A stage has \(\varepsilon = 0.08\) and an average \(I_{sp}\) of 320&nbsp;s. What is the most \(\Delta v\) it can give?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \Delta v_{\max} = 320(9.80665)\ln\frac{1}{0.08} = 3138(2.526) = 7926\ \text{m/s} \]
+          <p>Even empty, it falls 1.3&nbsp;km/s short of the 9.2&nbsp;km/s to orbit. A single stage to orbit needs a much lower structural coefficient, a much higher specific impulse, or both: hydrogen (450&nbsp;s) with \(\varepsilon = 0.10\) gives 10.16&nbsp;km/s, with almost nothing left for payload.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="staging">
+    <h2>Why stage</h2>
+    <p>Once most of a stage's propellant has burned, it carries large, nearly empty tanks and engines sized for liftoff. Dropping them and continuing with a smaller stage means the later \(\Delta v\) no longer has to accelerate that dead mass. Each stage's payload is everything above it. For \(N\) identical stages that share the \(\Delta v\) equally, each has the mass ratio \(n = e^{\Delta v/(Nc)}\), and the payload fraction is</p>
+    \[ \frac{m_{pl}}{m_0} = \left(\frac{1 - n\varepsilon}{n(1 - \varepsilon)}\right)^N \]
+    <div class="example">
+      <p class="example-title">Example 5.3 — Two and three identical stages</p>
+      <p>With \(I_{sp} = 320\)&nbsp;s and \(\varepsilon = 0.08\) for every stage, find the payload fraction for 9199&nbsp;m/s with two and with three stages.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ N = 2: \quad n = e^{9199/(2 \cdot 3138)} = 4.331 \]
+          \[ \frac{m_{pl}}{m_0} = \left(\frac{1 - 0.3465}{4.331(0.92)}\right)^2 = 0.1640^2 = 0.0269 \]
+          \[ N = 3: \quad n = e^{9199/(3 \cdot 3138)} = 2.657 \]
+          \[ \frac{m_{pl}}{m_0} = \left(\frac{1 - 0.2126}{2.657(0.92)}\right)^3 = 0.3221^3 = 0.0334 \]
+          <p>Two stages reach orbit with 2.7% payload where one stage cannot reach it at all. A third stage adds a quarter more payload, but also another set of engines, another separation and more that can fail. Most launchers to low orbit use two stages; three are common for solid-propellant launchers and for higher orbits.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> The payload fraction of one, two and three identical stages against the \(\Delta v\) (log scale), with the small launcher's 9.20&nbsp;km/s marked. Change the specific impulse and the structural coefficient; each curve ends where its stages run out of \(\Delta v\).</figcaption>
+    </figure>
+  </section>
+
+  <section id="optimal">
+    <h2>Unequal stages: the optimal split</h2>
+    <p>Real stages differ. A first stage works in the atmosphere at a lower average \(I_{sp}\); an upper stage has a vacuum nozzle but a heavier structure for its size. The \(\Delta v\) should then be split so that the liftoff mass is least. With a Lagrange multiplier \(\eta\) on the \(\Delta v\) constraint (Chapter 13 of <a class="cite" href="../reference/references.html#r1">[1]</a>), each stage's mass ratio at the optimum is</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The optimal staging</p>
+      \[ n_i = \frac{c_i\eta - 1}{c_i\varepsilon_i\eta}, \qquad \sum_i c_i\ln n_i = \Delta v \]
+      <p>Solve the second equation for \(\eta\) (by trial or bisection), then build the vehicle from the top down. Each stage's propellant, for a mass \(m\) above it, is \(m_p = m(n - 1)(1 - \varepsilon)/(1 - n\varepsilon)\), and its inert mass is \(m_s = m_p\,\varepsilon/(1 - \varepsilon)\).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 5.4 — The small launcher's stages</p>
+      <p>The first stage burns kerosene and oxygen at an average \(I_{sp}\) of 300&nbsp;s over its ascent (283&nbsp;s at sea level, 315&nbsp;s in vacuum) with \(\varepsilon_1 = 0.08\). The second has \(I_{sp} = 340\)&nbsp;s and \(\varepsilon_2 = 0.10\), including the payload fairing. Size them for 300&nbsp;kg and 9199&nbsp;m/s. Take both structural coefficients as first estimates; Lesson 8 checks them.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>With \(c_1 = 2942\) and \(c_2 = 3334\)&nbsp;m/s, the multiplier that satisfies the \(\Delta v\) is \(\eta = 5.2406\times10^{-4}\)&nbsp;s/m:</p>
+          \[ n_1 = \frac{2942\eta - 1}{2942(0.08)\eta} = 4.3925 \]
+          \[ n_2 = \frac{3334\eta - 1}{3334(0.10)\eta} = 4.2770 \]
+          \[ \Delta v_1 = 2942\ln 4.3925 = 4354\ \text{m/s} \]
+          \[ \Delta v_2 = 3334\ln 4.2770 = 4846\ \text{m/s} \]
+          <p>Second stage, with the 300&nbsp;kg payload above it:</p>
+          \[ m_{p2} = \frac{300(3.2770)(0.90)}{1 - 0.4277} = 1546.1\ \text{kg} \]
+          \[ m_{s2} = 171.8\ \text{kg}, \qquad m_{02} = 2017.8\ \text{kg} \]
+          <p>First stage, with the 2017.8&nbsp;kg second stage above it:</p>
+          \[ m_{p1} = \frac{2017.8(3.3925)(0.92)}{1 - 0.3514} = 9709.9\ \text{kg} \]
+          \[ m_{s1} = 844.3\ \text{kg} \]
+          \[ m_0 = 2017.8 + 9709.9 + 844.3 = 12\,572\ \text{kg} \]
+          <p>The payload fraction is 2.39%. The upper stage, with the better \(I_{sp}\), takes the larger share of the \(\Delta v\).</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig52-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig52-stage"></div>
+        <div class="viz-controls" id="fig52-controls"></div>
+      </div>
+      <figcaption id="fig52-cap"><strong>Figure 5.2</strong> The small launcher's liftoff mass against the \(\Delta v\) given to its first stage (the rest to the second), with the optimum dashed. Move the split, or change the second stage's specific impulse and structural coefficient; the optimum is flat, but the structural coefficient is not.</figcaption>
+    </figure>
+  </section>
+
+  <section id="sensitivity">
+    <h2>What each kilogram costs</h2>
+    <p>Because every stage's masses scale with what it carries, the liftoff mass is proportional to the payload: \(m_0/m_{pl} = 12\,572/300 = 41.9\) kilograms at liftoff per kilogram of payload, against 5.7 for the business jet (Module 3). The other sensitivities, from resizing with the optimal split, show where engineering effort pays:</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Table 5.1 The small launcher's liftoff mass: change for each change of a design input</caption>
+        <thead><tr><th scope="col">Change</th><th scope="col">Liftoff mass (kg)</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Equal \(\Delta v\) split instead of the optimum</th><td>+81</td></tr>
+          <tr><th scope="row">+1&nbsp;kg of payload</th><td>+41.9</td></tr>
+          <tr><th scope="row">+100&nbsp;m/s of \(\Delta v\) (losses, a lower orbit's penalty)</th><td>+680</td></tr>
+          <tr><th scope="row">+1&nbsp;s of \(I_{sp}\) on the first stage</th><td>−95</td></tr>
+          <tr><th scope="row">+1&nbsp;s of \(I_{sp}\) on the second stage</th><td>−93</td></tr>
+          <tr><th scope="row">+0.01 on the first stage's \(\varepsilon\)</th><td>+727</td></tr>
+          <tr><th scope="row">+0.01 on the second stage's \(\varepsilon\)</th><td>+815</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A hundredth of structural coefficient on the upper stage, about 17&nbsp;kg of structure, costs 815&nbsp;kg at liftoff. Every kilogram on the upper stage must be carried by the first stage as well. This is the launcher's equivalent of the business jet's empty-weight trend, and the reason the structures of Lesson 7 are built so thin.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\Delta v = c\ln(m_0/m_f)\), with \(c = I_{sp}g_0\): orbit at 340&nbsp;s needs a mass ratio of 15.8, 94% propellant.</li>
+      <li>One stage gives at most \(c\ln(1/\varepsilon)\): 7.93&nbsp;km/s at 320&nbsp;s and \(\varepsilon = 0.08\), short of orbit.</li>
+      <li>Staging drops empty tanks and engines: two identical stages give a payload fraction of 2.7%, three 3.3%.</li>
+      <li>The optimal split has \(n_i = (c_i\eta - 1)/(c_i\varepsilon_i\eta)\): the small launcher weighs 12&nbsp;572&nbsp;kg (9710 + 844&nbsp;kg first stage, 1546 + 172&nbsp;kg second stage), 41.9&nbsp;kg per kilogram of payload.</li>
+      <li>Next, <a href="06-engines.html">Lesson 6</a> looks inside the specific impulse: the engines and their propellants.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: payload fraction of identical stages ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G0 = SPACE.G0, st = { isp: 320, eps: 0.08 }, DV = 9.199;
+  function pf(dv, N, c, e) { var n = Math.exp(dv / (N * c)); if (n * e >= 1) return NaN; var r = Math.pow((1 - n * e) / (n * (1 - e)), N); return r > 1e-4 ? r : NaN; }
+  var chart = AERO.chart(document.getElementById('fig51-stage'), {
+    x: { label: '\\(\\Delta v\\) (km/s)', min: 0, max: 14 }, y: { label: 'Payload fraction \\(m_{pl}/m_0\\)', min: 0.001, max: 1, log: true }, height: 320,
+    ariaLabel: 'Payload fraction against delta-v for one, two and three stages.',
+    legend: [{ label: 'One stage', color: 'r', line: true }, { label: 'Two stages', color: 'accent', line: true }, { label: 'Three stages', color: 'good', line: true }]
+  });
+  var curves = [['r', 1], ['accent', 2], ['good', 3]].map(function (q) { return chart.fn(function () { return NaN; }, { color: q[0], width: 2.4, samples: 300 }); });
+  chart.vline(DV, { color: 'muted', dashed: true, label: '9.20 km/s' });
+  var mk = chart.marker([DV, 0.02], { color: 'accent', r: 5 });
+  var panel = document.getElementById('fig51-controls');
+  var sI = CYL.slider({ label: 'Specific impulse \\(I_{sp}\\)', min: 250, max: 460, step: 1, value: st.isp, unit: ' s', color: 'good', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.isp = v; draw(); } });
+  var sE = CYL.slider({ label: 'Structural coefficient \\(\\varepsilon\\)', min: 0.04, max: 0.2, step: 0.005, value: st.eps, color: 'r', format: function (v) { return CYL.fmtFixed(v, 3); }, onInput: function (v) { st.eps = v; draw(); } });
+  var ro = { m: CYL.readout('Most \\(\\Delta v\\), one stage'), a: CYL.readout('One stage', { color: 'r' }), b: CYL.readout('Two stages', { color: 'accent' }), c: CYL.readout('Three stages', { color: 'good' }) };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Every stage' }));
+  [sI.el, sE.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.m.el, ro.a.el, ro.b.el, ro.c.el]), CYL.el('p', { class: 'fig-note', text: 'Payload fractions at 9.20 km/s.' })].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function show(x) { return isFinite(x) ? CYL.fmtFixed(100 * x, 2) + '%' : 'cannot reach'; }
+  function draw() {
+    var c = st.isp * G0 / 1000, e = st.eps;
+    curves.forEach(function (cv, i) { cv.setFn(function (dv) { return pf(dv, i + 1, c, e); }); });
+    var p2 = pf(DV, 2, c, e);
+    mk.setVisible(isFinite(p2)); if (isFinite(p2)) mk.set([DV, p2]);
+    ro.m.set(CYL.fmtFixed(SPACE.maxDv(c, e), 2) + ' km/s'); ro.a.set(show(pf(DV, 1, c, e))); ro.b.set(show(p2)); ro.c.set(show(pf(DV, 3, c, e)));
+    chart.setAriaLabel('At ' + st.isp + ' s and a structural coefficient of ' + e.toFixed(3) + ', the payload fraction at 9.20 km/s is ' + show(pf(DV, 1, c, e)) + ' with one stage, ' + show(p2) + ' with two and ' + show(pf(DV, 3, c, e)) + ' with three.');
+  }
+  draw();
+});
+
+/* ---------- Figure 5.2: the split of the delta-v ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G0 = SPACE.G0, p = SPACE.preset('small'), DV = SPACE.budget({ h: p.h, inc: p.inc, lat: p.lat, gl: p.gl, dl: p.dl, sl: p.sl }).total;
+  var st = { isp2: 340, eps2: 0.10, dv1: null };
+  var chart = AERO.chart(document.getElementById('fig52-stage'), {
+    x: { label: 'First stage\'s \\(\\Delta v\\) (km/s)', min: 2.5, max: 6.5 }, y: { label: 'Liftoff mass (t)', min: 10, max: 22 }, height: 300,
+    ariaLabel: 'Liftoff mass against the first stage\'s share of the delta-v.'
+  });
+  var curve = chart.fn(function () { return NaN; }, { color: 'accent', width: 2.4, samples: 200 });
+  var opt = chart.vline(4.35, { color: 'good', dashed: true, label: 'optimum' }), mk = chart.marker([4.35, 12.57], { color: 'accent', r: 5 });
+  var panel = document.getElementById('fig52-controls');
+  var sD = CYL.slider({ label: 'First stage\'s \\(\\Delta v\\)', min: 1500, max: 7500, step: 10, value: 4350, unit: ' m/s', color: 'z', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.dv1 = v; draw(); } });
+  var sI = CYL.slider({ label: 'Second stage \\(I_{sp}\\)', min: 300, max: 460, step: 1, value: st.isp2, unit: ' s', color: 'good', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.isp2 = v; draw(); } });
+  var sE = CYL.slider({ label: 'Second stage \\(\\varepsilon\\)', min: 0.05, max: 0.2, step: 0.005, value: st.eps2, color: 'r', format: function (v) { return CYL.fmtFixed(v, 3); }, onInput: function (v) { st.eps2 = v; draw(); } });
+  var bO = CYL.button('Optimal split', function () { st.dv1 = null; draw(); }, { small: true });
+  var bR = CYL.button('The small launcher', function () { st.isp2 = 340; st.eps2 = 0.10; st.dv1 = null; sI.set(340, true); sE.set(0.10, true); draw(); }, { small: true });
+  var ro = { m0: CYL.readout('Liftoff mass'), pf: CYL.readout('Payload fraction'), s1: CYL.readout('First stage \\(m_p + m_s\\)'), s2: CYL.readout('Second stage \\(m_p + m_s\\)'), d2: CYL.readout('Second stage\'s \\(\\Delta v\\)'), o: CYL.readout('Optimum') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Split and second stage' }));
+  [sD.el, sI.el, sE.el, CYL.el('div', { class: 'chip-row' }, [bO, bR]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.m0.el, ro.pf.el, ro.s1.el, ro.s2.el, ro.d2.el, ro.o.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var cs = [300 * G0, st.isp2 * G0], eps = [0.08, st.eps2], o = SPACE.stageOpt(DV, cs, eps, 300);
+    var f = function (x) { var s = SPACE.stack([x * 1000, DV - x * 1000], cs, eps, 300); return s && s.m0 / 1000 < 40 ? s.m0 / 1000 : NaN; };
+    curve.setFn(f);
+    var dv1 = st.dv1 == null ? o.stages[0].dv : st.dv1;
+    if (st.dv1 == null) sD.set(Math.round(dv1 / 10) * 10, true);
+    var s = SPACE.stack([dv1, DV - dv1], cs, eps, 300);
+    var ymax = Math.max(16, Math.ceil(o.m0 / 1000 * 1.6 / 2) * 2), ymin = Math.max(0, Math.floor(o.m0 / 1000 * 0.8)), od = o.stages[0].dv / 1000;
+    chart.setAxes({ x: { min: Math.min(2.5, Math.floor(od - 1)), max: Math.max(6.5, Math.ceil(od + 1)) }, y: { min: ymin, max: ymax } });
+    opt.set(o.stages[0].dv / 1000);
+    if (s) {
+      mk.set([dv1 / 1000, Math.min(s.m0 / 1000, ymax)]);
+      ro.m0.set(CYL.fmtFixed(s.m0, 0) + ' kg'); ro.pf.set(CYL.fmtFixed(100 * s.pf, 2) + '%');
+      ro.s1.set(CYL.fmtFixed(s.stages[0].mp, 0) + ' + ' + CYL.fmtFixed(s.stages[0].ms, 0) + ' kg'); ro.s2.set(CYL.fmtFixed(s.stages[1].mp, 0) + ' + ' + CYL.fmtFixed(s.stages[1].ms, 0) + ' kg');
+    } else { ro.m0.set('cannot reach'); ro.pf.set('—'); ro.s1.set('—'); ro.s2.set('—'); }
+    ro.d2.set(CYL.fmtFixed(DV - dv1, 0) + ' m/s'); ro.o.set(CYL.fmtFixed(o.m0, 0) + ' kg at ' + CYL.fmtFixed(o.stages[0].dv, 0) + ' m/s');
+    chart.setAriaLabel('With ' + Math.round(dv1) + ' m/s on the first stage the liftoff mass is ' + (s ? Math.round(s.m0) + ' kg' : 'unreachable') + '; the optimum is ' + Math.round(o.m0) + ' kg.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G0 = 9.80665;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1',
+    type: 'numeric',
+    prompt: 'An upper stage with \\(I_{sp} = 320\\) s must give 4000&nbsp;m/s. What mass ratio \\(m_0/m_f\\) does it need?',
+    label: '\\(m_0/m_f =\\)', answer: Math.exp(4000 / (320 * G0)), tol: 0.005,
+    hints: ['\\(c = I_{sp}g_0 = 3138\\) m/s.', '\\(m_0/m_f = e^{\\Delta v/c}\\).'],
+    explain: 'Its propellant is \\(1 - 1/3.578 = 72\\%\\) of its initial mass.',
+    solution: '\\[ \\frac{m_0}{m_f} = e^{4000/3138} = e^{1.2747} = 3.578 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2',
+    type: 'numeric',
+    prompt: 'A solid-propellant stage has \\(I_{sp} = 300\\) s and a structural coefficient of 0.10. What is the most \\(\\Delta v\\) it can give on its own, with no payload?',
+    label: '\\(\\Delta v_{\\max} =\\)', answer: 300 * G0 * Math.log(10), unit: 'm/s', tol: 3,
+    hints: ['With no payload, \\(m_0/m_f = 1/\\varepsilon\\).', '\\(\\Delta v_{\\max} = c\\ln(1/\\varepsilon)\\).'],
+    explain: 'Less than 7 km/s: a single stage like this cannot reach orbit.',
+    solution: '\\[ \\Delta v_{\\max} = 300(9.80665)\\ln 10 = 2942(2.3026) = 6774\\ \\text{m/s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3',
+    type: 'mc',
+    prompt: 'Why does staging raise a launcher\'s payload?',
+    choices: [
+      { html: 'Later stages no longer accelerate the empty tanks and engines of the stages dropped', correct: true, feedback: 'Yes: each stage burns into a final mass that excludes the dead weight below it.' },
+      { html: 'Each stage adds its own \\(\\Delta v\\) without adding mass', feedback: 'Each stage adds mass; staging pays because the mass is dropped when it is no longer useful.' },
+      { html: 'A smaller stage has a higher specific impulse', feedback: 'Upper stages often do have better nozzles, but identical stages also gain from staging.' },
+      { html: 'Staging reduces the gravity loss', feedback: 'The losses depend on the trajectory; staging acts through the mass ratios.' }
+    ],
+    explain: 'With 320 s and \\(\\varepsilon = 0.08\\): one stage cannot reach 9.2 km/s, two give 2.7% payload, three 3.3%.'
+  });
+});
+</script>
+</body>
+</html>

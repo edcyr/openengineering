@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Space Vehicles</title>
+<meta name="description" content="Unlimited randomized problems on space vehicles: orbital energy and margins, orbits, orbital maneuvers, the ascent to orbit, the rocket equation and staging, rocket engines and propellants, launch vehicle structures, and sizing and licensing a launcher, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: the energy of an orbit and mass margins, circular and elliptical orbits and sun-synchronous inclinations, Hohmann transfers, plane changes and phasing, the ascent budget and launch azimuth, mass ratios and staging, specific impulse, thrust and propellants, tank walls and margins of safety, and deorbit burns, launch risk and structural coefficients, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>orbits-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. orbits-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>sqrt(3.986e14/6.878e6)</code></td><td>\(7613\)</td></tr>
+          <tr><td><code>2*pi*sqrt(6.878e6^3/3.986e14)/60</code></td><td>\(94.61\)</td></tr>
+          <tr><td><code>2*7612.7*sin(0.5*pi/180)</code></td><td>\(132.9\)</td></tr>
+          <tr><td><code>340*9.80665*ln(4.277)</code></td><td>\(4846\)</td></tr>
+          <tr><td><code>exp(9199/(340*9.80665))</code></td><td>\(15.79\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(\mu = 3.986\times10^{14}\ \text{m}^3/\text{s}^2\), \(R_E = 6378\ \text{km}\) and \(g_0 = 9.80665\ \text{m/s}^2\), and work in meters and seconds; each box gives its unit. <code>sqrt</code>, <code>^</code>, <code>pi</code>, <code>ln</code>, <code>asin</code>, <code>exp</code>, and powers of ten all work. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>340*9.80665*ln(4.277)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  function r4(x) { return +x.toPrecision(4); }                                       // a given value rounded to 4 significant figures
+  var G = 9.81, RHO0 = 1.225, P0 = 101325;
+  var KG = '\\ \\text{kg}', KGS = '\\ \\text{kg/s}', MM = '\\ \\text{m}', MS = '\\ \\text{m/s}', NN = '\\ \\text{N}', KN = '\\ \\text{kN}', KW = '\\ \\text{kW}', PA = '\\ \\text{Pa}',
+    KPA = '\\ \\text{kPa}', MPA = '\\ \\text{MPa}', MMM = '\\ \\text{mm}', DEG = '^\\circ', LB = '\\ \\text{lb}', PSIU = '\\ \\text{psi}', INU = '\\ \\text{in}', IN2 = '\\ \\text{in}^2',
+    FPS = '\\ \\text{ft/s}', LPM = '\\ \\text{L/min}', AMP = '\\ \\text{A}', VOLT = '\\ \\text{V}', M2 = '\\ \\text{m}^2', CM2 = '\\ \\text{cm}^2', LIT = '\\ \\text{L}', KK = '\\ \\text{K}';
+  var D2R = Math.PI / 180, PSI = 6894.757, LBF = 4.4482216;
+  var FT2 = '\\ \\text{ft}^2', FTU = '\\ \\text{ft}', KTU = '\\ \\text{kt}', GALU = '\\ \\text{gal}', KGM = '\\ \\text{kg}\\cdot\\text{m}', KGM2 = '\\ \\text{kg/m}^2', PCT = '\\%', KVA = '\\ \\text{kV}\\cdot\\text{A}';
+  var LBKG = 0.45359237, FTM = 0.3048;
+  function deg(r) { return r / D2R; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function upN(v, st) { return Math.ceil(v / st) * st; }                               // a tidy axis maximum in steps of st
+  function sci(x) { var e = Math.floor(Math.log10(x)), c = x / Math.pow(10, e); return nn(+c.toFixed(2)) + '\\times 10^{' + e + '}'; }   // 3.2 × 10^7 (TeX)
+  function r3(x) { return +(+x).toFixed(3); }
+  var KNMU = '\\ \\text{kN}\\cdot\\text{m}', PR = '\\ \\text{per rad}';
+  function cmF(A, sw) { var c = Math.cos(sw * D2R); return A * c * c / (A + 2 * c); }
+  function tauOf(x) { return 1.576 * x * x * x - 3.458 * x * x + 2.882 * x; }
+  function sgn(x) { return x < 0 ? ' - ' + nn(-x) : ' + ' + nn(x); }                      // " + 0.12" or " - 0.12" (TeX)
+  function niceAx(label, lo, hi, pad) {                                                 // an axis with tidy limits around [lo, hi]
+    if (!(hi > lo)) hi = lo + 1;
+    var p = (hi - lo) * (pad == null ? 0.12 : pad), a = lo - p, b = hi + p, raw = (b - a) / 5, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag, st = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+    return { label: label, min: +(Math.floor(a / st) * st).toPrecision(10), max: +(Math.ceil(b / st) * st).toPrecision(10) };
+  }
+  function yAx(label, fs, x0, x1, extra) {                                              // a y axis that holds the curves over [x0, x1] and the extra values
+    var v = (extra || []).slice(); fs.forEach(function (f) { for (var i = 0; i <= 40; i++) { var y = f(x0 + (x1 - x0) * i / 40); if (isFinite(y)) v.push(y); } });
+    return niceAx(label, Math.min.apply(null, v), Math.max.apply(null, v), 0.08);
+  }
+  function isaRho(h) { var T = h <= 11000 ? 288.15 - 0.0065 * h : 216.65, p = h <= 11000 ? 101325 * Math.pow(1 - 2.25577e-5 * h, 5.25588) : 22632.06 * Math.exp(-(h - 11000) / 6341.62); return p / (287.053 * T); }
+  /* Module 15 additions: Earth's constants (the lessons' values) and orbit helpers */
+  var MUE = 3.986e14, REM = 6378e3, J2E = 1.08263e-3, WEE = 7.2921159e-5, G00 = 9.80665;
+  var KM = '\\ \\text{km}', KMS = '\\ \\text{km/s}', MJKG = '\\ \\text{MJ/kg}', MIN = '\\ \\text{min}', SEC = '\\ \\text{s}', KGM3 = '\\ \\text{kg/m}^3';
+  function vcirc(hkm) { return Math.sqrt(MUE / (REM + hkm * 1000)); }
+  function vvis(r, a) { return Math.sqrt(MUE * (2 / r - 1 / a)); }
+  function tper(a) { return 2 * Math.PI * Math.sqrt(a * a * a / MUE); }
+  function ssoI(hkm) { var a = REM + hkm * 1000, n = Math.sqrt(MUE / (a * a * a)), w = 2 * Math.PI / (365.2422 * 86400); return Math.acos(-w / (1.5 * n * J2E * (REM / a) * (REM / a))) / D2R; }
+  function hoh(h1, h2) { var r1 = REM + h1 * 1000, r2 = REM + h2 * 1000, a = (r1 + r2) / 2; return { d1: vvis(r1, a) - Math.sqrt(MUE / r1), d2: Math.sqrt(MUE / r2) - vvis(r2, a), a: a, t: Math.PI * Math.sqrt(a * a * a / MUE) }; }
+  function prOfE(g, eps) { var lo = 1e-9, hi = Math.pow(2 / (g + 1), g / (g - 1)); for (var i = 0; i < 100; i++) { var mid = Math.sqrt(lo * hi), inv = Math.pow((g + 1) / 2, 1 / (g - 1)) * Math.pow(mid, 1 / g) * Math.sqrt(((g + 1) / (g - 1)) * (1 - Math.pow(mid, (g - 1) / g))); if (1 / inv > eps) lo = mid; else hi = mid; } return Math.sqrt(lo * hi); }
+
+  /* ================================================================ 2. Generators */
+  /* ---------- 2.1 Space systems and orbital energy (Lesson 1) ---------- */
+  function genSystems(rng) {
+    var kind = pickW(rng, [['energy', 3], ['ratio', 2], ['margin', 2]]), spec, right, wrong, view;
+    if (kind === 'energy') {
+      var h = rng.pick(range(160, 2000, 10)), r = REM + h * 1000, ke = MUE / (2 * r) / 1e6, pe = (MUE / REM - MUE / r) / 1e6, e = ke + pe;
+      spec = { type: 'numeric', prompt: 'What is the specific energy, relative to Earth\'s surface, of a circular orbit at \\(' + nn(h) + KM + '\\)? Use \\(\\mu = 3.986\\times10^{14}\\ \\text{m}^3/\\text{s}^2\\) and \\(R_E = 6378\\ \\text{km}\\), and leave out Earth\'s rotation.', label: '\\(e =\\)', answer: e, unit: 'MJ/kg' };
+      spec.hints = ['The kinetic energy is \\(v^2/2 = \\mu/(2r)\\), with \\(r = R_E + h = ' + g4(r / 1000) + KM + '\\).', 'Add the potential energy \\(\\mu/R_E - \\mu/r\\); work in meters.'];
+      spec.solution = M('\\frac{\\mu}{2r} = \\frac{3.986\\times10^{14}}{2(' + n4(r) + ')} = ' + n4(ke) + MJKG) + M('\\frac{\\mu}{R_E} - \\frac{\\mu}{r} = ' + n4(pe) + MJKG + ', \\qquad e = ' + n4(e) + MJKG);
+      right = { value: typed(e) }; wrong = { value: typed(wrongOf(e, [ke, 2 * ke + pe, ke + 9.81 * h * 1000 / 1e6 * 0])) };
+      var fe = function (x) { var rr = REM + x * 1000; return (MUE / (2 * rr) + MUE / REM - MUE / rr) / 1e6; };
+      view = { title: 'Orbital energy against altitude', aria: 'Specific energy of a circular orbit against altitude, with this orbit marked.', x: { label: 'Altitude (km)', min: 0, max: 2200 }, y: { label: 'Specific energy (MJ/kg)', min: 30, max: 40 },
+        curves: [{ f: fe, color: 'z' }], marker: { at: [h, e], label: '' }, readouts: [{ label: 'Kinetic', tex: n4(ke) + MJKG }, { label: 'Potential', tex: n4(pe) + MJKG }], note: 'Most of it is speed: orbit is going fast, not going high.' };
+    } else if (kind === 'ratio') {
+      var Mn = rng.pick(range(0.4, 0.9, 0.01)), ha = rng.pick(range(3000, 13000, 500)), T = ha <= 11000 ? 288.15 - 0.0065 * ha : 216.65, va = Mn * Math.sqrt(1.4 * 287.05 * T), ea = (va * va / 2 + G * ha) / 1e6;
+      var ho = rng.pick(range(200, 1200, 50)), ro = REM + ho * 1000, eo = (MUE / (2 * ro) + MUE / REM - MUE / ro) / 1e6, rat = eo / ea;
+      spec = { type: 'numeric', prompt: 'An airliner cruises at Mach \\(' + nn(Mn) + '\\) at \\(' + g4(ha) + MM + '\\), where the speed of sound is \\(' + n4(va / Mn) + MS + '\\). How many times its specific energy (\\(v^2/2 + gh\\)) does a \\(' + nn(ho) + KM + '\\) circular orbit have, relative to the surface?', label: 'ratio \\(=\\)', answer: rat };
+      spec.hints = ['The airliner: \\(v = ' + n4(va) + MS + '\\), so \\(v^2/2 + gh = ' + n4(ea) + MJKG + '\\).', 'The orbit: \\(\\mu/(2r) + \\mu/R_E - \\mu/r\\) with \\(r = ' + g4(ro / 1000) + KM + '\\).'];
+      spec.solution = M('e_{\\text{air}} = \\frac{' + n4(va) + '^2}{2} + 9.81(' + g4(ha) + ') = ' + n4(ea) + MJKG) + M('e_{\\text{orbit}} = ' + n4(eo) + MJKG + ', \\qquad \\frac{e_{\\text{orbit}}}{e_{\\text{air}}} = ' + n4(rat));
+      right = { value: typed(rat) }; wrong = { value: typed(wrongOf(rat, [eo / (va * va / 2 / 1e6), eo / (G * ha / 1e6), (MUE / (2 * ro) / 1e6) / ea * 0.5])) };
+      var fr = function (x) { var rr = REM + x * 1000; return (MUE / (2 * rr) + MUE / REM - MUE / rr) / 1e6 / ea; };
+      view = { title: 'Orbit against cruise', aria: 'Ratio of orbital to cruise specific energy against orbit altitude, with this orbit marked.', x: { label: 'Orbit altitude (km)', min: 100, max: 1300 }, y: yAx('Energy ratio', [fr], 100, 1300, [rat]),
+        curves: [{ f: fr, color: 'z' }], marker: { at: [ho, rat], label: '' }, readouts: [{ label: 'Airliner', tex: n4(ea) + MJKG }, { label: 'Orbit', tex: n4(eo) + MJKG }], note: 'Two orders of magnitude separate cruise from orbit.' };
+    } else {
+      var cbe = rng.pick(range(40, 900, 5)), mga = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3]), mar = rng.pick([0.05, 0.1, 0.15]), m = cbe * (1 + mga) * (1 + mar);
+      spec = { type: 'numeric', prompt: 'A spacecraft\'s current best estimate of mass is \\(' + nn(cbe) + KG + '\\). The project adds a growth allowance of ' + nn(100 * mga) + '% for immature designs and holds a system margin of ' + nn(100 * mar) + '% on top. What payload mass should the launcher be sized for?', label: '\\(m =\\)', answer: m, unit: 'kg' };
+      spec.hints = ['Apply the growth allowance first: \\(' + nn(cbe) + '(1 + ' + nn(mga) + ') = ' + n4(cbe * (1 + mga)) + KG + '\\).', 'Then the margin: multiply by \\(1 + ' + nn(mar) + '\\).'];
+      spec.solution = M('m = ' + nn(cbe) + '(1 + ' + nn(mga) + ')(1 + ' + nn(mar) + ') = ' + n4(m) + KG);
+      right = { value: typed(m) }; wrong = { value: typed(wrongOf(m, [cbe * (1 + mga + mar) * 0.97, cbe, cbe * (1 + mga)])) };
+      var fm = function (x) { return x * (1 + mga) * (1 + mar); };
+      view = { title: 'Mass with allowances', aria: 'Mass to size for against the current estimate, with this spacecraft marked.', x: { label: 'Current best estimate (kg)', min: 0, max: 1000 }, y: { label: 'Mass to size for (kg)', min: 0, max: 1500 },
+        curves: [{ f: fm, color: 'z' }, { f: function (x) { return x; }, color: 'muted', dashed: true }], marker: { at: [cbe, m], label: '' }, readouts: [{ label: 'With allowance', tex: n4(cbe * (1 + mga)) + KG }, { label: 'With margin', tex: n4(m) + KG }], note: 'Margins are consumed as the design matures; the launcher must carry what is left.' };
+    }
+    spec.explain = 'Lesson 1: a circular orbit\'s energy is \\(\\mu/(2r) + \\mu/R_E - \\mu/r\\); margins protect the launcher against a growing payload.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Orbits (Lesson 2) ---------- */
+  function genOrbits(rng) {
+    var kind = pickW(rng, [['circ', 3], ['ellipse', 3], ['sso', 2]]), spec, right, wrong, view;
+    if (kind === 'circ') {
+      var h = rng.pick(range(160, 40000, 10)), r = REM + h * 1000, v = Math.sqrt(MUE / r), T = tper(r) / 60, askT = rng.next() < 0.5;
+      spec = askT ? { type: 'numeric', prompt: 'What is the period of a circular orbit at \\(' + g4(h) + KM + '\\), in minutes?', label: '\\(T =\\)', answer: T, unit: 'min' }
+                  : { type: 'numeric', prompt: 'What is the speed of a circular orbit at \\(' + g4(h) + KM + '\\)?', label: '\\(v_c =\\)', answer: v, unit: 'm/s' };
+      spec.hints = ['\\(r = R_E + h = ' + g4(r / 1000) + KM + '\\); work in meters with \\(\\mu = 3.986\\times10^{14}\\).', askT ? '\\(T = 2\\pi\\sqrt{r^3/\\mu}\\), then divide by 60.' : '\\(v_c = \\sqrt{\\mu/r}\\).'];
+      spec.solution = askT ? M('T = 2\\pi\\sqrt{\\frac{(' + n4(r) + ')^3}{3.986\\times10^{14}}} = ' + n4(T * 60) + SEC + ' = ' + n4(T) + MIN) : M('v_c = \\sqrt{\\frac{3.986\\times10^{14}}{' + n4(r) + '}} = ' + n4(v) + MS);
+      var ans = askT ? T : v;
+      right = { value: typed(ans) }; wrong = { value: typed(askT ? wrongOf(T, [T * 60, tper(h * 1000 + 1) / 60, T / (2 * Math.PI)]) : wrongOf(v, [Math.sqrt(MUE / (h * 1000)), Math.sqrt(2 * MUE / r), v / 1000])) };
+      var fx = askT ? function (x) { return tper(REM + x * 1000) / 60; } : function (x) { return Math.sqrt(MUE / (REM + x * 1000)); };
+      var xm = h < 2000 ? 2200 : 42000;
+      view = { title: askT ? 'Period against altitude' : 'Circular speed against altitude', aria: (askT ? 'Period' : 'Circular speed') + ' against altitude, with this orbit marked.', x: { label: 'Altitude (km)', min: 0, max: xm }, y: yAx(askT ? 'Period (min)' : '\\(v_c\\) (m/s)', [fx], 0, xm, [ans]),
+        curves: [{ f: fx, color: 'z' }], marker: { at: [h, ans], label: '' }, readouts: [{ label: '\\(v_c\\)', tex: n4(v) + MS }, { label: '\\(T\\)', tex: n4(T) + MIN }], note: 'Higher orbits are slower and take longer: geostationary at 35 786 km takes a sidereal day.' };
+    } else if (kind === 'ellipse') {
+      var hp = rng.pick(range(160, 1500, 10)), ha = rng.pick(range(hp + 100, hp + 30000, 10)), rp = REM + hp * 1000, ra = REM + ha * 1000, a = (rp + ra) / 2, vp = vvis(rp, a), va = vvis(ra, a), atP = rng.next() < 0.5, x = atP ? vp : va;
+      spec = { type: 'numeric', prompt: 'A spacecraft is in an orbit with its perigee at \\(' + g4(hp) + KM + '\\) and its apogee at \\(' + g4(ha) + KM + '\\). What is its speed at ' + (atP ? 'perigee' : 'apogee') + '?', label: atP ? '\\(v_p =\\)' : '\\(v_a =\\)', answer: x, unit: 'm/s' };
+      spec.hints = ['\\(r_p = ' + g4(rp / 1000) + KM + '\\), \\(r_a = ' + g4(ra / 1000) + KM + '\\), so \\(a = ' + g4(a / 1000) + KM + '\\).', 'Vis-viva: \\(v = \\sqrt{\\mu(2/r - 1/a)}\\) at \\(r = ' + (atP ? 'r_p' : 'r_a') + '\\).'];
+      spec.solution = M((atP ? 'v_p' : 'v_a') + ' = \\sqrt{3.986\\times10^{14}\\left(\\frac{2}{' + n4(atP ? rp : ra) + '} - \\frac{1}{' + n4(a) + '}\\right)} = ' + n4(x) + MS);
+      right = { value: typed(x) }; wrong = { value: typed(wrongOf(x, [Math.sqrt(MUE / (atP ? rp : ra)), atP ? va : vp, Math.sqrt(MUE * (1 / (atP ? rp : ra)))])) };
+      var fv = function (rr) { return vvis(REM + rr * 1000, a); };
+      view = { title: 'Speed around the orbit', aria: 'Orbital speed against altitude between perigee and apogee, with this point marked.', x: { label: 'Altitude (km)', min: Math.max(0, hp - 200), max: ha + 200 }, y: yAx('\\(v\\) (m/s)', [fv], hp, ha, [vp, va]),
+        curves: [{ f: fv, color: 'z' }], marker: { at: [atP ? hp : ha, x], label: '' }, readouts: [{ label: '\\(v_p\\)', tex: n4(vp) + MS }, { label: '\\(v_a\\)', tex: n4(va) + MS }], note: 'Angular momentum checks it: \\(r_pv_p = r_av_a\\).' };
+    } else {
+      var hs = rng.pick(range(250, 1500, 10)), i = ssoI(hs), as = REM + hs * 1000, n = Math.sqrt(MUE / (as * as * as)), w = 2 * Math.PI / (365.2422 * 86400), c = -w / (1.5 * n * J2E * (REM / as) * (REM / as));
+      spec = { type: 'numeric', prompt: 'What inclination makes a circular orbit at \\(' + g4(hs) + KM + '\\) sun-synchronous? Use \\(J_2 = 1.08263\\times10^{-3}\\) and a node drift of 360° in 365.2422 days.', label: '\\(i =\\)', answer: i, unit: '°' };
+      spec.hints = ['\\(n = \\sqrt{\\mu/a^3} = ' + sci(n) + '\\) rad/s and \\(\\dot\\Omega = 2\\pi/(365.2422 \\cdot 86\\,400) = 1.991\\times10^{-7}\\) rad/s.', '\\(\\cos i = -\\dot\\Omega/(1.5\\,nJ_2(R_E/a)^2)\\).'];
+      spec.solution = M('\\cos i = -\\frac{1.991\\times10^{-7}}{1.5(' + sci(n) + ')(1.08263\\times10^{-3})(' + n4(REM / as) + ')^2} = ' + n4(c)) + M('i = ' + n4(i) + DEG);
+      right = { value: typed(i) }; wrong = { value: typed(wrongOf(i, [180 - i, i - 90, Math.acos(Math.min(1, -c)) / D2R])) };
+      view = { title: 'Sun-synchronous inclination', aria: 'Sun-synchronous inclination against altitude, with this orbit marked.', x: { label: 'Altitude (km)', min: 200, max: 1600 }, y: { label: '\\(i\\) (°)', min: 95.5, max: 103 },
+        curves: [{ f: ssoI, color: 'z' }], marker: { at: [hs, i], label: '' }, readouts: [{ label: '\\(\\cos i\\)', tex: n4(c) }, { label: '\\(i\\)', tex: n4(i) + DEG }], note: 'Retrograde, and steeper for higher orbits.' };
+    }
+    spec.explain = 'Lesson 2: \\(v_c = \\sqrt{\\mu/r}\\), \\(T = 2\\pi\\sqrt{a^3/\\mu}\\), vis-viva \\(v^2 = \\mu(2/r - 1/a)\\), and the \\(J_2\\) drift of the node.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 Orbital maneuvers (Lesson 3) ---------- */
+  function genManeuvers(rng) {
+    var kind = pickW(rng, [['hohmann', 3], ['plane', 2], ['phase', 2]]), spec, right, wrong, view;
+    if (kind === 'hohmann') {
+      var h1 = rng.pick(range(160, 1500, 10)), h2 = rng.pick(range(h1 + 50, rng.next() < 0.7 ? h1 + 2500 : 36000, 10)), q = hoh(h1, h2), dv = q.d1 + q.d2;
+      spec = { type: 'numeric', prompt: 'What is the total \\(\\Delta v\\) of a Hohmann transfer from a \\(' + g4(h1) + KM + '\\) to a \\(' + g4(h2) + KM + '\\) circular orbit?', label: '\\(\\Delta v =\\)', answer: dv, unit: 'm/s' };
+      spec.hints = ['\\(a_t = (r_1 + r_2)/2 = ' + g4(q.a / 1000) + KM + '\\).', 'Each burn is the difference between a circular speed and the transfer orbit\'s speed (vis-viva) at the same radius.'];
+      spec.solution = M('\\Delta v_1 = ' + n4(vvis(REM + h1 * 1000, q.a)) + ' - ' + n4(vcirc(h1)) + ' = ' + n4(q.d1) + MS) + M('\\Delta v_2 = ' + n4(vcirc(h2)) + ' - ' + n4(vvis(REM + h2 * 1000, q.a)) + ' = ' + n4(q.d2) + MS) + M('\\Delta v = ' + n4(dv) + MS);
+      right = { value: typed(dv) }; wrong = { value: typed(wrongOf(dv, [q.d1, vcirc(h1) - vcirc(h2), 2 * q.d1])) };
+      var fh = function (x) { var z = hoh(h1, x); return z.d1 + z.d2; };
+      view = { title: 'Hohmann \\(\\Delta v\\) against final altitude', aria: 'Total Hohmann delta-v from this initial orbit against the final altitude, with this transfer marked.', x: { label: 'Final altitude (km)', min: h1, max: Math.max(h2 * 1.3, h1 + 500) }, y: yAx('\\(\\Delta v\\) (m/s)', [fh], h1, Math.max(h2 * 1.3, h1 + 500), [dv, 0]),
+        curves: [{ f: fh, color: 'z' }], marker: { at: [h2, dv], label: '' }, readouts: [{ label: '\\(\\Delta v_1\\)', tex: n4(q.d1) + MS }, { label: '\\(\\Delta v_2\\)', tex: n4(q.d2) + MS }], note: 'Transfer time: half the transfer orbit\'s period, ' + n4(q.t / 60) + ' min.' };
+    } else if (kind === 'plane') {
+      var hp = rng.pick(range(160, 36000, 10)), di = rng.pick(range(0.5, 30, 0.5)), v = vcirc(hp), d = 2 * v * Math.sin(di * D2R / 2);
+      spec = { type: 'numeric', prompt: 'What \\(\\Delta v\\) turns the plane of a circular orbit at \\(' + g4(hp) + KM + '\\) by \\(' + nn(di) + '^\\circ\\), with no change of speed?', label: '\\(\\Delta v =\\)', answer: d, unit: 'm/s' };
+      spec.hints = ['The circular speed is \\(v = \\sqrt{\\mu/r} = ' + n4(v) + MS + '\\).', '\\(\\Delta v = 2v\\sin(\\Delta i/2)\\).'];
+      spec.solution = M('\\Delta v = 2(' + n4(v) + ')\\sin ' + nn(di / 2) + '^\\circ = ' + n4(d) + MS);
+      right = { value: typed(d) }; wrong = { value: typed(wrongOf(d, [v * Math.sin(di * D2R), 2 * v * Math.sin(di / 2), v * di * D2R * 2])) };
+      var fp = function (x) { return 2 * v * Math.sin(x * D2R / 2); };
+      view = { title: 'Plane change against angle', aria: 'Delta-v of a plane change at this speed against the angle, with this change marked.', x: { label: '\\(\\Delta i\\) (°)', min: 0, max: 32 }, y: yAx('\\(\\Delta v\\) (m/s)', [fp], 0, 32, [d, 0]),
+        curves: [{ f: fp, color: 'z' }], marker: { at: [di, d], label: '' }, readouts: [{ label: '\\(v\\)', tex: n4(v) + MS }, { label: '\\(\\Delta v\\)', tex: n4(d) + MS }], note: 'Plane changes cost least where the speed is lowest.' };
+    } else {
+      var hh = rng.pick(range(250, 1500, 10)), dth = rng.pick(range(2, 20, 1)), r = REM + hh * 1000, T0 = tper(r), Tph = T0 * (1 - dth / 360), aph = Math.pow(MUE * Math.pow(Tph / (2 * Math.PI), 2), 1 / 3), vc = Math.sqrt(MUE / r), va = vvis(r, aph), dvp = 2 * (vc - va);
+      spec = { type: 'numeric', prompt: 'A spacecraft in a circular orbit at \\(' + g4(hh) + KM + '\\) must move \\(' + nn(dth) + '^\\circ\\) ahead along its orbit in one revolution of a phasing orbit. What is the total \\(\\Delta v\\) of the two burns?', label: '\\(\\Delta v =\\)', answer: dvp, unit: 'm/s' };
+      spec.hints = ['\\(T_0 = ' + n4(T0 / 60) + MIN + '\\) and \\(T_{ph} = T_0(1 - ' + nn(dth) + '/360) = ' + n4(Tph / 60) + MIN + '\\).', '\\(a_{ph} = (\\mu(T_{ph}/2\\pi)^2)^{1/3} = ' + g4(aph / 1000) + KM + '\\); the burn point is its apogee. Two burns of \\(v_c - v_a\\).'];
+      spec.solution = M('v_a = \\sqrt{\\mu\\left(\\frac{2}{' + n4(r) + '} - \\frac{1}{' + n4(aph) + '}\\right)} = ' + n4(va) + MS) + M('\\Delta v = 2(' + n4(vc) + ' - ' + n4(va) + ') = ' + n4(dvp) + MS);
+      right = { value: typed(dvp) }; wrong = { value: typed(wrongOf(dvp, [vc - va, 2 * (vvis(r, Math.pow(MUE * Math.pow(T0 * (1 + dth / 360) / (2 * Math.PI), 2), 1 / 3)) - vc), dvp * 2])) };
+      var fd = function (x) { var Tq = T0 * (1 - x / 360), aq = Math.pow(MUE * Math.pow(Tq / (2 * Math.PI), 2), 1 / 3); return 2 * (vc - vvis(r, aq)); };
+      view = { title: 'Phasing \\(\\Delta v\\) against angle', aria: 'Total phasing delta-v against the angle gained in one revolution, with this maneuver marked.', x: { label: 'Angle gained (°)', min: 0, max: 22 }, y: yAx('\\(\\Delta v\\) (m/s)', [fd], 0, 22, [dvp, 0]),
+        curves: [{ f: fd, color: 'z' }], marker: { at: [dth, dvp], label: '' }, readouts: [{ label: '\\(a_{ph}\\)', tex: g4(aph / 1000) + KM }, { label: 'Perigee', tex: g4((2 * aph - r - REM) / 1000) + KM }], note: 'Spreading the phasing over more revolutions costs less.' };
+    }
+    spec.explain = 'Lesson 3: maneuvers are priced in \\(\\Delta v\\): Hohmann, \\(2v\\sin(\\Delta i/2)\\), and phasing orbits.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Getting to orbit (Lesson 4) ---------- */
+  function genAscent(rng) {
+    var kind = pickW(rng, [['site', 2], ['azimuth', 3], ['budget', 3]]), spec, right, wrong, view;
+    if (kind === 'site') {
+      var lat = rng.pick(range(0, 65, 0.1)), vE = WEE * REM * Math.cos(lat * D2R);
+      spec = { type: 'numeric', prompt: 'How fast does Earth\'s rotation carry a launch site at \\(' + nn(lat) + '^\\circ\\) latitude eastward? Use \\(\\omega_E = 7.2921\\times10^{-5}\\) rad/s and \\(R_E = 6378\\ \\text{km}\\).', label: '\\(v_E =\\)', answer: vE, unit: 'm/s' };
+      spec.hints = ['At the equator \\(\\omega_E R_E = 465.1\\ \\text{m/s}\\).', 'Multiply by \\(\\cos\\phi\\).'];
+      spec.solution = M('v_E = 465.1\\cos ' + nn(lat) + '^\\circ = ' + n4(vE) + MS);
+      right = { value: typed(vE) }; wrong = { value: typed(wrongOf(vE, [465.1 * Math.sin(lat * D2R), 465.1, 465.1 * Math.cos(lat)])) };
+      var fv = function (x) { return WEE * REM * Math.cos(x * D2R); };
+      view = { title: 'Site speed against latitude', aria: 'Eastward speed of the launch site against latitude, with this site marked.', x: { label: 'Latitude (°)', min: 0, max: 70 }, y: { label: '\\(v_E\\) (m/s)', min: 0, max: 500 },
+        curves: [{ f: fv, color: 'z' }], marker: { at: [lat, vE], label: '' }, readouts: [{ label: '\\(v_E\\)', tex: n4(vE) + MS }, { label: 'Equator', tex: '465.1' + MS }], note: 'A due-east launch gains it all; a westward one must cancel it.' };
+    } else if (kind === 'azimuth') {
+      var la = rng.pick(range(5, 55, 0.5)), inc = rng.pick(range(la + 1, 89, 0.5)), s = Math.cos(inc * D2R) / Math.cos(la * D2R), Az = Math.asin(s) / D2R;
+      spec = { type: 'numeric', prompt: 'A launch from \\(' + nn(la) + '^\\circ\\) N must reach an orbit inclined at \\(' + nn(inc) + '^\\circ\\). What is the northeastward launch azimuth, in degrees from north?', label: '\\(A_z =\\)', answer: Az, unit: '°' };
+      spec.hints = ['\\(\\sin A_z = \\cos i/\\cos\\phi\\).', '\\(\\cos ' + nn(inc) + '^\\circ = ' + n4(Math.cos(inc * D2R)) + '\\) and \\(\\cos ' + nn(la) + '^\\circ = ' + n4(Math.cos(la * D2R)) + '\\).'];
+      spec.solution = M('\\sin A_z = \\frac{' + n4(Math.cos(inc * D2R)) + '}{' + n4(Math.cos(la * D2R)) + '} = ' + n4(s) + ', \\qquad A_z = ' + n4(Az) + DEG);
+      right = { value: typed(Az) }; wrong = { value: typed(wrongOf(Az, [180 - Az, 90 - Az, Math.asin(Math.cos(la * D2R) / Math.cos(inc * D2R) > 1 ? 1 : Math.cos(la * D2R) / Math.cos(inc * D2R)) / D2R])) };
+      var fa = function (x) { var q = Math.cos(x * D2R) / Math.cos(la * D2R); return q <= 1 ? Math.asin(q) / D2R : NaN; };
+      view = { title: 'Azimuth against inclination', aria: 'Launch azimuth from this latitude against the inclination, with this orbit marked.', x: { label: 'Inclination (°)', min: la, max: 90 }, y: { label: '\\(A_z\\) (°)', min: 0, max: 90 },
+        curves: [{ f: fa, color: 'z' }], marker: { at: [inc, Az], label: '' }, readouts: [{ label: '\\(\\sin A_z\\)', tex: n4(s) }, { label: 'Other azimuth', tex: n4(180 - Az) + DEG }], note: 'The lowest inclination reachable directly is the site\'s latitude, due east.' };
+    } else {
+      var ho = rng.pick(range(160, 900, 10)), lt = rng.pick(range(0, 50, 0.5)), gl = rng.pick(range(1000, 1600, 10)), dl = rng.pick(range(50, 250, 10)), sl = rng.pick(range(50, 200, 10)), v = vcirc(ho), vEs = WEE * REM * Math.cos(lt * D2R), tot = v - vEs + gl + dl + sl;
+      spec = { type: 'numeric', prompt: 'A launcher flies due east from \\(' + nn(lt) + '^\\circ\\) into a circular orbit at \\(' + g4(ho) + KM + '\\) inclined at \\(' + nn(lt) + '^\\circ\\). Its losses are \\(' + g4(gl) + MS + '\\) to gravity, \\(' + g4(dl) + MS + '\\) to drag and \\(' + g4(sl) + MS + '\\) to steering. What \\(\\Delta v\\) must its stages give?', label: '\\(\\Delta v =\\)', answer: tot, unit: 'm/s' };
+      spec.hints = ['Due east, \\(v_{\\text{rel}} = v - v_E\\), with \\(v = \\sqrt{\\mu/r} = ' + n4(v) + MS + '\\).', '\\(v_E = 465.1\\cos\\phi = ' + n4(vEs) + MS + '\\); add the three losses.'];
+      spec.solution = M('\\Delta v = ' + n4(v) + ' - ' + n4(vEs) + ' + ' + g4(gl) + ' + ' + g4(dl) + ' + ' + g4(sl) + ' = ' + n4(tot) + MS);
+      right = { value: typed(tot) }; wrong = { value: typed(wrongOf(tot, [v + vEs + gl + dl + sl, v + gl + dl + sl, v - vEs])) };
+      var fb = function (x) { return v - WEE * REM * Math.cos(x * D2R) + gl + dl + sl; };
+      view = { title: 'Budget against site latitude', aria: 'Ascent delta-v for a due-east launch against the site latitude, with this launch marked.', x: { label: 'Latitude (°)', min: 0, max: 60 }, y: yAx('\\(\\Delta v\\) (m/s)', [fb], 0, 60, [tot]),
+        curves: [{ f: fb, color: 'z' }], marker: { at: [lt, tot], label: '' }, readouts: [{ label: 'Orbital speed', tex: n4(v) + MS }, { label: 'Rotation gain', tex: n4(vEs) + MS }], note: 'A site near the equator gains up to 465 m/s for low inclinations.' };
+    }
+    spec.explain = 'Lesson 4: \\(\\Delta v = v_{\\text{rel}} + \\Delta v_{\\text{gravity}} + \\Delta v_{\\text{drag}} + \\Delta v_{\\text{steering}}\\), with \\(\\sin A_z = \\cos i/\\cos\\phi\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 The rocket equation and staging (Lesson 5) ---------- */
+  function genStaging(rng) {
+    var kind = pickW(rng, [['ratio', 3], ['max', 2], ['two', 3]]), spec, right, wrong, view;
+    if (kind === 'ratio') {
+      var dv = rng.pick(range(500, 9500, 10)), isp = rng.pick(range(220, 460, 1)), c = isp * G00, n = Math.exp(dv / c), pfrac = 1 - 1 / n, askP = rng.next() < 0.5, ans = askP ? pfrac : n;
+      spec = { type: 'numeric', prompt: 'A rocket with \\(I_{sp} = ' + nn(isp) + SEC + '\\) must give \\(' + g4(dv) + MS + '\\). What ' + (askP ? 'fraction of its initial mass must be propellant' : 'mass ratio \\(m_0/m_f\\) does it need') + '?', label: askP ? '\\(m_p/m_0 =\\)' : '\\(m_0/m_f =\\)', answer: ans };
+      spec.hints = ['\\(c = I_{sp}g_0 = ' + n4(c) + MS + '\\).', askP ? '\\(m_p/m_0 = 1 - e^{-\\Delta v/c}\\).' : '\\(m_0/m_f = e^{\\Delta v/c}\\).'];
+      spec.solution = M('\\frac{m_0}{m_f} = e^{' + g4(dv) + '/' + n4(c) + '} = ' + n4(n)) + (askP ? M('\\frac{m_p}{m_0} = 1 - \\frac{1}{' + n4(n) + '} = ' + n4(pfrac)) : '');
+      right = { value: typed(ans) }; wrong = { value: typed(askP ? wrongOf(pfrac, [1 / n, Math.exp(-dv / (isp * 9.81 * 10)), dv / c]) : wrongOf(n, [Math.exp(dv / isp), dv / c, Math.exp(dv / (c * 1000)) * 2])) };
+      var fr = askP ? function (x) { return 1 - Math.exp(-x / c); } : function (x) { return Math.exp(x / c); };
+      view = { title: askP ? 'Propellant fraction against \\(\\Delta v\\)' : 'Mass ratio against \\(\\Delta v\\)', aria: (askP ? 'Propellant fraction' : 'Mass ratio') + ' against delta-v at this specific impulse, with this case marked.', x: { label: '\\(\\Delta v\\) (m/s)', min: 0, max: 10000 }, y: askP ? { label: '\\(m_p/m_0\\)', min: 0, max: 1 } : yAx('\\(m_0/m_f\\)', [fr], 0, 10000, [n, 1]),
+        curves: [{ f: fr, color: 'z' }], marker: { at: [dv, ans], label: '' }, readouts: [{ label: '\\(c\\)', tex: n4(c) + MS }, { label: '\\(m_0/m_f\\)', tex: n4(n) }], note: 'The exponential: every km/s multiplies the mass ratio again.' };
+    } else if (kind === 'max') {
+      var is2 = rng.pick(range(220, 460, 1)), ep = rng.pick(range(0.04, 0.2, 0.005)), dm = is2 * G00 * Math.log(1 / ep);
+      spec = { type: 'numeric', prompt: 'A single stage has \\(I_{sp} = ' + nn(is2) + SEC + '\\) and a structural coefficient \\(\\varepsilon = ' + nn(ep) + '\\). What is the most \\(\\Delta v\\) it can give, with no payload?', label: '\\(\\Delta v_{\\max} =\\)', answer: dm, unit: 'm/s' };
+      spec.hints = ['With no payload, \\(m_0/m_f = (m_s + m_p)/m_s = 1/\\varepsilon\\).', '\\(\\Delta v_{\\max} = c\\ln(1/\\varepsilon)\\), \\(c = I_{sp}g_0\\).'];
+      spec.solution = M('\\Delta v_{\\max} = ' + nn(is2) + '(9.80665)\\ln\\frac{1}{' + nn(ep) + '} = ' + n4(is2 * G00) + '(' + n4(Math.log(1 / ep)) + ') = ' + n4(dm) + MS);
+      right = { value: typed(dm) }; wrong = { value: typed(wrongOf(dm, [is2 * G00 * Math.log(1 / (1 - ep)), is2 * Math.log(1 / ep), is2 * G00 / ep / 10])) };
+      var fm = function (x) { return is2 * G00 * Math.log(1 / x); };
+      view = { title: 'Single-stage \\(\\Delta v\\) against \\(\\varepsilon\\)', aria: 'Most delta-v of one stage against its structural coefficient, with this stage marked.', x: { label: '\\(\\varepsilon\\)', min: 0.02, max: 0.22 }, y: yAx('\\(\\Delta v_{\\max}\\) (m/s)', [fm], 0.02, 0.22, [dm, 9200]),
+        curves: [{ f: fm, color: 'z' }], hline: { y: 9200, label: 'orbit' }, marker: { at: [ep, dm], label: '' }, readouts: [{ label: '\\(c\\)', tex: n4(is2 * G00) + MS }, { label: 'Orbit?', tex: dm > 9200 ? '\\text{only empty}' : '\\text{no}' }], note: 'About 9.2 km/s is needed to reach low orbit.' };
+    } else {
+      var i2 = rng.pick(range(280, 450, 1)), e2 = rng.pick(range(0.05, 0.14, 0.005)), d2 = rng.pick(range(7000, 10000, 50)), c2 = i2 * G00, n2 = Math.exp(d2 / (2 * c2)), per = (1 - n2 * e2) / (n2 * (1 - e2)), pf = per * per;
+      if (!(per > 0.001)) { e2 = 0.06; n2 = Math.exp(d2 / (2 * c2)); per = (1 - n2 * e2) / (n2 * (1 - e2)); pf = per * per; }
+      spec = { type: 'numeric', prompt: 'Two identical stages, each with \\(I_{sp} = ' + nn(i2) + SEC + '\\) and \\(\\varepsilon = ' + nn(e2) + '\\), share \\(' + g4(d2) + MS + '\\) equally. What fraction of the liftoff mass is payload?', label: '\\(m_{pl}/m_0 =\\)', answer: pf };
+      spec.hints = ['Each stage: \\(n = e^{\\Delta v/(2c)} = ' + n4(n2) + '\\).', 'Each stage\'s payload over its initial mass is \\((1 - n\\varepsilon)/(n(1 - \\varepsilon))\\); square it for two stages.'];
+      spec.solution = M('n = e^{' + g4(d2) + '/(2 \\cdot ' + n4(c2) + ')} = ' + n4(n2)) + M('\\frac{m_{pl}}{m_0} = \\left(\\frac{1 - ' + n4(n2 * e2) + '}{' + n4(n2) + '(' + nn(1 - e2) + ')}\\right)^2 = ' + n4(per) + '^2 = ' + n4(pf));
+      right = { value: typed(pf) }; wrong = { value: typed(wrongOf(pf, [per, (1 - n2 * n2 * e2) / (n2 * n2 * (1 - e2)), per * 2])) };
+      var fp = function (x) { var nn2 = Math.exp(x / (2 * c2)), q = (1 - nn2 * e2) / (nn2 * (1 - e2)); return q > 0 ? q * q : NaN; };
+      view = { title: 'Two-stage payload fraction', aria: 'Payload fraction of two identical stages against delta-v, with this case marked.', x: { label: '\\(\\Delta v\\) (m/s)', min: 6000, max: 11000 }, y: { label: '\\(m_{pl}/m_0\\)', min: 0, max: upN(Math.max(pf * 1.6, fp(6000) || 0), 0.01) },
+        curves: [{ f: fp, color: 'z' }], marker: { at: [d2, pf], label: '' }, readouts: [{ label: '\\(n\\) per stage', tex: n4(n2) }, { label: '\\(m_{pl}/m_0\\)', tex: n4(pf) }], note: 'Unequal stages split the \\(\\Delta v\\) with a Lagrange multiplier (Lesson 5).' };
+    }
+    spec.explain = 'Lesson 5: \\(\\Delta v = c\\ln(m_0/m_f)\\); one stage reaches at most \\(c\\ln(1/\\varepsilon)\\), and staging drops the empty mass.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Engines and propellants (Lesson 6) ---------- */
+  var PROPS = [{ n: 'LOX/RP-1', OF: 2.6, rO: 1141, rF: 810 }, { n: 'LOX/methane', OF: 3.5, rO: 1141, rF: 423 }, { n: 'LOX/LH2', OF: 6.0, rO: 1141, rF: 71 }, { n: 'NTO/MMH', OF: 1.65, rO: 1440, rF: 875 }];
+  function genEngines(rng) {
+    var kind = pickW(rng, [['isp', 2], ['alt', 3], ['bulk', 2], ['throat', 2]]), spec, right, wrong, view;
+    if (kind === 'isp') {
+      var cs = rng.pick(range(1450, 2400, 10)), cf = rng.pick(range(1.3, 2.0, 0.01)), isp = cs * cf / G00;
+      spec = { type: 'numeric', prompt: 'An engine has a characteristic velocity \\(c^* = ' + g4(cs) + MS + '\\) and a thrust coefficient \\(C_F = ' + nn(cf) + '\\). What is its specific impulse?', label: '\\(I_{sp} =\\)', answer: isp, unit: 's' };
+      spec.hints = ['The effective exhaust velocity is \\(c = c^*C_F\\).', 'Divide by \\(g_0 = 9.80665\\ \\text{m/s}^2\\).'];
+      spec.solution = M('I_{sp} = \\frac{' + g4(cs) + '(' + nn(cf) + ')}{9.80665} = ' + n4(isp) + SEC);
+      right = { value: typed(isp) }; wrong = { value: typed(wrongOf(isp, [cs / G00, cs * cf, cs / cf / G00])) };
+      var fi = function (x) { return cs * x / G00; };
+      view = { title: 'Specific impulse against \\(C_F\\)', aria: 'Specific impulse against thrust coefficient at this characteristic velocity, with this engine marked.', x: { label: '\\(C_F\\)', min: 1.2, max: 2.1 }, y: yAx('\\(I_{sp}\\) (s)', [fi], 1.2, 2.1, [isp]),
+        curves: [{ f: fi, color: 'z' }], marker: { at: [cf, isp], label: '' }, readouts: [{ label: '\\(c\\)', tex: n4(cs * cf) + MS }, { label: '\\(I_{sp}\\)', tex: n4(isp) + SEC }], note: '\\(c^*\\) from the propellants, \\(C_F\\) from the nozzle.' };
+    } else if (kind === 'alt') {
+      var Tv = rng.pick(range(10, 2500, 5)), Ae = r4(Tv / 900 * rng.pick(range(0.6, 1.6, 0.05))), h = rng.pick(range(0, 30, 0.5)) * 1000, pa = isaP(h), T = Tv - pa * Ae / 1000;
+      spec = { type: 'numeric', prompt: 'An engine gives \\(' + g4(Tv) + KN + '\\) in vacuum and has a nozzle exit area of \\(' + nn(Ae) + M2 + '\\). What thrust does it give where the ambient pressure is \\(' + n4(pa / 1000) + KPA + '\\)?', label: '\\(T =\\)', answer: T, unit: 'kN' };
+      spec.hints = ['Only the term \\(-p_aA_e\\) changes with altitude.', '\\(T = T_{\\text{vac}} - p_aA_e\\); kPa times m² gives kN.'];
+      spec.solution = M('T = ' + g4(Tv) + ' - ' + n4(pa / 1000) + '(' + nn(Ae) + ') = ' + n4(T) + KN);
+      right = { value: typed(T) }; wrong = { value: typed(wrongOf(T, [Tv + pa * Ae / 1000, Tv - pa * Ae, Tv])) };
+      var ft = function (x) { return Tv - isaP(x * 1000) * Ae / 1000; };
+      view = { title: 'Thrust against altitude', aria: 'Thrust against altitude for this engine, with this condition marked.', x: { label: 'Altitude (km)', min: 0, max: 32 }, y: yAx('\\(T\\) (kN)', [ft], 0, 32, [T, Tv]),
+        curves: [{ f: ft, color: 'z' }], marker: { at: [h / 1000, T], label: '' }, readouts: [{ label: '\\(p_aA_e\\)', tex: n4(pa * Ae / 1000) + KN }, { label: '\\(T\\)', tex: n4(T) + KN }], note: 'The thrust rises to its vacuum value as the air thins.' };
+      if (T < view.y.min) view.y.min = Math.floor(T);
+    } else if (kind === 'bulk') {
+      var pp = rng.pick(PROPS), of = r3(pp.OF * rng.pick(range(0.8, 1.2, 0.01))), rb = (1 + of) / (of / pp.rO + 1 / pp.rF);
+      spec = { type: 'numeric', prompt: pp.n + ' burns at a mixture ratio \\(O/F = ' + nn(of) + '\\) by mass, with densities of \\(' + g4(pp.rO) + '\\) and \\(' + g4(pp.rF) + KGM3 + '\\) for the oxidizer and the fuel. What is its bulk density?', label: '\\(\\rho_{\\text{bulk}} =\\)', answer: rb, unit: 'kg/m³' };
+      spec.hints = ['One kilogram of fuel goes with \\(O/F\\) kilograms of oxidizer.', '\\(\\rho_{\\text{bulk}} = (1 + O/F)/((O/F)/\\rho_O + 1/\\rho_F)\\).'];
+      spec.solution = M('\\rho_{\\text{bulk}} = \\frac{1 + ' + nn(of) + '}{' + nn(of) + '/' + g4(pp.rO) + ' + 1/' + g4(pp.rF) + '} = ' + n4(rb) + KGM3);
+      right = { value: typed(rb) }; wrong = { value: typed(wrongOf(rb, [(pp.rO * of + pp.rF) / (1 + of), (pp.rO + pp.rF) / 2, pp.rO * pp.rF / (pp.rO + pp.rF)])) };
+      var fb = function (x) { return (1 + x) / (x / pp.rO + 1 / pp.rF); };
+      view = { title: 'Bulk density against mixture ratio', aria: 'Bulk density of ' + pp.n + ' against the mixture ratio, with this mixture marked.', x: { label: '\\(O/F\\)', min: 0.5, max: 8 }, y: yAx('\\(\\rho_{\\text{bulk}}\\) (kg/m³)', [fb], 0.5, 8, [rb]),
+        curves: [{ f: fb, color: 'z' }], marker: { at: [of, rb], label: '' }, readouts: [{ label: '\\(\\rho_{\\text{bulk}}\\)', tex: n4(rb) + KGM3 }, { label: 'Volume per tonne', tex: n4(1000 / rb) + '\\ \\text{m}^3' }], note: 'More oxidizer makes a denser mixture: the oxidizer is the denser liquid.' };
+    } else {
+      var Tn = rng.pick(range(5, 2500, 5)), pc = rng.pick(range(2, 25, 0.5)), cfn = rng.pick(range(1.4, 1.9, 0.01)), At = Tn * 1000 / (cfn * pc * 1e6), dt = Math.sqrt(4 * At / Math.PI) * 1000;
+      spec = { type: 'numeric', prompt: 'An engine must give \\(' + g4(Tn) + KN + '\\) with a chamber pressure of \\(' + nn(pc) + MPA + '\\) and a thrust coefficient of ' + nn(cfn) + '. What throat diameter does it need, in millimeters?', label: '\\(d_t =\\)', answer: dt, unit: 'mm' };
+      spec.hints = ['\\(T = C_Fp_cA_t\\), so \\(A_t = T/(C_Fp_c)\\).', '\\(A_t = ' + sci(At) + '\\ \\text{m}^2\\); then \\(d_t = \\sqrt{4A_t/\\pi}\\).'];
+      spec.solution = M('A_t = \\frac{' + g4(Tn) + '\\times10^3}{' + nn(cfn) + '(' + nn(pc) + '\\times10^6)} = ' + sci(At) + '\\ \\text{m}^2, \\qquad d_t = ' + n4(dt) + MMM);
+      right = { value: typed(dt) }; wrong = { value: typed(wrongOf(dt, [At * 1e6, Math.sqrt(At / Math.PI) * 1000, Math.sqrt(4 * Tn * 1000 / (pc * 1e6) / Math.PI) * 1000])) };
+      var fd = function (x) { return Math.sqrt(4 * Tn * 1000 / (cfn * x * 1e6) / Math.PI) * 1000; };
+      view = { title: 'Throat against chamber pressure', aria: 'Throat diameter against chamber pressure for this thrust, with this engine marked.', x: { label: '\\(p_c\\) (MPa)', min: 1, max: 26 }, y: yAx('\\(d_t\\) (mm)', [fd], 1.5, 26, [dt, 0]),
+        curves: [{ f: fd, color: 'z' }], marker: { at: [pc, dt], label: '' }, readouts: [{ label: '\\(A_t\\)', tex: sci(At) + '\\ \\text{m}^2' }, { label: '\\(d_t\\)', tex: n4(dt) + MMM }], note: 'Higher chamber pressure: a smaller, lighter engine for the same thrust.' };
+    }
+    spec.explain = 'Lesson 6: \\(T = \\dot mc = C_Fp_cA_t\\), \\(I_{sp} = c^*C_F/g_0\\), and the vacuum thrust \\(T + p_aA_e\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+  function isaP(h) { return h <= 11000 ? 101325 * Math.pow(1 - 2.25577e-5 * h, 5.25588) : h <= 20000 ? 22632.06 * Math.exp(-(h - 11000) / 6341.62) : 5474.89 * Math.pow(216.65 / (216.65 + 0.001 * (h - 20000)), 34.1632); }
+
+  /* ---------- 2.7 Launch vehicle structures (Lesson 7) ---------- */
+  var TMATS = [{ n: 'aluminium 2219-T87', sy: 352, su: 455, rho: 2840 }, { n: 'aluminium-lithium 2195', sy: 530, su: 570, rho: 2710 }, { n: 'stainless steel 301', sy: 965, su: 1280, rho: 7880 }];
+  function genStructures(rng) {
+    var kind = pickW(rng, [['hoop', 2], ['wall', 3], ['ms', 3]]), spec, right, wrong, view;
+    if (kind === 'hoop') {
+      var p = rng.pick(range(0.1, 2, 0.05)), R = rng.pick(range(0.3, 5, 0.05)), t = rng.pick(range(0.8, 12, 0.1)), s = p * R / (t / 1000), ax = rng.next() < 0.3, ans = ax ? s / 2 : s;
+      spec = { type: 'numeric', prompt: 'A propellant tank of \\(' + nn(R) + MM + '\\) radius with a \\(' + nn(t) + MMM + '\\) wall is at a limit pressure of \\(' + nn(p) + MPA + '\\). What is its ' + (ax ? 'axial' : 'hoop') + ' membrane stress?', label: ax ? '\\(\\sigma_{\\text{axial}} =\\)' : '\\(\\sigma_{\\text{hoop}} =\\)', answer: ans, unit: 'MPa' };
+      spec.hints = ['\\(\\sigma_{\\text{hoop}} = pR/t\\); the axial stress is half of it.', 'With \\(p\\) in MPa and \\(R\\), \\(t\\) both in meters, the stress is in MPa.'];
+      spec.solution = M('\\sigma_{\\text{hoop}} = \\frac{' + nn(p) + '(' + nn(R) + ')}{' + nn(t / 1000) + '} = ' + n4(s) + MPA) + (ax ? M('\\sigma_{\\text{axial}} = ' + n4(s / 2) + MPA) : '');
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [ax ? s : s / 2, p * R / t, 2 * s])) };
+      var fs = function (x) { return (ax ? 0.5 : 1) * x * R / (t / 1000); };
+      view = { title: 'Stress against pressure', aria: 'Membrane stress against pressure for this tank, with this pressure marked.', x: { label: '\\(p\\) (MPa)', min: 0, max: 2.1 }, y: yAx('\\(\\sigma\\) (MPa)', [fs], 0, 2.1, [ans, 0]),
+        curves: [{ f: fs, color: 'z' }], marker: { at: [p, ans], label: '' }, readouts: [{ label: 'Hoop', tex: n4(s) + MPA }, { label: 'Axial', tex: n4(s / 2) + MPA }], note: 'The hoop stress is twice the axial: it sizes the cylinder.' };
+    } else if (kind === 'wall') {
+      var mt = rng.pick(TMATS), pw = rng.pick(range(0.15, 1.5, 0.01)), Rw = rng.pick(range(0.4, 3, 0.05)), pf = rng.next() < 0.5, fy = pf ? 1.25 : 1.0, tu = 1.4 * pw * Rw / mt.su * 1000, ty = fy * pw * Rw / mt.sy * 1000, tw = Math.max(tu, ty);
+      spec = { type: 'numeric', prompt: 'A ' + (pf ? 'protoflight-tested' : 'prototype-tested') + ' tank of \\(' + nn(Rw) + MM + '\\) radius in ' + mt.n + ' (\\(\\sigma_y = ' + nn(mt.sy) + '\\), \\(\\sigma_u = ' + nn(mt.su) + MPA + '\\)) has a limit pressure of \\(' + nn(pw) + MPA + '\\). Using the design factors of NASA-STD-5001B <a class=\"cite\" href=\"../reference/references.html#r6\">[6]</a>, what wall thickness does the hoop stress need, in millimeters?', label: '\\(t =\\)', answer: tw, unit: 'mm' };
+      spec.hints = ['Ultimate factor 1.4; yield factor ' + (pf ? '1.25 (protoflight)' : '1.0 (prototype)') + '.', '\\(t = \\max(1.4\\,pR/\\sigma_u,\\ FS_y\\,pR/\\sigma_y)\\).'];
+      spec.solution = M('t_u = \\frac{1.4(' + nn(pw) + ')(' + nn(Rw) + ')}{' + nn(mt.su) + '} = ' + n4(tu) + MMM + ', \\qquad t_y = \\frac{' + nn(fy) + '(' + nn(pw) + ')(' + nn(Rw) + ')}{' + nn(mt.sy) + '} = ' + n4(ty) + MMM) + '<p>The ' + (tu >= ty ? 'ultimate' : 'yield') + ' factor governs: \\(t = ' + n4(tw) + MMM + '\\).</p>';
+      right = { value: typed(tw) }; wrong = { value: typed(wrongOf(tw, [Math.min(tu, ty), 1.5 * pw * Rw / mt.su * 1000 * 1.2, pw * Rw / mt.su * 1000])) };
+      var ftw = function (x) { return Math.max(1.4 * x * Rw / mt.su, fy * x * Rw / mt.sy) * 1000; };
+      view = { title: 'Wall against pressure', aria: 'Wall thickness against limit pressure for this tank and material, with this tank marked.', x: { label: '\\(p\\) (MPa)', min: 0, max: 1.6 }, y: yAx('\\(t\\) (mm)', [ftw], 0, 1.6, [tw, 0]),
+        curves: [{ f: ftw, color: 'z' }], marker: { at: [pw, tw], label: '' }, readouts: [{ label: '\\(t_u\\)', tex: n4(tu) + MMM }, { label: '\\(t_y\\)', tex: n4(ty) + MMM }], note: 'Small tanks often end at a minimum gauge instead.' };
+    } else {
+      var al = rng.pick(range(200, 1300, 5)), lim = r4(al / rng.pick(range(1.1, 2.6, 0.01))), fsx = rng.pick([1.25, 1.4, 1.5]), ms = al / (lim * fsx) - 1;
+      spec = { type: 'numeric', prompt: 'A part has an allowable stress of \\(' + nn(al) + MPA + '\\) and a limit stress of \\(' + n4(lim) + MPA + '\\). With a design factor of ' + nn(fsx) + ', what is its margin of safety?', label: '\\(MS =\\)', answer: ms };
+      spec.hints = ['NASA-STD-5001B: \\(MS = \\text{allowable}/(\\text{limit} \\times FS) - 1\\).', 'The factored limit stress is \\(' + n4(lim * fsx) + MPA + '\\).'];
+      spec.solution = M('MS = \\frac{' + nn(al) + '}{' + n4(lim) + '(' + nn(fsx) + ')} - 1 = ' + n4(ms));
+      right = { value: typed(ms) }; wrong = { value: typed(wrongOf(ms, [al / lim - 1, al / (lim * fsx), (al - lim) / al])) };
+      var fms = function (x) { return al / (x * fsx) - 1; };
+      view = { title: 'Margin against limit stress', aria: 'Margin of safety against limit stress for this allowable, with this part marked.', x: { label: 'Limit stress (MPa)', min: Math.max(1, lim * 0.4), max: lim * 1.6 }, y: yAx('\\(MS\\)', [fms], lim * 0.4, lim * 1.6, [ms, 0]),
+        curves: [{ f: fms, color: 'z' }], hline: { y: 0, label: 'MS = 0' }, marker: { at: [lim, ms], label: '' }, readouts: [{ label: 'Factored stress', tex: n4(lim * fsx) + MPA }, { label: '\\(MS\\)', tex: n4(ms) }], note: 'A negative margin fails the requirement.' };
+    }
+    spec.explain = 'Lesson 7: \\(\\sigma_{\\text{hoop}} = pR/t\\); NASA-STD-5001B: ultimate 1.4, yield 1.0 or 1.25; \\(MS = \\text{allowable}/(\\text{limit} \\times FS) - 1\\).';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 Sizing and licensing (Lesson 8) ---------- */
+  function genLicensing(rng) {
+    var kind = pickW(rng, [['deorbit', 3], ['risk', 2], ['eps', 3]]), spec, right, wrong, view;
+    if (kind === 'deorbit') {
+      var h = rng.pick(range(300, 1500, 10)), hp = rng.pick(range(30, 200, 10)), r = REM + h * 1000, a = (r + REM + hp * 1000) / 2, vc = Math.sqrt(MUE / r), va = vvis(r, a), d = vc - va;
+      spec = { type: 'numeric', prompt: 'An upper stage in a circular orbit at \\(' + g4(h) + KM + '\\) fires retrograde to lower its perigee to \\(' + nn(hp) + KM + '\\) and reenter. What \\(\\Delta v\\) does the burn need?', label: '\\(\\Delta v =\\)', answer: d, unit: 'm/s' };
+      spec.hints = ['The new orbit has its apogee at \\(' + g4(r / 1000) + KM + '\\) and \\(a = ' + g4(a / 1000) + KM + '\\).', '\\(\\Delta v = v_c - v_a\\), with \\(v_a\\) from vis-viva.'];
+      spec.solution = M('v_c = ' + n4(vc) + MS + ', \\qquad v_a = \\sqrt{\\mu\\left(\\frac{2}{' + n4(r) + '} - \\frac{1}{' + n4(a) + '}\\right)} = ' + n4(va) + MS) + M('\\Delta v = ' + n4(d) + MS);
+      right = { value: typed(d) }; wrong = { value: typed(wrongOf(d, [vc - vcirc(hp), 2 * d, vvis(REM + hp * 1000, a) - vcirc(hp)])) };
+      var fd = function (x) { var rr = REM + x * 1000, aa = (rr + REM + hp * 1000) / 2; return Math.sqrt(MUE / rr) - vvis(rr, aa); };
+      view = { title: 'Deorbit burn against altitude', aria: 'Deorbit delta-v against the orbit altitude for this perigee, with this stage marked.', x: { label: 'Orbit altitude (km)', min: 250, max: 1550 }, y: yAx('\\(\\Delta v\\) (m/s)', [fd], 250, 1550, [d, 0]),
+        curves: [{ f: fd, color: 'z' }], marker: { at: [h, d], label: '' }, readouts: [{ label: '\\(v_a\\)', tex: n4(va) + MS }, { label: '\\(\\Delta v\\)', tex: n4(d) + MS }], note: '14 CFR 450.171 also requires passivating anything left in orbit.' };
+    } else if (kind === 'risk') {
+      var p1 = rng.pick(range(0.001, 0.02, 0.001)), c1 = rng.pick(range(0.0005, 0.02, 0.0005)), p2 = rng.pick(range(0.001, 0.03, 0.001)), c2 = rng.pick(range(0.0001, 0.005, 0.0001)), ec = (p1 * c1 + p2 * c2) * 1e5;
+      spec = { type: 'numeric', prompt: 'A launch has two hazardous phases: a failure probability of \\(' + nn(p1) + '\\) with \\(' + nn(c1) + '\\) expected casualties if it fails, and \\(' + nn(p2) + '\\) with \\(' + nn(c2) + '\\). What is its collective risk \\(E_C\\), in units of \\(10^{-5}\\) expected casualties?', label: '\\(E_C/10^{-5} =\\)', answer: ec };
+      spec.hints = ['Each phase contributes its failure probability times its conditional expected casualties.', 'Add them and divide by \\(10^{-5}\\).'];
+      spec.solution = M('E_C = ' + nn(p1) + '(' + nn(c1) + ') + ' + nn(p2) + '(' + nn(c2) + ') = ' + n4(ec) + '\\times10^{-5}') + '<p>' + (ec <= 10 ? 'Within' : 'Above') + ' the \\(10^{-4}\\) limit of 450.101(a) <a class=\"cite\" href=\"../reference/references.html#r7\">[7]</a>' + (Math.max(c1, c2) > 1e-3 ? '; a phase whose conditional expected casualties exceed \\(10^{-3}\\) still needs flight abort or demonstrated reliability.' : '.') + '</p>';
+      right = { value: typed(ec) }; wrong = { value: typed(wrongOf(ec, [(c1 + c2) * 1e5, (p1 + p2) * 1e5 / 10, ec * 10])) };
+      var fe = function (x) { return (x * c1 + p2 * c2) * 1e5; };
+      view = { title: 'Collective risk', aria: 'Collective risk against the first phase\'s failure probability, with this launch marked.', x: { label: 'First phase failure probability', min: 0, max: 0.022 }, y: yAx('\\(E_C\\) (\\(10^{-5}\\))', [fe], 0, 0.022, [ec, 10, 0]),
+        curves: [{ f: fe, color: 'z' }], hline: { y: 10, label: 'limit 1e-4' }, marker: { at: [p1, ec], label: '' }, readouts: [{ label: '\\(E_C\\)', tex: n4(ec) + '\\times10^{-5}' }, { label: 'Limit', tex: '10\\times10^{-5}' }], note: 'A low average does not excuse a high-consequence phase.' };
+    } else {
+      var mp = rng.pick(range(500, 50000, 10)), tank = r4(mp * rng.pick(range(0.015, 0.04, 0.001))), eng = r4(mp * rng.pick(range(0.01, 0.04, 0.001))), fix = r4(mp * rng.pick(range(0.005, 0.03, 0.001))), res = r4(0.01 * mp), msx = tank + eng + fix + res, e = msx / (msx + mp);
+      spec = { type: 'numeric', prompt: 'A stage carries \\(' + g4(mp) + KG + '\\) of propellant. Its bottom-up inert mass is \\(' + nn(tank) + KG + '\\) of tanks, \\(' + nn(eng) + KG + '\\) of engines, \\(' + nn(fix) + KG + '\\) of structure and avionics, and 1% of its propellant left as residuals. What is its structural coefficient?', label: '\\(\\varepsilon =\\)', answer: e };
+      spec.hints = ['The residuals are \\(' + nn(res) + KG + '\\); add the four parts.', '\\(\\varepsilon = m_s/(m_s + m_p)\\).'];
+      spec.solution = M('m_s = ' + nn(tank) + ' + ' + nn(eng) + ' + ' + nn(fix) + ' + ' + nn(res) + ' = ' + n4(msx) + KG) + M('\\varepsilon = \\frac{' + n4(msx) + '}{' + n4(msx) + ' + ' + g4(mp) + '} = ' + n4(e));
+      right = { value: typed(e) }; wrong = { value: typed(wrongOf(e, [msx / mp, (msx - res) / (msx - res + mp), msx / (msx + mp) * 2])) };
+      var fe2 = function (x) { return x / (x + mp); };
+      view = { title: 'Structural coefficient against inert mass', aria: 'Structural coefficient against inert mass for this propellant load, with this stage marked.', x: { label: '\\(m_s\\) (kg)', min: 0, max: upN(msx * 1.8, 10) }, y: yAx('\\(\\varepsilon\\)', [fe2], 0, msx * 1.8, [e, 0]),
+        curves: [{ f: fe2, color: 'z' }], marker: { at: [msx, e], label: '' }, readouts: [{ label: '\\(m_s\\)', tex: n4(msx) + KG }, { label: '\\(\\varepsilon\\)', tex: n4(e) }], note: 'The sizing loop feeds this back into the staging until it stops changing.' };
+    }
+    spec.explain = 'Lesson 8: the loop closes on bottom-up structural coefficients; the license limits public risk and requires clean disposal.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-space-systems.html', 'From Aircraft to Space Vehicles'), l02: L(2, '02-orbits.html', 'Orbits'),
+    l03: L(3, '03-maneuvers.html', 'Orbital Maneuvers'), l04: L(4, '04-ascent.html', 'Getting to Orbit'),
+    l05: L(5, '05-staging.html', 'The Rocket Equation and Staging'), l06: L(6, '06-engines.html', 'Rocket Engines and Propellants'),
+    l07: L(7, '07-structures.html', 'Launch Vehicle Structures'), l08: L(8, '08-sizing-and-licensing.html', 'Sizing the Launcher and Licensing It')
+  };
+  var CATS = [
+    { id: 'systems', label: 'Orbital energy and margins', gen: genSystems, lessons: [LES.l01] },
+    { id: 'orbits', label: 'Orbits', gen: genOrbits, lessons: [LES.l02] },
+    { id: 'maneuvers', label: 'Orbital maneuvers', gen: genManeuvers, lessons: [LES.l03] },
+    { id: 'ascent', label: 'Getting to orbit', gen: genAscent, lessons: [LES.l04] },
+    { id: 'staging', label: 'Rocket equation and staging', gen: genStaging, lessons: [LES.l05] },
+    { id: 'engines', label: 'Engines and propellants', gen: genEngines, lessons: [LES.l06] },
+    { id: 'structures', label: 'Tanks and margins', gen: genStructures, lessons: [LES.l07] },
+    { id: 'licensing', label: 'Sizing and licensing', gen: genLicensing, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like orbits-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

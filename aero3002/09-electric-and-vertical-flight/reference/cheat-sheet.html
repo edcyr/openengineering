@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formula Sheet · Electric Aircraft and Vertical Flight</title>
+<meta name="description" content="Every formula of the Electric Aircraft and Vertical Flight module on one printable page: the efficiency chain, batteries and C-rate, battery range and endurance, sizing with a battery, hybrids and blown high lift, motors and their heat, momentum theory of hover, and sizing with a vertical-lift system, with the business jet's numbers and the certification rules.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ==========================================================================
+   Formula sheet: page-specific styles (screen: multi-column cards; print: 2 pages)
+   ========================================================================== */
+.cs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 18px 0 0; }
+.cs-actions .small { margin: 0; max-width: 46ch; line-height: 1.45; }
+
+.cs-sheet { counter-reset: cs; margin-top: 0; margin-bottom: 0; font-size: 0.94rem; }
+@container cylmain (min-width: 820px) {
+  .cs-sheet { column-count: 2; column-gap: 18px; }
+}
+/* From 1360px the shell shows the TOC rail. Its scroll-spy marks the last card whose top has
+   scrolled past, which only tracks reading order when the cards are stacked, so keep one column
+   (at text width) whenever the rail is on screen. Print keeps its own two columns below. */
+@media screen and (min-width: 1360px) {
+  .has-rail .cs-sheet { column-count: auto; --wide-max: var(--content-max); }
+}
+.cs-card {
+  counter-increment: cs;
+  margin: 0 0 18px;
+  padding: 14px 18px 16px;
+  box-shadow: var(--shadow-sm);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.cs-card > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.06rem;
+  line-height: 1.3;
+}
+.cs-card > h2::before {
+  content: counter(cs);
+  flex: none;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cs-card.cs-warn { border-top: 3px solid var(--c-warn); }
+.cs-card.cs-warn > h2::before { background: var(--c-warn); color: var(--bg-elev); }
+
+.cs-card p { margin: 0 0 0.55em; color: var(--ink); font-size: 1em; }
+.cs-card ul { margin: 0 0 0.6em; padding-left: 1.15em; }
+.cs-card li { margin: 0.25em 0; }
+.cs-card li::marker { color: var(--ink-faint); }
+.cs-card h3 {
+  margin: 0.95em 0 0.3em;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-card > h2 + h3 { margin-top: 0; }
+.cs-card .katex-display { margin: 0.45em 0; }
+.cs-card .key-formula { margin: 0.65em 0; padding: 6px 14px 7px; box-shadow: none; }
+.cs-card .key-formula .katex-display { margin: 0.3em 0; }
+.cs-card .key-formula-title { margin-top: 2px; }
+.cs-card .table-wrap { margin: 0.6em 0 0.7em; border-radius: var(--radius-sm); }
+.cs-card table.data { font-size: 0.9em; }
+.cs-card table.data th, .cs-card table.data td { padding: 5px 9px; vertical-align: middle; }
+.cs-card table.data thead th { font-size: 0.85em; white-space: normal; }
+.cs-card table.data tbody th { font-weight: 600; }
+.cs-card table.data caption { padding: 6px 9px; }
+.cs-card table.data .katex { font-size: 1.04em; white-space: nowrap; }
+.cs-card table.cs-eqs td { white-space: nowrap; }
+/* never split an inline formula across lines: on a reference sheet a broken result is easy to misread */
+.cs-sheet .katex { white-space: nowrap; }
+.cs-card .muted { color: var(--ink-muted); }
+.cs-card p.cs-note { color: var(--ink-muted); font-size: 0.9em; }
+.cs-card p.cs-more { margin: 0.75em 0 0; color: var(--ink-muted); font-size: 0.8rem; }
+.cs-card > :last-child { margin-bottom: 0; }
+
+/* two formula boxes side by side, wrapping on narrow cards */
+.cs-pair { display: flex; flex-wrap: wrap; gap: 10px; margin: 0.65em 0; }
+.cs-pair > * { flex: 1 1 250px; min-width: 0; }   /* on screen, a pair stacks before its formulas overflow; print sets its own basis */
+.cs-card .cs-pair > .key-formula { margin: 0; }
+.cs-pair > div:not(.key-formula) .katex-display { margin: 0.2em 0; }
+
+/* symbol / meaning list */
+.cs-dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0 0 0.6em; }
+.cs-dl dt { font-weight: 700; text-align: center; }
+.cs-dl dd { margin: 0; }
+
+/* static figures */
+.cs-card .cs-figure { max-width: 250px; margin: 0.3em auto 0.7em; }
+.cs-card .cs-figure.small { max-width: 200px; }
+.cs-figure figcaption { margin-top: 2px; font-size: 0.78rem; line-height: 1.4; text-align: center; }
+.cs-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cs-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.cs-svg .ax { stroke: var(--c-axis); stroke-width: 1.4; }
+.cs-svg .ax-back { stroke-dasharray: 3 3; opacity: 0.55; }
+.cs-svg .ax-fill { fill: var(--c-axis); }
+.cs-svg .leg, .cs-svg .guide { stroke: var(--ink-faint); stroke-width: 1.1; stroke-dasharray: 3 3; }
+.cs-svg .hidden { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2.5 2.5; opacity: 0.8; }
+.cs-svg .r { stroke: var(--c-r); }
+.cs-svg .t { stroke: var(--c-t); }
+.cs-svg .z { stroke: var(--c-z); }
+.cs-svg .thick { stroke-width: 3; }
+.cs-svg .mid { stroke-width: 2.2; }
+.cs-svg .thin { stroke-width: 1.4; }
+.cs-svg .dash { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.cs-svg .t-fill { fill: var(--c-t); }
+.cs-svg .pt { fill: var(--c-point); }
+.cs-svg .pt-open { fill: var(--bg-elev); stroke: var(--c-point); stroke-width: 1.5; }
+.cs-svg .face { fill: var(--accent); }
+.cs-svg .f-top { fill-opacity: 0.1; }
+.cs-svg .f-out { fill-opacity: 0.24; }
+.cs-svg .f-side { fill-opacity: 0.17; }
+.cs-svg .edge { stroke: var(--ink-muted); stroke-width: 1.2; }
+.cs-svg text {
+  font-family: KaTeX_Math, "Times New Roman", serif;
+  font-size: 15px;
+  font-style: italic;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--bg-elev);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.cs-svg .lbl-ax { fill: var(--c-axis); font-size: 14px; }
+.cs-svg .lbl-mute { fill: var(--ink-muted); font-size: 13px; }
+.cs-svg .lbl-r { fill: var(--c-r); }
+.cs-svg .lbl-t { fill: var(--c-t); }
+.cs-svg .lbl-z { fill: var(--c-z); }
+.cs-svg .sm { font-size: 12.5px; }
+
+/* software notes */
+.cs-tools { display: grid; gap: 7px; margin: 0.5em 0 0; }
+.cs-tool { padding: 7px 11px 8px; border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.cs-tool-name {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--ink-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-tool-name strong { color: var(--c-warn); font-weight: 700; white-space: nowrap; }
+.cs-card .cs-tool p { margin: 0; line-height: 1.55; }
+.cs-tool :not(pre) > code { background: var(--bg-elev); white-space: nowrap; }
+.cs-tool .cs-code > code { white-space: normal; } /* long lines break only between their .nowrap parts */
+.cs-tools { container-type: inline-size; }
+.cs-code { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 3px 12px; margin: 2px 0 0; }
+.cs-code > code { justify-self: start; }
+.cs-code > span { color: var(--ink-muted); font-size: 0.86em; line-height: 1.35; }
+.cs-card .cs-tool p.cs-tool-note { margin-top: 4px; color: var(--ink-muted); font-size: 0.9em; }
+@container (max-width: 25em) {
+  .cs-code { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .cs-code > span { margin: 0 0 4px 2px; }
+}
+
+.cs-mistakes li { margin: 0.4em 0; }
+.cs-timeline { padding-left: 1.1em; }
+.cs-timeline li { margin: 0.35em 0; line-height: 1.5; }
+.cs-timeline strong { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+.cs-after { margin: 0.4rem 0 0; color: var(--ink-muted); font-size: 0.92em; }
+
+@media (max-width: 559.98px) {
+  .cs-card { padding: 12px 14px 14px; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px 6px; }
+  .cs-card table.cs-eqs, .cs-card table.cs-quad { font-size: 0.82em; }
+}
+@media (max-width: 379.98px) {
+  /* small phones (320-379px): a little more room so formulas and the surfaces table fit without scrolling */
+  .cs-card { padding: 12px 12px 14px; }
+  .cs-card .key-formula { padding-left: 10px; padding-right: 10px; }
+  .cs-card .katex-display > .katex { font-size: 0.96em; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px; }
+}
+
+/* ---------- Print: two pages on US Letter or A4 ---------- */
+@media print {
+  @page { margin: 9mm; }
+  html { font-size: 7.8pt; }
+  .page { font-size: 1rem; line-height: 1.3; }
+  .katex { font-size: 1.04em; }
+  .lesson-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0 6mm;
+    margin: 0 0 2.4mm;
+    padding: 0 0 1.8mm;
+    border-bottom: 0.8pt solid var(--line-strong);
+  }
+  .lesson-header .eyebrow { grid-column: 1 / -1; margin: 0 0 0.4mm; font-size: 6.6pt; }
+  .lesson-header h1 { margin: 0; font-size: 16pt; line-height: 1.1; }
+  .lesson-header .lede { max-width: none; font-size: 8pt; line-height: 1.35; text-align: right; }
+  /* floats: blocks next to a floated figure shrink beside it instead of running underneath */
+  .cs-card > :is(p, ul, .table-wrap, .key-formula) { display: flow-root; }
+  .cs-card > .katex-display, .cs-card .key-formula > .katex-display { display: flow-root; }
+  .cs-card .cs-figure.cs-float { float: right; width: 40%; max-width: none; margin: 0 0 1mm 2.5mm; }
+  .cs-card .cs-figure.small.cs-float { width: 33%; }
+  .cs-sheet {
+    column-count: 2;
+    column-gap: 4mm;
+    font-size: 1rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-card { margin: 0 0 2.6mm; padding: 1.9mm 2.8mm 2.2mm; border-color: var(--line-strong); border-radius: 2mm; box-shadow: none; }
+  .cs-card > h2 { gap: 1.8mm; margin: 0 0 1.4mm; padding: 0 0 1.1mm; font-size: 9.6pt; }
+  .cs-card > h2::before { width: 12.5pt; height: 12.5pt; font-size: 6.8pt; }
+  .cs-card p { margin: 0 0 0.9mm; }
+  .cs-card ul { margin: 0 0 1mm; padding-left: 3.4mm; }
+  .cs-card li { margin: 0.35mm 0; }
+  .cs-card h3 { margin: 1.6mm 0 0.5mm; font-size: 6.6pt; }
+  .cs-card .katex-display { margin: 0.9mm 0; padding: 0; }
+  .cs-card .key-formula { margin: 1.2mm 0; padding: 0.6mm 2.4mm 0.8mm; border-width: 0.8pt; border-radius: 1.6mm; }
+  .cs-card .key-formula .katex-display { margin: 0.5mm 0; }
+  .cs-pair { gap: 1.8mm; margin: 1.2mm 0; }
+  .cs-pair > * { flex-basis: 30mm; }
+  .cs-card .table-wrap { margin: 1.1mm 0 1.3mm; border-radius: 1.4mm; border-color: var(--line-strong); }
+  .cs-card table.data th, .cs-card table.data td { padding: 0.55mm 1.8mm; }
+  .cs-card table.data thead th { font-size: 6.4pt; }
+  .cs-card table.data caption { padding: 0.6mm 1.8mm; font-size: 7pt; }
+  .cs-card .cs-figure { max-width: 43mm; margin: 0.4mm auto 1.2mm; }
+  .cs-card .cs-figure.small { max-width: 36mm; }
+  .cs-figure figcaption { margin-top: 0.3mm; font-size: 6.8pt; }
+  .cs-svg text { font-size: 17.5px; }
+  .cs-svg .lbl-ax { font-size: 16px; }
+  .cs-svg .lbl-mute { font-size: 15px; }
+  .cs-svg .sm { font-size: 14.5px; }
+  .cs-tools { gap: 1.1mm; margin-top: 0.8mm; }
+  .cs-tool { padding: 0.9mm 2mm 1mm; border-radius: 1.4mm; }
+  .cs-tool-name { margin-bottom: 0.3mm; font-size: 6.4pt; }
+  .cs-card .cs-tool p { line-height: 1.45; }
+  .cs-tool :not(pre) > code { font-size: 0.86em; }
+  .cs-mistakes li { margin: 0.5mm 0; }
+  .cs-timeline li { margin: 0.5mm 0; line-height: 1.35; }
+}
+.cs-svg .acc-path { stroke: var(--accent); stroke-width: 3; }
+.cs-svg .r-fill { fill: var(--c-n); }
+.cs-svg .r { stroke: var(--c-n); }
+.cs-svg .sub { font-size: 11px; }
+.cs-svg .bold { font-family: KaTeX_Main, "Times New Roman", serif; font-style: normal; font-weight: 700; }
+</style>
+</head>
+<body data-page="cheatsheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow"><span class="no-print">Reference</span><span class="print-only">Electric Aircraft and Vertical Flight</span></p>
+    <h1>Formula Sheet</h1>
+    <p class="lede">Every key result from the module in one place. SI units; specific energies in Wh/kg (times 3600 for J/kg) and efficiencies from the energy store to the thrust power. The business jet's numbers are at its takeoff weight of 6943&nbsp;kg with Module 7's polar unless marked; component efficiencies, specific powers and battery values are typical values. Numbers in square brackets refer to the References page.</p>
+    <div class="cs-actions no-print">
+      <button type="button" class="btn primary" id="cs-print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Print this sheet</button>
+      <p class="small muted">Fits on one page of Letter or A4. For a digital copy, choose “Save as PDF” as the printer.</p>
+    </div>
+  </header>
+
+  <div class="cs-sheet wide">
+
+    <section class="card cs-card" id="chain">
+      <h2><span>Electric propulsion systems</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">The efficiency chain and the power drawn</p>
+        \[ \eta = \prod_i \eta_i, \qquad P_{\text{store}} = \frac{DV}{\eta} = \frac{WV}{\eta\,(L/D)} \]
+      </div>
+      <ul>
+        <li>Typical: battery 0.95, inverter 0.98, motor 0.95, propulsor 0.80 (all-electric 0.7076); generator 0.96, rectifier 0.98, gearbox 0.98, engine 0.30 (series 0.2102). Turbofan \(V/(c_T h) = 0.2968\).</li>
+        <li>Energy per distance \(E/R = W/(\eta\,L/D)\). All-electric business jet, 12&nbsp;km, 170.5&nbsp;m/s: \(TV = 662.9\), battery 936.8&nbsp;kW; jet 4.20, electric 1.53&nbsp;kWh/km.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/01-electric-propulsion.html">Lesson 1</a></p>
+    </section>
+
+    <section class="card cs-card" id="battery">
+      <h2><span>Batteries</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Usable specific energy, C-rate and battery mass</p>
+        \[ e_b = \frac{e_{\text{cell}}\,f_{\text{use}}}{k_{\text{pack}}}, \qquad C = \frac{P}{E} \]
+        \[ m_b = \max\!\left(\frac{E}{e_b},\ \frac{P}{C_{\max}e_b}\right) \]
+      </div>
+      <ul>
+        <li>Jet A-1: 43.2&nbsp;MJ/kg = 12&nbsp;000&nbsp;Wh/kg, 9600&nbsp;Wh/L. Packs today 150–200&nbsp;Wh/kg usable; projected 650 cell → 400 pack (\(f_{\text{use}} = 0.80\), \(k_{\text{pack}} = 1.30\)) <a class="cite" href="references.html#r8">[8]</a>. Cells about 2C today, 2–3C near term <a class="cite" href="references.html#r8">[8]</a>.</li>
+        <li>1990.6&nbsp;kg: fuel 23&nbsp;887&nbsp;kWh, battery (200&nbsp;Wh/kg) 398.1&nbsp;kWh. Takeoff 2355&nbsp;kW = 5.92C.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/02-batteries.html">Lesson 2</a></p>
+    </section>
+
+    <section class="card cs-card" id="range">
+      <h2><span>Electric range and endurance</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Battery range and endurance (constant weight)</p>
+        \[ R = \frac{e_b\eta}{g}\,\frac{L}{D}\,\frac{m_b}{m_0}, \qquad V_{md} = \sqrt{\frac{2W}{\rho S\,\CL^*}} \]
+      </div>
+      <ul>
+        <li>\(e_b\) in J/kg (Wh/kg × 3600); \(t = R/V\). Best range at \(\LDmax\); best endurance at \(V_{mp} = V_{md}/3^{1/4}\), \(L/D = 0.866\,\LDmax\), at low altitude.</li>
+        <li>Business jet (\(\LDmax = 17.52\), \(\CL^* = 0.538\)), batteries 0.2867 of \(W_0\): 260.9&nbsp;km at 200&nbsp;Wh/kg (214.0 at M0.80); 4600&nbsp;km needs 3527&nbsp;Wh/kg. Jet, same fraction of fuel: 6702&nbsp;km.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/03-electric-range.html">Lesson 3</a></p>
+    </section>
+
+    <section class="card cs-card" id="sizing">
+      <h2><span>Sizing with a battery</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Takeoff weight, battery and reserve fractions</p>
+        \[ W_0 = \frac{W_{\text{pay}}}{1 - W_e/W_0 - W_b/W_0} \]
+        \[ \frac{W_b}{W_0} = \frac{gR}{e_b\eta\,\LDmax} + \frac{gV_{mp}t_{\text{res}}}{e_b\eta\,(0.866\,\LDmax)} \]
+      </div>
+      <ul>
+        <li>Electric empty weight: \(0.9727\,W_0^{-0.06} - 0.0578 + (P/W)/p_{\text{drive}}\), with 0.30&nbsp;kW/kg at 5&nbsp;kW/kg: 0.5743 at 6943&nbsp;kg.</li>
+        <li>At 6943&nbsp;kg: 1976&nbsp;kg of battery, 258.9&nbsp;km; a 45-min reserve takes 0.2406, leaving 40.0&nbsp;km. Full mission needs 3820&nbsp;Wh/kg. 300&nbsp;km, 20&nbsp;min, 400&nbsp;Wh/kg: 5000&nbsp;kg.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/04-electric-sizing.html">Lesson 4</a></p>
+    </section>
+
+    <section class="card cs-card" id="hybrid">
+      <h2><span>Hybrids and distributed propulsion</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Degrees of hybridization</p>
+        \[ H_P = \frac{P_{\text{mot}}}{P_{\text{mot}} + P_{\text{eng}}}, \qquad H_E = \frac{E_{\text{bat}}}{E_{\text{bat}} + E_{\text{fuel}}} \]
+      </div>
+      <ul>
+        <li>500&nbsp;kg of battery for fuel: 6702 → 4859&nbsp;km, \(H_E = 0.0056\). Boost for the ceiling (0.308 vs 0.284): battery 230.5&nbsp;kg (3C) + motor 24.5 − engines 31.3 = +224&nbsp;kg.</li>
+        <li>Blown lift: \((W/S)_2 = (W/S)_1\,C_{L,L2}/C_{L,L1}\). SCEPTOR: wing 158.9 → 66.7&nbsp;ft², \(A\) 8.8 → 15.0 <a class="cite" href="references.html#r7">[7]</a>. Business jet at 400&nbsp;kg/m²: \(L/D\) 14.37 → 16.00 (span kept), 13.96 (\(A = 8\)).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/05-hybrid-and-dep.html">Lesson 5</a></p>
+    </section>
+
+    <section class="card cs-card" id="motors">
+      <h2><span>Motors and certification</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Torque, motor mass and heat</p>
+        \[ P = Q\omega, \qquad \frac{m_1}{m_2} = \left(\frac{Q_1}{Q_2}\right)^{0.8587} \]
+        \[ \dot Q = P\,\frac{1 - \eta}{\eta}, \qquad \dot m = \frac{\dot Q}{c_p\,\Delta T} \]
+      </div>
+      <ul>
+        <li>Motor weight \(\propto Q^{0.8587}\), accessories +63% <a class="cite" href="references.html#r8">[8]</a>. 1.04&nbsp;MW at 2000&nbsp;rpm: 4966&nbsp;N·m; at 10&nbsp;000&nbsp;rpm: 993&nbsp;N·m; mass ratio 3.98. Drive heat at takeoff 272&nbsp;kW.</li>
+        <li>Part 33 + special conditions 33-022-SC (magniX, 2021) <a class="cite" href="references.html#r2">[2]</a> and 33-23-01-SC (Safran, 2025) <a class="cite" href="references.html#r3">[3]</a>, from ASTM F3338-18 <a class="cite" href="references.html#r4">[4]</a>: duty-cycle ratings, arc faults, control faults, rotor locking, containment.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/06-motors-and-certification.html">Lesson 6</a></p>
+    </section>
+
+    <section class="card cs-card" id="hover">
+      <h2><span>Vertical flight</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Momentum theory</p>
+        \[ v_h = \sqrt{\frac{T}{2\rho A}}, \qquad P = \frac{Tv_h}{FM}, \qquad \frac{T}{P} = \frac{FM}{v_h} \]
+        \[ P_{\text{climb}} = \frac{T(V_c + v_i)}{FM}, \qquad v_i = -\frac{V_c}{2} + \sqrt{\frac{V_c^2}{4} + v_h^2} \]
+      </div>
+      <ul>
+        <li>\(P \propto 1/\sqrt\rho\); hover fuel \(Pt/(\eta_{th}h)\). \(FM\) 0.68–0.74 <a class="cite" href="references.html#r8">[8]</a>. Tiltrotor business jet (800&nbsp;N/m², 10% download): 2 × 7.72&nbsp;m, 1.805&nbsp;MW; climbing 1.936; hot and high 2.010&nbsp;MW.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/07-vertical-flight.html">Lesson 7</a></p>
+    </section>
+
+    <section class="card cs-card" id="vtol">
+      <h2><span>VTOL configurations and the rules</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Sizing with a vertical-lift system</p>
+        \[ W_0 = \frac{W_{\text{pay}}}{1 - W_e/W_0 - W_f/W_0 - f_v} \]
+      </div>
+      <ul>
+        <li>Hover: lift+cruise 1.546, tiltrotor 1.805, lift fans 5.97, jets 17.5&nbsp;MW. Rotors + drive 11–18% <a class="cite" href="references.html#r8">[8]</a>. \(f_v = 0.12\): 6666 → 16&nbsp;869&nbsp;kg, or 1924&nbsp;km at 6943&nbsp;kg.</li>
+        <li>SC-VTOL-01 <a class="cite" href="references.html#r5">[5]</a>: ≤ 9 passengers, ≤ 3175&nbsp;kg, unpressurized, \(M_{MO} \le 0.6\); Enhanced or Basic. FAA <a class="cite" href="references.html#r6">[6]</a>: powered-lift a special class, SFAR No. 120.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/08-vtol-configurations.html">Lesson 8</a></p>
+    </section>
+
+  </div>
+</main>
+
+<script>
+/* Formula sheet: the only control is the print button (the page itself is static reference content). */
+CYL.ready(function () {
+  'use strict';
+  var btn = document.getElementById('cs-print');
+  btn.addEventListener('click', function () { window.print(); });
+});
+</script>
+</body>
+</html>

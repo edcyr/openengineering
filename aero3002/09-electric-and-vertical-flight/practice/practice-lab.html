@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Electric Aircraft and Vertical Flight</title>
+<meta name="description" content="Unlimited randomized problems on electric aircraft and vertical flight: power chains, batteries and C-rates, battery range and endurance, sizing with a battery, hybrids and distributed propulsion, electric motors and their heat, momentum theory of hover, and VTOL configurations, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: power chains and their efficiency, batteries and their C-rates, battery range and endurance, sizing with a battery, hybrids and blown high lift, motors and their heat, hover by momentum theory, and the rotors and weight of VTOL designs, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>hover-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. hover-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>0.95*0.98*0.95*0.80</code></td><td>\(0.7076\)</td></tr>
+          <tr><td><code>200*3600*0.7076/9.81</code></td><td>\(51\,934\)</td></tr>
+          <tr><td><code>sqrt(800/(2*1.225))</code></td><td>\(18.07\)</td></tr>
+          <tr><td><code>74900*18.07/0.75/1e6</code></td><td>\(1.805\)</td></tr>
+          <tr><td><code>980/(1-0.5743-0.2846)</code></td><td>\(6943\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(g = 9.81\ \text{m/s}^2\) and \(\rho_0 = 1.225\ \text{kg/m}^3\). Specific energies are in Wh/kg (times 3600 for J/kg), powers in kW unless the box says otherwise, and jet fuel holds 12&nbsp;000&nbsp;Wh/kg. <code>sqrt</code>, <code>^</code>, <code>pi</code>, <code>ln</code>, <code>asin</code>, <code>exp</code>, and powers of ten all work. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>200*3600*0.7076*17.52*0.2867/9.81/1000</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  function r4(x) { return +x.toPrecision(4); }                                       // a given value rounded to 4 significant figures
+  var G = 9.81, RHO0 = 1.225, P0 = 101325;
+  var KG = '\\ \\text{kg}', KGS = '\\ \\text{kg/s}', MM = '\\ \\text{m}', MS = '\\ \\text{m/s}', NN = '\\ \\text{N}', KN = '\\ \\text{kN}', KW = '\\ \\text{kW}', PA = '\\ \\text{Pa}',
+    KPA = '\\ \\text{kPa}', MPA = '\\ \\text{MPa}', MMM = '\\ \\text{mm}', DEG = '^\\circ', LB = '\\ \\text{lb}', PSIU = '\\ \\text{psi}', INU = '\\ \\text{in}', IN2 = '\\ \\text{in}^2',
+    FPS = '\\ \\text{ft/s}', LPM = '\\ \\text{L/min}', AMP = '\\ \\text{A}', VOLT = '\\ \\text{V}', M2 = '\\ \\text{m}^2', CM2 = '\\ \\text{cm}^2', LIT = '\\ \\text{L}', KK = '\\ \\text{K}';
+  var D2R = Math.PI / 180, PSI = 6894.757, LBF = 4.4482216;
+  var FT2 = '\\ \\text{ft}^2', FTU = '\\ \\text{ft}', KTU = '\\ \\text{kt}', GALU = '\\ \\text{gal}', KGM = '\\ \\text{kg}\\cdot\\text{m}', KGM2 = '\\ \\text{kg/m}^2', PCT = '\\%', KVA = '\\ \\text{kV}\\cdot\\text{A}';
+  var LBKG = 0.45359237, FTM = 0.3048;
+  function deg(r) { return r / D2R; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function upN(v, st) { return Math.ceil(v / st) * st; }                               // a tidy axis maximum in steps of st
+  function sci(x) { var e = Math.floor(Math.log10(x)), c = x / Math.pow(10, e); return nn(+c.toFixed(2)) + '\\times 10^{' + e + '}'; }   // 3.2 × 10^7 (TeX)
+  function r3(x) { return +(+x).toFixed(3); }
+  var KNMU = '\\ \\text{kN}\\cdot\\text{m}', PR = '\\ \\text{per rad}';
+  function cmF(A, sw) { var c = Math.cos(sw * D2R); return A * c * c / (A + 2 * c); }
+  function tauOf(x) { return 1.576 * x * x * x - 3.458 * x * x + 2.882 * x; }
+  function sgn(x) { return x < 0 ? ' - ' + nn(-x) : ' + ' + nn(x); }                      // " + 0.12" or " - 0.12" (TeX)
+  function niceAx(label, lo, hi, pad) {                                                 // an axis with tidy limits around [lo, hi]
+    if (!(hi > lo)) hi = lo + 1;
+    var p = (hi - lo) * (pad == null ? 0.12 : pad), a = lo - p, b = hi + p, raw = (b - a) / 5, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag, st = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+    return { label: label, min: +(Math.floor(a / st) * st).toPrecision(10), max: +(Math.ceil(b / st) * st).toPrecision(10) };
+  }
+  function yAx(label, fs, x0, x1, extra) {                                              // a y axis that holds the curves over [x0, x1] and the extra values
+    var v = (extra || []).slice(); fs.forEach(function (f) { for (var i = 0; i <= 40; i++) { var y = f(x0 + (x1 - x0) * i / 40); if (isFinite(y)) v.push(y); } });
+    return niceAx(label, Math.min.apply(null, v), Math.max.apply(null, v), 0.08);
+  }
+  function isaRho(h) { var T = h <= 11000 ? 288.15 - 0.0065 * h : 216.65, p = h <= 11000 ? 101325 * Math.pow(1 - 2.25577e-5 * h, 5.25588) : 22632.06 * Math.exp(-(h - 11000) / 6341.62); return p / (287.053 * T); }
+
+  /* ================================================================ 2. Generators */
+  var KWU = '\\ \\text{kW}', MWU = '\\ \\text{MW}', KWH = '\\ \\text{kWh}', WHKG = '\\ \\text{Wh/kg}', KMU = '\\ \\text{km}', NM2 = '\\ \\text{N/m}^2', NKW = '\\ \\text{N/kW}',
+    NMU = '\\ \\text{N}\\cdot\\text{m}', RPM = '\\ \\text{rpm}', HRS = '\\ \\text{h}', MINU = '\\ \\text{min}', KGS2 = '\\ \\text{kg/s}', KWHKM = '\\ \\text{kWh/km}';
+  var HJET = 43.2e6;
+
+  /* ---------- 2.1 Electric propulsion systems (Lesson 1) ---------- */
+  function genChain(rng) {
+    var kind = pickW(rng, [['eta', 3], ['power', 3], ['energy', 2]]), spec, right, wrong, view;
+    if (kind === 'eta') {
+      var eb = rng.pick(range(0.93, 0.98, 0.01)), ei = rng.pick(range(0.95, 0.99, 0.01)), em = rng.pick(range(0.91, 0.97, 0.01)), ep = rng.pick(range(0.70, 0.88, 0.01)), et = eb * ei * em * ep;
+      spec = { type: 'numeric', prompt: 'An electric aircraft has a battery of efficiency \\(' + nn(eb) + '\\), an inverter of \\(' + nn(ei) + '\\), a motor of \\(' + nn(em) + '\\) and a propeller of \\(' + nn(ep) + '\\). What is the efficiency from the battery to the thrust power?', label: '\\(\\eta =\\)', answer: et };
+      spec.hints = ['The efficiency of a chain is the product of its parts\'.', '\\(' + nn(eb) + '\\times' + nn(ei) + '\\times' + nn(em) + ' = ' + n4(eb * ei * em) + '\\); then times the propeller\'s.'];
+      spec.solution = M('\\eta = ' + nn(eb) + '(' + nn(ei) + ')(' + nn(em) + ')(' + nn(ep) + ') = ' + n4(et));
+      right = { value: typed(et) }; wrong = { value: typed(wrongOf(et, [eb * ei * em, (eb + ei + em + ep) / 4, ep])) };
+      var fe = function (x) { return eb * ei * em * x; };
+      view = { title: 'Chain efficiency against the propeller\'s', aria: 'Chain efficiency against the propeller efficiency, with this chain marked.', x: { label: 'Propeller efficiency', min: 0.6, max: 0.95 }, y: { label: '\\(\\eta\\)', min: 0.5, max: 0.95 },
+        curves: [{ f: fe, color: 'z' }], marker: { at: [ep, et], label: '' }, readouts: [{ label: 'Battery to shaft', tex: n4(eb * ei * em) }, { label: '\\(\\eta\\)', tex: n4(et) }], note: 'The propeller is usually the largest loss in the chain.' };
+    } else if (kind === 'power') {
+      var ms = rng.pick(range(800, 9000, 100)), LD = rng.pick(range(10, 20, 0.5)), V = rng.pick(range(40, 180, 5)), eta = rng.pick(range(0.62, 0.78, 0.01)), P = ms * G * V / (eta * LD) / 1000;
+      spec = { type: 'numeric', prompt: 'An all-electric aircraft of \\(' + g4(ms) + KG + '\\) flies level at \\(' + nn(V) + MS + '\\) with \\(L/D = ' + nn(LD) + '\\). Its chain efficiency, battery to thrust power, is \\(' + nn(eta) + '\\). What power does the battery deliver?', label: '\\(P_{\\text{bat}} =\\)', answer: P, unit: 'kW' };
+      spec.hints = ['In level flight \\(D = W/(L/D)\\), and the thrust power is \\(DV\\).', '\\(P_{\\text{bat}} = WV/(\\eta\\,L/D)\\), with \\(W\\) in newtons; divide by 1000 for kW.'];
+      spec.solution = M('D = \\frac{' + g4(ms) + '(9.81)}{' + nn(LD) + '} = ' + n4(ms * G / LD) + NN) + M('P_{\\text{bat}} = \\frac{' + n4(ms * G / LD) + '(' + nn(V) + ')}{' + nn(eta) + '} = ' + n4(P) + KWU);
+      right = { value: typed(P) }; wrong = { value: typed(wrongOf(P, [P * eta, ms * V / (eta * LD) / 1000, P * 1000])) };
+      var fp = function (v) { return ms * G * v / (eta * LD) / 1000; };
+      view = { title: 'Battery power against speed', aria: 'Battery power against speed at this lift-to-drag ratio, with this flight marked.', x: { label: 'Speed (m/s)', min: 0, max: 200 }, y: yAx('Battery power (kW)', [fp], 0, 200, [P, 0]),
+        curves: [{ f: fp, color: 'z' }], marker: { at: [V, P], label: '' }, readouts: [{ label: 'Thrust power', tex: n4(P * eta) + KWU }, { label: '\\(P_{\\text{bat}}\\)', tex: n4(P) + KWU }], note: 'At a fixed \\(L/D\\) the power grows in proportion to the speed.' };
+      view.y.min = 0;
+    } else {
+      var ms2 = rng.pick(range(600, 9000, 100)), LD2 = rng.pick(range(10, 20, 0.5)), eta2 = rng.pick(range(0.62, 0.78, 0.01)), er = ms2 * G / (eta2 * LD2) / 3600;
+      spec = { type: 'numeric', prompt: 'An all-electric aircraft of \\(' + g4(ms2) + KG + '\\) cruises at \\(L/D = ' + nn(LD2) + '\\) with a chain efficiency of \\(' + nn(eta2) + '\\). How much battery energy does it use per kilometer?', label: '\\(E/R =\\)', answer: er, unit: 'kWh/km' };
+      spec.hints = ['The energy per meter is \\(W/(\\eta\\,L/D)\\) in J/m, which is kJ per km.', 'Divide kJ by 3600 for kWh.'];
+      spec.solution = M('\\frac{E}{R} = \\frac{' + g4(ms2) + '(9.81)}{' + nn(eta2) + '(' + nn(LD2) + ')} = ' + n4(ms2 * G / (eta2 * LD2)) + '\\ \\text{kJ/km} = ' + n4(er) + KWHKM);
+      right = { value: typed(er) }; wrong = { value: typed(wrongOf(er, [er * 3600, ms2 / (eta2 * LD2) / 3600, er * eta2 * eta2])) };
+      var fr = function (ld) { return ms2 * G / (eta2 * ld) / 3600; };
+      view = { title: 'Energy per kilometer', aria: 'Energy per kilometer against lift-to-drag ratio, with this aircraft marked.', x: { label: '\\(L/D\\)', min: 6, max: 24 }, y: yAx('kWh per km', [fr], 6, 24, [er, 0]),
+        curves: [{ f: fr, color: 'z' }], marker: { at: [LD2, er], label: '' }, readouts: [{ label: '\\(E/R\\)', tex: n4(er) + KWHKM }], note: 'The speed does not appear: the energy per distance depends on the weight, \\(L/D\\) and the chain.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'Every stage of the chain takes its share; the power from the battery is the thrust power over the whole chain\'s efficiency.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Batteries (Lesson 2) ---------- */
+  function genBattery(rng) {
+    var kind = pickW(rng, [['pack', 3], ['crate', 2], ['size', 3]]), spec, right, wrong, view;
+    if (kind === 'pack') {
+      var ec = rng.pick(range(200, 700, 10)), lo = rng.pick(range(0.02, 0.10, 0.01)), hi = rng.pick(range(0.05, 0.20, 0.01)), fu = 1 - lo - hi, kp = rng.pick(range(1.15, 1.6, 0.05)), eb = ec * fu / kp;
+      spec = { type: 'numeric', prompt: 'Cells rated at \\(' + nn(ec) + WHKG + '\\) are kept above \\(' + nn(Math.round(hi * 100)) + '\\%\\) and below \\(' + nn(Math.round((1 - lo) * 100)) + '\\%\\) of their charge, and the pack weighs \\(' + nn(kp) + '\\) times its cells. What is the pack\'s usable specific energy?', label: '\\(e_b =\\)', answer: eb, unit: 'Wh/kg' };
+      spec.hints = ['The usable share is \\(f_{\\text{use}} = ' + nn(Math.round((1 - lo) * 100)) + '\\% - ' + nn(Math.round(hi * 100)) + '\\% = ' + nn(+fu.toFixed(2)) + '\\).', '\\(e_b = e_{\\text{cell}}f_{\\text{use}}/k_{\\text{pack}}\\).'];
+      spec.solution = M('e_b = \\frac{' + nn(ec) + '(' + nn(+fu.toFixed(2)) + ')}{' + nn(kp) + '} = ' + n4(eb) + WHKG);
+      right = { value: typed(eb) }; wrong = { value: typed(wrongOf(eb, [ec * fu, ec / kp, ec * fu * kp])) };
+      var fp = function (x) { return x * fu / kp; };
+      view = { title: 'Usable pack against cell', aria: 'Usable pack specific energy against the cell rating, with this pack marked.', x: { label: 'Cell rating (Wh/kg)', min: 150, max: 750 }, y: { label: 'Usable pack (Wh/kg)', min: 0, max: 700 },
+        curves: [{ f: fp, color: 'z' }, { f: function (x) { return x; }, color: 'muted', dashed: true }], marker: { at: [ec, eb], label: '' }, readouts: [{ label: '\\(f_{\\text{use}}/k_{\\text{pack}}\\)', tex: n4(fu / kp) }, { label: '\\(e_b\\)', tex: n4(eb) + WHKG }], note: 'The dashed line is the cell\'s rating: the pack keeps well under it.' };
+    } else if (kind === 'crate') {
+      var P = rng.pick(range(50, 3000, 10)), E = rng.pick(range(20, 1200, 5)), C = P / E;
+      spec = { type: 'numeric', prompt: 'A battery storing \\(' + nn(E) + KWH + '\\) delivers \\(' + g4(P) + KWU + '\\). What is its C-rate?', label: '\\(C =\\)', answer: C, unit: 'per h' };
+      spec.hints = ['\\(C = P/E\\), with \\(P\\) in kW and \\(E\\) in kWh.', 'The time to empty a full battery is \\(60/C\\) minutes.'];
+      spec.solution = M('C = \\frac{' + g4(P) + '}{' + nn(E) + '} = ' + n4(C) + '\\ \\text{per hour}') + '<p>At that rate a full battery would last \\(' + n4(60 / C) + MINU + '\\).</p>';
+      right = { value: typed(C) }; wrong = { value: typed(wrongOf(C, [E / P, P / E / 60, 60 / C])) };
+      var fc = function (p) { return p / E; };
+      view = { title: 'C-rate against power', aria: 'C-rate against power for this battery, with this power marked.', x: { label: 'Power (kW)', min: 0, max: upN(P * 1.5, 100) }, y: yAx('C-rate (per h)', [fc], 0, upN(P * 1.5, 100), [C, 0, 3]),
+        curves: [{ f: fc, color: 'z' }], hline: { y: 2, label: '2C' }, marker: { at: [P, C], label: '' }, readouts: [{ label: '\\(C\\)', tex: n4(C) }, { label: 'Time to empty', tex: n4(60 / C) + MINU }], note: 'Today\'s cells are limited to about 2C without excessive heating <a class="cite" href="../reference/references.html#r8">[8]</a>.' };
+      view.y.min = 0;
+    } else {
+      var Ee = rng.pick(range(40, 900, 10)), Pm = rng.pick(range(100, 2500, 10)), e = rng.pick(range(150, 450, 10)), cm = rng.pick(range(1.5, 5, 0.5)), mE = Ee * 1000 / e, mP = Pm / cm * 1000 / e, mb = Math.max(mE, mP);
+      spec = { type: 'numeric', prompt: 'A battery of \\(' + nn(e) + WHKG + '\\) must hold \\(' + nn(Ee) + KWH + '\\) for a flight and deliver up to \\(' + g4(Pm) + KWU + '\\) at no more than \\(' + nn(cm) + '\\)C. What battery mass is needed?', label: '\\(m_b =\\)', answer: mb, unit: 'kg' };
+      spec.hints = ['By energy: \\(E/e_b\\). By power: the energy must be at least \\(P/C_{\\max}\\).', 'The larger of the two masses governs.'];
+      spec.solution = M('\\frac{E}{e_b} = \\frac{' + nn(Ee) + '\\,000}{' + nn(e) + '} = ' + n4(mE) + KG) + M('\\frac{P}{C_{\\max}e_b} = \\frac{' + g4(Pm) + '/' + nn(cm) + '\\times1000}{' + nn(e) + '} = ' + n4(mP) + KG) + '<p>The battery is sized by ' + (mP > mE ? 'power' : 'energy') + ': \\(m_b = ' + n4(mb) + KG + '\\).</p>';
+      right = { value: typed(mb) }; wrong = { value: typed(wrongOf(mb, [Math.min(mE, mP), mE + mP, mb / 1000])) };
+      var f1 = function (x) { return Ee * 1000 / x; }, f2 = function (x) { return Pm / cm * 1000 / x; };
+      view = { title: 'Battery mass against specific energy', aria: 'Battery mass sized by energy and by power against specific energy, with this battery marked.', x: { label: '\\(e_b\\) (Wh/kg)', min: 100, max: 500 }, y: yAx('Battery mass (kg)', [f1, f2], 100, 500, [mb, 0]),
+        curves: [{ f: f1, color: 'z' }, { f: f2, color: 'r' }], marker: { at: [e, mb], label: '' }, readouts: [{ label: 'By energy', tex: n4(mE) + KG }, { label: 'By power', tex: n4(mP) + KG }], note: 'Blue is set by energy, orange by power at the C-rate limit.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'A battery must store the energy and deliver the power; at a C-rate limit, short powerful flights are sized by power.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 Electric range and endurance (Lesson 3) ---------- */
+  function genRange(rng) {
+    var kind = pickW(rng, [['range', 3], ['need', 2], ['endur', 2], ['vmd', 2]]), spec, right, wrong, view;
+    if (kind === 'range' || kind === 'need') {
+      var e = rng.pick(range(150, 500, 10)), eta = rng.pick(range(0.62, 0.80, 0.01)), LD = rng.pick(range(10, 22, 0.5)), bf = rng.pick(range(0.15, 0.45, 0.01)), Rk = e * 3600 * eta * LD * bf / G / 1000;
+      if (kind === 'range') {
+        spec = { type: 'numeric', prompt: 'An electric aircraft has batteries of \\(' + nn(e) + WHKG + '\\) making up \\(' + nn(Math.round(bf * 100)) + '\\%\\) of its takeoff mass. It cruises at \\(L/D = ' + nn(LD) + '\\) with \\(\\eta = ' + nn(eta) + '\\). What is its range, without reserves?', label: '\\(R =\\)', answer: Rk, unit: 'km' };
+        spec.hints = ['\\(R = (e_b\\eta/g)(L/D)(m_b/m_0)\\), with \\(e_b\\) in J/kg: times 3600.', '\\(' + nn(e) + '(3600)(' + nn(eta) + ')/9.81 = ' + n4(e * 3600 * eta / G) + '\\ \\text{m}\\); times \\(L/D\\) and the fraction.'];
+        spec.solution = M('R = \\frac{' + nn(e) + '(3600)(' + nn(eta) + ')}{9.81}(' + nn(LD) + ')(' + nn(bf) + ') = ' + n4(Rk) + KMU);
+        right = { value: typed(Rk) }; wrong = { value: typed(wrongOf(Rk, [Rk / 3.6, Rk * 9.81 * 9.81 / 3.6, e * eta * LD * bf / G])) };
+      } else {
+        var Rt = rng.pick(range(100, 1500, 10)), en = Rt * 1000 * G / (3600 * eta * LD * bf);
+        spec = { type: 'numeric', prompt: 'An electric aircraft is to fly \\(' + g4(Rt) + KMU + '\\) on batteries that make up \\(' + nn(Math.round(bf * 100)) + '\\%\\) of its takeoff mass, at \\(L/D = ' + nn(LD) + '\\) with \\(\\eta = ' + nn(eta) + '\\). What usable specific energy must the batteries have?', label: '\\(e_b =\\)', answer: en, unit: 'Wh/kg' };
+        spec.hints = ['Solve \\(R = (e_b\\eta/g)(L/D)(m_b/m_0)\\) for \\(e_b\\): \\(e_b = gR/(\\eta\\,(L/D)(m_b/m_0))\\).', 'Use \\(R\\) in meters; the answer is in J/kg, so divide by 3600 for Wh/kg.'];
+        spec.solution = M('e_b = \\frac{gR}{\\eta\\,(L/D)(m_b/m_0)} = \\frac{9.81(' + g4(Rt * 1000) + ')}{' + nn(eta) + '(' + nn(LD) + ')(' + nn(bf) + ')} = ' + n4(en * 3600) + '\\ \\text{J/kg} = ' + n4(en) + WHKG);
+        right = { value: typed(en) }; wrong = { value: typed(wrongOf(en, [en * 3600, en / G, en * eta * eta])) };
+        Rk = Rt; e = en;
+      }
+      var fr = function (x) { return e * 3600 * eta * LD * x / G / 1000; };
+      view = { title: 'Range against battery fraction', aria: 'Battery range against the battery fraction, with this aircraft marked.', x: { label: '\\(m_b/m_0\\)', min: 0, max: 0.6 }, y: yAx('Range (km)', [fr], 0, 0.6, [Rk, 0]),
+        curves: [{ f: fr, color: 'z' }], marker: { at: [bf, Rk], label: '' }, readouts: [{ label: '\\(e_b\\)', tex: n4(e) + WHKG }, { label: '\\(R\\)', tex: n4(Rk) + KMU }], note: 'No logarithm: the range grows in proportion to the battery fraction.' };
+      view.y.min = 0;
+    } else if (kind === 'endur') {
+      var e2 = rng.pick(range(150, 450, 10)), eta2 = rng.pick(range(0.62, 0.80, 0.01)), LDm = rng.pick(range(12, 22, 0.5)), bf2 = rng.pick(range(0.15, 0.45, 0.01)), Vmd = rng.pick(range(30, 120, 1)), Vmp = Vmd / Math.pow(3, 0.25), t = e2 * 3600 * eta2 * 0.866 * LDm * bf2 / (G * Vmp) / 3600;
+      spec = { type: 'numeric', prompt: 'An electric aircraft has \\((L/D)_{\\max} = ' + nn(LDm) + '\\) at \\(V_{md} = ' + nn(Vmd) + MS + '\\), batteries of \\(' + nn(e2) + WHKG + '\\) making up \\(' + nn(Math.round(bf2 * 100)) + '\\%\\) of its mass and \\(\\eta = ' + nn(eta2) + '\\). How long can it stay aloft at its best-endurance speed?', label: '\\(t =\\)', answer: t, unit: 'h' };
+      spec.hints = ['Best endurance is at minimum power: \\(V_{mp} = V_{md}/3^{1/4}\\), with \\(L/D = 0.866\\,(L/D)_{\\max}\\).', '\\(t = (e_b\\eta/g)(L/D)(m_b/m_0)/V\\), in seconds; divide by 3600.'];
+      spec.solution = M('V_{mp} = \\frac{' + nn(Vmd) + '}{3^{1/4}} = ' + n4(Vmp) + MS + ',\\qquad \\frac{L}{D} = 0.866(' + nn(LDm) + ') = ' + n4(0.866 * LDm)) + M('t = \\frac{' + nn(e2) + '(3600)(' + nn(eta2) + ')(' + n4(0.866 * LDm) + ')(' + nn(bf2) + ')}{9.81(' + n4(Vmp) + ')} = ' + n4(t * 3600) + '\\ \\text{s} = ' + n4(t) + HRS);
+      right = { value: typed(t) }; wrong = { value: typed(wrongOf(t, [t * Vmp / Vmd / 0.866, t * 3600, t / 0.866 * Vmp / Vmd])) };
+      var ft = function (v) { return e2 * 3600 * eta2 * 0.866 * LDm * bf2 / (G * v) / 3600; };
+      view = { title: 'Endurance against speed', aria: 'Endurance at the minimum-power lift-to-drag ratio against speed, with the minimum-power speed marked.', x: { label: 'Speed (m/s)', min: 20, max: 160 }, y: yAx('Endurance (h)', [ft], 20, 160, [t, 0]),
+        curves: [{ f: ft, color: 'z' }], marker: { at: [Vmp, t], label: '' }, readouts: [{ label: '\\(V_{mp}\\)', tex: n4(Vmp) + MS }, { label: '\\(t\\)', tex: n4(t) + HRS }], note: 'The curve holds \\(L/D\\) at its minimum-power value; the slower, the longer.' };
+      view.y.min = 0;
+    } else {
+      var ws = rng.pick(range(60, 450, 5)), rho = rng.pick([1.225, 1.112, 1.007, 0.9091, 0.8191, 0.7364, 0.5258, 0.3108]), cls = rng.pick(range(0.35, 0.85, 0.01)), V = Math.sqrt(2 * ws * G / (rho * cls));
+      spec = { type: 'numeric', prompt: 'An electric aircraft has \\(W/S = ' + nn(ws) + '\\ \\text{kg/m}^2\\) and its \\((L/D)_{\\max}\\) at \\(C_L^* = ' + nn(cls) + '\\). At what true airspeed does it fly farthest where \\(\\rho = ' + nn(rho) + '\\ \\text{kg/m}^3\\)?', label: '\\(V_{md} =\\)', answer: V, unit: 'm/s' };
+      spec.hints = ['Best range for a battery aircraft is at \\((L/D)_{\\max}\\).', '\\(V_{md} = \\sqrt{2(W/S)g/(\\rho C_L^*)}\\).'];
+      spec.solution = M('V_{md} = \\sqrt{\\frac{2(' + nn(ws) + ')(9.81)}{' + nn(rho) + '(' + nn(cls) + ')}} = ' + n4(V) + MS);
+      right = { value: typed(V) }; wrong = { value: typed(wrongOf(V, [V / Math.pow(3, 0.25), Math.sqrt(2 * ws / (rho * cls)), V * Math.pow(3, 0.25)])) };
+      var fv = function (r) { return Math.sqrt(2 * ws * G / (r * cls)); };
+      view = { title: 'Best-range speed against density', aria: 'Best-range speed against air density for this wing loading, with this density marked.', x: { label: '\\(\\rho\\) (kg/m³)', min: 0.25, max: 1.3 }, y: yAx('\\(V_{md}\\) (m/s)', [fv], 0.25, 1.3, [V]),
+        curves: [{ f: fv, color: 'z' }], marker: { at: [rho, V], label: '' }, readouts: [{ label: '\\(V_{md}\\)', tex: n4(V) + MS }], note: 'Higher is faster at the same range: battery range at \\((L/D)_{\\max}\\) does not depend on altitude.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'Battery range is \\((e_b\\eta/g)(L/D)(m_b/m_0)\\): best at \\((L/D)_{\\max}\\); endurance is best at minimum power, low and slow.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Sizing an electric aircraft (Lesson 4) ---------- */
+  function genSizing(rng) {
+    var kind = pickW(rng, [['w0', 3], ['bf', 2], ['res', 2], ['left', 2]]), spec, right, wrong, view;
+    if (kind === 'w0') {
+      var pay = rng.pick(range(100, 2000, 10)), we = rng.pick(range(0.45, 0.62, 0.01)), bf = rng.pick(range(0.15, Math.min(0.45, 0.93 - we), 0.01)), W0 = pay / (1 - we - bf);
+      spec = { type: 'numeric', prompt: 'An electric aircraft carries \\(' + g4(pay) + KG + '\\) of crew and payload. Its empty weight is \\(' + nn(we) + '\\) of its takeoff weight and its battery \\(' + nn(bf) + '\\). What is its takeoff mass?', label: '\\(W_0 =\\)', answer: W0, unit: 'kg' };
+      spec.hints = ['\\(W_0 = W_{\\text{pay}}/(1 - W_e/W_0 - W_b/W_0)\\).', 'The denominator is \\(1 - ' + nn(we) + ' - ' + nn(bf) + ' = ' + nn(+(1 - we - bf).toFixed(2)) + '\\).'];
+      spec.solution = M('W_0 = \\frac{' + g4(pay) + '}{1 - ' + nn(we) + ' - ' + nn(bf) + '} = ' + n4(W0) + KG);
+      right = { value: typed(W0) }; wrong = { value: typed(wrongOf(W0, [pay / (1 - we), pay * (1 + we + bf), pay / bf])) };
+      var fw = function (x) { return pay / (1 - we - x); }, xmax = Math.min(0.93 - we, 0.6);
+      view = { title: 'Takeoff mass against battery fraction', aria: 'Takeoff mass against the battery fraction at this empty-weight fraction, with this design marked.', x: { label: '\\(W_b/W_0\\)', min: 0, max: +xmax.toFixed(2) }, y: yAx('\\(W_0\\) (kg)', [fw], 0, xmax, [W0, 0]),
+        curves: [{ f: fw, color: 'z' }], marker: { at: [bf, W0], label: '' }, readouts: [{ label: 'Denominator', tex: nn(+(1 - we - bf).toFixed(2)) }, { label: '\\(W_0\\)', tex: n4(W0) + KG }], note: 'As the fractions approach one, the takeoff mass runs away: the battery wall.' };
+      view.y.min = 0;
+    } else if (kind === 'bf') {
+      var Rk = rng.pick(range(50, 800, 10)), e = rng.pick(range(150, 600, 10)), eta = rng.pick(range(0.62, 0.80, 0.01)), LD = rng.pick(range(10, 22, 0.5)), b = Rk * 1000 * G / (e * 3600 * eta * LD);
+      spec = { type: 'numeric', prompt: 'What battery fraction does an electric aircraft need to fly \\(' + g4(Rk) + KMU + '\\) at \\(L/D = ' + nn(LD) + '\\), with \\(\\eta = ' + nn(eta) + '\\) and \\(' + nn(e) + WHKG + '\\) batteries, before reserves?', label: '\\(W_b/W_0 =\\)', answer: b };
+      spec.hints = ['\\(W_b/W_0 = gR/(e_b\\eta\\,L/D)\\), with \\(e_b\\) in J/kg and \\(R\\) in m.', '\\(e_b\\) in J/kg is ' + nn(e) + ' times 3600.'];
+      spec.solution = M('\\frac{W_b}{W_0} = \\frac{9.81(' + g4(Rk * 1000) + ')}{' + nn(e) + '(3600)(' + nn(eta) + ')(' + nn(LD) + ')} = ' + n4(b));
+      right = { value: typed(b) }; wrong = { value: typed(wrongOf(b, [b * 3600, b / G, b * eta * eta])) };
+      var fb = function (r) { return r * 1000 * G / (e * 3600 * eta * LD); };
+      view = { title: 'Battery fraction against range', aria: 'Battery fraction against range, with this range marked.', x: { label: 'Range (km)', min: 0, max: upN(Rk * 1.6, 100) }, y: yAx('\\(W_b/W_0\\)', [fb], 0, upN(Rk * 1.6, 100), [b, 0]),
+        curves: [{ f: fb, color: 'z' }], marker: { at: [Rk, b], label: '' }, readouts: [{ label: '\\(W_b/W_0\\)', tex: n4(b) }], note: 'The fraction is proportional to range; it does not depend on the takeoff mass.' };
+      view.y.min = 0;
+    } else if (kind === 'res') {
+      var tm = rng.pick([10, 15, 20, 30, 45]), Vm = rng.pick(range(30, 110, 1)), e2 = rng.pick(range(150, 600, 10)), eta2 = rng.pick(range(0.62, 0.80, 0.01)), LDm = rng.pick(range(10, 19, 0.5)), fr = G * Vm * tm * 60 / (e2 * 3600 * eta2 * LDm);
+      spec = { type: 'numeric', prompt: 'An electric aircraft must keep a \\(' + nn(tm) + '\\)-minute reserve, flown at \\(' + nn(Vm) + MS + '\\) where its \\(L/D = ' + nn(LDm) + '\\), with \\(\\eta = ' + nn(eta2) + '\\) and \\(' + nn(e2) + WHKG + '\\) batteries. What fraction of its takeoff mass must that battery be?', label: '\\(W_{b,\\text{res}}/W_0 =\\)', answer: fr };
+      spec.hints = ['The reserve is a distance \\(Vt\\) flown on the battery: \\(gVt/(e_b\\eta\\,L/D)\\).', '\\(t\\) in seconds and \\(e_b\\) in J/kg.'];
+      spec.solution = M('\\frac{W_{b,\\text{res}}}{W_0} = \\frac{9.81(' + nn(Vm) + ')(' + nn(tm * 60) + ')}{' + nn(e2) + '(3600)(' + nn(eta2) + ')(' + nn(LDm) + ')} = ' + n4(fr));
+      right = { value: typed(fr) }; wrong = { value: typed(wrongOf(fr, [fr / 60, fr * 60, fr * 3600 / 60 / 9.81])) };
+      var ff = function (tt) { return G * Vm * tt * 60 / (e2 * 3600 * eta2 * LDm); };
+      view = { title: 'Reserve fraction against its length', aria: 'Battery fraction for a reserve against its length in minutes, with this reserve marked.', x: { label: 'Reserve (min)', min: 0, max: 60 }, y: yAx('\\(W_{b,\\text{res}}/W_0\\)', [ff], 0, 60, [fr, 0]),
+        curves: [{ f: ff, color: 'r' }], marker: { at: [tm, fr], label: '' }, readouts: [{ label: 'Reserve fraction', tex: n4(fr) }], note: 'Reserves written for fuel take a large share of a battery.' };
+      view.y.min = 0;
+    } else {
+      var W0b = rng.pick(range(1000, 9000, 50)), payb = rng.pick(range(100, 1200, 10)), web = rng.pick(range(0.45, 0.6, 0.01)), resb = rng.pick(range(0.02, 0.12, 0.01)), e3 = rng.pick(range(200, 600, 10)), eta3 = rng.pick(range(0.65, 0.8, 0.01)), LD3 = rng.pick(range(12, 20, 0.5));
+      var bfa = 1 - web - payb / W0b;
+      if (bfa - resb < 0.03) { payb = Math.round(W0b * (1 - web - resb - 0.05) / 10) * 10; bfa = 1 - web - payb / W0b; }
+      var Rl = (bfa - resb) * e3 * 3600 * eta3 * LD3 / G / 1000;
+      spec = { type: 'numeric', prompt: 'An electric aircraft of \\(' + g4(W0b) + KG + '\\) carries \\(' + g4(payb) + KG + '\\) of crew and payload, with an empty-weight fraction of \\(' + nn(web) + '\\). Its reserve needs a battery fraction of \\(' + nn(resb) + '\\). With \\(' + nn(e3) + WHKG + '\\), \\(\\eta = ' + nn(eta3) + '\\) and \\(L/D = ' + nn(LD3) + '\\), what range is left?', label: '\\(R =\\)', answer: Rl, unit: 'km' };
+      spec.hints = ['The battery is what is left: \\(W_b/W_0 = 1 - ' + nn(web) + ' - ' + g4(payb) + '/' + g4(W0b) + ' = ' + n4(bfa) + '\\).', 'Take off the reserve\'s ' + nn(resb) + ' and use the battery range equation.'];
+      spec.solution = M('\\frac{W_b}{W_0} = 1 - ' + nn(web) + ' - \\frac{' + g4(payb) + '}{' + g4(W0b) + '} = ' + n4(bfa)) + M('R = \\frac{' + nn(e3) + '(3600)(' + nn(eta3) + ')}{9.81}(' + nn(LD3) + ')(' + n4(bfa - resb) + ') = ' + n4(Rl) + KMU);
+      right = { value: typed(Rl) }; wrong = { value: typed(wrongOf(Rl, [bfa * e3 * 3600 * eta3 * LD3 / G / 1000, Rl * 3.6, (bfa + resb) * e3 * 3600 * eta3 * LD3 / G / 1000])) };
+      var fl = function (x) { return Math.max(0, x - resb) * e3 * 3600 * eta3 * LD3 / G / 1000; };
+      view = { title: 'Range left against battery fraction', aria: 'Range left after the reserve against the battery fraction, with this aircraft marked.', x: { label: '\\(W_b/W_0\\)', min: 0, max: 0.6 }, y: yAx('Range (km)', [fl], 0, 0.6, [Rl, 0]),
+        curves: [{ f: fl, color: 'z' }], marker: { at: [bfa, Rl], label: '' }, readouts: [{ label: '\\(W_b/W_0\\)', tex: n4(bfa) }, { label: 'Range left', tex: n4(Rl) + KMU }], note: 'Nothing flies until the reserve is covered.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'Sizing with a battery: \\(W_0 = W_{\\text{pay}}/(1 - W_e/W_0 - W_b/W_0)\\), the battery fraction set by the range and the reserve.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 Hybrid-electric and distributed propulsion (Lesson 5) ---------- */
+  function genHybrid(rng) {
+    var kind = pickW(rng, [['hp', 2], ['he', 2], ['ws', 2], ['boost', 3]]), spec, right, wrong, view;
+    if (kind === 'hp') {
+      var Pm = rng.pick(range(50, 2000, 10)), Pe = rng.pick(range(200, 4000, 10)), H = Pm / (Pm + Pe);
+      spec = { type: 'numeric', prompt: 'A hybrid-electric aircraft has \\(' + g4(Pe) + KWU + '\\) of engine power and \\(' + g4(Pm) + KWU + '\\) of electric motor power. What is its power degree of hybridization?', label: '\\(H_P =\\)', answer: H };
+      spec.hints = ['\\(H_P = P_{\\text{motor}}/(P_{\\text{motor}} + P_{\\text{engine}})\\).', 'The total installed power is \\(' + g4(Pm + Pe) + KWU + '\\).'];
+      spec.solution = M('H_P = \\frac{' + g4(Pm) + '}{' + g4(Pm) + ' + ' + g4(Pe) + '} = ' + n4(H));
+      right = { value: typed(H) }; wrong = { value: typed(wrongOf(H, [Pm / Pe, Pe / (Pm + Pe), 1 - Pm / Pe])) };
+      var fh = function (x) { return x / (x + Pe); };
+      view = { title: 'Power hybridization', aria: 'Power degree of hybridization against motor power, with this aircraft marked.', x: { label: 'Motor power (kW)', min: 0, max: 2200 }, y: { label: '\\(H_P\\)', min: 0, max: 1 },
+        curves: [{ f: fh, color: 'z' }], marker: { at: [Pm, H], label: '' }, readouts: [{ label: '\\(H_P\\)', tex: n4(H) }], note: 'The engine power is held; more motor power, more of the aircraft\'s power electric.' };
+    } else if (kind === 'he') {
+      var mb = rng.pick(range(50, 1500, 10)), e = rng.pick(range(150, 500, 10)), mf = rng.pick(range(100, 3000, 10)), Eb = mb * e / 1000, Ef = mf * 12000 / 1000, H2 = Eb / (Eb + Ef);
+      spec = { type: 'numeric', prompt: 'A hybrid carries \\(' + g4(mb) + KG + '\\) of \\(' + nn(e) + WHKG + '\\) batteries and \\(' + g4(mf) + KG + '\\) of jet fuel (\\(12\\,000\\ \\text{Wh/kg}\\)). What is its energy degree of hybridization?', label: '\\(H_E =\\)', answer: H2 };
+      spec.hints = ['Convert both to kWh: battery \\(m_b e_b\\), fuel \\(m_f \\times 12\\).', '\\(H_E = E_{\\text{bat}}/(E_{\\text{bat}} + E_{\\text{fuel}})\\).'];
+      spec.solution = M('E_{\\text{bat}} = ' + g4(mb) + '(' + nn(e) + ') = ' + n4(Eb) + KWH + ',\\qquad E_{\\text{fuel}} = ' + g4(mf) + '(12) = ' + g4(Ef) + KWH) + M('H_E = \\frac{' + n4(Eb) + '}{' + n4(Eb) + ' + ' + g4(Ef) + '} = ' + n4(H2));
+      right = { value: typed(H2) }; wrong = { value: typed(wrongOf(H2, [mb / (mb + mf), Eb / Ef * 1000, mb / mf])) };
+      var fe = function (x) { var a = x * e / 1000; return a / (a + Ef); };
+      view = { title: 'Energy hybridization', aria: 'Energy degree of hybridization against battery mass, with this aircraft marked.', x: { label: 'Battery mass (kg)', min: 0, max: 1600 }, y: yAx('\\(H_E\\)', [fe], 0, 1600, [H2, 0]),
+        curves: [{ f: fe, color: 'z' }], marker: { at: [mb, H2], label: '' }, readouts: [{ label: 'By mass', tex: n4(mb / (mb + mf)) }, { label: '\\(H_E\\)', tex: n4(H2) }], note: 'A large share of the store\'s mass holds a tiny share of its energy.' };
+      view.y.min = 0;
+    } else if (kind === 'ws') {
+      var ws0 = rng.pick(range(60, 400, 5)), c0 = rng.pick(range(1.6, 2.6, 0.1)), c1 = +(c0 * rng.pick(range(1.3, 2.6, 0.1))).toFixed(2), ws1 = ws0 * c1 / c0;
+      spec = { type: 'numeric', prompt: 'An aircraft\'s landing distance limits its wing loading to \\(' + nn(ws0) + '\\ \\text{kg/m}^2\\) with \\(C_{L,L} = ' + nn(c0) + '\\). High-lift propellers raise \\(C_{L,L}\\) to \\(' + nn(c1) + '\\). At the same landing distance, what wing loading is allowed?', label: '\\(W/S =\\)', answer: ws1, unit: 'kg/m²' };
+      spec.hints = ['At a given landing distance the limit on \\(W/S\\) is proportional to \\(C_{L,L}\\).', 'Multiply by the ratio of the lift coefficients, \\(' + nn(c1) + '/' + nn(c0) + '\\).'];
+      spec.solution = M('\\frac{W}{S} = ' + nn(ws0) + '\\,\\frac{' + nn(c1) + '}{' + nn(c0) + '} = ' + n4(ws1) + '\\ \\text{kg/m}^2');
+      right = { value: typed(ws1) }; wrong = { value: typed(wrongOf(ws1, [ws0 * c0 / c1, ws0 * Math.sqrt(c1 / c0), ws0 + c1 - c0])) };
+      var fw = function (c) { return ws0 * c / c0; };
+      view = { title: 'Landing wing loading against lift', aria: 'Allowed wing loading against the landing lift coefficient, with this design marked.', x: { label: '\\(C_{L,L}\\)', min: 1, max: 7 }, y: yAx('\\(W/S\\) (kg/m²)', [fw], 1, 7, [ws1, 0]),
+        curves: [{ f: fw, color: 'z' }], marker: { at: [c1, ws1], label: '' }, readouts: [{ label: 'Wing area ratio', tex: n4(c0 / c1) }, { label: '\\(W/S\\)', tex: n4(ws1) + '\\ \\text{kg/m}^2' }], note: 'Blown high lift lets the wing be sized for cruise, as on NASA\'s SCEPTOR <a class="cite" href="../reference/references.html#r7">[7]</a>.' };
+      view.y.min = 0;
+    } else {
+      var Pb = rng.pick(range(50, 800, 10)), tmin = rng.pick(range(2, 20, 1)), eb = rng.pick(range(150, 400, 10)), cm = rng.pick(range(1.5, 6, 0.5)), mE = Pb * tmin / 60 * 1000 / eb, mP = Pb / cm * 1000 / eb, ms = Math.max(mE, mP);
+      spec = { type: 'numeric', prompt: 'A battery boost must deliver \\(' + nn(Pb) + KWU + '\\) for \\(' + nn(tmin) + MINU + '\\), from \\(' + nn(eb) + WHKG + '\\) cells at no more than \\(' + nn(cm) + '\\)C. How heavy is the battery?', label: '\\(m_b =\\)', answer: ms, unit: 'kg' };
+      spec.hints = ['By energy: \\(Pt/e_b\\), with \\(t\\) in hours.', 'By power: the energy must be at least \\(P/C_{\\max}\\). The larger governs.'];
+      spec.solution = M('\\text{energy: } \\frac{' + nn(Pb) + '(' + nn(tmin) + '/60)}{' + nn(eb) + '}\\times1000 = ' + n4(mE) + KG) + M('\\text{power: } \\frac{' + nn(Pb) + '/' + nn(cm) + '}{' + nn(eb) + '}\\times1000 = ' + n4(mP) + KG) + '<p>Sized by ' + (mP > mE ? 'power' : 'energy') + ': \\(m_b = ' + n4(ms) + KG + '\\).</p>';
+      right = { value: typed(ms) }; wrong = { value: typed(wrongOf(ms, [Math.min(mE, mP), mE * 60, mE + mP])) };
+      var fe2 = function (tt) { return Math.max(Pb * tt / 60 * 1000 / eb, mP); };
+      view = { title: 'Boost battery against its duration', aria: 'Boost battery mass against the boost duration, with this boost marked.', x: { label: 'Boost (min)', min: 0, max: 30 }, y: yAx('Battery mass (kg)', [fe2], 0, 30, [ms, 0]),
+        curves: [{ f: fe2, color: 'z' }], hline: { y: mP, label: 'power limit' }, marker: { at: [tmin, ms], label: '' }, readouts: [{ label: 'By energy', tex: n4(mE) + KG }, { label: 'By power', tex: n4(mP) + KG }], note: 'Short boosts are sized by power: the battery is heavier than its energy needs.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'A hybrid\'s battery earns its mass only where it replaces something heavier; blown high lift earns its motors by shrinking the wing.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Electric motors and their certification (Lesson 6) ---------- */
+  function genMotor(rng) {
+    var kind = pickW(rng, [['torque', 3], ['mass', 2], ['heat', 2], ['cool', 2]]), spec, right, wrong, view;
+    if (kind === 'torque') {
+      var P = rng.pick(range(20, 2500, 10)), N = rng.pick(range(1000, 20000, 100)), w = 2 * Math.PI * N / 60, Q = P * 1000 / w;
+      spec = { type: 'numeric', prompt: 'A motor delivers \\(' + g4(P) + KWU + '\\) at \\(' + g4(N) + RPM + '\\). What torque does it give?', label: '\\(Q =\\)', answer: Q, unit: 'N·m' };
+      spec.hints = ['\\(\\omega = 2\\pi N/60\\) in rad/s.', '\\(Q = P/\\omega\\), with \\(P\\) in watts.'];
+      spec.solution = M('\\omega = \\frac{2\\pi(' + g4(N) + ')}{60} = ' + n4(w) + '\\ \\text{rad/s},\\qquad Q = \\frac{' + g4(P * 1000) + '}{' + n4(w) + '} = ' + n4(Q) + NMU);
+      right = { value: typed(Q) }; wrong = { value: typed(wrongOf(Q, [P * 1000 / N, P / w, Q * 2 * Math.PI])) };
+      var fq = function (n) { return P * 1000 / (2 * Math.PI * n / 60); };
+      view = { title: 'Torque against speed', aria: 'Torque against shaft speed at this power, with this motor marked.', x: { label: 'Speed (rpm)', min: 500, max: 21000 }, y: yAx('Torque (N·m)', [fq], 800, 21000, [Q, 0]),
+        curves: [{ f: fq, color: 'z' }], marker: { at: [N, Q], label: '' }, readouts: [{ label: '\\(\\omega\\)', tex: n4(w) + '\\ \\text{rad/s}' }, { label: '\\(Q\\)', tex: n4(Q) + NMU }], note: 'For a given power, a slow motor must make more torque.' };
+      view.y.min = 0;
+    } else if (kind === 'mass') {
+      var n1 = rng.pick(range(1000, 4000, 100)), k = rng.pick(range(2, 8, 0.5)), n2 = n1 * k, r = Math.pow(k, 0.8587);
+      spec = { type: 'numeric', prompt: 'A direct-drive motor turns a propeller at \\(' + g4(n1) + RPM + '\\). A motor of the same power at \\(' + g4(n2) + RPM + '\\) drives it through a gearbox. With motor mass proportional to \\(Q^{0.8587}\\), how many times heavier is the direct-drive motor?', label: '\\(m_1/m_2 =\\)', answer: r };
+      spec.hints = ['At the same power the torque goes as \\(1/N\\): \\(Q_1/Q_2 = ' + g4(n2) + '/' + g4(n1) + ' = ' + nn(k) + '\\).', '\\(m_1/m_2 = (Q_1/Q_2)^{0.8587}\\).'];
+      spec.solution = M('\\frac{m_1}{m_2} = \\left(\\frac{' + g4(n2) + '}{' + g4(n1) + '}\\right)^{0.8587} = ' + nn(k) + '^{0.8587} = ' + n4(r));
+      right = { value: typed(r) }; wrong = { value: typed(wrongOf(r, [k, 1 / r, Math.pow(k, 1 / 0.8587)])) };
+      var fm = function (x) { return Math.pow(x, 0.8587); };
+      view = { title: 'Motor mass against gear ratio', aria: 'Mass of the direct-drive motor over the geared one against the gear ratio, with this ratio marked.', x: { label: 'Gear ratio', min: 1, max: 9 }, y: yAx('\\(m_1/m_2\\)', [fm], 1, 9, [r, 0]),
+        curves: [{ f: fm, color: 'z' }, { f: function (x) { return x; }, color: 'muted', dashed: true }], marker: { at: [k, r], label: '' }, readouts: [{ label: 'Torque ratio', tex: nn(k) }, { label: '\\(m_1/m_2\\)', tex: n4(r) }], note: 'Dashed: mass in proportion to torque. The fit grows a little slower.' };
+      view.y.min = 0;
+    } else if (kind === 'heat') {
+      var Po = rng.pick(range(20, 2000, 10)), et = rng.pick(range(0.90, 0.98, 0.005)), Qh = Po * (1 - et) / et;
+      spec = { type: 'numeric', prompt: 'A motor delivers \\(' + g4(Po) + KWU + '\\) of shaft power at an efficiency of \\(' + nn(et) + '\\). How much heat must its cooling system remove?', label: '\\(\\dot Q =\\)', answer: Qh, unit: 'kW' };
+      spec.hints = ['The motor takes \\(P/\\eta\\); the heat is the difference.', '\\(\\dot Q = P(1 - \\eta)/\\eta\\).'];
+      spec.solution = M('\\dot Q = ' + g4(Po) + '\\,\\frac{1 - ' + nn(et) + '}{' + nn(et) + '} = ' + n4(Qh) + KWU);
+      right = { value: typed(Qh) }; wrong = { value: typed(wrongOf(Qh, [Po * (1 - et), Po / et, Po * et])) };
+      var fh = function (x) { return Po * (1 - x) / x; };
+      view = { title: 'Heat against efficiency', aria: 'Heat to reject against motor efficiency at this power, with this motor marked.', x: { label: '\\(\\eta\\)', min: 0.88, max: 0.99 }, y: yAx('Heat (kW)', [fh], 0.88, 0.99, [Qh, 0]),
+        curves: [{ f: fh, color: 'r' }], marker: { at: [et, Qh], label: '' }, readouts: [{ label: 'Input power', tex: n4(Po / et) + KWU }, { label: '\\(\\dot Q\\)', tex: n4(Qh) + KWU }], note: 'One percent of efficiency is a large amount of heat at megawatt power.' };
+      view.y.min = 0;
+    } else {
+      var Qk = rng.pick(range(5, 300, 1)), cp = rng.pick([3300, 3500, 3600, 4180]), dT = rng.pick(range(5, 25, 1)), md = Qk * 1000 / (cp * dT);
+      spec = { type: 'numeric', prompt: 'A liquid cooling loop carries \\(' + nn(Qk) + KWU + '\\) of heat from a motor. Its coolant has \\(c_p = ' + g4(cp) + '\\ \\text{J/(kg K)}\\) and warms by \\(' + nn(dT) + '\\ \\text{K}\\). What mass flow does it need?', label: '\\(\\dot m =\\)', answer: md, unit: 'kg/s' };
+      spec.hints = ['\\(\\dot Q = \\dot m c_p\\Delta T\\), with \\(\\dot Q\\) in watts.', 'Solve for \\(\\dot m = \\dot Q/(c_p\\Delta T)\\).'];
+      spec.solution = M('\\dot m = \\frac{' + g4(Qk * 1000) + '}{' + g4(cp) + '(' + nn(dT) + ')} = ' + n4(md) + KGS2);
+      right = { value: typed(md) }; wrong = { value: typed(wrongOf(md, [Qk / (cp * dT), md * dT * dT, Qk * 1000 / cp])) };
+      var fc = function (x) { return Qk * 1000 / (cp * x); };
+      view = { title: 'Coolant flow against temperature rise', aria: 'Coolant mass flow against its temperature rise, with this loop marked.', x: { label: '\\(\\Delta T\\) (K)', min: 3, max: 30 }, y: yAx('\\(\\dot m\\) (kg/s)', [fc], 3, 30, [md, 0]),
+        curves: [{ f: fc, color: 'z' }], marker: { at: [dT, md], label: '' }, readouts: [{ label: '\\(\\dot m\\)', tex: n4(md) + KGS2 }], note: 'A small temperature rise needs a large flow, and so a large pump and radiator.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'Motor mass follows torque; its losses come out as low-temperature heat that cooling must carry away.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Vertical flight (Lesson 7) ---------- */
+  function genHover(rng) {
+    var kind = pickW(rng, [['vh', 2], ['power', 3], ['pl', 2], ['climb', 2]]), spec, right, wrong, view;
+    if (kind === 'vh') {
+      var DL = rng.pick(range(100, 3000, 10)), rho = rng.pick([1.225, 1.112, 1.058, 1.007, 0.9091]), v = Math.sqrt(DL / (2 * rho));
+      spec = { type: 'numeric', prompt: 'A rotor hovers with a disk loading of \\(' + g4(DL) + NM2 + '\\) where \\(\\rho = ' + nn(rho) + '\\ \\text{kg/m}^3\\). What is its induced velocity?', label: '\\(v_h =\\)', answer: v, unit: 'm/s' };
+      spec.hints = ['Momentum theory: \\(T = 2\\rho A v_h^2\\).', '\\(v_h = \\sqrt{(T/A)/(2\\rho)}\\).'];
+      spec.solution = M('v_h = \\sqrt{\\frac{' + g4(DL) + '}{2(' + nn(rho) + ')}} = ' + n4(v) + MS) + '<p>Far below the rotor the slipstream reaches \\(2v_h = ' + n4(2 * v) + MS + '\\).</p>';
+      right = { value: typed(v) }; wrong = { value: typed(wrongOf(v, [2 * v, Math.sqrt(DL / rho), DL / (2 * rho)])) };
+      var fv = function (d) { return Math.sqrt(d / (2 * rho)); };
+      view = { title: 'Induced velocity against disk loading', aria: 'Induced velocity against disk loading, with this rotor marked.', x: { label: 'Disk loading (N/m²)', min: 0, max: 3200 }, y: yAx('\\(v_h\\) (m/s)', [fv], 0, 3200, [v, 0]),
+        curves: [{ f: fv, color: 'z' }], marker: { at: [DL, v], label: '' }, readouts: [{ label: '\\(v_h\\)', tex: n4(v) + MS }, { label: '\\(2v_h\\)', tex: n4(2 * v) + MS }], note: 'The induced velocity grows as the square root of the disk loading.' };
+      view.y.min = 0;
+    } else if (kind === 'power') {
+      var ms = rng.pick(range(500, 9000, 50)), n = rng.pick([1, 2, 4, 6, 8]), D = rng.pick(range(1.5, n <= 2 ? 12 : 5, 0.1)), fm = rng.pick(range(0.6, 0.8, 0.01)), dn = rng.pick([0, 0.03, 0.05, 0.08, 0.10]);
+      var T = ms * G * (1 + dn), A = n * Math.PI * D * D / 4, vh = Math.sqrt(T / (2 * RHO0 * A)), Pk = T * vh / fm / 1000;
+      spec = { type: 'numeric', prompt: 'A \\(' + g4(ms) + KG + '\\) VTOL aircraft hovers at sea level on ' + (n === 1 ? 'one rotor' : n + ' rotors') + ' of \\(' + nn(D) + MM + '\\) diameter' + (dn ? ', with a download of \\(' + nn(Math.round(dn * 100)) + '\\%\\) of its weight' : '') + ' and \\(FM = ' + nn(fm) + '\\). What shaft power does it need?', label: '\\(P =\\)', answer: Pk, unit: 'kW' };
+      spec.hints = ['\\(T = W' + (dn ? '(1 + ' + nn(dn) + ')' : '') + '\\) and \\(A = ' + n + '\\pi D^2/4 = ' + n4(A) + '\\ \\text{m}^2\\).', '\\(v_h = \\sqrt{T/(2\\rho A)}\\), then \\(P = Tv_h/FM\\).'];
+      spec.solution = M('T = ' + n4(T) + NN + ',\\qquad A = ' + n4(A) + '\\ \\text{m}^2,\\qquad v_h = \\sqrt{\\frac{' + n4(T) + '}{2(1.225)(' + n4(A) + ')}} = ' + n4(vh) + MS) + M('P = \\frac{' + n4(T) + '(' + n4(vh) + ')}{' + nn(fm) + '} = ' + n4(Pk) + KWU);
+      right = { value: typed(Pk) }; wrong = { value: typed(wrongOf(Pk, [Pk * fm, Pk * fm * fm, T * Math.sqrt(T / (RHO0 * A)) / fm / 1000])) };
+      var fp = function (d) { var a = n * Math.PI * d * d / 4; return T * Math.sqrt(T / (2 * RHO0 * a)) / fm / 1000; };
+      var dmax = Math.max(D * 2, 4);
+      view = { title: 'Hover power against rotor diameter', aria: 'Hover power against rotor diameter for this aircraft, with this rotor marked.', x: { label: 'Rotor diameter (m)', min: 0.5, max: +dmax.toFixed(1) }, y: yAx('Power (kW)', [fp], D * 0.6, dmax, [Pk, 0]),
+        curves: [{ f: fp, color: 'r' }], marker: { at: [D, Pk], label: '' }, readouts: [{ label: 'Disk loading', tex: n4(T / A) + NM2 }, { label: '\\(P\\)', tex: n4(Pk) + KWU }], note: 'Larger rotors hover on less power: \\(P \\propto 1/D\\) at a given thrust.' };
+      view.y.min = 0;
+      if (fp(view.x.min) > view.y.max) view.x.min = +(D * 0.6).toFixed(1);
+    } else if (kind === 'pl') {
+      var DL2 = rng.pick(range(100, 100000, 100)), fm2 = rng.pick(range(0.6, 0.82, 0.01)), v2 = Math.sqrt(DL2 / (2 * RHO0)), PL = fm2 / v2 * 1000;
+      spec = { type: 'numeric', prompt: 'A lifting system hovers at sea level with a disk loading of \\(' + g4(DL2) + NM2 + '\\) and an efficiency (figure of merit) of \\(' + nn(fm2) + '\\). What is its power loading, in newtons of thrust per kilowatt?', label: '\\(T/P =\\)', answer: PL, unit: 'N/kW' };
+      spec.hints = ['\\(T/P = FM/v_h\\) in N/W, with \\(v_h = \\sqrt{(T/A)/(2\\rho)}\\).', 'Multiply by 1000 for N/kW.'];
+      spec.solution = M('v_h = \\sqrt{\\frac{' + g4(DL2) + '}{2(1.225)}} = ' + n4(v2) + MS + ',\\qquad \\frac{T}{P} = \\frac{' + nn(fm2) + '}{' + n4(v2) + '}\\times1000 = ' + n4(PL) + NKW);
+      right = { value: typed(PL) }; wrong = { value: typed(wrongOf(PL, [PL / 1000, v2 / fm2 * 1000, fm2 / (2 * v2) * 1000])) };
+      var fl = function (d) { return fm2 / Math.sqrt(d / (2 * RHO0)) * 1000; };
+      view = { title: 'Power loading against disk loading', aria: 'Power loading against disk loading on logarithmic scales, with this system marked.', x: { label: 'Disk loading (N/m²)', min: 50, max: 200000, log: true }, y: { label: 'Power loading (N/kW)', min: 1, max: 200, log: true },
+        curves: [{ f: fl, color: 'z' }], marker: { at: [DL2, PL], label: '' }, readouts: [{ label: '\\(v_h\\)', tex: n4(v2) + MS }, { label: '\\(T/P\\)', tex: n4(PL) + NKW }], note: 'Helicopters at the left, jets at the right: power loading falls as the square root of disk loading.' };
+    } else {
+      var Tk = rng.pick(range(5, 90, 0.5)), DL3 = rng.pick(range(200, 1500, 10)), fm3 = rng.pick(range(0.65, 0.8, 0.01)), Vc = rng.pick(range(0.5, 6, 0.1)), T3 = Tk * 1000, v3 = Math.sqrt(DL3 / (2 * RHO0)), vi = -Vc / 2 + Math.sqrt(Vc * Vc / 4 + v3 * v3), Pc = T3 * (Vc + vi) / fm3 / 1000;
+      spec = { type: 'numeric', prompt: 'A rotor system makes \\(' + nn(Tk) + KN + '\\) of thrust at a disk loading of \\(' + g4(DL3) + NM2 + '\\), with \\(FM = ' + nn(fm3) + '\\), and climbs vertically at sea level at \\(' + nn(Vc) + MS + '\\). What shaft power does it need?', label: '\\(P =\\)', answer: Pc, unit: 'kW' };
+      spec.hints = ['\\(v_h = \\sqrt{(T/A)/(2\\rho)}\\); in climb \\(v_i = -V_c/2 + \\sqrt{V_c^2/4 + v_h^2}\\).', '\\(P = T(V_c + v_i)/FM\\).'];
+      spec.solution = M('v_h = ' + n4(v3) + MS + ',\\qquad v_i = -' + nn(Vc / 2) + ' + \\sqrt{' + nn(Vc / 2) + '^2 + ' + n4(v3) + '^2} = ' + n4(vi) + MS) + M('P = \\frac{' + g4(T3) + '(' + nn(Vc) + ' + ' + n4(vi) + ')}{' + nn(fm3) + '} = ' + n4(Pc) + KWU);
+      right = { value: typed(Pc) }; wrong = { value: typed(wrongOf(Pc, [T3 * v3 / fm3 / 1000, T3 * (Vc + v3) / fm3 / 1000, Pc * fm3])) };
+      var fc = function (vc) { var w = -vc / 2 + Math.sqrt(vc * vc / 4 + v3 * v3); return T3 * (vc + w) / fm3 / 1000; };
+      view = { title: 'Power against climb rate', aria: 'Shaft power against vertical climb rate, with this climb marked.', x: { label: 'Climb rate (m/s)', min: 0, max: 8 }, y: yAx('Power (kW)', [fc], 0, 8, [Pc, 0]),
+        curves: [{ f: fc, color: 'r' }], marker: { at: [Vc, Pc], label: '' }, readouts: [{ label: 'Hover', tex: n4(T3 * v3 / fm3 / 1000) + KWU }, { label: 'Climb', tex: n4(Pc) + KWU }], note: 'A slow climb adds only about half its \\(TV_c\\) to the hover power.' };
+      view.y.min = 0;
+    }
+    spec.explain = 'Momentum theory: \\(v_h = \\sqrt{T/(2\\rho A)}\\), \\(P = Tv_h/FM\\). The disk loading decides the power.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 VTOL configurations (Lesson 8) ---------- */
+  function genVtol(rng) {
+    var kind = pickW(rng, [['dia', 3], ['size', 3], ['fuel', 2], ['hot', 2]]), spec, right, wrong, view;
+    if (kind === 'dia') {
+      var ms = rng.pick(range(800, 9000, 50)), n = rng.pick([2, 4, 6, 8]), DL = rng.pick(range(200, n === 2 ? 1000 : 900, 10)), dn = rng.pick([0, 0.05, 0.08, 0.10, 0.12]), T = ms * G * (1 + dn), D = 2 * Math.sqrt(T / (n * DL) / Math.PI);
+      spec = { type: 'numeric', prompt: 'A \\(' + g4(ms) + KG + '\\) VTOL aircraft lifts on ' + n + ' rotors at a disk loading of \\(' + g4(DL) + NM2 + '\\)' + (dn ? ', with a download of \\(' + nn(Math.round(dn * 100)) + '\\%\\)' : '') + '. What is each rotor\'s diameter?', label: '\\(D =\\)', answer: D, unit: 'm' };
+      spec.hints = ['\\(T = W' + (dn ? '(1 + ' + nn(dn) + ')' : '') + '\\) and the total area \\(A = T/(T/A)\\).', 'Each rotor has \\(A/' + n + ' = \\pi D^2/4\\).'];
+      spec.solution = M('T = ' + n4(T) + NN + ',\\qquad A = \\frac{' + n4(T) + '}{' + g4(DL) + '} = ' + n4(T / DL) + '\\ \\text{m}^2,\\qquad D = \\sqrt{\\frac{4(' + n4(T / DL / n) + ')}{\\pi}} = ' + n4(D) + MM);
+      right = { value: typed(D) }; wrong = { value: typed(wrongOf(D, [D / 2, 2 * Math.sqrt(T / DL / Math.PI), D * Math.sqrt(n)])) };
+      var fd = function (dl) { return 2 * Math.sqrt(T / (n * dl) / Math.PI); };
+      view = { title: 'Rotor diameter against disk loading', aria: 'Rotor diameter against disk loading for this aircraft, with this design marked.', x: { label: 'Disk loading (N/m²)', min: 100, max: 1100 }, y: yAx('\\(D\\) (m)', [fd], 150, 1100, [D, 0]),
+        curves: [{ f: fd, color: 'r' }], marker: { at: [DL, D], label: '' }, readouts: [{ label: 'Total area', tex: n4(T / DL) + '\\ \\text{m}^2' }, { label: '\\(D\\)', tex: n4(D) + MM }], note: 'Low disk loading saves power but needs large rotors.' };
+      view.y.min = 0;
+    } else if (kind === 'size') {
+      var pay = rng.pick(range(200, 3000, 10)), we = rng.pick(range(0.40, 0.58, 0.01)), wf = rng.pick(range(0.12, Math.min(0.30, 0.78 - we), 0.01)), fv = rng.pick(range(0.04, Math.min(0.2, 0.9 - we - wf), 0.01)), W0 = pay / (1 - we - wf - fv);
+      spec = { type: 'numeric', prompt: 'A design carries \\(' + g4(pay) + KG + '\\) of crew and payload, with empty-weight and fuel fractions of \\(' + nn(we) + '\\) and \\(' + nn(wf) + '\\) (held fixed). A vertical-lift system adds \\(f_v = ' + nn(fv) + '\\). What takeoff mass does it need?', label: '\\(W_0 =\\)', answer: W0, unit: 'kg' };
+      spec.hints = ['\\(W_0 = W_{\\text{pay}}/(1 - W_e/W_0 - W_f/W_0 - f_v)\\).', 'The denominator is \\(1 - ' + nn(we) + ' - ' + nn(wf) + ' - ' + nn(fv) + ' = ' + nn(+(1 - we - wf - fv).toFixed(2)) + '\\).'];
+      spec.solution = M('W_0 = \\frac{' + g4(pay) + '}{1 - ' + nn(we) + ' - ' + nn(wf) + ' - ' + nn(fv) + '} = ' + n4(W0) + KG) + '<p>Without the system: \\(' + n4(pay / (1 - we - wf)) + KG + '\\).</p>';
+      right = { value: typed(W0) }; wrong = { value: typed(wrongOf(W0, [pay / (1 - we - wf), pay / (1 - we - wf) * (1 + fv), pay / (1 - we - wf + fv)])) };
+      var fw = function (x) { return pay / (1 - we - wf - x); }, xm = Math.min(0.9 - we - wf, 0.3);
+      view = { title: 'Takeoff mass against the lift system', aria: 'Takeoff mass against the vertical-lift fraction, with this design marked.', x: { label: '\\(f_v\\)', min: 0, max: +xm.toFixed(2) }, y: yAx('\\(W_0\\) (kg)', [fw], 0, xm, [W0, 0]),
+        curves: [{ f: fw, color: 'z' }], marker: { at: [fv, W0], label: '' }, readouts: [{ label: 'Without', tex: n4(pay / (1 - we - wf)) + KG }, { label: 'With', tex: n4(W0) + KG }], note: 'The lift system eats the margin between the fractions and one.' };
+      view.y.min = 0;
+    } else if (kind === 'fuel') {
+      var Pm = rng.pick(range(0.3, 25, 0.1)), ts = rng.pick(range(30, 300, 10)), et = rng.pick(range(0.25, 0.38, 0.01)), mf = Pm * 1e6 * ts / (et * HJET);
+      spec = { type: 'numeric', prompt: 'A VTOL aircraft needs \\(' + nn(Pm) + MWU + '\\) to hover, from engines of thermal efficiency \\(' + nn(et) + '\\) burning jet fuel (\\(h = 43.2\\ \\text{MJ/kg}\\)). How much fuel do \\(' + nn(ts) + '\\ \\text{s}\\) of hover take?', label: '\\(m_f =\\)', answer: mf, unit: 'kg' };
+      spec.hints = ['The fuel\'s energy is the work over the efficiency: \\(Pt/\\eta_{th}\\).', 'Divide by \\(h = 43.2\\times10^6\\ \\text{J/kg}\\).'];
+      spec.solution = M('m_f = \\frac{' + nn(Pm) + '\\times10^6(' + nn(ts) + ')}{' + nn(et) + '(43.2\\times10^6)} = ' + n4(mf) + KG);
+      right = { value: typed(mf) }; wrong = { value: typed(wrongOf(mf, [mf * et * et, Pm * 1e6 * ts / HJET, mf * 60])) };
+      var ff = function (p) { return p * 1e6 * ts / (et * HJET); };
+      view = { title: 'Hover fuel against hover power', aria: 'Fuel for this hover time against hover power, with this aircraft marked.', x: { label: 'Hover power (MW)', min: 0, max: 26 }, y: yAx('Fuel (kg)', [ff], 0, 26, [mf, 0]),
+        curves: [{ f: ff, color: 'good' }], marker: { at: [Pm, mf], label: '' }, readouts: [{ label: '\\(m_f\\)', tex: n4(mf) + KG }], note: 'Hover is short: its cost is the power, more than the fuel.' };
+      view.y.min = 0;
+    } else {
+      var P0 = rng.pick(range(0.2, 6, 0.05)), rho = rng.pick([1.058, 1.007, 0.9872, 0.9091, 0.8661, 0.8191]), P1 = P0 * Math.sqrt(1.225 / rho);
+      spec = { type: 'numeric', prompt: 'A VTOL aircraft hovers on \\(' + nn(P0) + MWU + '\\) at sea level in a standard atmosphere. With the same weight and rotors, what power does it need where \\(\\rho = ' + nn(rho) + '\\ \\text{kg/m}^3\\)?', label: '\\(P =\\)', answer: P1, unit: 'MW' };
+      spec.hints = ['\\(P = T\\sqrt{T/(2\\rho A)}/FM\\): at a given thrust and area, \\(P \\propto 1/\\sqrt\\rho\\).', 'Multiply by \\(\\sqrt{1.225/' + nn(rho) + '}\\).'];
+      spec.solution = M('P = ' + nn(P0) + '\\sqrt{\\frac{1.225}{' + nn(rho) + '}} = ' + n4(P1) + MWU);
+      right = { value: typed(P1) }; wrong = { value: typed(wrongOf(P1, [P0 * 1.225 / rho, P0 * Math.sqrt(rho / 1.225), P0 * rho / 1.225])) };
+      var fh = function (r) { return P0 * Math.sqrt(1.225 / r); };
+      view = { title: 'Hover power against density', aria: 'Hover power against air density, with this site marked.', x: { label: '\\(\\rho\\) (kg/m³)', min: 0.7, max: 1.3 }, y: yAx('Power (MW)', [fh], 0.7, 1.3, [P1, P0]),
+        curves: [{ f: fh, color: 'r' }], marker: { at: [rho, P1], label: '' }, readouts: [{ label: 'Sea level', tex: nn(P0) + MWU }, { label: 'Here', tex: n4(P1) + MWU }], note: 'Hot, high sites size a VTOL aircraft\'s engines.' };
+    }
+    spec.explain = 'A vertical-lift system costs disk area or power, weight, and often speed; the sizing equation shows the weight.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-electric-propulsion.html', 'Electric Propulsion Systems'), l02: L(2, '02-batteries.html', 'Batteries'),
+    l03: L(3, '03-electric-range.html', 'Electric Range and Endurance'), l04: L(4, '04-electric-sizing.html', 'Sizing an Electric Aircraft'),
+    l05: L(5, '05-hybrid-and-dep.html', 'Hybrid-Electric and Distributed Propulsion'), l06: L(6, '06-motors-and-certification.html', 'Electric Motors and Their Certification'),
+    l07: L(7, '07-vertical-flight.html', 'Vertical Flight'), l08: L(8, '08-vtol-configurations.html', 'VTOL Configurations and the Business Jet')
+  };
+  var CATS = [
+    { id: 'chain', label: 'Power chains', gen: genChain, lessons: [LES.l01] },
+    { id: 'battery', label: 'Batteries', gen: genBattery, lessons: [LES.l02] },
+    { id: 'range', label: 'Range and endurance', gen: genRange, lessons: [LES.l03] },
+    { id: 'sizing', label: 'Sizing with a battery', gen: genSizing, lessons: [LES.l04] },
+    { id: 'hybrid', label: 'Hybrids and blown lift', gen: genHybrid, lessons: [LES.l05] },
+    { id: 'motor', label: 'Motors and heat', gen: genMotor, lessons: [LES.l06] },
+    { id: 'hover', label: 'Hover', gen: genHover, lessons: [LES.l07] },
+    { id: 'vtol', label: 'VTOL designs', gen: genVtol, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like hover-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

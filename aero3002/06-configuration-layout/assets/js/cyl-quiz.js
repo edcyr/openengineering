@@ -1561,7 +1561,7 @@
   }
 
   function scoreMessage(pct) {
-    if (pct >= 100) return 'Perfect score. You have a solid command of angular momentum.';
+    if (pct >= 100) return 'Perfect score. Well done.';
     if (pct >= 80) return 'Great work. Review the questions you missed below.';
     if (pct >= 60) return 'Good effort. Work through the solutions to the questions you missed, then retake the quiz.';
     return 'Keep going. Read the worked solutions below, revisit the lessons they point to, then retake the quiz.';

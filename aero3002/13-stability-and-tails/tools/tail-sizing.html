@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stability and Tail Sizing · Stability, Control and Tail Sizing</title>
+<meta name="description" content="A tail-sizing tool: the scissor plot of one of Module 6's aircraft, the smallest horizontal tail and the wing position iterated with it, the neutral point, and the vertical tail checked for directional stability, engine failure and crosswind.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/weights.js"></script>
+<script src="../assets/js/stability.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table tr.grp td { font-weight: 700; }
+</style>
+</head>
+<body data-page="tails" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Stability and Tails</p>
+    <h1>Stability and Tail Sizing</h1>
+    <p class="lede">The module on one page: draw the scissor plot of one of Module 6's aircraft, find its smallest horizontal tail and the wing position that goes with it, its neutral points and static margin, and check its vertical tail for directional stability, engine failure and crosswind.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="tl-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="tl-presets" role="group" aria-labelledby="tl-presets-label"></div>
+    <div class="sc-grid" id="tl-grid"></div>
+    <p class="small muted" id="tl-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="tl-totals"></div>
+    <figure class="figure wide" aria-labelledby="tl-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="tl-stage1"></div>
+      </div>
+      <figcaption id="tl-fig1-cap"><strong>Figure T.1</strong> The scissor plot at the wing position chosen: the control lines (go-around, landing) and the stability lines (cruise, low speed) against the CG position, with the CG range the loading needs drawn at the smallest tail that fits it, and the loading diagram's own range below it.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="tl-fig2-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="tl-stage2"></div>
+      </div>
+      <figcaption id="tl-fig2-cap"><strong>Figure T.2</strong> The yawing-moment derivative \(C_{n\beta}\) at low speed and the aft CG against the vertical tail's area, with the fuselage estimated both ways, and the target of 0.0571 per rad. The darker dashed line is the fin at Module 4's volume coefficient; the lighter one, the fin engine failure needs.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="tl-table">
+        <caption>What each requirement asks for</caption>
+        <thead><tr><th scope="col">Requirement</th><th scope="col">Condition</th><th scope="col">Needs</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="tl-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Geometry and weights (Modules 6 and 12): the chosen layout with Module 7's nacelles on the business jet, Module 12's calibrated weight statement and loading diagram, and Module 12's method for moving the wing (with the main gear and the wing-mounted groups). The tails' arm changes with the wing; the vertical tail keeps Module 4's volume coefficient.</li>
+      <li>Neutral point (Lessons 2 and 3): the wing's lift slope from Module 4's formula at low speed (Mach 0.2) and in cruise; the fuselage's \(C_{M\alpha}\) from \(K_f\); downwash from the DATCOM formula <a class="cite" href="../reference/references.html#r9">[9]</a>, scaled with the wing's lift slope; \(\eta_H = 0.9\).</li>
+      <li>Stability line (Lesson 6): the tail area that puts the neutral point the required static margin behind the aft CG, at low speed and in cruise; the larger holds.</li>
+      <li>Control line (Lesson 5): the tail area that trims at the forward CG with full flaps, with the tail at \(C_{L,H}\) as chosen: in a go-around at \(1.3\,V_S\) with takeoff thrust, and on landing at \(C_{L\max}\). The wing's moment includes the flaps', scaled by the flapped share of the wing; the thrust acts \(z_E\) above the CG.</li>
+      <li>Scissor plot (Lesson 6): the smallest tail whose stable, controllable CG range is as wide as the range needed; "Iterate the wing" moves the wing until the loading range sits in that range.</li>
+      <li>Vertical tail (Lessons 7 and 8): \(C_{n\beta}\) at low speed, the aft CG and \(C_L = 0.253\), with the fuselage by the volume method or DATCOM's, target 0.0571 per rad <a class="cite" href="../reference/references.html#r5">[5]</a>; engine failure at \(V_{MC} = 1.13\,V_{SR}\) <a class="cite" href="../reference/references.html#r8">[8]</a> in the takeoff configuration with rudder no more than \(25^\circ\); crosswind of 20% of the takeoff speed <a class="cite" href="../reference/references.html#r6">[6]</a> at \(C_L = C_{L\max,TO}/1.21\), with the larger of the two fuselage estimates (more directional stability needs more rudder). The fuselage method chosen applies to the stability check.</li>
+      <li>The business jet preset is the design you follow through the lessons; the other three are illustrative, not real types. The turboprop presets follow seating rules that hold their CG range to 30% of the MAC. Typical values worth varying: \(c_{m0}\), the flaps' moment, \(C_{L,H}\), the effective aspect ratio of the fin (1.55 times the geometric) and the windmilling drag. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var PRE = {}; STAB.PRESETS.forEach(function (p) { PRE[p.id] = p; });
+  var IDS = Object.keys(PRE), CLH0 = STAB.CLH;
+  function copy(p) {
+    return { id: p.id, SM: p.SM, width: p.width ? 100 * p.width : 0, cm0: p.cm0, dcl: p.flap.dcl, SfS: p.flap.SfS, clto: p.clmax.to, clland: p.clmax.land,
+      thrust: p.eng.kind === 'jet' ? p.eng.T / 1000 : 0, power: p.eng.kind === 'prop' ? p.eng.P / 1000 : 0, zcg: p.zcg, CLH: CLH0, kD: p.wind, cr: p.cr, M: p.M, h: p.h,
+      wing: 'iterate', dx: 0, fus: 'datcom' };
+  }
+  var KEY = 'tails:inputs';
+  var st = Object.assign(copy(PRE.bizjet), CYL.store.get(KEY, {}) || {});
+  if (!PRE[st.id]) st = copy(PRE.bizjet);
+  function save() { CYL.store.set(KEY, st); }
+  function spec() {
+    var s = STAB.preset(st.id);
+    s.SM = st.SM; s.width = st.width > 0 ? st.width / 100 : undefined; s.cm0 = st.cm0; s.flap.dcl = st.dcl; s.flap.SfS = st.SfS; s.clmax.to = st.clto; s.clmax.land = st.clland;
+    if (s.eng.kind === 'jet') s.eng.T = 1000 * st.thrust; else s.eng.P = 1000 * st.power;
+    s.zcg = st.zcg; s.wind = st.kD; s.cr = st.cr; s.M = st.M; s.h = st.h;
+    return s;
+  }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('tl-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { t: 'Aircraft and wing', f: [opt('id', 'Airframe (Module 6)', IDS.map(function (id) { return [id, PRE[id].label]; }), true), opt('wing', 'Wing position', [['iterate', 'Iterated with the scissor plot'], ['m10', 'Module 12\'s (range centered on 25%)'], ['custom', 'Custom shift']], true), num('dx', 'Custom shift aft of Module 6 (m)'), num('width', 'CG range to cover (% MAC; 0 = loading\'s)')] },
+    { t: 'Pitch', f: [num('SM', 'Static margin required'), num('cm0', 'Airfoil \\(c_{m0}\\)'), num('dcl', 'Flaps\' \\(\\Delta c_l\\), landing'), num('SfS', 'Flapped share \\(S_{\\text{flapped}}/S\\)'), num('clland', '\\(C_{L\\max}\\), landing'), num('CLH', 'Tail \\(C_{L,H}\\) limit'), num('zcg', 'CG above the fuselage axis (m)'), num('M', 'Cruise Mach'), num('h', 'Cruise altitude (m)')] },
+    { t: 'Yaw', f: [opt('fus', 'Fuselage \\(C_{n\\beta}\\)', [['datcom', 'DATCOM (cylinder)'], ['vol', 'Volume method']], true), num('clto', '\\(C_{L\\max}\\), takeoff'), num('thrust', 'Jet: takeoff thrust per engine (kN)'), num('power', 'Turboprop: power per engine (kW)'), num('kD', 'Windmilling drag \\(k_D\\)'), num('cr', 'Rudder chord share')] }
+  ];
+  function ok(k, v) { var R = { dx: [-3, 3], width: [0, 60], SM: [0, 0.3], cm0: [-0.3, 0.1], dcl: [0, 3], SfS: [0, 1], clland: [0.8, 4], CLH: [-1.2, -0.1], zcg: [-3, 3], M: [0.1, 0.95], h: [0, 16000], clto: [0.8, 3.5], thrust: [0.1, 600], power: [10, 10000], kD: [0, 1], cr: [0.1, 0.5] }; return !R[k] || (v >= R[k][0] && v <= R[k][1]); }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'tl-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () {
+          if (q.k === 'id') { load(el.value); document.getElementById('tl-msg').textContent = 'Loaded: ' + PRE[el.value].label + '.'; return; }
+          st[q.k] = el.value; save(); fill(); update();
+        });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); update(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f])));
+  });
+  CYL.renderMath(grid);
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = st[k]; }); dis(); }
+  function dis() {
+    var jet = PRE[st.id].eng.kind === 'jet';
+    inputs.dx.disabled = st.wing !== 'custom'; inputs.thrust.disabled = !jet; inputs.power.disabled = jet;
+  }
+  var pre = document.getElementById('tl-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: PRE[id].label });
+    b.addEventListener('click', function () { load(id); document.getElementById('tl-msg').textContent = 'Loaded: ' + PRE[id].label + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+  function load(id) { st = copy(PRE[id]); save(); fill(); update(); }
+
+  /* ---------- figures ---------- */
+  var chart = AERO.chart(document.getElementById('tl-stage1'), {
+    x: { label: 'CG position (% MAC)', min: 0, max: 60 }, y: { label: 'Horizontal tail \\(S_H\\) (m²)', min: 0, max: 12 }, height: 340,
+    ariaLabel: 'Scissor plot.',
+    legend: [{ label: 'Control: go-around', color: 'r', line: true }, { label: 'Control: landing', color: 'warn', line: true, dashed: true }, { label: 'Stability: cruise', color: 'z', line: true }, { label: 'Stability: low speed', color: 'accent', line: true, dashed: true }, { label: 'CG range at the smallest tail', color: 'ink', line: true }, { label: 'Loading range', color: 'good', line: true }]
+  });
+  var G = null;
+  function pos(v) { return v > 0 ? v : NaN; }
+  function ctl(id, p) { if (!G) return NaN; var q = G.cs.filter(function (k) { return k.id === id; })[0]; return pos((q.CL * (p / 100 - 0.25) + q.cmW + q.cmE) / (STAB.CLH * 0.9 * G.g.lH / G.g.mac) * G.g.S); }
+  function stb(i, p) { if (!G) return NaN; var x = p / 100; return x + G.g.SM >= G.P[i].xh ? NaN : pos(STAB.stabLine1(G.g, x, G.P[i]) * G.g.S); }
+  var F1 = [chart.fn(function (p) { return ctl('ga', p); }, { color: 'r', width: 2.6 }), chart.fn(function (p) { return ctl('land', p); }, { color: 'warn', width: 2, dashed: true }),
+    chart.fn(function (p) { return stb(1, p); }, { color: 'z', width: 2.6 }), chart.fn(function (p) { return stb(0, p); }, { color: 'accent', width: 2, dashed: true })];
+  var bar = chart.polyline([], { color: 'ink', width: 5 }), lbar = chart.polyline([], { color: 'good', width: 3 });
+  var chart2 = AERO.chart(document.getElementById('tl-stage2'), {
+    x: { label: 'Vertical tail area \\(S_V\\) (m²)', min: 0, max: 10 }, y: { label: '\\(C_{n\\beta}\\) (per rad)', min: -0.2, max: 0.4 }, height: 300,
+    ariaLabel: 'Yawing-moment derivative against vertical tail area.',
+    legend: [{ label: 'Fuselage: volume method', color: 'z', line: true }, { label: 'Fuselage: DATCOM', color: 'r', line: true }, { label: 'Target 0.0571', color: 'good', line: true, dashed: true }]
+  });
+  var cache = {};
+  function gSv(Sv) { var k = Sv.toFixed(3); if (!cache[k]) cache[k] = STAB.geom(G.sp, { dx: G.dx, Sh: G.g.Sh, Sv: Sv }); return cache[k]; }
+  function cnb(Sv, d) { if (!G) return NaN; return STAB.directional(gSv(Sv), { CL: 0.253, M: 0.2, datcom: d }).total; }
+  var F2 = [chart2.fn(function (s) { return cnb(s, false); }, { color: 'z', width: 2.4, samples: 50 }), chart2.fn(function (s) { return cnb(s, true); }, { color: 'r', width: 2.4, samples: 50 })];
+  chart2.hline(STAB.CNB_MIN, { color: 'good', dashed: true, width: 1.6 }); chart2.hline(0, { color: 'muted', width: 1 });
+  var vFin = chart2.vline(0, { color: 'ink', dashed: true, width: 1.4 }), vEO = chart2.vline(0, { color: 'muted', dashed: true, width: 1 });
+
+  /* ---------- results ---------- */
+  var R;
+  function f1(v) { return (v + 1e-12).toFixed(1); } function f2(v) { return (v + 1e-12).toFixed(2); } function f3(v) { return (v + 1e-12).toFixed(3); }
+  function compute() {
+    STAB.CLH = st.CLH;
+    var sp = spec(), m = STAB.m10(sp.id), dx, hist = null;
+    if (st.wing === 'iterate') { var D = STAB.design(sp); dx = D.dx; hist = D.hist; } else dx = st.wing === 'm10' ? m.dx : st.dx;
+    var g0 = STAB.geom(sp, { dx: dx }), r = STAB.scissor(g0), g = STAB.geom(sp, { dx: dx, Sh: r.Sh });
+    var Lo = STAB.longi(g, 0.2), Lc = STAB.longi(g, sp.M), cs = STAB.controlCases(g), P = STAB.longiPair(g);
+    var dV = STAB.directional(g, { CL: 0.253, M: 0.2 }), dD = STAB.directional(g, { CL: 0.253, M: 0.2, datcom: true }), eo = STAB.engineOut(g);
+    var oX = { CL: sp.clmax.to / 1.21, xcg: g.xcgAft }, cnbX = Math.max(STAB.directional(g, oX).total, STAB.directional(g, Object.assign({ datcom: true }, oX)).total), drX = cnbX * Math.atan(0.2) / eo.cnDr * 180 / Math.PI;
+    var L = STAB.layoutFor(sp, dx, r.Sh, g.Sv), dir = st.fus === 'datcom' ? dD : dV;
+    var res = { sp: sp, dx: dx, hist: hist, g: g, r: r, Lo: Lo, Lc: Lc, cs: cs, P: P, dV: dV, dD: dD, dir: dir, eo: eo, drX: drX, cnbX: cnbX, L: L,
+      cHT: r.Sh * g.lH / (g.S * g.mac), SvNeed: Math.max(dir.SvNeed, eo.SvNeed) };
+    STAB.CLH = CLH0;
+    return res;
+  }
+  function update() {
+    dis();
+    IDS.forEach(function (id) { var c = copy(PRE[id]), same = id === st.id && Object.keys(c).every(function (k) { return k === 'wing' || k === 'dx' || k === 'fus' || c[k] === st[k] || Math.abs(c[k] - st[k]) < 1e-9; }); chips[id].setAttribute('aria-pressed', String(same)); });
+    R = compute(); cache = {};
+    var g = R.g, r = R.r, sp = R.sp;
+    var T = document.getElementById('tl-totals'); T.innerHTML = '';
+    function tile(lab, val, warn) { T.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', text: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    var fits = r.fwd <= g.fwd + 0.002 && r.aft >= g.aft - 0.002;
+    tile('Horizontal tail (m²)', f2(r.Sh)); tile('Its volume coefficient', f3(R.cHT));
+    tile('Wing quarter-MAC (m)', f3(g.xAcW)); tile('Wing, share of fuselage', f1(100 * g.xAcW / g.lF) + '%');
+    tile('Allowed CG range (% MAC)', f1(100 * r.fwd) + '–' + f1(100 * r.aft));
+    tile('Loading range (% MAC)', f1(100 * g.fwd) + '–' + f1(100 * g.aft), !fits);
+    tile('Neutral point, low / cruise', f1(100 * R.Lo.NP) + ' / ' + f1(100 * R.Lc.NP));
+    tile('Fin needed / carried (m²)', f2(R.SvNeed) + ' / ' + f2(g.Sv), R.SvNeed > g.Sv + 1e-6);
+    tile('Rudder: engine out', f1(R.eo.dr) + '°', R.eo.dr > 25); tile('Rudder: crosswind', f1(R.drX) + '°', R.drX > 20);
+    // scissor plot
+    G = { sp: sp, dx: R.dx, g: g, P: R.P, cs: R.cs };
+    var ymax = Math.max(4, Math.ceil(2.2 * r.Sh / 2) * 2);
+    chart.setAxes({ x: { label: 'CG position (% MAC)', min: 0, max: 70 }, y: { label: 'Horizontal tail \\(S_H\\) (m²)', min: 0, max: ymax } });
+    F1.forEach(function (h) { h.draw(); });
+    bar.set([[100 * r.fwd, r.Sh], [100 * r.aft, r.Sh]]);
+    lbar.set([[100 * g.fwd, 0.08 * ymax], [100 * g.aft, 0.08 * ymax]]);
+    chart.setAriaLabel('Scissor plot: the smallest horizontal tail is ' + r.Sh.toFixed(2) + ' square meters, allowing the CG from ' + (100 * r.fwd).toFixed(1) + ' to ' + (100 * r.aft).toFixed(1) + '% of the MAC; the loading range is ' + (100 * g.fwd).toFixed(1) + ' to ' + (100 * g.aft).toFixed(1) + '%.');
+    // C_n-beta
+    var xmax = Math.max(6, Math.ceil(1.6 * Math.max(g.Sv, R.SvNeed, R.dD.SvNeed)));
+    chart2.setAxes({ x: { label: 'Vertical tail area \\(S_V\\) (m²)', min: 0.2, max: xmax }, y: { label: '\\(C_{n\\beta}\\) (per rad)', min: -0.2, max: 0.4 } });
+    F2.forEach(function (h) { h.draw(); }); vFin.set(g.Sv); vEO.set(R.eo.SvNeed);
+    chart2.setAriaLabel('C n beta against fin area: at ' + g.Sv.toFixed(2) + ' square meters it is ' + R.dV.total.toFixed(4) + ' by the volume method and ' + R.dD.total.toFixed(4) + ' by DATCOM; engine failure needs ' + R.eo.SvNeed.toFixed(2) + ' square meters.');
+    // table
+    var tb = document.querySelector('#tl-table tbody'); tb.innerHTML = '';
+    function tr(cells, cls) { tb.appendChild(CYL.el('tr', cls ? { class: cls } : null, cells.map(function (c) { return CYL.el('td', { html: c }); }))); }
+    var ga = R.cs[0], la = R.cs[1];
+    function ctlS(c) { return Math.max(0, (c.CL * (r.fwd - 0.25) + c.cmW + c.cmE) / (st.CLH * 0.9 * g.lH / g.mac)) * g.S; }
+    tr(['<strong>Horizontal tail</strong>', '', ''], 'grp');
+    tr(['Stability, cruise', 'SM ' + f3(sp.SM) + ' at ' + f1(100 * r.aft) + '%, M ' + f2(sp.M), f2(STAB.stabLine1(g, r.aft, R.P[1]) * g.S) + ' m²']);
+    tr(['Stability, low speed', 'SM ' + f3(sp.SM) + ' at ' + f1(100 * r.aft) + '%, M 0.20', f2(STAB.stabLine1(g, r.aft, R.P[0]) * g.S) + ' m²']);
+    tr(['Control, go-around', '\\(C_L\\) ' + f3(ga.CL) + ' at ' + f1(100 * r.fwd) + '%, ' + f1(ga.V) + ' m/s', f2(ctlS(ga)) + ' m²']);
+    tr(['Control, landing', '\\(C_L\\) ' + f3(la.CL) + ' at ' + f1(100 * r.fwd) + '%', f2(ctlS(la)) + ' m²']);
+    tr(['<strong>Vertical tail</strong>', '', ''], 'grp');
+    tr(['Directional, volume method', '\\(C_{n\\beta} \\ge 0.0571\\)', f2(R.dV.SvNeed) + ' m²']);
+    tr(['Directional, DATCOM', '\\(C_{n\\beta} \\ge 0.0571\\)', f2(R.dD.SvNeed) + ' m²']);
+    tr(['Engine failure', '\\(V_{MC}\\) ' + f1(R.eo.vmc) + ' m/s, rudder \\(\\le 25^\\circ\\)', f2(R.eo.SvNeed) + ' m²']);
+    tr(['Crosswind, 20% of takeoff speed', '\\(\\beta = 11.3^\\circ\\), larger \\(C_{n\\beta}\\) ' + f3(R.cnbX), 'rudder ' + f1(R.drX) + '°']);
+    CYL.renderMath(document.getElementById('result'));
+    return R;
+  }
+  fill(); update();
+
+  /* ---------- CSV ---------- */
+  document.getElementById('tl-csv').addEventListener('click', function () {
+    var g = R.g, r = R.r, rows = [['quantity', 'value', 'unit']];
+    Object.keys(st).forEach(function (k) { rows.push(['input ' + k, st[k], '']); });
+    rows.push(['wing shift aft of Module 6', R.dx.toFixed(4), 'm'], ['wing quarter-MAC station', g.xAcW.toFixed(4), 'm'], ['MAC', g.mac.toFixed(4), 'm'], ['tail arm', g.lH.toFixed(4), 'm'],
+      ['loading CG range forward', (100 * g.fwd).toFixed(2), '% MAC'], ['loading CG range aft', (100 * g.aft).toFixed(2), '% MAC'],
+      ['smallest horizontal tail', r.Sh.toFixed(3), 'm2'], ['allowed CG range forward', (100 * r.fwd).toFixed(2), '% MAC'], ['allowed CG range aft', (100 * r.aft).toFixed(2), '% MAC'], ['horizontal tail volume coefficient', R.cHT.toFixed(4), ''],
+      ['wing lift slope low speed', R.Lo.claW.toFixed(4), '/rad'], ['wing lift slope cruise', R.Lc.claW.toFixed(4), '/rad'], ['downwash gradient low speed', R.Lo.deps.toFixed(4), ''], ['downwash gradient cruise', R.Lc.deps.toFixed(4), ''],
+      ['Kf', R.Lo.Kf.toFixed(5), '/deg'], ['fuselage Cm_alpha', R.Lo.cmFus.toFixed(4), '/rad'], ['neutral point low speed', (100 * R.Lo.NP).toFixed(2), '% MAC'], ['neutral point cruise', (100 * R.Lc.NP).toFixed(2), '% MAC'],
+      ['vertical tail (cVT)', g.Sv.toFixed(3), 'm2'], ['Cn_beta volume method', R.dV.total.toFixed(4), '/rad'], ['Cn_beta DATCOM', R.dD.total.toFixed(4), '/rad'], ['fin for Cn_beta volume', R.dV.SvNeed.toFixed(3), 'm2'], ['fin for Cn_beta DATCOM', R.dD.SvNeed.toFixed(3), 'm2'],
+      ['VMC', R.eo.vmc.toFixed(2), 'm/s'], ['NE + ND', (R.eo.NE + R.eo.ND).toFixed(0), 'N m'], ['Cn_delta_r', R.eo.cnDr.toFixed(5), '/rad'], ['rudder at VMC', R.eo.dr.toFixed(2), 'deg'], ['fin for engine failure', R.eo.SvNeed.toFixed(3), 'm2'], ['crosswind rudder', R.drX.toFixed(2), 'deg']);
+    R.cs.forEach(function (c) { rows.push([c.id + ' CL', c.CL.toFixed(4), ''], [c.id + ' wing Cm', c.cmW.toFixed(4), ''], [c.id + ' thrust Cm', c.cmE.toFixed(4), '']); });
+    var csv = rows.map(function (r) { return r.map(function (c) { c = String(c); return /[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'tail-sizing.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  window.__tails = { compute: compute, state: function () { return st; }, load: load, set: function (o) { Object.assign(st, o); save(); fill(); return update(); }, result: function () { return R; } };
+});
+</script>
+</body>
+</html>

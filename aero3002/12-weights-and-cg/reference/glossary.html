@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary · Component Weights and Center of Gravity</title>
+<meta name="description" content="Short definitions of the terms and symbols of the Component Weights and Center of Gravity module, from all-moving tails to the zero-fuel weight, each linked to its lesson.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Glossary page (page-specific styles; colors come from module.css tokens) ---------- */
+.gl-tools {
+  --gl-i-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E");
+  margin: 0 0 32px;
+  padding: 16px 16px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.gl-controls { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+.gl-controls > .field { flex: 1 1 250px; }
+.gl-controls > .gl-lesson-field { flex: 1 1 220px; }
+@container cylmain (min-width: 700px) { .gl-controls > .gl-lesson-field { flex: 0 1 260px; } }
+.gl-search { position: relative; }
+.gl-search::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  pointer-events: none;
+  background-color: var(--ink-faint);
+  -webkit-mask: var(--gl-i-search) center / contain no-repeat;
+  mask: var(--gl-i-search) center / contain no-repeat;
+}
+.gl-search input { width: 100%; min-height: 44px; padding-left: 38px; font-size: 1rem; }
+.gl-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.gl-lesson-field select { width: 100%; min-height: 44px; }
+.gl-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  min-height: 34px;
+  margin-top: 10px;
+}
+.gl-count { margin: 0; color: var(--ink-muted); font-size: 0.9rem; }
+.gl-az {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+@container cylmain (min-width: 700px) { .gl-az { grid-template-columns: repeat(26, minmax(0, 1fr)); gap: 3px; } }
+.gl-az > a, .gl-az > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+.gl-az > a { color: var(--accent); background: var(--accent-soft); }
+.gl-az > a:hover { color: var(--accent-ink); background: var(--accent); }
+.gl-az > a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gl-az > span, .gl-az > a.is-off, .gl-az > a.is-off:hover {
+  color: var(--ink-faint);
+  background: transparent;
+  opacity: 0.55;
+  cursor: default;
+}
+.gl-empty { margin: 0 0 32px; }
+.gl-empty .btn { margin-top: 2px; }
+
+.gl-group { margin: 0 0 28px; }
+.gl-letter-row { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
+.gl-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.gl-rule { flex: 1 1 auto; height: 1px; background: var(--line); }
+.gl-top { flex: none; font-size: 0.84rem; font-weight: 600; text-decoration: none; }
+.gl-top:hover { text-decoration: underline; }
+.gl-terms {
+  margin: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.gl-entry { padding: 14px 18px 15px; border-top: 1px solid var(--line); }
+.gl-entry.is-first { border-top: 0; border-top-left-radius: calc(var(--radius) - 1px); border-top-right-radius: calc(var(--radius) - 1px); }
+.gl-entry.is-last { border-bottom-left-radius: calc(var(--radius) - 1px); border-bottom-right-radius: calc(var(--radius) - 1px); }
+.gl-entry:target { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); }
+.gl-entry > dt { margin: 0; color: var(--ink); font-size: 1.06rem; font-weight: 700; line-height: 1.35; }
+.gl-entry dfn { font-style: normal; }
+.gl-qual { color: var(--ink-muted); font-size: 0.92em; font-weight: 500; }
+.gl-entry > dd { margin: 4px 0 0; }
+.gl-entry > dd.gl-see {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+}
+.gl-lesson-link {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.gl-lesson-link:hover { background: var(--accent); color: var(--accent-ink); }
+/* the highlighted (:target) entry has the pills' own tint, so the pills switch to the card color there */
+.gl-entry:target .gl-lesson-link { background: var(--bg-elev); }
+.gl-entry:target .gl-lesson-link:hover { background: var(--accent); }
+/* rendered math is inline-block, which a text underline skips: underline links that contain math with a border */
+a.gl-mlink { text-decoration: none; border-bottom: 1px solid currentColor; }
+a.gl-mlink:hover { border-bottom-width: 2px; }
+mark.gl-hit {
+  padding: 0 1px;
+  margin: 0 -1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--c-warn) 24%, transparent);
+  color: inherit;
+}
+.gl-symbols { margin-top: 3rem; }
+.gl-symbols tbody th[scope="row"] { white-space: nowrap; }
+
+@media print {
+  .gl-tools, .gl-top, .gl-empty { display: none !important; }
+  .gl-list [hidden] { display: block !important; }
+  .gl-terms { box-shadow: none; }
+  .gl-entry, .gl-entry.is-first, .gl-entry.is-last { border-top: 1px solid var(--line); border-radius: 0; break-inside: avoid; page-break-inside: avoid; }
+  .gl-entry:first-child { border-top: 0; }
+  .gl-letter-row { break-after: avoid; page-break-after: avoid; }
+  .gl-letter { background: none; color: inherit; border: 1px solid var(--line-strong); }
+  mark.gl-hit { background: none; }
+  .gl-lesson-link { padding: 0; background: none; }
+  .gl-lesson-link:not(:last-of-type)::after { content: ","; }
+}
+</style>
+</head>
+<body data-page="glossary" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Reference · 61 terms</p>
+    <h1>Glossary</h1>
+    <p class="lede">Short, precise definitions of the words and symbols used in this module, each linked to the lesson where it is taught. Filter the list as you type, jump to a letter, or look a symbol up in <a href="#symbols">Symbols at a glance</a>.</p>
+  </header>
+
+  <div class="gl-tools" id="gl-tools">
+    <div class="gl-controls" role="search" aria-label="Glossary filter">
+      <div class="field gl-filter-field">
+        <label for="gl-filter">Filter terms</label>
+        <div class="gl-search">
+          <input type="search" id="gl-filter" placeholder="Try load factor, calibration or MAC" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="gl-count" aria-controls="gl-list">
+        </div>
+      </div>
+      <div class="field gl-lesson-field">
+        <label for="gl-lesson">Taught in</label>
+        <select id="gl-lesson" aria-controls="gl-list">
+          <option value="">All lessons</option>
+        </select>
+      </div>
+    </div>
+    <div class="gl-status">
+      <p class="gl-count" id="gl-count">Showing all 61 terms</p>
+      <button type="button" class="btn small" id="gl-clear" hidden>Clear filter</button>
+    </div>
+    <p class="visually-hidden" id="gl-live" aria-live="polite" aria-atomic="true"></p>
+    <nav class="gl-az" id="gl-az" aria-label="Jump to a letter">
+      <a href="#letter-a" data-letter="A">A</a>
+      <a href="#letter-b" data-letter="B">B</a>
+      <a href="#letter-c" data-letter="C">C</a>
+      <a href="#letter-d" data-letter="D">D</a>
+      <a href="#letter-e" data-letter="E">E</a>
+      <a href="#letter-f" data-letter="F">F</a>
+      <a href="#letter-g" data-letter="G">G</a>
+      <span class="is-empty" aria-hidden="true">H</span>
+      <a href="#letter-i" data-letter="I">I</a>
+      <span class="is-empty" aria-hidden="true">J</span>
+      <a href="#letter-k" data-letter="K">K</a>
+      <a href="#letter-l" data-letter="L">L</a>
+      <a href="#letter-m" data-letter="M">M</a>
+      <a href="#letter-n" data-letter="N">N</a>
+      <a href="#letter-o" data-letter="O">O</a>
+      <a href="#letter-p" data-letter="P">P</a>
+      <span class="is-empty" aria-hidden="true">Q</span>
+      <a href="#letter-r" data-letter="R">R</a>
+      <a href="#letter-s" data-letter="S">S</a>
+      <a href="#letter-t" data-letter="T">T</a>
+      <a href="#letter-u" data-letter="U">U</a>
+      <span class="is-empty" aria-hidden="true">V</span>
+      <a href="#letter-w" data-letter="W">W</a>
+      <span class="is-empty" aria-hidden="true">X</span>
+      <span class="is-empty" aria-hidden="true">Y</span>
+      <a href="#letter-z" data-letter="Z">Z</a>
+    </nav>
+  </div>
+
+  <div class="callout note gl-empty" id="gl-empty" hidden>
+    <p class="callout-title">No matches</p>
+    <p><span id="gl-empty-msg">No terms match this filter.</span> Check the spelling, or type just the first few letters of a word.</p>
+    <p><button type="button" class="btn small" id="gl-empty-clear">Clear filter</button></p>
+  </div>
+
+  <div class="gl-list" id="gl-list">
+  <div class="gl-group" id="letter-a" data-letter="A">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">A</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-all-moving" data-lessons="3" data-keys="all-moving tail stabilator Kuht">
+        <dt><dfn class="gl-name">All-moving tail</dfn></dt>
+        <dd>A horizontal tail that pivots as a whole instead of carrying an elevator; its weight equation takes \(K_{uht} = 1.143\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#tails">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tail-arm">Tail arm \(L_t\)</a>, <a href="#term-stat-eq">Statistical group weight equations</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-approx" data-lessons="1" data-keys="approximate group weights per area fraction first estimate">
+        <dt><dfn class="gl-name">Approximate group weights</dfn></dt>
+        <dd>A first estimate that gives the wing and tails a weight per square meter of exposed area, the fuselage per square meter of wetted area, and the gear and everything else as fractions of \(\Wo\). Weight per area grows with size, so the values fit only aircraft of the size they came from: for the business jet they give 36% to 73% of \(\Wo\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#approx">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-stat-eq">Statistical group weight equations</a>, <a class="gl-mlink" href="#term-empty-weight">Empty weight \(\We\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-apu" data-lessons="5" data-keys="APU auxiliary power unit installed">
+        <dt><dfn class="gl-name">Auxiliary power unit (APU)</dfn></dt>
+        <dd>A small turbine that supplies electrical power and air on the ground; installed, it weighs 2.2 times its uninstalled weight. The business jet has none.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#equipment">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-equipment-group">Equipment group</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-avionics" data-lessons="5" data-keys="avionics installed uninstalled Wuav">
+        <dt><dfn class="gl-name">Avionics</dfn> <span class="gl-qual">installed and uninstalled</span></dt>
+        <dd>The aircraft's electronics. The equation turns the uninstalled weight \(W_{uav}\) into the installed one, \(1.73W_{uav}^{0.983}\) in pounds, adding racks, wiring, cooling and antennas: 136 kg uninstalled becomes 213.5 kg in the business jet.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#equipment">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-equipment-group">Equipment group</a>, <a class="gl-mlink" href="#term-electrical">Electrical rating \(R_{kva}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-b" data-letter="B">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">B</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-bow" data-lessons="1" data-keys="basic operating weight BOW manufacturer">
+        <dt><dfn class="gl-name">Basic operating weight</dfn></dt>
+        <dd>A manufacturer's operating empty weight for a typical aircraft ready to fly. The Citation M2, CJ3 and CJ4 carry 60% to 65% of their takeoff weight as basic operating weight <a class="cite" href="references.html#r7">[7]</a>.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-operating-weight">Operating empty weight</a>, <a class="gl-mlink" href="#term-empty-weight">Empty weight \(\We\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-c" data-letter="C">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">C</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-calibration" data-lessons="6" data-keys="calibration factor k fudge factor statistical">
+        <dt><dfn class="gl-name">Calibration factor \(k\)</dfn></dt>
+        <dd>The factor that makes the statistical equations reproduce a known aircraft: \(k = (W_{e,\text{target}} - W_{\text{catalog}})/W_{\text{statistical}}\). It keeps the equations' exponents and replaces their constant. The business jet's is 1.151.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-calibration.html#calibration">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-catalog">Catalog weight</a>, <a href="#term-stat-eq">Statistical group weight equations</a>, <a href="#term-sizing-loop">Sizing loop</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-kdoor" data-lessons="4" data-keys="cargo door factor Kdoor clamshell">
+        <dt><dfn class="gl-name">Cargo-door factor \(K_{\text{door}}\)</dfn></dt>
+        <dd>1.0 with no cargo door, 1.06 with one side door, 1.12 with two or an aft clamshell, 1.25 with two and a clamshell: large cutouts need heavy frames.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#fuselage">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-fuselage-weight">Fuselage weight equation</a>, <a class="gl-mlink" href="#term-klg">Fuselage-gear factor \(K_{lg}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-catalog" data-lessons="6" data-keys="catalog weight engine dry known manufacturer">
+        <dt><dfn class="gl-name">Catalog weight</dfn></dt>
+        <dd>A weight known from the manufacturer rather than estimated, such as the dry engines' 401.6 kg in the business jet; calibration does not scale it.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-calibration.html#calibration">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-calibration">Calibration factor \(k\)</a>, <a href="#term-dry-engine">Dry engine weight</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cg" data-lessons="7" data-keys="center of gravity CG moments balance">
+        <dt><dfn class="gl-name">Center of gravity \(x_{cg}\)</dfn></dt>
+        <dd>The point where the whole weight can be taken to act: \(x_{cg} = \sum W_ix_i/\sum W_i\), with each station measured from a datum.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-center-of-gravity.html#moments">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-datum">Datum</a>, <a href="#term-moment-table">Moment table</a>, <a href="#term-pct-mac">Percent MAC</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-cg-range" data-lessons="8" data-keys="CG range envelope forward aft limits">
+        <dt><dfn class="gl-name">CG range</dfn></dt>
+        <dd>The span of CG positions the aircraft can have in service, from the forward and aft extremes of its loading diagram. With its wing moved, the business jet's is 17.1% to 32.9% of the MAC; Module 8 assumed 15% to 35%.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-loading-and-wing-placement.html#loading">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-loading-diagram">Loading diagram</a>, <a class="gl-mlink" href="#term-wing-shift">Wing shift \(\Delta x\)</a>, <a href="#term-pct-mac">Percent MAC</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-composite" data-lessons="6" data-keys="composite materials factor weight saving fudge">
+        <dt><dfn class="gl-name">Composite factors</dfn></dt>
+        <dd>Factors on the aluminum estimate for advanced composites: wing 0.85–0.90, tails 0.83–0.88, fuselage and nacelles 0.90–0.95, landing gear 0.95–1.0 (<a class="cite" href="references.html#r1">[1]</a>, Table 15.4). An all-composite structure saves the business jet 202 kg, and the sizing loop turns that into more than 530 kg of takeoff weight.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-calibration.html#composites">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-growth-factor">Growth factor</a>, <a class="gl-mlink" href="#term-calibration">Calibration factor \(k\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-csw" data-lessons="3" data-keys="control surface area flaps ailerons Scsw">
+        <dt><dfn class="gl-name">Control-surface area \(S_{csw}\)</dfn></dt>
+        <dd>The area of the wing's flaps and control surfaces. Their hinges, tracks and actuators add weight: \(S_{csw}^{0.1}\). The business jet's is 6.48 m².</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#wing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-wing-weight">Wing weight equation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-d" data-letter="D">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">D</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-datum" data-lessons="7" data-keys="datum reference station nose">
+        <dt><dfn class="gl-name">Datum</dfn></dt>
+        <dd>The reference point from which stations are measured; here the nose, with \(x\) positive aft.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-center-of-gravity.html#moments">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cg">Center of gravity \(x_{cg}\)</a>, <a href="#term-moment-table">Moment table</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-design-gross" data-lessons="1 3" data-keys="design gross weight Wdg takeoff weight">
+        <dt><dfn class="gl-name">Design gross weight \(W_{dg}\)</dfn></dt>
+        <dd>The weight the structure is designed at, the maximum takeoff weight here: 6943 kg (15 307 lb) for the business jet.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#wing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-takeoff-weight">Takeoff weight \(\Wo\)</a>, <a class="gl-mlink" href="#term-nz">Ultimate load factor \(N_z\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-design-loop" data-lessons="6 8" data-keys="design loop iteration layout drag weight converge">
+        <dt><dfn class="gl-name">Design loop</dfn></dt>
+        <dd>The cycle in which every change feeds the others: layout, drag and \((L/D)_{\max}\), fuel fraction, takeoff weight, group weights, CG, and back to the layout. Moving the business jet's wing enlarges its tails, which raises \(C_{D0}\) from 0.0202 to 0.0205 and \(\Wo\) by about 80 kg; Module 14 runs the loop to convergence.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-loading-and-wing-placement.html#loop">Lesson 8</a>, <a class="gl-lesson-link" href="../lessons/06-calibration.html#loop">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sizing-loop">Sizing loop</a>, <a class="gl-mlink" href="#term-wing-shift">Wing shift \(\Delta x\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-dry-engine" data-lessons="5" data-keys="dry engine weight catalog without fluids">
+        <dt><dfn class="gl-name">Dry engine weight</dfn></dt>
+        <dd>An engine's weight without its fluids and nacelle, from its type certificate: 200.8 kg for each of the business jet's scaled engines (Module 7).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#propulsion">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-wec">Engine with contents \(W_{ec}\)</a>, <a href="#term-catalog">Catalog weight</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-e" data-letter="E">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">E</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-electrical" data-lessons="5" data-keys="electrical system rating kVA generators routing distance">
+        <dt><dfn class="gl-name">Electrical rating \(R_{kva}\)</dfn></dt>
+        <dd>The electrical system's rating in kilovolt-amperes; with the routing distance and the number of generators it sets the electrical system's weight. The business jet's two 300-ampere starter-generators give 16.8 kV·A and 114 kg.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#equipment">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-avionics">Avionics</a>, <a href="#term-equipment-group">Equipment group</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-empty-cg" data-lessons="7" data-keys="empty CG empty weight center of gravity rear engines">
+        <dt><dfn class="gl-name">Empty CG</dfn></dt>
+        <dd>The CG of the empty aircraft, the start of every loading. The business jet's is at 7.520 m, 52.1% of the MAC with Module 6's wing: its rear engines make it tail-heavy.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-center-of-gravity.html#aft">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cg">Center of gravity \(x_{cg}\)</a>, <a class="gl-mlink" href="#term-wing-shift">Wing shift \(\Delta x\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-empty-weight" data-lessons="1" data-keys="empty weight structure propulsion equipment">
+        <dt><dfn class="gl-name">Empty weight \(\We\)</dfn></dt>
+        <dd>The aircraft as built, with its unusable fuel and operating fluids (14 CFR 25.29 <a class="cite" href="references.html#r3">[3]</a>): structure, propulsion and equipment. The business jet's is 3972 kg calibrated, 3504 kg from the equations alone.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-weight-statement">Weight statement</a>, <a href="#term-operating-weight">Operating empty weight</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-wec" data-lessons="5" data-keys="engine and contents Wec accessories reverser">
+        <dt><dfn class="gl-name">Engine with contents \(W_{ec}\)</dfn></dt>
+        <dd>\(2.331W_{\text{engine}}^{0.901}K_pK_{tr}\) in pounds: the engine with its accessories and fluids, \(\times 1.4\) with a propeller and \(\times 1.18\) with a reverser. 256.1 kg for each of the business jet's 200.8 kg engines.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#propulsion">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-nacelle-group">Nacelle group</a>, <a href="#term-dry-engine">Dry engine weight</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-equipment-group" data-lessons="1 5" data-keys="equipment fixed equipment systems group">
+        <dt><dfn class="gl-name">Equipment group</dfn></dt>
+        <dd>Flight controls, APU, instruments, hydraulics, electrical system, avionics, furnishings, seats, lavatories, air conditioning, anti-icing and handling gear: 993 kg of the business jet's equation weight. Small aircraft carry far more of it per seat than airliners.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#groups">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#equipment">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-structure-group">Structure group</a>, <a href="#term-propulsion-group">Propulsion group</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-f" data-letter="F">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">F</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-factor-safety" data-lessons="2" data-keys="factor of safety 1.5 ultimate limit">
+        <dt><dfn class="gl-name">Factor of safety</dfn></dt>
+        <dd>The factor of 1.5 between the limit and ultimate loads (14 CFR 25.303 <a class="cite" href="references.html#r3">[3]</a>).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-limit-load">Limit load</a>, <a href="#term-ultimate-load">Ultimate load</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-flight-controls" data-lessons="5" data-keys="flight controls functions mechanical Nf Nm">
+        <dt><dfn class="gl-name">Flight-control functions \(N_f\)</dfn></dt>
+        <dd>The number of functions the flight controls perform (typically 4 to 7), \(N_m\) of them mechanical. The business jet's 5, with pitch, roll and yaw by cables, give 248 kg of flight controls.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#equipment">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-equipment-group">Equipment group</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-fineness" data-lessons="4" data-keys="fuselage fineness length depth structural">
+        <dt><dfn class="gl-name">Fuselage fineness \(L/D\)</dfn></dt>
+        <dd>The fuselage's structural length over its depth in the fuselage weight equation, not the lift-to-drag ratio: 9.71 for the business jet.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#fuselage">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-fuselage-weight">Fuselage weight equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-fuselage-weight" data-lessons="4" data-keys="fuselage weight equation Kdoor Klg Kws wetted area">
+        <dt><dfn class="gl-name">Fuselage weight equation</dfn></dt>
+        <dd>\(0.3280K_{\text{door}}K_{lg}(W_{dg}N_z)^{0.5}L^{0.25}S_f^{0.302}(1 + K_{ws})^{0.04}(L/D)^{0.10}\) in pounds and feet: 1011 kg for the business jet, its heaviest group.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#fuselage">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-kdoor">Cargo-door factor \(K_{\text{door}}\)</a>, <a class="gl-mlink" href="#term-kws">Wing-sweep factor \(K_{ws}\)</a>, <a class="gl-mlink" href="#term-fineness">Fuselage fineness \(L/D\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-klg" data-lessons="4" data-keys="fuselage mounted gear factor Klg">
+        <dt><dfn class="gl-name">Fuselage-gear factor \(K_{lg}\)</dfn></dt>
+        <dd>1.12 when the main landing gear is mounted on the fuselage, otherwise 1.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#fuselage">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-fuselage-weight">Fuselage weight equation</a>, <a class="gl-mlink" href="#term-kdoor">Cargo-door factor \(K_{\text{door}}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-g" data-letter="G">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">G</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-gear-load-factor" data-lessons="2" data-keys="gear load factor landing Nl ultimate">
+        <dt><dfn class="gl-name">Gear load factor \(N_{\text{gear}}\)</dfn></dt>
+        <dd>The gear's peak force in a landing over the landing weight: 3 for the business jet (Module 8). The weight equations use the ultimate value \(N_l = 1.5N_{\text{gear}} = 4.5\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-landing-weight">Landing weight \(W_l\)</a>, <a href="#term-main-gear">Main gear weight equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-growth-factor" data-lessons="6" data-keys="growth factor snowball sizing loop">
+        <dt><dfn class="gl-name">Growth factor</dfn></dt>
+        <dd>How many kilograms of takeoff weight one kilogram of empty weight costs once the sizing loop is closed: about 2.6 for the business jet.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-calibration.html#loop">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sizing-loop">Sizing loop</a>, <a href="#term-composite">Composite factors</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-gust" data-lessons="2" data-keys="gust load factor turbulence design load factor Module 11">
+        <dt><dfn class="gl-name">Gust load factor</dfn></dt>
+        <dd>The load factor a vertical gust gives (Module 11). The business jet's, 3.255 at 20 000 ft at its takeoff weight, exceeds its maneuvering 3.048, so its design ultimate load factor is 4.882, the one its weight equations take (Lesson 2).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-nz">Ultimate load factor \(N_z\)</a>, <a class="gl-mlink" href="#term-limit-maneuver">Limit maneuvering load factor \(n_{\text{limit}}\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-i" data-letter="I">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">I</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-integral-tank" data-lessons="5" data-keys="integral fuel tank wing box sealed bladder">
+        <dt><dfn class="gl-name">Integral tank</dfn></dt>
+        <dd>A fuel tank made by sealing the wing box itself. Integral tanks halve the fuel system's weight against bladder tanks: the business jet's three weigh 48 kg.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#propulsion">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-propulsion-group">Propulsion group</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-k" data-letter="K">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">K</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-kneeling" data-lessons="4" data-keys="kneeling gear Kmp Knp">
+        <dt><dfn class="gl-name">Kneeling gear</dfn></dt>
+        <dd>Landing gear that can lower the aircraft on the ground, for loading; factors of 1.126 (main) and 1.15 (nose).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#gear">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-main-gear">Main gear weight equation</a>, <a href="#term-nose-gear">Nose gear weight equation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-l" data-letter="L">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">L</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-landing-weight" data-lessons="1 4" data-keys="landing weight design landing weight Wl">
+        <dt><dfn class="gl-name">Landing weight \(W_l\)</dfn></dt>
+        <dd>The weight the landing gear and structure are designed to land at: 90% of \(\Wo\), 6249 kg, for the business jet. The gear equations use it, not \(\Wo\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#gear">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-gear-load-factor">Gear load factor \(N_{\text{gear}}\)</a>, <a href="#term-main-gear">Main gear weight equation</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-limit-load" data-lessons="2" data-keys="limit load largest expected permanent deformation">
+        <dt><dfn class="gl-name">Limit load</dfn></dt>
+        <dd>The largest load expected in service; the structure must carry it without permanent deformation.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-ultimate-load">Ultimate load</a>, <a href="#term-factor-safety">Factor of safety</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-limit-maneuver" data-lessons="2" data-keys="limit maneuvering load factor 25.337">
+        <dt><dfn class="gl-name">Limit maneuvering load factor \(n_{\text{limit}}\)</dfn></dt>
+        <dd>For transports, \(2.1 + 24\,000/(W + 10\,000)\) with \(W\) in pounds, between 2.5 and 3.8 (14 CFR 25.337 <a class="cite" href="references.html#r3">[3]</a>): 3.048 for the business jet, 2.5 for any transport above about 23 t.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-nz">Ultimate load factor \(N_z\)</a>, <a class="gl-mlink" href="#term-load-factor">Load factor \(n\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-load-factor" data-lessons="2" data-keys="load factor lift over weight g">
+        <dt><dfn class="gl-name">Load factor \(n\)</dfn></dt>
+        <dd>Lift over weight: 1 in level flight, 2 in a level turn at 60° of bank.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-limit-maneuver">Limit maneuvering load factor \(n_{\text{limit}}\)</a>, <a class="gl-mlink" href="#term-nz">Ultimate load factor \(N_z\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-loading-diagram" data-lessons="8" data-keys="loading diagram potato CG excursion front back">
+        <dt><dfn class="gl-name">Loading diagram</dfn></dt>
+        <dd>Weight against CG as the aircraft is loaded: crew, passengers front row first and back row first, baggage and fuel. Its extremes are the CG range.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-loading-and-wing-placement.html#loading">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-cg-range">CG range</a>, <a href="#term-empty-cg">Empty CG</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-m" data-letter="M">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">M</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-main-gear" data-lessons="4" data-keys="main landing gear weight equation">
+        <dt><dfn class="gl-name">Main gear weight equation</dfn></dt>
+        <dd>\(0.0106K_{mp}W_l^{0.888}N_l^{0.25}L_m^{0.4}N_{mw}^{0.321}N_{mss}^{-0.5}V_{\text{stall}}^{0.1}\) in pounds, inches and knots: 162.5 kg for the business jet. It follows the landing weight almost in proportion.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#gear">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-landing-weight">Landing weight \(W_l\)</a>, <a href="#term-nose-gear">Nose gear weight equation</a>, <a href="#term-kneeling">Kneeling gear</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-mac" data-lessons="7" data-keys="mean aerodynamic chord MAC reference">
+        <dt><dfn class="gl-name">Mean aerodynamic chord \(\cbar\)</dfn></dt>
+        <dd>The chord of the equivalent rectangular wing, the reference for stability and for CG positions: 2.015 m long, leading edge at 6.471 m, for the business jet with Module 6's wing.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-center-of-gravity.html#moments">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-pct-mac">Percent MAC</a>, <a class="gl-mlink" href="#term-cg">Center of gravity \(x_{cg}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-moment-table" data-lessons="7" data-keys="moment table weight station moment">
+        <dt><dfn class="gl-name">Moment table</dfn></dt>
+        <dd>The weight statement with each group's station and moment \(W_ix_i\); the sum of the moments over the sum of the weights is the CG.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-center-of-gravity.html#positions">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-cg">Center of gravity \(x_{cg}\)</a>, <a href="#term-weight-statement">Weight statement</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-n" data-letter="N">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">N</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-nacelle-group" data-lessons="5" data-keys="nacelle group mounts inlet cowling">
+        <dt><dfn class="gl-name">Nacelle group</dfn></dt>
+        <dd>The nacelles, mounts and inlets, from the nacelle's size, the load factor and the engine with its contents: 133.7 kg for the business jet's two.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#propulsion">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-wec">Engine with contents \(W_{ec}\)</a>, <a href="#term-propulsion-group">Propulsion group</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-nose-gear" data-lessons="4" data-keys="nose landing gear weight equation">
+        <dt><dfn class="gl-name">Nose gear weight equation</dfn></dt>
+        <dd>\(0.032K_{np}W_l^{0.646}N_l^{0.2}L_n^{0.5}N_{nw}^{0.45}\) in pounds and inches: 48.1 kg for the business jet.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#gear">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-main-gear">Main gear weight equation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-o" data-letter="O">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">O</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-operating-weight" data-lessons="1" data-keys="operating empty weight crew operator items">
+        <dt><dfn class="gl-name">Operating empty weight</dfn></dt>
+        <dd>The empty weight with the crew and the operator's items. The business jet's, with 180 kg of crew, is 4152 kg, 59.8% of \(\Wo\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-empty-weight">Empty weight \(\We\)</a>, <a href="#term-bow">Basic operating weight</a>, <a href="#term-zfw">Zero-fuel weight</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-p" data-letter="P">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">P</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-pct-mac" data-lessons="7" data-keys="percent MAC CG position % MAC">
+        <dt><dfn class="gl-name">Percent MAC</dfn></dt>
+        <dd>A CG position as a share of the mean aerodynamic chord: \(100(x_{cg} - x_{\text{LE,MAC}})/\cbar\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/07-center-of-gravity.html#moments">Lesson 7</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-mac">Mean aerodynamic chord \(\cbar\)</a>, <a class="gl-mlink" href="#term-cg">Center of gravity \(x_{cg}\)</a>, <a href="#term-cg-range">CG range</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-propulsion-group" data-lessons="1 5" data-keys="propulsion group installed engines">
+        <dt><dfn class="gl-name">Propulsion group</dfn></dt>
+        <dd>The engines with their nacelles, controls, starters and fuel system: 628.8 kg for the business jet, 1.57 times its dry engines.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#groups">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#propulsion">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-nacelle-group">Nacelle group</a>, <a href="#term-dry-engine">Dry engine weight</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-r" data-letter="R">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">R</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-radius-gyration" data-lessons="3" data-keys="radius of gyration pitch yaw Ky Kz inertia">
+        <dt><dfn class="gl-name">Radius of gyration \(K_y\), \(K_z\)</dfn></dt>
+        <dd>The distance at which the aircraft's mass would have its moment of inertia; the tail equations take about \(0.3L_t\) in pitch and \(L_t\) in yaw.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#tails">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tail-arm">Tail arm \(L_t\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-ramp-weight" data-lessons="1" data-keys="ramp weight taxi fuel">
+        <dt><dfn class="gl-name">Ramp weight</dfn></dt>
+        <dd>The takeoff weight plus the fuel burned while taxiing.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-takeoff-weight">Takeoff weight \(\Wo\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-s" data-letter="S">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">S</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-sensitivity" data-lessons="3" data-keys="sensitivity exponent percent power law">
+        <dt><dfn class="gl-name">Sensitivity (exponent)</dfn></dt>
+        <dd>In a power law each exponent is the percentage change in weight per percent change in its variable: the wing's 0.557 on \(W_{dg}N_z\) means 10% more load adds about 5.6% of wing.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#reading">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-stat-eq">Statistical group weight equations</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-sizing-loop" data-lessons="6" data-keys="sizing loop iteration closing takeoff weight">
+        <dt><dfn class="gl-name">Sizing loop</dfn></dt>
+        <dd>Solving \(\Wo = W_{\text{crew}} + W_{\text{payload}} + (W_f/\Wo)\Wo + \We(\Wo)\) with the group weights of a design resized at each guess. Uncalibrated, the business jet closes at 5743 kg; calibrated, at 6943 kg.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/06-calibration.html#loop">Lesson 6</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-growth-factor">Growth factor</a>, <a class="gl-mlink" href="#term-calibration">Calibration factor \(k\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-stat-eq" data-lessons="3" data-keys="statistical group weight equations power law">
+        <dt><dfn class="gl-name">Statistical group weight equations</dfn></dt>
+        <dd>Power laws fitted to the group weights of aircraft of the 1950s and 1960s <a class="cite" href="references.html#r4">[4]</a>, one per group, in pounds and feet. Their exponents carry the physics; their constants need calibrating for modern aircraft.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#reading">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sensitivity">Sensitivity (exponent)</a>, <a class="gl-mlink" href="#term-calibration">Calibration factor \(k\)</a>, <a href="#term-approx">Approximate group weights</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-structure-group" data-lessons="1" data-keys="structure group wing tails fuselage gear">
+        <dt><dfn class="gl-name">Structure group</dfn></dt>
+        <dd>The wing, tails, fuselage and landing gear: 1882 kg of the business jet's equation weight.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#groups">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-propulsion-group">Propulsion group</a>, <a href="#term-equipment-group">Equipment group</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-t" data-letter="T">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">T</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-t-tail" data-lessons="3" data-keys="T-tail fin factor Ht Hv">
+        <dt><dfn class="gl-name">T-tail</dfn></dt>
+        <dd>A horizontal tail on top of the fin, \(H_t/H_v = 1\): the fin must carry the tail's loads, which makes it \(2^{0.225} = 1.169\) times heavier.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#tails">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-tail-arm">Tail arm \(L_t\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-tail-arm" data-lessons="3 8" data-keys="tail arm length quarter chord tails">
+        <dt><dfn class="gl-name">Tail arm \(L_t\)</dfn></dt>
+        <dd>The distance from the wing's to the tail's quarter-MAC. A longer arm lightens the tails twice over: the equations fall with it, and less area is needed. The business jet's shortens from 7.285 to 6.734 m when its wing moves aft.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#tails">Lesson 3</a>, <a class="gl-lesson-link" href="../lessons/08-loading-and-wing-placement.html#consequences">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-radius-gyration">Radius of gyration \(K_y\), \(K_z\)</a>, <a href="#term-t-tail">T-tail</a>, <a class="gl-mlink" href="#term-wing-shift">Wing shift \(\Delta x\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-takeoff-weight" data-lessons="1" data-keys="takeoff weight W0 gross">
+        <dt><dfn class="gl-name">Takeoff weight \(\Wo\)</dfn></dt>
+        <dd>The aircraft with its crew, payload and fuel at the start of the takeoff; its maximum is the design gross weight. The course's business jet: 6943 kg.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-design-gross">Design gross weight \(W_{dg}\)</a>, <a href="#term-sizing-loop">Sizing loop</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-u" data-letter="U">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">U</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-ultimate-load" data-lessons="2" data-keys="ultimate load failure 1.5">
+        <dt><dfn class="gl-name">Ultimate load</dfn></dt>
+        <dd>The limit load times the factor of safety; the structure must carry it without breaking. Structures are sized at ultimate load.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-limit-load">Limit load</a>, <a class="gl-mlink" href="#term-nz">Ultimate load factor \(N_z\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-nz" data-lessons="2" data-keys="ultimate load factor Nz 1.5 limit gust">
+        <dt><dfn class="gl-name">Ultimate load factor \(N_z\)</dfn></dt>
+        <dd>1.5 times the largest limit load factor, from maneuvers or gusts: the load factor the structural weight equations use. The business jet's is 4.882, from the gust (4.573 from maneuvers alone); an airliner's 3.75.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/02-load-factors.html#factors">Lesson 2</a>, <a class="gl-lesson-link" href="../lessons/02-load-factors.html#equations">Lesson 2</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-limit-maneuver">Limit maneuvering load factor \(n_{\text{limit}}\)</a>, <a href="#term-gust">Gust load factor</a>, <a href="#term-ultimate-load">Ultimate load</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-w" data-letter="W">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">W</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-weight-statement" data-lessons="1 5" data-keys="weight statement groups breakdown">
+        <dt><dfn class="gl-name">Weight statement</dfn></dt>
+        <dd>The empty weight listed by groups, in a fixed order, so that designs can be compared and each group has a budget.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#groups">Lesson 1</a>, <a class="gl-lesson-link" href="../lessons/05-propulsion-and-equipment.html#statement">Lesson 5</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-structure-group">Structure group</a>, <a href="#term-propulsion-group">Propulsion group</a>, <a href="#term-equipment-group">Equipment group</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-wing-group" data-lessons="8" data-keys="wing group moves with the wing main gear fuel">
+        <dt><dfn class="gl-name">Wing group \(W_{wg}\)</dfn></dt>
+        <dd>Everything that moves when the wing moves: the wing, the main gear on it, the fuel system, the flight controls, the anti-icing and the fuel. 1188 kg, 30% of the business jet's empty weight.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-loading-and-wing-placement.html#wing">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-wing-shift">Wing shift \(\Delta x\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-wing-shift" data-lessons="8" data-keys="wing shift moving the wing CG position">
+        <dt><dfn class="gl-name">Wing shift \(\Delta x\)</dfn></dt>
+        <dd>Moving the wing to place the CG range: \(\Delta x = (x_{cg} - x_{\text{LE,MAC}} - p\cbar)/(1 - W_{wg}/W)\). The business jet's wing moves 0.55 m aft, to 48.6% of the fuselage.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/08-loading-and-wing-placement.html#wing">Lesson 8</a></span><span class="gl-see-part gl-rel">Related: <a class="gl-mlink" href="#term-wing-group">Wing group \(W_{wg}\)</a>, <a href="#term-cg-range">CG range</a>, <a href="#term-empty-cg">Empty CG</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-wing-weight" data-lessons="3" data-keys="wing weight equation transport">
+        <dt><dfn class="gl-name">Wing weight equation</dfn></dt>
+        <dd>\(0.0051(W_{dg}N_z)^{0.557}S_w^{0.649}A^{0.5}(t/c)^{-0.4}(1+\lambda)^{0.1}(\cos\Lambda)^{-1}S_{csw}^{0.1}\) in pounds and square feet: 559 kg for the business jet, 8.1% of \(\Wo\).</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/03-wing-and-tails.html#wing">Lesson 3</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-sensitivity">Sensitivity (exponent)</a>, <a class="gl-mlink" href="#term-csw">Control-surface area \(S_{csw}\)</a></span></dd>
+      </div>
+      <div class="gl-entry" id="term-kws" data-lessons="4" data-keys="Kws wing sweep span fuselage factor">
+        <dt><dfn class="gl-name">Wing-sweep factor \(K_{ws}\)</dfn></dt>
+        <dd>\(0.75[(1 + 2\lambda)/(1 + \lambda)]B_w\tan\Lambda/L\): a swept wing carries its root bending into a longer stretch of fuselage. The business jet's is 0.425.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/04-fuselage-and-gear.html#fuselage">Lesson 4</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-fuselage-weight">Fuselage weight equation</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  <div class="gl-group" id="letter-z" data-letter="Z">
+    <div class="gl-letter-row">
+      <h2 class="gl-letter">Z</h2>
+      <span class="gl-rule" aria-hidden="true"></span>
+      <a class="gl-top" href="#gl-tools">Back to top</a>
+    </div>
+    <dl class="gl-terms">
+      <div class="gl-entry is-first" id="term-zfw" data-lessons="1" data-keys="zero fuel weight MZFW wing bending">
+        <dt><dfn class="gl-name">Zero-fuel weight</dfn></dt>
+        <dd>The operating weight plus the payload. Its maximum limits the bending at the wing root, since fuel in the wing relieves it: 4952 kg for the business jet with its full payload.</dd>
+        <dd class="gl-see"><span class="gl-see-part">See: <a class="gl-lesson-link" href="../lessons/01-weight-statement.html#weights">Lesson 1</a></span><span class="gl-see-part gl-rel">Related: <a href="#term-operating-weight">Operating empty weight</a>, <a class="gl-mlink" href="#term-takeoff-weight">Takeoff weight \(\Wo\)</a></span></dd>
+      </div>
+    </dl>
+  </div>
+  </div>
+
+  <section id="symbols" class="gl-symbols">
+    <h2>Symbols at a glance</h2>
+    <p>Met a symbol in a lesson or in another textbook and not sure what it stands for? Find it here, then follow the link to its entry.</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Symbols used in this module</caption>
+        <thead>
+          <tr><th scope="col">Symbol</th><th scope="col">Meaning</th><th scope="col">Entry</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">\(\Wo,\ W_{dg},\ W_l\)</th><td>Takeoff, design gross and landing weights</td><td><a class="gl-mlink" href="#term-takeoff-weight">Takeoff weight \(\Wo\)</a></td></tr>
+          <tr><th scope="row">\(\We,\ W_f\)</th><td>Empty weight, fuel weight</td><td><a class="gl-mlink" href="#term-empty-weight">Empty weight \(\We\)</a></td></tr>
+          <tr><th scope="row">\(n_{\text{limit}},\ N_z,\ N_l\)</th><td>Limit and ultimate load factors, ultimate landing load factor</td><td><a class="gl-mlink" href="#term-limit-maneuver">Limit maneuvering load factor \(n_{\text{limit}}\)</a></td></tr>
+          <tr><th scope="row">\(S_w,\ S_{csw},\ t/c,\ \Lambda,\ \lambda\)</th><td>Wing area, control-surface area, thickness, sweep, taper</td><td><a class="gl-mlink" href="#term-wing-weight">Wing weight equation</a></td></tr>
+          <tr><th scope="row">\(L_t,\ K_y,\ K_z\)</th><td>Tail arm, radii of gyration</td><td><a class="gl-mlink" href="#term-tail-arm">Tail arm \(L_t\)</a></td></tr>
+          <tr><th scope="row">\(K_{\text{door}},\ K_{lg},\ K_{ws}\)</th><td>Fuselage factors: cargo doors, fuselage gear, wing sweep</td><td><a class="gl-mlink" href="#term-fuselage-weight">Fuselage weight equation</a></td></tr>
+          <tr><th scope="row">\(L_m,\ L_n,\ N_{mw},\ N_{mss}\)</th><td>Gear lengths, main wheels, main shock struts</td><td><a class="gl-mlink" href="#term-main-gear">Main gear weight equation</a></td></tr>
+          <tr><th scope="row">\(W_{ec},\ K_p,\ K_{tr},\ K_{ng}\)</th><td>Engine with contents, propeller, reverser and pylon factors</td><td><a class="gl-mlink" href="#term-wec">Engine with contents \(W_{ec}\)</a></td></tr>
+          <tr><th scope="row">\(N_f,\ N_m,\ R_{kva},\ W_{uav}\)</th><td>Control functions, mechanical ones, electrical rating, uninstalled avionics</td><td><a class="gl-mlink" href="#term-equipment-group">Equipment group</a></td></tr>
+          <tr><th scope="row">\(k\)</th><td>Calibration factor</td><td><a class="gl-mlink" href="#term-calibration">Calibration factor \(k\)</a></td></tr>
+          <tr><th scope="row">\(x_{cg},\ x_{\text{LE,MAC}},\ \cbar\)</th><td>CG station, MAC leading edge, MAC</td><td><a class="gl-mlink" href="#term-cg">Center of gravity \(x_{cg}\)</a></td></tr>
+          <tr><th scope="row">\(W_{wg},\ \Delta x,\ p\)</th><td>Wing group, wing shift, wanted CG as a fraction of the MAC</td><td><a class="gl-mlink" href="#term-wing-shift">Wing shift \(\Delta x\)</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">The group weight equations, approximate group weights, miscellaneous weights and composite factors are Raymer's <a class="cite" href="references.html#r1">[1]</a>, Chapter 15; the load factors are from 14 CFR 25.303, 25.335 and 25.337 <a class="cite" href="references.html#r3">[3]</a>. Numbers in square brackets refer to the <a href="references.html">References</a> page.</p>
+  </section>
+</main>
+
+<script>
+/* Glossary filter: filters as you type (term names and synonyms first; definitions when no name matches),
+   optional "Taught in" lesson filter, A–Z index that greys out empty letters, and links to hidden terms
+   clear the filter first. URL options: ?q=helix and ?lesson=8 pre-fill the filter. */
+CYL.ready(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+  function each(nodes, fn) { Array.prototype.forEach.call(nodes, fn); }
+  var list = $('gl-list'), input = $('gl-filter'), lessonSel = $('gl-lesson'), clearBtn = $('gl-clear'),
+      countEl = $('gl-count'), liveEl = $('gl-live'), emptyEl = $('gl-empty'), emptyMsg = $('gl-empty-msg'),
+      az = $('gl-az'), main = $('main');
+
+  // ---- Text normalization: lower case, Greek letters spelled out, subscripts joined (e_r → er,
+  //      I_z → iz, u_θ → utheta), accents dropped (ê → e), other punctuation → spaces
+  var GREEK = { 'θ': 'theta', 'ϑ': 'theta', 'ρ': 'rho', 'φ': 'phi', 'ϕ': 'phi', 'π': 'pi',
+                'ω': 'omega', 'τ': 'tau', 'δ': 'delta', 'α': 'alpha' };
+  var GREEK_WORDS = ' theta rho phi pi omega tau delta alpha ';
+  var GR = '\u0001', SUB = '\u0002';        // tag query words typed as a Greek letter / with a subscript
+  function fold(s, tag) {
+    s = String(s || '').toLowerCase().replace(/[θϑρφϕπωτδα]/g,
+      function (c) { return ' ' + (tag ? GR : '') + GREEK[c] + ' '; });
+    s = s.replace(/\s*_\s*\{?\s*/g, tag ? SUB : '');
+    if (s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return s;
+  }
+  function norm(s) { return ' ' + fold(s).replace(/[^a-z0-9]+/g, ' ').trim() + ' '; }
+
+  // A query word matches when one of its forms starts a word of the haystack. Forms: the word plus
+  // simple singulars (vectors → vector, axes → axis). A word typed as a Greek letter (π → "pi") or
+  // as a subscripted symbol (a_r → "ar") must match a whole word, so π does not find "pipe" and
+  // a_r does not find "arc".
+  var IRREGULAR = { axes: 'axis', radii: 'radius', tori: 'torus', helices: 'helix', vertices: 'vertex' };
+  function tokensOf(q) {
+    var s = fold(String(q || '').replace(/[\u0001\u0002]/g, ''), true)
+      .replace(/[^a-z0-9\u0001\u0002]+/g, ' ').trim();
+    if (!s) return [];
+    return s.split(' ').map(function (w) {
+      var greek = w.charAt(0) === GR && GREEK_WORDS.indexOf(' ' + w.slice(1) + ' ') >= 0;
+      var sub = /\u0002\u0001?[a-z0-9]/.test(w);      // e_r, u_θ (not a bare "e_" while typing)
+      w = w.replace(/[\u0001\u0002]/g, '');
+      var forms = [w];
+      if (!greek && !sub) {
+        if (IRREGULAR[w]) forms.push(IRREGULAR[w]);
+        if (w.length > 4 && /ies$/.test(w)) forms.push(w.slice(0, -3) + 'y');
+        if (w.length > 4 && /(s|x|z|ch|sh)es$/.test(w)) forms.push(w.slice(0, -2));
+        if (w.length > 3 && /[^isu]s$/.test(w)) forms.push(w.slice(0, -1));
+      }
+      return { forms: forms, whole: greek || sub, greek: greek };
+    }).filter(function (t) { return t.forms[0]; });
+  }
+  function hasToken(hay, t, whole) {
+    for (var i = 0; i < t.forms.length; i++) {
+      if (hay.indexOf(' ' + t.forms[i] + (whole ? ' ' : '')) >= 0) return true;
+    }
+    return false;
+  }
+  // every query word must match. In definitions, one-letter words must be whole words ("I z" must
+  // not match every word that starts with i)
+  function hasAll(hay, tokens, inText) {
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (!hasToken(hay, t, t.whole || (inText && t.forms[0].length === 1))) return false;
+    }
+    return true;
+  }
+  // visible text of rendered math = its MathML text (drop KaTeX's visual HTML and TeX source)
+  function plainText(el) {
+    var c = el.cloneNode(true);
+    each(c.querySelectorAll('.katex-html, annotation'), function (n) { n.parentNode.removeChild(n); });
+    return c.textContent;
+  }
+
+  // ---- Index the entries
+  var groups = [], entries = [];
+  each(list.querySelectorAll('.gl-group'), function (gEl) {
+    var g = { el: gEl, link: az.querySelector('a[data-letter="' + gEl.getAttribute('data-letter') + '"]'), entries: [] };
+    each(gEl.querySelectorAll('.gl-entry'), function (eEl) {
+      var name = eEl.querySelector('.gl-name'), def = eEl.querySelector('dd:not(.gl-see)');
+      var it = {
+        el: eEl, name: name, def: def, nameHTML: name.innerHTML, defHTML: def.innerHTML, marked: null,
+        nameHay: norm(plainText(eEl.querySelector('dt')) + ' ' + (eEl.getAttribute('data-keys') || '')),
+        defHay: norm(plainText(def)),
+        lessons: ' ' + (eEl.getAttribute('data-lessons') || '') + ' '
+      };
+      g.entries.push(it);
+      entries.push(it);
+    });
+    groups.push(g);
+  });
+  var TOTAL = entries.length;
+  function taughtIn(it, n) { return !n || it.lessons.indexOf(' ' + n + ' ') >= 0; }
+
+  // "Taught in" options come from the page registry, so titles always match the lessons
+  CYL.PAGES.forEach(function (p) {
+    if (p.group !== 'lessons' || p.num == null) return;
+    var n = String(p.num);
+    if (!entries.some(function (it) { return taughtIn(it, n); })) return;
+    lessonSel.appendChild(CYL.el('option', { value: n, text: 'Lesson ' + n + ' · ' + p.title }));
+  });
+
+  // ---- Highlight word-start matches in plain text (never inside rendered math; Greek letters are
+  //      only ever in math, so their words are not highlighted)
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function mark(el, tokens, inText) {
+    var alts = [];
+    tokens.forEach(function (t) {
+      if (t.greek) return;
+      var whole = t.whole || (inText && t.forms[0].length === 1);
+      t.forms.forEach(function (f) { alts.push({ f: f, re: escRe(f) + (whole ? '(?![a-z0-9])' : '') }); });
+    });
+    if (!alts.length) return false;
+    alts.sort(function (a, b) { return b.f.length - a.f.length; });
+    var re = new RegExp('(^|[^a-z0-9])(' + alts.map(function (a) { return a.re; }).join('|') + ')', 'gi');
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n, hit = false;
+    while ((n = walker.nextNode())) if (!n.parentNode.closest('.katex')) nodes.push(n);
+    nodes.forEach(function (node) {
+      var text = node.data, m, last = 0, frag = null;
+      re.lastIndex = 0;
+      while ((m = re.exec(text))) {
+        var start = m.index + m[1].length, end = start + m[2].length;
+        frag = frag || document.createDocumentFragment();
+        if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+        frag.appendChild(CYL.el('mark', { class: 'gl-hit', text: text.slice(start, end) }));
+        last = end;
+      }
+      if (frag) {
+        if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+        hit = true;
+      }
+    });
+    return hit;
+  }
+  function unmark(it) {
+    if (it.marked === 'name') it.name.innerHTML = it.nameHTML;
+    else if (it.marked === 'def') it.def.innerHTML = it.defHTML;
+    it.marked = null;
+  }
+
+  // ---- Apply the filter
+  var lastStatus = '';
+  var announce = CYL.debounce(function () { liveEl.textContent = lastStatus; }, 600);
+  function plural(k, word) { return k + ' ' + word + (k === 1 ? '' : 's'); }
+
+  function apply(quiet) {
+    var raw = input.value, tokens = tokensOf(raw), lesson = lessonSel.value;
+    var mode = 'name';
+    var shown = entries.filter(function (it) {
+      return taughtIn(it, lesson) && (!tokens.length || hasAll(it.nameHay, tokens));
+    });
+    if (tokens.length && !shown.length) {           // no term name matches: fall back to the definitions
+      mode = 'def';
+      shown = entries.filter(function (it) { return taughtIn(it, lesson) && hasAll(it.defHay, tokens, true); });
+    }
+    entries.forEach(function (it) {
+      var on = shown.indexOf(it) >= 0;
+      it.el.hidden = !on;
+      unmark(it);
+      if (on && tokens.length) {
+        if (mode === 'name' && mark(it.name, tokens, false)) it.marked = 'name';
+        else if (mode === 'def' && mark(it.def, tokens, true)) it.marked = 'def';
+      }
+    });
+    groups.forEach(function (g) {
+      var vis = g.entries.filter(function (it) { return !it.el.hidden; });
+      g.el.hidden = !vis.length;
+      g.entries.forEach(function (it) { it.el.classList.remove('is-first', 'is-last'); });
+      if (vis.length) {
+        vis[0].el.classList.add('is-first');
+        vis[vis.length - 1].el.classList.add('is-last');
+      }
+      if (g.link) {
+        g.link.classList.toggle('is-off', !vis.length);
+        if (vis.length) { g.link.removeAttribute('aria-disabled'); g.link.removeAttribute('tabindex'); }
+        else { g.link.setAttribute('aria-disabled', 'true'); g.link.setAttribute('tabindex', '-1'); }
+      }
+    });
+
+    var n = shown.length, inL = lesson ? ' in Lesson ' + lesson : '';
+    var quoted = '“' + raw.trim() + '”';
+    var status;
+    if (!tokens.length && !lesson) status = 'Showing all ' + plural(TOTAL, 'term');
+    else if (!n) status = 'No matches';
+    else if (mode === 'def') {
+      status = 'No term names match ' + quoted + inL + ', so showing ' + plural(n, 'term') +
+        (n === 1 ? ' whose definition mentions it' : ' whose definitions mention it');
+    } else if (tokens.length) status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' matching ' + quoted + inL;
+    else status = 'Showing ' + n + ' of ' + plural(TOTAL, 'term') + ' taught in Lesson ' + lesson;
+    countEl.textContent = status;
+    emptyEl.hidden = n > 0;
+    if (!n) emptyMsg.textContent = 'No terms match ' + (tokens.length ? quoted : 'this filter') + inL + '.';
+    clearBtn.hidden = !(raw.length || lesson);
+    if (!quiet) { lastStatus = n ? status + '.' : emptyMsg.textContent; announce(); }
+  }
+
+  function reset() { input.value = ''; lessonSel.value = ''; apply(); }
+  function clearAndFocus() { reset(); input.focus(); }
+
+  input.addEventListener('input', function () { apply(); });
+  input.addEventListener('keydown', function (e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') && input.value) {
+      e.preventDefault();
+      e.stopPropagation();
+      input.value = '';
+      apply();
+    }
+  });
+  lessonSel.addEventListener('change', function () { apply(); });
+  clearBtn.addEventListener('click', clearAndFocus);
+  $('gl-empty-clear').addEventListener('click', clearAndFocus);
+
+  // Greyed-out letters do nothing
+  az.addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (a && a.getAttribute('aria-disabled') === 'true') e.preventDefault();
+  });
+
+  // A link to a term the filter is hiding (Related, Symbols) clears the filter before the jump
+  function targetOf(hash) {
+    if (!hash || hash.length < 2) return null;
+    var id = hash.slice(1);
+    try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+    return document.getElementById(id);
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || az.contains(a)) return;
+    var t = targetOf(a.getAttribute('href'));
+    if (t && list.contains(t) && t.closest('[hidden]')) reset();
+  });
+  window.addEventListener('hashchange', function () {
+    var t = targetOf(location.hash);
+    if (t && list.contains(t) && t.closest('[hidden]')) { reset(); t.scrollIntoView({ block: 'start' }); }
+  });
+
+  // Optional pre-fill from the URL: glossary.html?q=helix or ?lesson=8
+  try {
+    var params = new URLSearchParams(location.search);
+    if (params.get('q')) input.value = params.get('q');
+    var pl = params.get('lesson');
+    if (pl && lessonSel.querySelector('option[value="' + pl.replace(/[^0-9]/g, '') + '"]')) lessonSel.value = pl.replace(/[^0-9]/g, '');
+  } catch (e) { /* old browser: no pre-fill */ }
+  apply(true);
+
+  // Deep link (#term-helix): the shell and the math change the layout after the browser's first jump,
+  // so jump again, instantly (the page otherwise scrolls smoothly)
+  var t0 = targetOf(location.hash);
+  if (t0 && main.contains(t0)) {
+    if (t0.closest('[hidden]')) reset();
+    requestAnimationFrame(function () {
+      var rootStyle = document.documentElement.style, prev = rootStyle.scrollBehavior;
+      rootStyle.scrollBehavior = 'auto';
+      t0.scrollIntoView({ block: 'start' });
+      rootStyle.scrollBehavior = prev;
+    });
+  }
+});
+</script>
+</body>
+</html>

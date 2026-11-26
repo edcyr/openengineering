@@ -29,8 +29,8 @@ COURSES = [
          dict(slug='mass-moments-of-inertia', mark='[I]', desc='Moments of inertia by integration, the parallel-axis theorem and composite bodies, then products of inertia, the inertia tensor, the moment of inertia about any axis, and principal axes, with 3D figures you can turn.'),
          dict(slug='angular-momentum', mark='H', desc='From the angular momentum of a particle to systems of particles and rigid bodies: angular impulse, impact, angular momentum in three dimensions, Euler\'s equations and gyroscopic motion, with live simulations.')]),
   dict(slug='aero3002', code='AERO 3002', title='Conceptual Aircraft Design', level='Third-year aerospace', notation='Raymer, <em>Aircraft Design: A Conceptual Approach</em>',
-       lede='Interactive modules for AERO 3002. They teach how a new aircraft is sized and laid out, from the first weight estimate to wing loading, thrust, aerodynamics, loads and structures, weights, stability and performance, using real aircraft data, interactive figures, worked examples and questions with instant feedback.',
-       hero='aero3002', kicker='Module', blurb='Thirteen modules on how a new aircraft is sized and laid out, following Raymer, starting with the history of aircraft design.', mark_italic=False,
+       lede='Interactive modules for AERO 3002. They teach how a new aircraft is sized and laid out, from the first weight estimate to wing loading, thrust, aerodynamics, loads and structures, weights, stability and performance, then electric and vertical flight and space vehicles, using real aircraft data, interactive figures, worked examples and questions with instant feedback.',
+       hero='aero3002', kicker='Module', blurb='Fifteen modules on how a new aircraft is sized and laid out, following Raymer, from the history of aircraft design to electric and vertical flight and space vehicles.', mark_italic=False,
        modules=[
          dict(slug='01-history-of-aircraft-design', week=1, mark='1903', desc='From Cayley and the Wright brothers to the wide-body jet, through the numbers designers use: weights, wing and power loading, drag, L/D, sweep and Breguet range, ending with the first weight estimate of a new aircraft.'),
          dict(slug='02-requirements-and-mission-profiles', week=2, mark='RFP', title='Design Requirements and Mission Profiles', desc='Where the numbers of a new design come from: the conceptual design process, requirements from markets, maps and airports, the payload\u2013range diagram, certification rules for field length and engine-out climb, mission profiles, fuel reserves and winds, and trade studies.'),
@@ -40,15 +40,17 @@ COURSES = [
          dict(slug='06-configuration-layout', week=6, mark='l/d', title='Configuration Layout and Fuselage Sizing', desc='Laying out the aircraft from the inside: fuselage length statistics and fineness, the cabin cross-section and length with the aisle and exit rules, the nose and tail cone, placing the wing and tails, engines and fuel tanks, and the wetted area and refined lift-to-drag ratio, with a layout tool.'),
          dict(slug='07-propulsion', week=7, mark='BPR', title='Propulsion Selection and Integration', desc='Putting real engines on the aircraft: propulsive efficiency and the kind of engine, thrust, fuel flow and the thrust lapse, certified engine data and the rubber engine, nacelles, inlets and nozzles, propellers, the fuel system, and the engine back in the sizing loop, with an engine sizing tool.'),
          dict(slug='08-landing-gear-and-subsystems', week=8, mark='\u03c8', title='Landing Gear and Subsystems', desc='Giving the aircraft something to stand on: gear arrangements, placing the gear against the CG range with the tail-down, tip-back and tip-over angles, gear loads, real tires from a manufacturer\'s catalog, shock absorbers, retraction, hydraulic, electrical and pneumatic power, and the cabin\'s pressurization and fresh air, with the business jet\'s gear laid out step by step.'),
-         dict(slug='09-aerodynamics', week=9, mark='CD\u2080', title='Lift and the Drag Build-Up', desc='Building the drag up component by component: the drag polar, maximum lift with flaps and slats, skin friction, form factors and interference, the parasite drag build-up, induced drag and the Oswald factor, the drag rise near the speed of sound, and the polars back in the design, with a drag build-up tool.'),
-         dict(slug='10-loads-and-structures', week=10, mark='Vn', title='Loads and Structures', desc='What the structure must carry, and how: aircraft materials and their indices, the structural layout and load paths, limit and ultimate loads with margins of safety, the V-n diagram and its design speeds, gust loads, balanced maneuver loads, wing shear and bending, and sizing the wing box, with a loads-envelope tool.'),
-         dict(slug='11-weights-and-cg', week=11, mark='CG', title='Component Weights and Center of Gravity', desc='Estimating what the aircraft weighs and where it balances: the weight statement and real business jets, load factors, the statistical weights of the wing, tails, fuselage, landing gear, propulsion and equipment, calibration and the sizing loop, the center of gravity, the loading diagram and placing the wing, with a weight and balance tool.'),
-         dict(slug='12-stability-and-tails', week=12, mark='NP', title='Stability, Control and Tail Sizing', desc='Sizing the tails from requirements: static stability and the static margin, the contributions to the pitching moment, the neutral point, trim and the elevator, control at the forward CG, the scissor plot and the wing placed with it, directional and lateral stability, and the vertical tail for engine failure and crosswind, with a tail-sizing tool.'),
-         dict(slug='13-performance-and-cost', week=13, mark='\u03a3', title='Performance, Cost and Trade Studies', desc='Closing the design: the loop run until the drag, weights, engines and tails agree, level flight and the flight envelope, range and payload-range, climb and ceilings, takeoff and landing, development, production and operating cost, and the trade study that chooses the final design, with a design-closure tool.')],
+         dict(slug='09-electric-and-vertical-flight', week=9, mark='kWh', title='Electric Aircraft and Vertical Flight', desc='The business jet with other ways to fly: electric propulsion systems, batteries and specific energy, electric range and the battery limit, sizing with a battery, hybrid-electric and distributed propulsion, electric motors and their special conditions, vertical flight from momentum theory, and VTOL configurations from tiltrotors to jet lift, with an electric and VTOL sizing tool.'),
+         dict(slug='10-aerodynamics', week=10, mark='CD\u2080', title='Lift and the Drag Build-Up', desc='Building the drag up component by component: the drag polar, maximum lift with flaps and slats, skin friction, form factors and interference, the parasite drag build-up, induced drag and the Oswald factor, the drag rise near the speed of sound, and the polars back in the design, with a drag build-up tool.'),
+         dict(slug='11-loads-and-structures', week=11, mark='Vn', title='Loads and Structures', desc='What the structure must carry, and how: aircraft materials and their indices, the structural layout and load paths, limit and ultimate loads with margins of safety, the V-n diagram and its design speeds, gust loads, balanced maneuver loads, wing shear and bending, and sizing the wing box, with a loads-envelope tool.'),
+         dict(slug='12-weights-and-cg', week=12, mark='CG', title='Component Weights and Center of Gravity', desc='Estimating what the aircraft weighs and where it balances: the weight statement and real business jets, load factors, the statistical weights of the wing, tails, fuselage, landing gear, propulsion and equipment, calibration and the sizing loop, the center of gravity, the loading diagram and placing the wing, with a weight and balance tool.'),
+         dict(slug='13-stability-and-tails', week=13, mark='NP', title='Stability, Control and Tail Sizing', desc='Sizing the tails from requirements: static stability and the static margin, the contributions to the pitching moment, the neutral point, trim and the elevator, control at the forward CG, the scissor plot and the wing placed with it, directional and lateral stability, and the vertical tail for engine failure and crosswind, with a tail-sizing tool.'),
+         dict(slug='14-performance-and-cost', week=14, mark='\u03a3', title='Performance, Cost and Trade Studies', desc='Closing the design: the loop run until the drag, weights, engines and tails agree, level flight and the flight envelope, range and payload-range, climb and ceilings, takeoff and landing, development, production and operating cost, and the trade study that chooses the final design, with a design-closure tool.'),
+         dict(slug='15-space-vehicles', week=15, mark='\u0394v', title='Space Vehicles', desc='From aircraft to launch vehicles: space systems and their margins, orbits, orbital maneuvers and the \u0394v budget, the ascent to orbit and its losses, the rocket equation and staging, rocket engines and propellants, launch vehicle structures with spaceflight factors of safety, and sizing and licensing a small two-stage launcher, with a launch vehicle sizing tool.')],
        planned={2: 'The design process, requirements and mission profiles', 3: 'The first estimate of takeoff weight', 4: 'Airfoil and wing geometry selection',
                 5: 'Thrust-to-weight ratio and wing loading', 6: 'Configuration layout and fuselage sizing', 7: 'Propulsion selection and integration',
-                8: 'Landing gear and subsystems', 9: 'Aerodynamics: lift and the drag build-up', 10: 'Loads and structures',
-                11: 'Component weights and center of gravity', 12: 'Stability, control and tail sizing', 13: 'Performance, cost and trade studies'}),
+                8: 'Landing gear and subsystems', 9: 'Electric aircraft and vertical flight', 10: 'Aerodynamics: lift and the drag build-up', 11: 'Loads and structures',
+                12: 'Component weights and center of gravity', 13: 'Stability, control and tail sizing', 14: 'Performance, cost and trade studies', 15: 'Space vehicles'}),
   # A standalone course has its own home page, navigation and progress (synced whole by sync-modules.sh, with a
   # zip per module offered on its own course home), so it gets no generated course page; its home-page card reads
   # modules and lessons from its manifest, course-data.js. dl labels its modules in the home page's download list.
@@ -78,7 +80,8 @@ def module_info(course, m):
     size = '%.1f MB' % (os.path.getsize(z) / 1e6)
     hours = sum(p['min'] for p in lessons) / 60
     title = m.get('title') or (brand if brand != 'History of Aircraft Design' else 'The History of Aircraft Design')
-    return dict(m, ns=ns, title=title, lessons=lessons, tool=tool, tool_href=tool_href, zip=size, hours=hours)
+    refs = any(p['href'] == 'reference/references.html' for p in pages)
+    return dict(m, ns=ns, title=title, lessons=lessons, tool=tool, tool_href=tool_href, zip=size, hours=hours, refs=refs)
 
 def hours_text(h):
     r = round(h * 2) / 2
@@ -240,7 +243,7 @@ def card(c, i, m, prefix=''):
     n = m.get('week', i + 1)
     kick = ('Week %d · Module %d' % (n, n)) if c['kicker'] == 'Week' else ('Module %d' % n)
     lessons = '\n'.join('                <li data-id="%s"><a href="%s%s"><span class="num">%d</span><span>%s</span><span class="min">%d min</span></a></li>' % (l['id'], base, l['href'], l['num'], esc(l['title']), l['min']) for l in m['lessons'])
-    extras = ' · '.join('<a href="%s%s">%s</a>' % (base, h, t) for h, t in (('practice/practice-lab.html', 'Practice Lab'), ('practice/quiz.html', 'Self-Check Quiz'), ('practice/worksheet.html', 'Worksheet'), (m['tool_href'], esc(m['tool'])), ('reference/cheat-sheet.html', 'Formula Sheet'), ('reference/glossary.html', 'Glossary')))
+    extras = ' · '.join('<a href="%s%s">%s</a>' % (base, h, t) for h, t in (('practice/practice-lab.html', 'Practice Lab'), ('practice/quiz.html', 'Self-Check Quiz'), ('practice/worksheet.html', 'Worksheet'), (m['tool_href'], esc(m['tool'])), ('reference/cheat-sheet.html', 'Formula Sheet'), ('reference/glossary.html', 'Glossary')) + ((('reference/references.html', 'References'),) if m.get('refs') else ()))
     mark_cls = 'mark' if c['mark_italic'] and len(m['mark']) <= 3 else 'mark mark-sm'
     return '''          <article class="card" data-ns="%s" data-href="%s">
             <div class="card-top">
@@ -350,7 +353,7 @@ def course_page(c):
     <div class="wrap">
       <div class="sec-head">
         <h2>The modules</h2>
-        <p>Each module is a complete unit: short lessons, then a Practice Lab, a self-check quiz, a printable worksheet, an interactive tool, a formula sheet and a glossary.%(order)s</p>
+        <p>Each module is a complete unit: short lessons, then a Practice Lab, a self-check quiz, a printable worksheet, an interactive tool, a formula sheet and a glossary%(refs)s.%(order)s</p>
       </div>
       <div class="track">
         <div class="track-head">
@@ -418,6 +421,7 @@ def course_page(c):
 ''' % dict(code=c['code'], title=c['title'], desc=esc(c['lede']), host=HOST, slug=c['slug'], css=CSS, extra=EXTRA_CSS, abbr=c['code'].split()[1],
            level=c['level'], lede=c['lede'], first=first['slug'], firsttitle=esc(first['title']), arrow=ARROW, facts=facts, svg=svg, keys=keys,
            order='' if planned else ' Take them in the order shown; each builds on the ones before it.', avail='Available now' if planned else 'Modules',
+           refs=', with a numbered list of the sources it cites' if all(m.get('refs') for m in c['mods']) else '',
            cards=cards, coming=coming, dls=dls, notation=c['notation'], cc=CC, js=PROGRESS_JS)
 
 # ------------------------------------------------------------------ home page: Courses section
@@ -500,18 +504,23 @@ open(MAIN_PATH, 'w', encoding='utf-8').write(s)
 
 # 404: old module addresses (before courses) and upper-case course codes
 moves = {m['slug']: c['slug'] for c in COURSES for m in c['mods'] if c['slug'] in ('ecor1034', 'maae2101')}
+# AERO 3002 modules renumbered when Modules 9 and 15 were inserted (2026-11-24): published folder -> new folder
+renamed = {'aero3002': {'09-aerodynamics': '10-aerodynamics', '10-loads-and-structures': '11-loads-and-structures', '11-weights-and-cg': '12-weights-and-cg',
+                        '12-stability-and-tails': '13-stability-and-tails', '13-performance-and-cost': '14-performance-and-cost'}}
 p404 = os.path.join(SITE, '404.html'); s = open(p404, encoding='utf-8').read()
 script = '''<script>
   /* Redirects: course codes in upper case (URLs are case-sensitive on GitHub Pages), and the dynamics
-     modules' addresses from before they were grouped into courses (generated by scripts/courses.py). */
+     modules' addresses from before they were grouped into courses, and renumbered modules (generated by scripts/courses.py). */
   (function () {
-    var MOVED = %s;
+    var MOVED = %s, RENAMED = %s;
     var p = location.pathname, rest = location.search + location.hash, l = p.toLowerCase(), m;
     if ((m = /^\\/([a-z0-9-]+)(\\/.*)?$/.exec(p)) && MOVED[m[1]]) { location.replace('/' + MOVED[m[1]] + '/' + m[1] + (m[2] || '/') + rest); return; }
     if ((m = /^\\/downloads\\/([a-z0-9-]+)\\.zip$/.exec(p)) && MOVED[m[1]]) { location.replace('/' + MOVED[m[1]] + '/downloads/' + m[1] + '.zip'); return; }
+    if ((m = /^\\/([a-z0-9-]+)\\/downloads\\/([a-z0-9-]+)\\.zip$/.exec(p)) && RENAMED[m[1]] && RENAMED[m[1]][m[2]]) { location.replace('/' + m[1] + '/downloads/' + RENAMED[m[1]][m[2]] + '.zip'); return; }
+    if ((m = /^\\/([a-z0-9-]+)\\/([a-z0-9-]+)(\\/.*)?$/.exec(p)) && RENAMED[m[1]] && RENAMED[m[1]][m[2]]) { location.replace('/' + m[1] + '/' + RENAMED[m[1]][m[2]] + (m[3] || '/') + rest); return; }
     if (l !== p && /^\\/(%s)(\\/|$)/.test(l)) location.replace(l + rest);
   })();
-</script>''' % (json.dumps(moves), '|'.join(c['slug'] for c in ALL))
+</script>''' % (json.dumps(moves), json.dumps(renamed), '|'.join(c['slug'] for c in ALL))
 s = re.sub(r'<script>.*?</script>\n', '', s, flags=re.S)
 s = s.replace('<body>', '<body>\n' + script, 1)
 open(p404, 'w', encoding='utf-8').write(s)

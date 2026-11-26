@@ -10,7 +10,7 @@ SITE="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$(dirname "$SITE")"
 COURSES="ecor1034|.|ECOR 1034|curvilinear-motion cylindrical-coordinates force-mass-acceleration work-and-energy impulse-and-momentum systems-of-particles
 maae2101|.|MAAE 2101|mass-moments-of-inertia angular-momentum
-aero3002|conceptual-aircraft-design|AERO 3002|01-history-of-aircraft-design 02-requirements-and-mission-profiles 03-first-weight-estimate 04-airfoil-and-wing-geometry 05-thrust-to-weight-and-wing-loading 06-configuration-layout 07-propulsion 08-landing-gear-and-subsystems 09-aerodynamics 10-loads-and-structures 11-weights-and-cg 12-stability-and-tails 13-performance-and-cost"
+aero3002|conceptual-aircraft-design|AERO 3002|01-history-of-aircraft-design 02-requirements-and-mission-profiles 03-first-weight-estimate 04-airfoil-and-wing-geometry 05-thrust-to-weight-and-wing-loading 06-configuration-layout 07-propulsion 08-landing-gear-and-subsystems 09-electric-and-vertical-flight 10-aerodynamics 11-loads-and-structures 12-weights-and-cg 13-stability-and-tails 14-performance-and-cost 15-space-vehicles"
 
 patch_module() {
   python3 - "$1" "$2" "$3" <<'PY'

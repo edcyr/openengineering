@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbital Maneuvers · Space Vehicles</title>
+<meta name="description" content="Moving between orbits with impulsive burns: the Hohmann transfer and its velocity changes and time of flight, plane changes and why they are made at apogee, phasing, and a spacecraft's delta-v budget, with the propellant it costs.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/space.js"></script>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 35 min</p>
+    <h1>Orbital Maneuvers</h1>
+    <p class="lede">A spacecraft changes its orbit by firing its engine, and what that costs is the change of velocity, \(\Delta v\). It is the currency of space missions: every maneuver has a price in \(\Delta v\), and the rocket equation turns the total into propellant. This lesson prices the standard maneuvers (raising an orbit, changing its plane, catching up with a target) and adds them into a budget.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Compute the two burns and the time of flight of a Hohmann transfer between circular orbits.</li>
+      <li>Compute the \(\Delta v\) of a plane change, and explain why plane changes are made at low speed and combined with other burns.</li>
+      <li>Design a phasing orbit to move a spacecraft along its orbit.</li>
+      <li>Build a \(\Delta v\) budget and estimate the propellant it needs.</li>
+    </ul>
+  </section>
+
+  <section id="impulsive">
+    <h2>Impulsive burns</h2>
+    <p>Most orbital maneuvers last minutes, against orbits that last hours, so they are treated as <strong>impulsive</strong>: the velocity changes by \(\Delta\vec v\) at one point, and the spacecraft then follows the new orbit through that point. A burn along the direction of motion (prograde) adds energy and raises the far side of the orbit; a retrograde burn lowers it; a burn across the plane turns the plane. The cost of a maneuver is the magnitude \(\Delta v = |\Delta\vec v|\), whatever the spacecraft's mass. Chapter 6 of <a class="cite" href="../reference/references.html#r1">[1]</a> develops all the maneuvers of this lesson.</p>
+  </section>
+
+  <section id="hohmann">
+    <h2>The Hohmann transfer</h2>
+    <p>To go from a circular orbit of radius \(r_1\) to a larger one of radius \(r_2\) in the same plane, the <strong>Hohmann transfer</strong> uses an ellipse that touches both: its perigee is at \(r_1\) and its apogee at \(r_2\). One prograde burn at \(r_1\) puts the spacecraft on the ellipse; half an orbit later, a second prograde burn at \(r_2\) makes the orbit circular.</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The Hohmann transfer</p>
+      \[ a_t = \frac{r_1 + r_2}{2}, \qquad \Delta v_1 = \sqrt{\mu\left(\frac{2}{r_1} - \frac{1}{a_t}\right)} - \sqrt{\frac{\mu}{r_1}} \]
+      \[ \Delta v_2 = \sqrt{\frac{\mu}{r_2}} - \sqrt{\mu\left(\frac{2}{r_2} - \frac{1}{a_t}\right)}, \qquad t_{\text{transfer}} = \pi\sqrt{\frac{a_t^3}{\mu}} \]
+      <p>Each burn is the difference between a circular speed and the transfer ellipse's speed at the same radius (vis-viva, Lesson 2).</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 3.1 — Raising the spacecraft from 500 to 700 km</p>
+      <p>The small launcher's spacecraft must later climb from its 500&nbsp;km orbit to 700&nbsp;km. Find the two burns and the time it takes.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ r_1 = 6878\ \text{km}, \quad r_2 = 7078\ \text{km}, \qquad a_t = 6978\ \text{km} \]
+          \[ v_{c1} = 7612.7\ \text{m/s} \]
+          \[ v_p = \sqrt{3.986\times10^{14}\left(\frac{2}{6.878\times10^6} - \frac{1}{6.978\times10^6}\right)} = 7667.0\ \text{m/s} \]
+          \[ \Delta v_1 = 54.4\ \text{m/s} \]
+          \[ \Delta v_2 = v_{c2} - v_a = 7504.4 - 7450.4 = 54.0\ \text{m/s} \]
+          \[ \Delta v = 108.3\ \text{m/s} \]
+          \[ t = \pi\sqrt{\frac{(6.978\times10^6)^3}{3.986\times10^{14}}} = 2900\ \text{s} = 48.3\ \text{min} \]
+          <p>Small changes of altitude in low orbit are cheap: about 0.54&nbsp;m/s per kilometer.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> A Hohmann transfer to scale: the initial orbit (blue), the transfer ellipse (dashed) and the final orbit (red), with the two burns. Change the two altitudes; the total \(\Delta v\) rises steeply at first and then levels off.</figcaption>
+    </figure>
+    <div class="example">
+      <p class="example-title">Example 3.2 — From low orbit to geostationary orbit</p>
+      <p>Find the Hohmann transfer from a 300&nbsp;km parking orbit to geostationary orbit (35&nbsp;786&nbsp;km), in the equatorial plane.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ r_1 = 6678\ \text{km}, \quad r_2 = 42\,164\ \text{km}, \qquad a_t = 24\,421\ \text{km} \]
+          \[ \Delta v_1 = 10\,151.6 - 7725.8 = 2425.8\ \text{m/s} \]
+          \[ \Delta v_2 = 3074.7 - 1607.8 = 1466.8\ \text{m/s} \]
+          \[ \Delta v = 3893\ \text{m/s}, \qquad t = 18\,990\ \text{s} = 5.28\ \text{h} \]
+          <p>Reaching geostationary orbit from low orbit costs almost 3.9&nbsp;km/s, about half of what it takes to reach low orbit from the ground (Lesson 4).</p>
+        </div>
+      </details>
+    </div>
+    <p>The Hohmann transfer is the cheapest two-burn transfer between coplanar circles. For a very large ratio \(r_2/r_1\), above about 12, a three-burn <strong>bi-elliptic</strong> transfer that first climbs beyond \(r_2\) can cost less, at the price of a much longer flight (a classical result; see Chapter 6 of <a class="cite" href="../reference/references.html#r1">[1]</a>).</p>
+  </section>
+
+  <section id="plane">
+    <h2>Plane changes</h2>
+    <p>To turn an orbit's plane by an angle \(\Delta i\) without changing its speed, the burn must rotate the velocity vector. The \(\Delta v\) is the chord of the isosceles triangle with two sides \(v\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Plane change, and a combined burn</p>
+      \[ \Delta v = 2v\sin\frac{\Delta i}{2}, \qquad \Delta v_{\text{comb}} = \sqrt{v_1^2 + v_2^2 - 2v_1v_2\cos\Delta i} \]
+      <p>The combined burn changes the speed from \(v_1\) to \(v_2\) and the plane by \(\Delta i\) at once (the law of cosines).</p>
+    </div>
+    <p>At 500&nbsp;km a plane change of just 1° costs \(2(7613)\sin 0.5^\circ = 132.9\)&nbsp;m/s, more than the whole climb of Example 3.1. Plane changes are expensive because orbital speeds are large. They should therefore be made where the speed is lowest, at the apogee of an ellipse, and combined with a burn that is needed anyway. Better still, the launch should put the spacecraft into the right plane directly (Lesson 4).</p>
+    <div class="example">
+      <p class="example-title">Example 3.3 — Geostationary orbit from a 28.5° parking orbit</p>
+      <p>A launch from 28.5° latitude leaves the spacecraft in a 300&nbsp;km orbit inclined at 28.5°. Compare three ways to reach geostationary orbit: change the plane in low orbit and then transfer; transfer and then change the plane at GEO; or transfer and combine the plane change with the second burn.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Plane change in low orbit, then the Hohmann transfer of Example 3.2:</p>
+          \[ 2(7725.8)\sin 14.25^\circ = 3803\ \text{m/s}, \qquad \Delta v = 3803 + 3893 = 7696\ \text{m/s} \]
+          <p>Hohmann transfer, then a plane change at GEO speed:</p>
+          \[ 2(3074.7)\sin 14.25^\circ = 1514\ \text{m/s}, \qquad \Delta v = 3893 + 1514 = 5406\ \text{m/s} \]
+          <p>Hohmann transfer, with the plane change combined with the second burn at apogee (\(v_1 = v_a = 1607.8\)&nbsp;m/s):</p>
+          \[ \Delta v_2 = \sqrt{1607.8^2 + 3074.7^2 - 2(1607.8)(3074.7)\cos 28.5^\circ} = 1830\ \text{m/s} \]
+          \[ \Delta v = 2426 + 1830 = 4256\ \text{m/s} \]
+          <p>The combined burn at apogee saves 3.4&nbsp;km/s against the plane change in low orbit. Launching from a site near the equator saves more still: the spacecraft then needs little or no plane change.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig32-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig32-stage"></div>
+        <div class="viz-controls" id="fig32-controls"></div>
+      </div>
+      <figcaption id="fig32-cap"><strong>Figure 3.2</strong> The \(\Delta v\) of a plane change against its angle, at the speed of a 500&nbsp;km orbit and at geostationary speed, and of the combined second burn of a transfer from a 300&nbsp;km orbit to GEO. Choose the angle.</figcaption>
+    </figure>
+  </section>
+
+  <section id="phasing">
+    <h2>Phasing</h2>
+    <p>Two spacecraft in the same orbit stay the same angle apart. To move one of them along the orbit, for a rendezvous or to space out a constellation, it enters a <strong>phasing orbit</strong> with a different period. It then returns to the burn point after one or more revolutions and resumes the original orbit. To gain an angle \(\Delta\theta\) on the original orbit in one revolution, the phasing orbit's period must be \(T_{ph} = T_0(1 - \Delta\theta/360^\circ)\): shorter, so the phasing orbit is lower.</p>
+    <div class="example">
+      <p class="example-title">Example 3.4 — Moving 10° ahead</p>
+      <p>A spacecraft in the 500&nbsp;km circular orbit (\(T_0 = 94.61\)&nbsp;min) must move 10° ahead in one revolution. Find the phasing orbit and the total \(\Delta v\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ T_{ph} = 94.61\left(1 - \frac{10}{360}\right) = 91.99\ \text{min} \]
+          \[ a_{ph} = \left(\mu\left(\frac{T_{ph}}{2\pi}\right)^2\right)^{1/3} = 6750\ \text{km} \]
+          <p>The burn point stays the apogee (6878&nbsp;km), so the perigee is at \(2(6750) - 6878 = 6622\)&nbsp;km, an altitude of 244&nbsp;km.</p>
+          \[ v_a = \sqrt{\mu\left(\frac{2}{6.878\times10^6} - \frac{1}{6.750\times10^6}\right)} = 7540.2\ \text{m/s} \]
+          \[ \Delta v = 2(7612.7 - 7540.2) = 145.0\ \text{m/s} \]
+          <p>A retrograde burn enters the phasing orbit, and a prograde burn of the same size leaves it. Spreading the phasing over several revolutions needs a smaller change of period and less \(\Delta v\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="budget">
+    <h2>The \(\Delta v\) budget</h2>
+    <p>A mission's \(\Delta v\) budget lists every maneuver with its \(\Delta v\), plus a margin, and is kept like a mass budget (Lesson 1). The rocket equation of Lesson 5, \(m_p = m_0(1 - e^{-\Delta v/c})\) with \(c\) the engine's exhaust velocity, gives the propellant. Take the budget of Table 3.1 for the launcher's 300&nbsp;kg spacecraft. Its disposal burn lowers the perigee from 500 to 200&nbsp;km, so that drag brings the spacecraft down; the other entries are given:</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Table 3.1 A \(\Delta v\) budget for the 300&nbsp;kg spacecraft</caption>
+        <thead><tr><th scope="col">Maneuver</th><th scope="col">\(\Delta v\) (m/s)</th><th scope="col">Basis</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Correct the launcher's injection errors</th><td>10</td><td>given</td></tr>
+          <tr><th scope="row">Make up drag over the mission</th><td>25</td><td>given</td></tr>
+          <tr><th scope="row">Collision avoidance</th><td>5</td><td>given</td></tr>
+          <tr><th scope="row">Disposal: perigee to 200&nbsp;km</th><td>85.3</td><td>Hohmann-type burn at 500&nbsp;km</td></tr>
+          <tr><th scope="row"><strong>Total</strong></th><td><strong>125.3</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 3.5 — The spacecraft's propellant</p>
+      <p>The spacecraft's thrusters have a specific impulse of 220&nbsp;s (a typical monopropellant value), so \(c = 220(9.807) = 2157\)&nbsp;m/s. How much propellant does the budget of Table 3.1 need?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ m_p = 300\left(1 - e^{-125.3/2157}\right) = 300(0.0564) = 16.9\ \text{kg} \]
+          <p>About 6% of the spacecraft's mass is propellant for its own maneuvers. The launcher counts the full 300&nbsp;kg as payload.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A maneuver's cost is its \(\Delta v\). A Hohmann transfer uses two prograde burns on an ellipse tangent to both circles: 108&nbsp;m/s from 500 to 700&nbsp;km, 3.89&nbsp;km/s from 300&nbsp;km to GEO.</li>
+      <li>A plane change costs \(2v\sin(\Delta i/2)\): 133&nbsp;m/s per degree at 500&nbsp;km. Make it at low speed and combine it with another burn.</li>
+      <li>A phasing orbit with period \(T_0(1 - \Delta\theta/360^\circ)\) moves a spacecraft ahead along its orbit: 145&nbsp;m/s for 10° in one revolution at 500&nbsp;km.</li>
+      <li>A \(\Delta v\) budget lists every maneuver plus a margin; the rocket equation turns it into propellant.</li>
+      <li>Next, <a href="04-ascent.html">Lesson 4</a> finds the largest item of all: the \(\Delta v\) to reach orbit from the ground.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 3.1: the Hohmann transfer ---------- */
+CYL.ready(function () {
+  'use strict';
+  var R = SPACE.RE / 1e6, st = { h1: 500, h2: 700 };
+  var stage = document.getElementById('fig31-stage'), panel = document.getElementById('fig31-controls');
+  var pl = CYL2D.plane(stage, { xRange: [-8, 8], yRange: [-8, 8], grid: 'none', axes: false, maxHeight: 420, ariaLabel: 'A Hohmann transfer to scale.' });
+  pl.circle({ center: [0, 0], r: R, color: 'muted', width: 1, fill: 'muted', fillOpacity: 0.15 });
+  var c1 = pl.circle({ center: [0, 0], r: 7, color: 'z', width: 2.2 }), c2 = pl.circle({ center: [0, 0], r: 7, color: 'r', width: 2.2 });
+  var tr = pl.polyline([], { color: 'accent', width: 2.2, dashed: true });
+  var d1 = pl.line([0, 0], [0, 0], { color: 'good', width: 3, arrow: 'end' }), d2 = pl.line([0, 0], [0, 0], { color: 'good', width: 3, arrow: 'end' });
+  var l1 = pl.label([0, 0], '\\Delta v_1', { color: 'good', anchor: 'e', offset: [5, 0] }), l2 = pl.label([0, 0], '\\Delta v_2', { color: 'good', anchor: 'w', offset: [-5, 0] });
+  var sA = CYL.slider({ label: 'Initial altitude', min: 200, max: 2000, step: 10, value: st.h1, unit: ' km', color: 'z', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.h1 = v; if (st.h2 < v) { st.h2 = v; sB.set(v, true); } draw(); } });
+  var sB = CYL.slider({ label: 'Final altitude', min: 200, max: 40000, step: 10, value: st.h2, unit: ' km', color: 'r', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.h2 = Math.max(v, st.h1); if (v < st.h1) sB.set(st.h1, true); draw(); } });
+  var b1 = CYL.button('500 to 700 km', function () { st.h1 = 500; st.h2 = 700; sA.set(500, true); sB.set(700, true); draw(); }, { small: true });
+  var b2 = CYL.button('300 km to GEO', function () { st.h1 = 300; st.h2 = 35786; sA.set(300, true); sB.set(35786, true); draw(); }, { small: true });
+  var ro = { a: CYL.readout('\\(\\Delta v_1\\)', { color: 'good' }), b: CYL.readout('\\(\\Delta v_2\\)', { color: 'good' }), t: CYL.readout('Total \\(\\Delta v\\)'), f: CYL.readout('Time of flight'), r: CYL.readout('\\(r_2/r_1\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Circular orbits' }));
+  [sA.el, sB.el, CYL.el('div', { class: 'chip-row' }, [b1, b2]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.b.el, ro.t.el, ro.f.el, ro.r.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var r1 = SPACE.RE + st.h1 * 1e3, r2 = SPACE.RE + st.h2 * 1e3, h = SPACE.hohmann(r1, r2), a = h.a / 1e6, e = (r2 - r1) / (r2 + r1), R1 = r1 / 1e6, R2 = r2 / 1e6;
+    var m = R2 * 1.32 + 0.3; pl.setRange([-m, m], [-m, m]);
+    c1.set({ center: [0, 0], r: R1 }); c2.set({ center: [0, 0], r: R2 });
+    var P = []; for (var k = 0; k <= 120; k++) { var th = Math.PI * k / 120, rr = a * (1 - e * e) / (1 + e * Math.cos(th)); P.push([rr * Math.cos(th), rr * Math.sin(th)]); }
+    tr.set(P);
+    var L = 0.22 * R2, s1 = Math.max(0.25, Math.min(1, h.dv1 / Math.max(h.dv1, h.dv2))), s2 = Math.max(0.25, Math.min(1, h.dv2 / Math.max(h.dv1, h.dv2)));
+    d1.set([R1, 0], [R1, L * s1]); d2.set([-R2, 0], [-R2, -L * s2]);
+    l1.set([R1, L * s1 * 0.5], '\\Delta v_1'); l2.set([-R2, -L * s2 * 0.5], '\\Delta v_2');
+    ro.a.set(CYL.fmtFixed(h.dv1, 1) + ' m/s'); ro.b.set(CYL.fmtFixed(h.dv2, 1) + ' m/s'); ro.t.set(CYL.fmtFixed(h.dv, 1) + ' m/s');
+    ro.f.set(h.tof < 7200 ? CYL.fmtFixed(h.tof / 60, 1) + ' min' : CYL.fmtFixed(h.tof / 3600, 2) + ' h'); ro.r.set(CYL.fmtFixed(r2 / r1, 3));
+    pl.el.querySelector('svg').setAttribute('aria-label', 'Hohmann transfer from ' + st.h1 + ' to ' + st.h2 + ' km: burns of ' + h.dv1.toFixed(1) + ' and ' + h.dv2.toFixed(1) + ' m/s.');
+  }
+  draw();
+});
+
+/* ---------- Figure 3.2: plane changes ---------- */
+CYL.ready(function () {
+  'use strict';
+  var v5 = SPACE.vc(500e3), vg = SPACE.vc(35786e3), h = SPACE.hohmann(SPACE.RE + 300e3, SPACE.RE + 35786e3), st = { di: 28.5 };
+  var chart = AERO.chart(document.getElementById('fig32-stage'), {
+    x: { label: 'Plane change \\(\\Delta i\\) (°)', min: 0, max: 60 }, y: { label: '\\(\\Delta v\\) (km/s)', min: 0, max: 8 }, height: 300,
+    ariaLabel: 'Delta-v of a plane change against its angle.',
+    legend: [{ label: 'At 500 km (7.61 km/s)', color: 'z', line: true }, { label: 'At GEO (3.07 km/s)', color: 'r', line: true }, { label: 'Combined with the burn at GEO', color: 'good', line: true }]
+  });
+  chart.fn(function (d) { return SPACE.planeChange(v5, d) / 1000; }, { color: 'z', width: 2.4 });
+  chart.fn(function (d) { return SPACE.planeChange(vg, d) / 1000; }, { color: 'r', width: 2.4 });
+  chart.fn(function (d) { return SPACE.combined(h.va, vg, d) / 1000; }, { color: 'good', width: 2.4 });
+  var vl = chart.vline(st.di, { color: 'muted', dashed: true });
+  var m1 = chart.marker([0, 0], { color: 'z', r: 4, ring: false }), m2 = chart.marker([0, 0], { color: 'r', r: 4, ring: false }), m3 = chart.marker([0, 0], { color: 'good', r: 4, ring: false });
+  var panel = document.getElementById('fig32-controls');
+  var sD = CYL.slider({ label: 'Plane change \\(\\Delta i\\)', min: 0, max: 60, step: 0.5, value: st.di, unit: '°', color: 'z', format: function (v) { return CYL.fmtFixed(v, 1); }, onInput: function (v) { st.di = v; draw(); } });
+  var ro = { a: CYL.readout('At 500 km', { color: 'z' }), b: CYL.readout('At GEO', { color: 'r' }), c: CYL.readout('Combined at GEO', { color: 'good' }), s: CYL.readout('Saved by combining') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Plane change' }));
+  [sD.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.b.el, ro.c.el, ro.s.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var a = SPACE.planeChange(v5, st.di), b = SPACE.planeChange(vg, st.di), c = SPACE.combined(h.va, vg, st.di), sep = h.dv2 + b;
+    vl.set(st.di); m1.set([st.di, a / 1000]); m2.set([st.di, b / 1000]); m3.set([st.di, c / 1000]);
+    ro.a.set(CYL.fmtFixed(a, 0) + ' m/s'); ro.b.set(CYL.fmtFixed(b, 0) + ' m/s'); ro.c.set(CYL.fmtFixed(c, 0) + ' m/s'); ro.s.set(CYL.fmtFixed(sep - c, 0) + ' m/s');
+    chart.setAriaLabel('A plane change of ' + st.di + ' degrees costs ' + Math.round(a) + ' m/s at 500 km and ' + Math.round(b) + ' m/s at GEO; combined with the circularizing burn it costs ' + Math.round(c) + ' m/s in all.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var MU = 3.986e14, RE = 6378e3, r1 = RE + 400e3, r2 = RE + 800e3, at = (r1 + r2) / 2;
+  var dv = Math.sqrt(MU * (2 / r1 - 1 / at)) - Math.sqrt(MU / r1) + Math.sqrt(MU / r2) - Math.sqrt(MU * (2 / r2 - 1 / at));
+  var v7 = Math.sqrt(MU / (RE + 700e3));
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1',
+    type: 'numeric',
+    prompt: 'What is the total \\(\\Delta v\\) of a Hohmann transfer from a 400&nbsp;km to an 800&nbsp;km circular orbit?',
+    label: '\\(\\Delta v =\\)', answer: dv, unit: 'm/s', tol: 0.6,
+    hints: ['\\(r_1 = 6778\\) km, \\(r_2 = 7178\\) km and \\(a_t = 6978\\) km.', 'Each burn is a circular speed minus the transfer speed at the same radius (or the reverse).'],
+    explain: 'About 0.54 m/s per kilometer, as for the 500 to 700 km transfer.',
+    solution: '\\[ \\Delta v_1 = 7777.8 - 7668.6 = 109.1\\ \\text{m/s}, \\qquad \\Delta v_2 = 7451.9 - 7344.3 = 107.6\\ \\text{m/s} \\]\\[ \\Delta v = 216.7\\ \\text{m/s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2',
+    type: 'numeric',
+    prompt: 'What does it cost to change the plane of a 700&nbsp;km circular orbit by 2°?',
+    label: '\\(\\Delta v =\\)', answer: 2 * v7 * Math.sin(Math.PI / 180), unit: 'm/s', tol: 0.6,
+    hints: ['The circular speed at 700 km is \\(\\sqrt{\\mu/7.078\\times10^6}\\).', '\\(\\Delta v = 2v\\sin(\\Delta i/2)\\), with \\(\\Delta i/2 = 1^\\circ\\).'],
+    explain: 'Two degrees cost more than raising the orbit from 400 to 800 km.',
+    solution: '\\[ v = 7504.4\\ \\text{m/s}, \\qquad \\Delta v = 2(7504.4)\\sin 1^\\circ = 261.9\\ \\text{m/s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3',
+    type: 'mc',
+    prompt: 'A transfer to GEO from an inclined parking orbit must also remove the inclination. Where is the plane change cheapest?',
+    choices: [
+      { html: 'At the transfer orbit\'s apogee, combined with the circularizing burn', correct: true, feedback: 'Yes: the speed is lowest there (1.61 km/s), and combining the burns saves more again.' },
+      { html: 'In the parking orbit, before the transfer', feedback: 'The speed is highest there (7.7 km/s), so the plane change costs most.' },
+      { html: 'At the transfer orbit\'s perigee, combined with the first burn', feedback: 'The speed at perigee is about 10 km/s: the worst place.' },
+      { html: 'It costs the same anywhere: it only depends on the angle', feedback: 'It depends on the speed as well: \\(\\Delta v = 2v\\sin(\\Delta i/2)\\).' }
+    ],
+    explain: 'For 28.5°: 3803 m/s in low orbit, against only about 360 m/s extra when it is combined at apogee (1830 m/s instead of the 1467 m/s burn alone).'
+  });
+});
+</script>
+</body>
+</html>

@@ -15,7 +15,8 @@ WHAT IT IS
 
   The lessons have interactive figures, worked examples and questions
   with instant feedback. There is also a Practice Lab, a Self-Check Quiz,
-  a printable worksheet, the Mission Profile Builder, a formula sheet and a glossary.
+  a printable worksheet, the Mission Profile Builder, a formula sheet, a
+  glossary and a references page.
 
   Everything runs in your web browser from this folder. No internet
   connection, installation or account is needed.
@@ -76,7 +77,7 @@ FOLDER OVERVIEW
   lessons/       Lessons 1-7
   practice/      Practice Lab, Self-Check Quiz, Printable Worksheet
   tools/         Mission Profile Builder
-  reference/     Formula Sheet and Glossary
+  reference/     Formula Sheet, Glossary and References
   assets/        Styles, scripts, the aircraft data (assets/js/aero.js),
                  airports and mission profiles (assets/js/mission.js),
                  the land outlines for the route maps (world-land.js)

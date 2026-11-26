@@ -16,7 +16,8 @@ WHAT IT IS
 
   The lessons have interactive figures, worked examples and questions
   with instant feedback. There is also a Practice Lab, a Self-Check Quiz,
-  a printable worksheet, the Constraint Diagram tool, a formula sheet and a glossary.
+  a printable worksheet, the Constraint Diagram tool, a formula sheet, a
+  glossary and a references page.
 
   Everything runs in your web browser from this folder. No internet
   connection, installation or account is needed.
@@ -77,7 +78,7 @@ FOLDER OVERVIEW
   lessons/       Lessons 1-8
   practice/      Practice Lab, Self-Check Quiz, Printable Worksheet
   tools/         Constraint Diagram
-  reference/     Formula Sheet and Glossary
+  reference/     Formula Sheet, Glossary and References
   assets/        Styles, scripts, the aircraft data (assets/js/aero.js),
                  the constraint and statistics library
                  (assets/js/match.js)

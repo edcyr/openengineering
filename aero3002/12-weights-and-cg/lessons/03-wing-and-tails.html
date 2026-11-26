@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wing and Tail Weights · Component Weights and Center of Gravity</title>
+<meta name="description" content="Statistical group weight equations and how to read them, the wing weight equation term by term, the horizontal and vertical tail weights, and the business jet's wing and tails.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script src="../assets/js/weights.js"></script>
+</head>
+<body data-page="l03" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 3 · 35 min</p>
+    <h1>Wing and Tail Weights</h1>
+    <p class="lede">The statistical group weight equations are power laws fitted to the weights of real aircraft, one equation per group. Each term says how strongly one design choice drives the weight. This lesson reads them for the heaviest lifting surface, the wing, and for the tails, and works out the business jet's.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Read a power-law weight equation: units, exponents as sensitivities, and its range of validity.</li>
+      <li>Estimate a transport aircraft's wing weight and explain the effect of each term.</li>
+      <li>Estimate the horizontal and vertical tail weights, and the effect of the tail arm and of a T-tail.</li>
+    </ul>
+  </section>
+
+  <section id="reading">
+    <h2>Reading a statistical weight equation</h2>
+    <p>Lessons 3 to 5 use Raymer's statistical equations for cargo and transport aircraft <a class="cite" href="../reference/references.html#r1">[1]</a>, Section 15.3, which the open-source design codes AeroSandbox <a class="cite" href="../reference/references.html#r5">[5]</a> and SUAVE <a class="cite" href="../reference/references.html#r6">[6]</a> also implement. Each equation has the form \(W = c\,x_1^{a_1}x_2^{a_2}\cdots\), fitted to the group weights of a set of real aircraft. Three things follow:</p>
+    <ul>
+      <li>The equations are in their original units: weights in pounds, lengths in feet, areas in square feet, landing gear lengths in inches and speeds in knots. Convert the inputs, then convert the answer back to kilograms.</li>
+      <li>Each exponent is a <strong>sensitivity</strong>: a 1% change in \(x_i\) changes \(W\) by about \(a_i\)%. A term with a small exponent barely matters; a large one is where the weight is.</li>
+      <li>A fit is good only inside the range of aircraft it came from. These came from aircraft of the 1950s and 1960s <a class="cite" href="../reference/references.html#r4">[4]</a>. Lesson 6 checks the total against modern aircraft and calibrates it.</li>
+    </ul>
+  </section>
+
+  <section id="wing">
+    <h2>The wing</h2>
+    <div class="key-formula">
+      <p class="key-formula-title">Wing weight, transport aircraft (lb)</p>
+      \[ \begin{aligned} W_{\text{wing}} = 0.0051\,(W_{dg}N_z)^{0.557}\,S_w^{0.649}\,A^{0.5} \\ \times\left(t/c\right)_{\text{root}}^{-0.4}\,(1+\lambda)^{0.1}\,(\cos\Lambda)^{-1}\,S_{csw}^{0.1} \end{aligned} \]
+      <p>\(W_{dg}\), the design gross weight (lb); \(N_z\), the ultimate load factor; \(S_w\), the trapezoidal wing area (ft²); \(\Lambda\), the quarter-chord sweep; \(S_{csw}\), the area of the wing's control surfaces and flaps (ft²). Source: <a class="cite" href="../reference/references.html#r1">[1]</a>, Section 15.3.</p>
+    </div>
+    <p>Each term has a physical reading:</p>
+    <ul>
+      <li>\((W_{dg}N_z)^{0.557}\): the load the wing must carry at ultimate load. Weight follows load, but less than in proportion.</li>
+      <li>\(S_w^{0.649}\) and \(A^{0.5}\): area is skin, and aspect ratio is span, the lever arm of the bending moment.</li>
+      <li>\((t/c)^{-0.4}\): a thicker wing has deeper spars, so less material carries the same bending. Thicker is lighter.</li>
+      <li>\((\cos\Lambda)^{-1}\): a swept wing's structure runs along the sweep, so it is longer and carries more twisting.</li>
+      <li>\((1+\lambda)^{0.1}\) and \(S_{csw}^{0.1}\) matter little: taper moves the lift inboard, and control surfaces bring hinges, tracks and actuators.</li>
+    </ul>
+    <div class="example">
+      <p class="example-title">Example 3.1 — The business jet's wing</p>
+      <p>The business jet: \(W_{dg} = 15\,307\)&nbsp;lb, \(N_z = 4.882\) (Lesson 2: Module 11's gust), \(S_w = 28\)&nbsp;m² \(= 301.4\)&nbsp;ft², \(A = 8\), \(t/c = 0.12\), \(\lambda = 0.35\), \(\Lambda = 25^\circ\). Its Fowler flaps span 30% of the chord out to 67.5% of the semispan, and its ailerons 25% of the chord from 70% to 95%: \(S_{csw} = 6.48\)&nbsp;m² \(= 69.7\)&nbsp;ft². Find the wing's weight.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ (W_{dg}N_z)^{0.557} = (74\,731)^{0.557} = 518.2, \qquad S_w^{0.649} = 40.64, \qquad A^{0.5} = 2.828 \]
+          \[ (0.12)^{-0.4} = 2.334, \qquad 1.35^{0.1} = 1.031 \]
+          \[ \frac{1}{\cos 25^\circ} = 1.103, \qquad 69.7^{0.1} = 1.529 \]
+          \[ W_{\text{wing}} = 0.0051(518.2)(40.64)(2.828)(2.334)(1.031)(1.103)(1.529) = 1233\ \text{lb} \]
+          <p>That is 559&nbsp;kg, 8.1% of \(\Wo\), or 23.6&nbsp;kg per square meter of exposed wing: less than half the transport value of Lesson 1. The general-aviation wing equation <a class="cite" href="../reference/references.html#r1">[1]</a>, <a class="cite" href="../reference/references.html#r2">[2]</a>, a different fit with the cruise dynamic pressure and the wing's fuel as inputs, gives 556&nbsp;kg.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig31-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig31-stage"></div>
+        <div class="viz-controls" id="fig31-controls"></div>
+      </div>
+      <figcaption id="fig31-cap"><strong>Figure 3.1</strong> The business jet's wing weight as one design variable changes and the rest stay fixed, from the transport equation (solid) and the general-aviation equation (dashed). The marker is the business jet; the readout gives the local sensitivity, the percentage change in weight per percent change in the variable.</figcaption>
+    </figure>
+  </section>
+
+  <section id="tails">
+    <h2>The tails</h2>
+    <div class="key-formula">
+      <p class="key-formula-title">Horizontal and vertical tail weights, transport aircraft (lb)</p>
+      \[ \begin{aligned} W_{\text{ht}} = 0.0379\,K_{uht}\left(1 + \frac{F_w}{B_h}\right)^{-0.25}W_{dg}^{0.639}N_z^{0.10}S_{ht}^{0.75} \\ \times L_t^{-1}K_y^{0.704}(\cos\Lambda_{ht})^{-1}A_h^{0.166}\left(1 + \frac{S_e}{S_{ht}}\right)^{0.1} \end{aligned} \]
+      \[ \begin{aligned} W_{\text{vt}} = 0.0026\left(1 + \frac{H_t}{H_v}\right)^{0.225}W_{dg}^{0.556}N_z^{0.536}L_t^{-0.5}S_{vt}^{0.5} \\ \times K_z^{0.875}(\cos\Lambda_{vt})^{-1}A_v^{0.35}\left(t/c\right)_{\text{root}}^{-0.5} \end{aligned} \]
+      <p>\(K_{uht}\) is 1.143 for an all-moving tail, otherwise 1; \(F_w\), the fuselage's width where the horizontal tail meets it; \(B_h\), the horizontal tail's span; \(L_t\), the tail arm (ft); \(K_y \approx 0.3L_t\) and \(K_z \approx L_t\), the radii of gyration in pitch and yaw; \(S_e\), the elevator's area; \(H_t/H_v\), the height of the horizontal tail on the fin as a share of the fin's height: 0 on the fuselage, 1 for a T-tail. Source: <a class="cite" href="../reference/references.html#r1">[1]</a>, Section 15.3.</p>
+    </div>
+    <p>A longer tail arm \(L_t\) lightens both tails twice over: the equations fall with it, and a longer arm needs less tail area for the same volume coefficient (Module 4). A T-tail puts the horizontal tail's loads on top of the fin, whose structure must carry them down: \(2^{0.225} = 1.169\), 17% more fin.</p>
+    <div class="example">
+      <p class="example-title">Example 3.2 — The business jet's tails</p>
+      <p>The business jet's horizontal tail (Module 6): \(S_{ht} = 5.42\)&nbsp;m² (58.4&nbsp;ft²), \(A_h = 4\), \(\Lambda_{ht} = 30^\circ\), span 4.66&nbsp;m, on the tail cone where the fuselage is 0.48&nbsp;m wide, elevator 30% of its area. The fin: \(S_{vt} = 3.45\)&nbsp;m² (37.2&nbsp;ft²), \(A_v = 1.5\), \(\Lambda_{vt} = 35^\circ\), \(t/c = 0.10\). Both arms are 7.285&nbsp;m (23.9&nbsp;ft). Find their weights.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>With \(K_y = 0.3(23.9) = 7.17\)&nbsp;ft and \(K_z = 23.9\)&nbsp;ft:</p>
+          \[ \begin{aligned} W_{\text{ht}} &= 0.0379(0.976)(472.2)(1.172)(21.12) \\ &\quad\times\frac{4.002}{23.90}(1.155)(1.259)(1.027) = 108.0\ \text{lb} \end{aligned} \]
+          \[ \begin{aligned} W_{\text{vt}} &= 0.0026(212.2)(2.339)(0.2046)(6.095) \\ &\quad\times(16.07)(1.221)(1.152)(3.162) = 115.1\ \text{lb} \end{aligned} \]
+          <p>That is 49.0 and 52.2&nbsp;kg: together 1.5% of \(\Wo\). The fin weighs more than the larger horizontal tail, mostly through its long yaw radius of gyration and its thin section.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig32-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig32-stage"></div>
+        <div class="viz-controls" id="fig32-controls"></div>
+      </div>
+      <figcaption id="fig32-cap"><strong>Figure 3.2</strong> The business jet's tail weights against the tail arm, with the tail areas resized to keep Module 6's volume coefficients (0.70 and 0.06). Switch to a T-tail to see the fin's penalty.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Statistical weight equations are power laws in pounds and feet; each exponent is the percentage change in weight per percent change in its variable.</li>
+      <li>Wing weight grows with the ultimate load (\(0.557\)), the area (\(0.649\)), the span (\(A^{0.5}\)) and the sweep, and falls with thickness (\(-0.4\)).</li>
+      <li>The business jet's wing weighs 559&nbsp;kg (8.1% of \(\Wo\)); its tails 49.0 and 52.2&nbsp;kg.</li>
+      <li>Longer tail arms lighten the tails twice over; a T-tail makes the fin 17% heavier.</li>
+      <li>Next, <a href="04-fuselage-and-gear.html">Lesson 4</a> estimates the fuselage and the landing gear.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 3.1: wing weight against one variable ---------- */
+CYL.ready(function () {
+  'use strict';
+  var sp = WEIGHTS.preset('bizjet'), P0 = WEIGHTS.inputs(sp).wing, Q = 0.7 * 19399.4 * 0.64, FUEL = sp.ff * sp.W0;
+  var VARS = {
+    A: { label: 'Aspect ratio \\(A\\)', min: 4, max: 14, step: 0.1, v: 8, dec: 1, unit: '' },
+    tc: { label: 'Thickness \\(t/c\\)', min: 0.08, max: 0.20, step: 0.001, v: 0.12, dec: 3, unit: '' },
+    sweep: { label: 'Sweep \\(\\Lambda\\)', min: 0, max: 45, step: 0.5, v: 25, dec: 1, unit: '°' },
+    S: { label: 'Wing area \\(S_w\\)', min: 15, max: 50, step: 0.1, v: 28, dec: 1, unit: ' m²' },
+    Nz: { label: 'Ultimate load factor \\(N_z\\)', min: 2.5, max: 9, step: 0.01, v: P0.Nz, dec: 2, unit: '' }
+  };
+  var st = { k: 'A', v: 8 };
+  function trans(k, v) { var p = Object.assign({}, P0); p[k] = v; if (k === 'S') p.Scsw = P0.Scsw * v / P0.S; return WEIGHTS.eq.wing(p); }
+  function ga(k, v) { var p = { S: P0.S, Wfw: FUEL, A: P0.A, sweep: P0.sweep, q: Q, lam: P0.lam, tc: P0.tc, Nz: P0.Nz, Wdg: P0.Wdg }; p[k] = v; return WEIGHTS.ga.wing(p); }
+  var chart = AERO.chart(document.getElementById('fig31-stage'), {
+    x: { label: VARS.A.label, min: 4, max: 14 }, y: { label: 'Wing weight (kg)', min: 0, max: 1200 }, height: 300,
+    ariaLabel: 'Wing weight against aspect ratio.',
+    legend: [{ label: 'Transport equation', color: 'z', line: true }, { label: 'General-aviation equation', color: 'muted', line: true, dashed: true }]
+  });
+  var fT = chart.fn(function (x) { return trans(st.k, x); }, { color: 'z', width: 2.8 });
+  var fG = chart.fn(function (x) { return ga(st.k, x); }, { color: 'muted', width: 2, dashed: true });
+  var base = chart.marker([8, trans('A', 8)], { color: 'r', r: 5, ring: true }), mk = chart.marker([8, trans('A', 8)], { color: 'z', r: 6 });
+  var panel = document.getElementById('fig31-controls');
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Variable' }), chips = {};
+  [['A', 'Aspect ratio'], ['tc', 'Thickness'], ['sweep', 'Sweep'], ['S', 'Area'], ['Nz', 'Load factor']].forEach(function (q) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q[1] });
+    b.addEventListener('click', function () { setVar(q[0]); }); chips[q[0]] = b; row.appendChild(b);
+  });
+  var holder = CYL.el('div'), slider = null;
+  var ro = { w: CYL.readout('Wing weight: transport, general aviation'), s: CYL.readout('Sensitivity, % per %') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Vary' })); panel.appendChild(row); panel.appendChild(holder);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.w.el, ro.s.el]));
+  CYL.renderMath(panel);
+  function setVar(k) {
+    st.k = k; var V = VARS[k]; st.v = V.v;
+    Object.keys(chips).forEach(function (c) { chips[c].setAttribute('aria-pressed', String(c === k)); });
+    holder.innerHTML = '';
+    slider = CYL.slider({ label: V.label, min: V.min, max: V.max, step: V.step, value: V.v, unit: V.unit, color: 'z', format: function (v) { return CYL.fmtFixed(v, V.dec); }, onInput: function (v) { st.v = v; draw(); } });
+    holder.appendChild(slider.el); CYL.renderMath(holder);
+    var top = 0; for (var i = 0; i <= 40; i++) { var x = V.min + (V.max - V.min) * i / 40; top = Math.max(top, trans(k, x), ga(k, x)); }
+    chart.setAxes({ x: { label: V.label, min: V.min, max: V.max }, y: { label: 'Wing weight (kg)', min: 0, max: Math.ceil(top * 1.1 / 100) * 100 } });
+    fT.draw && fT.draw(); base.set([V.v, trans(k, V.v)]);
+    draw();
+  }
+  function draw() {
+    var w = trans(st.k, st.v), g = ga(st.k, st.v), h = st.v * 1e-4, s = (Math.log(trans(st.k, st.v + h)) - Math.log(trans(st.k, st.v - h))) / (Math.log(st.v + h) - Math.log(st.v - h));
+    mk.set([st.v, w]);
+    ro.w.set(CYL.fmtFixed(w, 0) + ' kg, ' + CYL.fmtFixed(g, 0) + ' kg'); ro.s.set(CYL.fmtFixed(s, 3));
+    chart.setAriaLabel('Wing weight ' + w.toFixed(0) + ' kg at ' + VARS[st.k].label.replace(/\\\(|\\\)|\\/g, '') + ' ' + st.v + '.');
+  }
+  setVar('A');
+});
+
+/* ---------- Figure 3.2: tail weights against the tail arm ---------- */
+CYL.ready(function () {
+  'use strict';
+  var sp = WEIGHTS.preset('bizjet'), P = WEIGHTS.inputs(sp), H0 = P.ht, V0 = P.vt, L0 = H0.Lt, st = { L: L0, tee: false };
+  function tails(L, tee) {
+    var h = Object.assign({}, H0), v = Object.assign({}, V0), r = L0 / L;
+    h.Lt = L; h.Ky = 0.3 * L; h.Sht = H0.Sht * r; h.Bh = H0.Bh * Math.sqrt(r); h.Se = 0.30 * h.Sht; h.Fw = tee ? 0 : H0.Fw;
+    v.Lt = L; v.Kz = L; v.Svt = V0.Svt * r; v.HtHv = tee ? 1 : 0;
+    return { h: WEIGHTS.eq.ht(h), v: WEIGHTS.eq.vt(v), Sh: h.Sht, Sv: v.Svt };
+  }
+  var chart = AERO.chart(document.getElementById('fig32-stage'), {
+    x: { label: 'Tail arm \\(L_t\\) (m)', min: 4, max: 11 }, y: { label: 'Weight (kg)', min: 0, max: 250 }, height: 300,
+    ariaLabel: 'Tail weights against tail arm.',
+    legend: [{ label: 'Both tails', color: 'ink', line: true }, { label: 'Horizontal', color: 'z', line: true }, { label: 'Vertical', color: 't', line: true }]
+  });
+  var fS = chart.fn(function (L) { var t = tails(L, st.tee); return t.h + t.v; }, { color: 'ink', width: 2.6 });
+  var fH = chart.fn(function (L) { return tails(L, st.tee).h; }, { color: 'z', width: 2.2 });
+  var fV = chart.fn(function (L) { return tails(L, st.tee).v; }, { color: 't', width: 2.2 });
+  var vl = chart.vline(L0, { color: 'muted', dashed: true }), mk = chart.marker([L0, 0], { color: 'ink', r: 6 });
+  var panel = document.getElementById('fig32-controls');
+  var sL = CYL.slider({ label: 'Tail arm \\(L_t\\)', min: 4, max: 11, step: 0.01, value: L0, unit: ' m', color: 'z', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.L = v; draw(); } });
+  var tee = CYL.toggle ? CYL.toggle({ label: 'T-tail', value: false, onChange: function (v) { st.tee = v; fS.draw(); fH.draw(); fV.draw(); draw(); } }) : null;
+  var ro = { a: CYL.readout('Areas \\(S_{ht}\\), \\(S_{vt}\\)'), w: CYL.readout('Horizontal, vertical'), t: CYL.readout('Both tails') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Tail' }));
+  [sL.el, tee ? CYL.el('div', { class: 'chip-row' }, [tee.el]) : null, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.a.el, ro.w.el, ro.t.el])].forEach(function (e) { if (e) panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var t = tails(st.L, st.tee);
+    vl.set(st.L); mk.set([st.L, t.h + t.v]);
+    ro.a.set(CYL.fmtFixed(t.Sh, 2) + ', ' + CYL.fmtFixed(t.Sv, 2) + ' m²'); ro.w.set(CYL.fmtFixed(t.h, 1) + ', ' + CYL.fmtFixed(t.v, 1) + ' kg'); ro.t.set(CYL.fmtFixed(t.h + t.v, 1) + ' kg');
+    chart.setAriaLabel('At a tail arm of ' + st.L.toFixed(2) + ' m the tails weigh ' + (t.h + t.v).toFixed(1) + ' kg' + (st.tee ? ' as a T-tail.' : '.'));
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l03-q1',
+    type: 'numeric',
+    prompt: 'By what percentage does the wing weight equation say a wing gets heavier if its aspect ratio goes from 8 to 10, everything else fixed?',
+    label: 'Increase =', answer: 100 * (Math.sqrt(10 / 8) - 1), unit: '%',
+    hints: ['Only the \\(A^{0.5}\\) term changes.', 'The ratio of weights is \\((10/8)^{0.5}\\).'],
+    explain: 'More span is a longer lever arm for the bending moment.',
+    solution: '\\[ \\left(\\frac{10}{8}\\right)^{0.5} = 1.118 \\quad \\Rightarrow \\quad +11.8\\% \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l03-q2',
+    type: 'numeric',
+    prompt: 'A fin weighs 120&nbsp;kg on a conventional tail. Everything else fixed, what does it weigh if the horizontal tail moves to its top, as a T-tail?',
+    label: '\\(W_{\\text{vt}} =\\)', answer: 120 * Math.pow(2, 0.225), unit: 'kg',
+    hints: ['The term is \\((1 + H_t/H_v)^{0.225}\\).', 'For a T-tail \\(H_t/H_v = 1\\).'],
+    explain: 'The fin must carry the horizontal tail\'s loads down to the fuselage.',
+    solution: '\\[ 120(2)^{0.225} = 120(1.169) = 140.3\\ \\text{kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l03-q3',
+    type: 'mc',
+    prompt: 'Why does the wing weight fall as the thickness ratio rises?',
+    choices: [
+      { html: 'Deeper spars carry the same bending moment with less material', correct: true, feedback: 'Yes: the spar caps\' force is the moment divided by the depth.' },
+      { html: 'A thicker wing has less skin', feedback: 'The skin area barely changes with thickness.' },
+      { html: 'A thicker wing makes less lift', feedback: 'Lift is set by the weight; thickness changes how the structure carries it.' },
+      { html: 'Thick wings are always made of composites', feedback: 'Material is a separate factor (Lesson 6).' }
+    ],
+    explain: 'The exponent is \\(-0.4\\): 10% thicker, about 4% lighter, before the drag penalty of Module 10.'
+  });
+});
+</script>
+</body>
+</html>

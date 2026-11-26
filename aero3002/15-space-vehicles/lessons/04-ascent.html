@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting to Orbit · Space Vehicles</title>
+<meta name="description" content="The delta-v a launcher needs to reach orbit: the orbital speed, the gravity, drag and steering losses of the ascent, a gravity-turn simulation of the first stage, the help or hindrance of Earth's rotation, the launch azimuth, and the small launcher's budget of 9.2 km/s.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/space.js"></script>
+<style>
+  .bar-track .bar-fill.neg { background-image: repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--bg) 45%, transparent) 5px 9px); }
+</style>
+</head>
+<body data-page="l04" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 4 · 35 min</p>
+    <h1>Getting to Orbit</h1>
+    <p class="lede">The largest item in any \(\Delta v\) budget is the first: getting from the launch pad into orbit. The launcher must supply the orbital speed, and on the way it pays for climbing against gravity, pushing through the air and steering. Earth's rotation then helps or hinders, depending on the direction of the launch. This lesson adds these up into the \(\Delta v\) the small launcher's stages must deliver, the number Lesson 5 sizes them for.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Write the ascent \(\Delta v\) budget as the orbital speed plus the gravity, drag and steering losses, corrected for Earth's rotation.</li>
+      <li>Explain where the gravity and drag losses come from, and how the thrust-to-weight ratio trades one against the other.</li>
+      <li>Compute the site's rotational speed, the launch azimuth for an inclination, and the rotation's gain or penalty.</li>
+      <li>Build the small launcher's ascent budget.</li>
+    </ul>
+  </section>
+
+  <section id="budget">
+    <h2>The ascent budget</h2>
+    <p>A launcher starts at rest on Earth's surface and must end with the orbit's speed at its altitude. The thrust it delivers must also make up for the losses along the way:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The ascent \(\Delta v\) budget</p>
+      \[ \Delta v = v_{\text{orbit, rel}} + \Delta v_{\text{gravity}} + \Delta v_{\text{drag}} + \Delta v_{\text{steering}} \]
+      <p>\(v_{\text{orbit, rel}}\) is the orbit's speed relative to the rotating launch site (below). The losses are integrals over the ascent, and they depend on how the vehicle flies.</p>
+    </div>
+    <p>The launcher's engines deliver \(\int (T/m)\,dt\), the ideal \(\Delta v\) of the rocket equation. Along the flight path the equation of motion is</p>
+    \[ \frac{dv}{dt} = \frac{T}{m} - \frac{D}{m} - g\sin\gamma \]
+    <p>with \(\gamma\) the flight-path angle above the horizontal. Integrated over the ascent, the speed gained is the thrust's contribution less the <strong>gravity loss</strong> \(\int g\sin\gamma\,dt\) and the <strong>drag loss</strong> \(\int (D/m)\,dt\). The <strong>steering loss</strong> is the thrust not spent along the velocity, when the vehicle points away from its flight path to shape its trajectory. Typical values for launchers to low orbit are gravity losses of 1.0 to 1.5&nbsp;km/s, drag losses of 0.05 to 0.2&nbsp;km/s (more for a small vehicle) and steering losses of 0.05 to 0.2&nbsp;km/s. Treat them as first estimates, to be replaced by a trajectory simulation.</p>
+  </section>
+
+  <section id="gravity">
+    <h2>Gravity and drag losses</h2>
+    <p>The gravity loss is the price of time spent climbing: each second the vehicle points upward, gravity takes \(g\sin\gamma\) out of its speed. A vehicle with more thrust for its weight climbs out sooner, so its gravity loss is smaller. But it reaches high speed in thicker air, so its drag loss, its dynamic pressure and its accelerations are larger, and its engines are heavier (Lessons 6 and 7). A first stage typically lifts off with a thrust-to-weight ratio of 1.2 to 1.5.</p>
+    <p>Launchers fly a <strong>gravity turn</strong>. They rise vertically for a few seconds, tilt by a small <strong>pitch kick</strong>, and then keep their thrust along their velocity. Gravity bends the path over toward the horizontal, with no lift and no angle of attack, which keeps the aerodynamic loads small. Figure 4.1 simulates the small launcher's first stage this way, as a point mass over a round, non-rotating Earth. The simulation uses the 1976 standard atmosphere and a typical drag curve for a slender rocket, so its losses are estimates. The figure finds the pitch kick that gives a chosen flight-path angle at burnout.</p>
+    <figure class="figure wide" aria-labelledby="fig41-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig41-stage"></div>
+        <div class="viz-controls" id="fig41-controls"></div>
+      </div>
+      <figcaption id="fig41-cap"><strong>Figure 4.1</strong> The small launcher's first stage in a gravity turn: altitude against distance downrange, from liftoff to burnout (12&nbsp;572&nbsp;kg at liftoff, 9710&nbsp;kg of propellant, specific impulse 283&nbsp;s at sea level and 315&nbsp;s in vacuum, 1.2&nbsp;m diameter). Change the liftoff thrust-to-weight ratio and the flight-path angle wanted at burnout; the losses trade against each other.</figcaption>
+    </figure>
+    <p>At its design point (liftoff \(T/W = 1.30\), burnout at 23° above the horizontal), the first stage loses 1228&nbsp;m/s to gravity and 100&nbsp;m/s to drag. A third loss, 90&nbsp;m/s, comes from the atmosphere's back pressure on the nozzle exits, which keeps the engines below their vacuum thrust (Lesson 6). The engines' ideal \(\Delta v\) of 4572&nbsp;m/s leaves a burnout speed of 3153&nbsp;m/s at 83&nbsp;km. Lesson 5 counts the back-pressure loss by using an average specific impulse of 300&nbsp;s for the stage rather than its vacuum value. The second stage, flying nearly horizontally above the air, adds little gravity or drag loss.</p>
+  </section>
+
+  <section id="rotation">
+    <h2>Earth's rotation</h2>
+    <p>The launch site moves eastward with Earth's rotation, at \(v_E = \omega_E R_E\cos\phi\) at latitude \(\phi\): 465&nbsp;m/s at the equator, with \(\omega_E = 7.2921\times10^{-5}\)&nbsp;rad/s (one turn per sidereal day). A launch toward the east starts with that speed; a launch toward the west must first cancel it. The direction of the launch, its <strong>azimuth</strong> \(A_z\) measured from north, is set by the orbit's inclination. For a launch directly into the orbit from latitude \(\phi\),</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Launch azimuth and the speed relative to the site</p>
+      \[ \sin A_z = \frac{\cos i}{\cos\phi}, \qquad v_{\text{rel}} = \sqrt{v^2 - 2vv_E\sin A_z + v_E^2} \]
+      <p>\(v\) is the orbit's speed (inertial) and \(v_{\text{rel}}\) the speed the launcher must reach relative to the site. A launch can reach an inclination directly only if \(i \ge \phi\) (for prograde orbits), which is why a site's latitude is the lowest inclination it can reach without a plane change.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.1 — The small launcher's sun-synchronous launch from 45° N</p>
+      <p>Find the launch azimuth and the effect of Earth's rotation for the 500&nbsp;km sun-synchronous orbit (\(i = 97.40^\circ\), \(v = 7612.7\)&nbsp;m/s) from 45°&nbsp;N.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ v_E = 465.1\cos 45^\circ = 328.9\ \text{m/s} \]
+          \[ \sin A_z = \frac{\cos 97.40^\circ}{\cos 45^\circ} = \frac{-0.12882}{0.70711} = -0.18218 \]
+          <p>\(A_z = 190.5^\circ\), toward the south and slightly west (or 349.5°, slightly west of north).</p>
+          \[ v_{\text{rel}} = \sqrt{7612.7^2 + 2(7612.7)(328.9)(0.18218) + 328.9^2} = 7679.4\ \text{m/s} \]
+          <p>Earth's rotation costs this launch 66.7&nbsp;m/s. Its eastward speed must be cancelled because the orbit runs slightly westward. The simple estimate \(-v_E\sin A_z = 59.9\)&nbsp;m/s is close.</p>
+        </div>
+      </details>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 4.2 — Due east from 28.5°</p>
+      <p>A launcher at 28.5° latitude flies due east into a 200&nbsp;km orbit inclined at 28.5° (\(v = 7784.3\)&nbsp;m/s). What does Earth's rotation give it?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \sin A_z = \frac{\cos 28.5^\circ}{\cos 28.5^\circ} = 1, \quad A_z = 90^\circ \]
+          \[ v_E = 465.1\cos 28.5^\circ = 408.7\ \text{m/s} \]
+          \[ v_{\text{rel}} = v - v_E = 7784.3 - 408.7 = 7375.6\ \text{m/s} \]
+          <p>A gain of 409&nbsp;m/s, 5% of the orbital speed. That is why launch sites for low-inclination orbits are near the equator and face east over the sea.</p>
+        </div>
+      </details>
+    </div>
+    <p>The launch azimuth also has to be safe. A launch must not fly over populated land in its first minutes, when a failure would drop the vehicle near the site (Lesson 8). A site that cannot fly the azimuth an orbit needs must launch on a safe azimuth and then turn the plane during the ascent, a <strong>dogleg</strong>, which costs \(\Delta v\) like the plane changes of Lesson 3.</p>
+  </section>
+
+  <section id="total">
+    <h2>The small launcher's budget</h2>
+    <div class="example">
+      <p class="example-title">Example 4.3 — The \(\Delta v\) the stages must deliver</p>
+      <p>Take a gravity loss of 1300&nbsp;m/s (the first stage's 1228&nbsp;m/s plus the second stage's), a drag loss of 120&nbsp;m/s and a steering loss of 100&nbsp;m/s, in line with Figure 4.1 and the typical ranges. Add the speed relative to the site from Example 4.1.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \Delta v = 7679.4 + 1300 + 120 + 100 = 9199\ \text{m/s} \]
+          <p>About 9.20&nbsp;km/s: the orbital speed of 7613&nbsp;m/s, 67&nbsp;m/s for the westward orbit, and 1520&nbsp;m/s of losses (17% of the total). This is the design \(\Delta v\) of Lesson 5's staging.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig42-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig42-stage"></div>
+        <div class="viz-controls" id="fig42-controls"></div>
+      </div>
+      <figcaption id="fig42-cap"><strong>Figure 4.2</strong> The ascent \(\Delta v\) budget, item by item. Choose the orbit's altitude and inclination and the site's latitude; Earth's rotation is a penalty for retrograde orbits and a gain (hatched) for prograde ones. The losses are held at those of Example 4.3.</figcaption>
+    </figure>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>The ascent \(\Delta v\) is the orbit's speed relative to the site plus the gravity, drag and steering losses: 9.20&nbsp;km/s for the small launcher, 17% of it losses.</li>
+      <li>The gravity loss \(\int g\sin\gamma\,dt\) falls with the thrust-to-weight ratio; the drag loss, the dynamic pressure and the accelerations rise with it.</li>
+      <li>A gravity turn keeps the thrust along the velocity after a small pitch kick; the small launcher's first stage burns out at 83&nbsp;km and 3153&nbsp;m/s.</li>
+      <li>Earth's rotation gives \(\omega_ER_E\cos\phi\) eastward. With \(\sin A_z = \cos i/\cos\phi\), it gains 409&nbsp;m/s due east from 28.5° and costs 67&nbsp;m/s for the sun-synchronous orbit from 45°.</li>
+      <li>Next, <a href="05-staging.html">Lesson 5</a> turns 9.20&nbsp;km/s into stages with the rocket equation.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 4.1: the first stage's gravity turn ---------- */
+CYL.ready(function () {
+  'use strict';
+  var d = SPACE.design(SPACE.preset('small')), s1 = d.stages[0], st = { tw: 1.30, gam: 23.1 };
+  var base = { m0: s1.m0, mp: s1.mp, ispSL: 283, ispVac: 315, d: 1.2 };
+  var chart = AERO.chart(document.getElementById('fig41-stage'), {
+    x: { label: 'Downrange (km)', min: 0, max: 160 }, y: { label: 'Altitude (km)', min: 0, max: 130 }, height: 320,
+    ariaLabel: 'The first stage\'s trajectory.',
+    legend: [{ label: 'This ascent', color: 'accent', line: true }, { label: 'Design point (T/W 1.30, 23°)', color: 'muted', line: true, dashed: true }]
+  });
+  var ref = SPACE.kickFor(Object.assign({ tw: 1.3 }, base), 23.1).run;
+  chart.polyline(ref.track.map(function (p) { return [p.x / 1000, p.h / 1000]; }), { color: 'muted', width: 1.6, dashed: true });
+  var path = chart.polyline([], { color: 'accent', width: 2.6 }), qm = chart.marker([0, 0], { color: 'r', r: 4, ring: false }), bo = chart.marker([0, 0], { color: 'accent', r: 5 });
+  var tq = chart.text([0, 0], 'max-q', { color: 'r', dx: 6, dy: 4 });
+  var panel = document.getElementById('fig41-controls');
+  var timer = null;
+  function later() { clearTimeout(timer); timer = setTimeout(draw, 60); }
+  var sT = CYL.slider({ label: 'Liftoff thrust-to-weight', min: 1.2, max: 1.8, step: 0.01, value: st.tw, color: 'good', format: function (v) { return CYL.fmtFixed(v, 2); }, onInput: function (v) { st.tw = v; later(); } });
+  var sG = CYL.slider({ label: 'Flight-path angle at burnout', min: 12, max: 40, step: 0.1, value: st.gam, unit: '°', color: 'z', format: function (v) { return CYL.fmtFixed(v, 1); }, onInput: function (v) { st.gam = v; later(); } });
+  var reset = CYL.button('Design point', function () { st.tw = 1.3; st.gam = 23.1; sT.set(1.3, true); sG.set(23.1, true); draw(); }, { small: true });
+  var ro = { k: CYL.readout('Pitch kick (at 15 s)'), h: CYL.readout('Burnout altitude'), v: CYL.readout('Burnout speed'), g: CYL.readout('Gravity loss', { color: 'warn' }), dl: CYL.readout('Drag loss', { color: 'r' }), p: CYL.readout('Back-pressure loss'), q: CYL.readout('Max dynamic pressure') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'First stage' }));
+  [sT.el, sG.el, CYL.el('div', { class: 'chip-row' }, [reset]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.k.el, ro.h.el, ro.v.el, ro.g.el, ro.dl.el, ro.p.el, ro.q.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var q = SPACE.kickFor(Object.assign({ tw: st.tw }, base), st.gam), r = q.run, Q = r.qmax;
+    path.set(r.track.map(function (p) { return [p.x / 1000, p.h / 1000]; }));
+    var qi = r.track.reduce(function (b, p) { return p.q > b.q ? p : b; }, r.track[0]);
+    qm.set([qi.x / 1000, qi.h / 1000]); tq.set([qi.x / 1000, qi.h / 1000]); bo.set([r.bo.x / 1000, r.bo.h / 1000]);
+    ro.k.set(CYL.fmtFixed(q.kick, 2) + '°'); ro.h.set(CYL.fmtFixed(r.bo.h / 1000, 1) + ' km'); ro.v.set(CYL.fmtFixed(r.bo.v, 0) + ' m/s');
+    ro.g.set(CYL.fmtFixed(r.gl, 0) + ' m/s'); ro.dl.set(CYL.fmtFixed(r.dl, 0) + ' m/s'); ro.p.set(CYL.fmtFixed(r.pl, 0) + ' m/s'); ro.q.set(CYL.fmtFixed(Q.q / 1000, 1) + ' kPa');
+    chart.setAriaLabel('With a liftoff thrust-to-weight ratio of ' + st.tw.toFixed(2) + ' and burnout at ' + st.gam.toFixed(1) + ' degrees, the first stage burns out at ' + (r.bo.h / 1000).toFixed(1) + ' km and ' + Math.round(r.bo.v) + ' m/s, with a gravity loss of ' + Math.round(r.gl) + ' m/s and a drag loss of ' + Math.round(r.dl) + ' m/s.');
+  }
+  draw();
+});
+
+/* ---------- Figure 4.2: the ascent budget ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { h: 500, sso: true, inc: 97.4, lat: 45 }, MAX = 10200;
+  var stage = document.getElementById('fig42-stage'), panel = document.getElementById('fig42-controls');
+  var ITEMS = [['v', 'Orbital speed', 'bar-z'], ['rot', 'Earth\'s rotation', 'bar-r'], ['gl', 'Gravity loss', 'bar-warn'], ['dl', 'Drag loss', 'bar-r'], ['sl', 'Steering loss', 'bar-v'], ['total', 'Total \u0394v', 'bar-good']];
+  var bars = CYL.el('div', { class: 'bars', role: 'img', 'aria-label': 'The ascent delta-v budget.' }), rows = {};
+  ITEMS.forEach(function (it) {
+    var f = CYL.el('div', { class: 'bar-fill ' + it[2] }), v = CYL.el('span', { class: 'bar-value' });
+    bars.appendChild(CYL.el('div', { class: 'bar-row' }, [CYL.el('span', { class: 'bar-label', html: it[0] === 'total' ? '<strong>' + it[1] + '</strong>' : it[1] }), CYL.el('div', { class: 'bar-track' }, [f, v])]));
+    rows[it[0]] = { f: f, v: v };
+  });
+  stage.appendChild(bars);
+  var msg = CYL.el('p', { class: 'fig-note', 'aria-live': 'polite' });
+  stage.appendChild(msg);
+  function place(v, frac) { if (frac > 0.55) { v.style.left = 'auto'; v.style.right = 'calc(' + (100 - 100 * frac) + '% + 8px)'; } else { v.style.right = 'auto'; v.style.left = 'calc(' + (100 * frac) + '% + 8px)'; } }
+  var sH = CYL.slider({ label: 'Orbit altitude', min: 200, max: 1000, step: 10, value: st.h, unit: ' km', color: 'z', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.h = v; draw(); } });
+  var sI = CYL.slider({ label: 'Inclination', min: 0, max: 110, step: 0.1, value: st.inc, unit: '°', color: 'r', format: function (v) { return CYL.fmtFixed(v, 1); }, onInput: function (v) { st.inc = v; st.sso = false; draw(); } });
+  var sL = CYL.slider({ label: 'Site latitude', min: 0, max: 65, step: 0.1, value: st.lat, unit: '°', color: 'v', format: function (v) { return CYL.fmtFixed(v, 1); }, onInput: function (v) { st.lat = v; draw(); } });
+  function preset(h, inc, lat, sso) { st.h = h; st.inc = inc; st.lat = lat; st.sso = !!sso; sH.set(h, true); sL.set(lat, true); draw(); }
+  var b1 = CYL.button('The small launcher', function () { preset(500, 97.4, 45, true); }, { small: true });
+  var b2 = CYL.button('Due east from 28.5°', function () { preset(200, 28.5, 28.5); }, { small: true });
+  var b3 = CYL.button('Equatorial from 5.2°', function () { preset(200, 5.2, 5.2); }, { small: true });
+  var b4 = CYL.button('Sun-synchronous at this altitude', function () { st.sso = true; draw(); }, { small: true });
+  var ro = { i: CYL.readout('Inclination'), az: CYL.readout('Launch azimuth'), vE: CYL.readout('Site speed \\(v_E\\)'), t: CYL.readout('Total \\(\\Delta v\\)') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Orbit and site' }));
+  [sH.el, sI.el, sL.el, CYL.el('div', { class: 'chip-row' }, [b1, b2, b3, b4]), CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.i.el, ro.az.el, ro.vE.el, ro.t.el])].forEach(function (e) { panel.appendChild(e); });
+  CYL.renderMath(panel);
+  function draw() {
+    var inc = st.sso ? SPACE.ssoInc(st.h * 1e3) : st.inc;
+    if (st.sso) sI.set(Math.round(inc * 10) / 10, true);
+    var b = SPACE.budget({ h: st.h * 1e3, inc: inc, lat: st.lat });
+    if (!isFinite(b.total)) {
+      ITEMS.forEach(function (it) { rows[it[0]].f.style.width = '0'; rows[it[0]].v.textContent = '—'; place(rows[it[0]].v, 0); });
+      msg.textContent = 'An inclination of ' + inc.toFixed(1) + '° cannot be reached directly from ' + st.lat.toFixed(1) + '°: it must be at least the latitude.';
+      ro.i.set(CYL.fmtFixed(inc, 1) + '°'); ro.az.set('—'); ro.vE.set(CYL.fmtFixed(SPACE.siteSpeed(st.lat), 1) + ' m/s'); ro.t.set('—');
+      return;
+    }
+    msg.textContent = '';
+    var vals = { v: b.v, rot: b.rot, gl: b.gl, dl: b.dl, sl: b.sl, total: b.total };
+    ITEMS.forEach(function (it) {
+      var x = vals[it[0]], R = rows[it[0]], fr = Math.abs(x) / MAX;
+      R.f.style.width = (100 * fr) + '%';
+      R.f.className = 'bar-fill ' + (it[0] === 'rot' ? (x < 0 ? 'bar-good neg' : 'bar-r') : it[2]);
+      R.v.textContent = (x < 0 ? '\u2212' : '') + CYL.fmtFixed(Math.abs(x), 0) + ' m/s' + (it[0] === 'rot' ? (x < 0 ? ' (gain)' : ' (penalty)') : '');
+      place(R.v, fr);
+    });
+    ro.i.set(CYL.fmtFixed(inc, 2) + '°'); ro.az.set(CYL.fmtFixed(b.Az, 1) + '° or ' + CYL.fmtFixed((540 - b.Az) % 360, 1) + '°'); ro.vE.set(CYL.fmtFixed(b.vE, 1) + ' m/s'); ro.t.set(CYL.fmtFixed(b.total, 0) + ' m/s');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var WE = 7.2921159e-5, RE = 6378e3, D = Math.PI / 180;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l04-q1',
+    type: 'numeric',
+    prompt: 'How fast does Earth\'s rotation carry a launch site at 34.7° latitude eastward? Use \\(\\omega_E = 7.2921\\times10^{-5}\\) rad/s and \\(R_E = 6378\\) km.',
+    label: '\\(v_E =\\)', answer: WE * RE * Math.cos(34.7 * D), unit: 'm/s', tol: 0.5,
+    hints: ['At the equator \\(\\omega_E R_E = 465.1\\) m/s.', 'Multiply by \\(\\cos\\phi\\).'],
+    explain: 'A due-east launch from there gains about 382 m/s; a sun-synchronous launch loses part of it.',
+    solution: '\\[ v_E = 7.2921\\times10^{-5}(6.378\\times10^6)\\cos 34.7^\\circ = 465.1(0.8221) = 382.4\\ \\text{m/s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l04-q2',
+    type: 'numeric',
+    prompt: 'A launch from 40° N must reach an orbit inclined at 60°. What is the northeastward launch azimuth, in degrees from north?',
+    label: '\\(A_z =\\)', answer: Math.asin(Math.cos(60 * D) / Math.cos(40 * D)) / D, unit: '°', tol: 0.15,
+    hints: ['\\(\\sin A_z = \\cos i/\\cos\\phi\\).', '\\(\\cos 60^\\circ = 0.5\\) and \\(\\cos 40^\\circ = 0.7660\\).'],
+    explain: 'The same orbit can also be reached on the southeastward azimuth, 180° − 40.75° = 139.25°.',
+    solution: '\\[ \\sin A_z = \\frac{0.5}{0.7660} = 0.6527, \\qquad A_z = 40.75^\\circ \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l04-q3',
+    type: 'mc',
+    prompt: 'A first stage\'s liftoff thrust-to-weight ratio is raised from 1.3 to 1.5. What happens to its losses?',
+    choices: [
+      { html: 'The gravity loss falls; the drag loss and the dynamic pressure rise', correct: true, feedback: 'Yes: it climbs out sooner but goes fast in denser air. Its engines also get heavier.' },
+      { html: 'Both the gravity and the drag losses fall', feedback: 'The drag loss rises, because the vehicle is faster lower down.' },
+      { html: 'The gravity loss rises, because the engines are heavier', feedback: 'The engines\' mass is not a loss of \\(\\Delta v\\); it lowers the mass ratio instead.' },
+      { html: 'Nothing changes: the losses depend only on the orbit', feedback: 'The losses depend on how the vehicle flies.' }
+    ],
+    explain: 'Figure 4.1 shows the trade: at 1.5 the gravity loss is about 210 m/s lower and the maximum dynamic pressure about 40% higher.'
+  });
+});
+</script>
+</body>
+</html>

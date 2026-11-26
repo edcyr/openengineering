@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Electric Aircraft and Vertical Flight</title>
+<meta name="description" content="Ten printable problems on electric aircraft and vertical flight: an electric trainer's power chain, sizing a battery pack, an electric commuter's range and endurance, sizing with a battery and the battery wall, hybrids, a motor and its heat, blown high lift, an air taxi in hover, and a tiltrotor and its certification, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Ten problems to work by hand, from an electric trainer's power chain and its battery pack, through an electric commuter's range, its sizing and the battery wall, hybrids, motors and blown high lift, to an air taxi in hover and a tiltrotor against the rules. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Electric Aircraft and Vertical Flight · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. SI units; specific energies in Wh/kg; give answers to 4 significant figures. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on three Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A covers power chains, batteries and electric range, Part B sizing with a battery and hybrids, and Part C motors, blown high lift, hover and VTOL design. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units, answers to 4 significant figures: masses in kg, powers in kW, specific energies in Wh/kg (times 3600 for J/kg), jet fuel 12&nbsp;000&nbsp;Wh/kg, and \(g = 9.81\ \text{m/s}^2\), \(\rho_0 = 1.225\ \text{kg/m}^3\). The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Power chains, batteries and range</h2>
+    <p class="ws-part-sub">Problems 1–3 · Basic to intermediate · Lessons 1–3</p>
+    <div class="ws-list" data-from="1" data-to="3"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Sizing with a battery, and hybrids</h2>
+    <p class="ws-part-sub">Problems 4–6 · Basic to challenge · Lessons 3–5</p>
+    <div class="ws-list" data-from="4" data-to="6"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Motors, blown lift and vertical flight</h2>
+    <p class="ws-part-sub">Problems 7–10 · Basic to challenge · Lessons 5–8</p>
+    <div class="ws-list" data-from="7" data-to="10"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'An electric trainer\'s power chain', level: 1, lessons: ['l01'], units: 'kW, kWh/km',
+      statementHTML: T`<p>An all-electric two-seat trainer of \(900\ \text{kg}\) cruises at \(55\ \text{m/s}\) with \(L/D = 14\). Its battery is 95% efficient, its inverter 97%, its motor 94% and its propeller 80%.</p>`,
+      parts: [
+        part('a', T`Find the efficiency from the battery to the thrust power, the thrust power and the battery power.`, T`\(0.6930\); \(34.69\ \text{kW}\); \(50.05\ \text{kW}\)`, { e: 0.693, t: 34.69, b: 50.05 }),
+        part('b', T`How much of the battery's power becomes heat in the battery, inverter and motor, and how much is lost by the propeller?`, T`\(6.697\ \text{kW}\); \(8.671\ \text{kW}\)`, { h: 6.697, p: 8.671 }),
+        part('c', T`Find its battery energy per kilometer.`, T`\(0.2528\ \text{kWh/km}\)`, { k: 0.2528 })
+      ],
+      figure: null, space: 15 }),
+
+    prob({ n: 2, title: 'Sizing a battery pack', level: 2, lessons: ['l02'], units: 'Wh/kg, kg, kWh',
+      statementHTML: T`<p>Cells rated at \(280\ \text{Wh/kg}\) are used between 10% and 95% of their charge, and the pack weighs 1.3 times its cells. The aircraft needs \(120\ \text{kWh}\) for its mission and up to \(400\ \text{kW}\) at takeoff; the cells must stay at or below 3C.</p>`,
+      parts: [
+        part('a', T`Find the pack's usable specific energy.`, T`\(183.1\ \text{Wh/kg}\)`, { e: 183.1 }),
+        part('b', T`Find the battery mass needed for the energy, and for the power at 3C. Which governs?`, T`\(655.5\ \text{kg}\); \(728.3\ \text{kg}\); power`, { e: 655.5, p: 728.3 }),
+        part('c', T`With that battery, find its energy and its C-rate in a cruise at \(80\ \text{kW}\).`, T`\(133.3\ \text{kWh}\); \(0.6000\)C`, { e: 133.3, c: 0.6 })
+      ],
+      figure: null, space: 15 }),
+
+    prob({ n: 3, title: 'An electric commuter\'s range and endurance', level: 2, lessons: ['l03'], units: 'km, m/s, h',
+      statementHTML: T`<p>An electric commuter of \(5700\ \text{kg}\) carries \(1700\ \text{kg}\) of 250-Wh/kg batteries and has \((L/D)_{\max} = 15\) at \(C_L^* = 0.55\), with \(W/S = 200\ \text{kg/m}^2\) and \(\eta = 0.72\). It cruises at 3000&nbsp;m (\(\rho = 0.9091\ \text{kg/m}^3\)).</p>`,
+      parts: [
+        part('a', T`Find its range at \((L/D)_{\max}\), without reserves.`, T`\(295.5\ \text{km}\)`, { r: 295.5 }),
+        part('b', T`Find its best-range speed at 3000&nbsp;m and how long that range takes.`, T`\(88.59\ \text{m/s}\); \(55.6\ \text{min}\)`, { v: 88.59, t: 55.6 }),
+        part('c', T`Find its best-endurance speed at 3000&nbsp;m and its endurance there.`, T`\(67.31\ \text{m/s}\); \(1.056\ \text{h}\)`, { v: 67.31, t: 1.056 })
+      ],
+      figure: null, space: 17 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 4, title: 'Sizing a nine-seat electric commuter', level: 2, lessons: ['l04'], units: 'kg, kWh',
+      statementHTML: T`<p>An electric commuter carries \(900\ \text{kg}\) of crew and payload over \(250\ \text{km}\), with a 30-minute reserve flown at \(60\ \text{m/s}\) where \(L/D = 13\). Its \((L/D)_{\max} = 15\), \(\eta = 0.72\), and its empty weight is 0.55 of its takeoff weight (held fixed). The batteries give \(300\ \text{Wh/kg}\).</p>`,
+      parts: [
+        part('a', T`Find the battery fraction for the range.`, T`\(0.2103\)`, { r: 0.2103 }),
+        part('b', T`Find the battery fraction for the reserve.`, T`\(0.1048\)`, { s: 0.1048 }),
+        part('c', T`Find the takeoff mass, the battery mass and its energy.`, T`\(6670\ \text{kg}\); \(2102\ \text{kg}\); \(630.5\ \text{kWh}\)`, { w: 6670, b: 2102, e: 630.5 }),
+        part('d', T`Repeat with 200-Wh/kg batteries. What happens?`, T`Battery fraction \(0.4726\): \(1 - 0.55 - 0.4726 \lt 0\), so it does not close`, { b: 0.4726 })
+      ],
+      figure: null, space: 19 }),
+
+    prob({ n: 5, title: 'The battery wall', level: 3, lessons: ['l04', 'l03'], units: 'km, Wh/kg',
+      statementHTML: T`<p>Keep Problem 4's commuter at \(300\ \text{Wh/kg}\), with its empty-weight fraction of 0.55 and its 30-minute reserve.</p>`,
+      parts: [
+        part('a', T`At what range would the takeoff weight become infinite?`, T`\(410.4\ \text{km}\)`, { r: 410.4 }),
+        part('b', T`An airline wants \(600\ \text{km}\) at a takeoff mass of \(10\,000\ \text{kg}\) with the same payload. Find the battery fraction available and the specific energy the batteries would need.`, T`\(0.3600\); \(507.9\ \text{Wh/kg}\)`, { b: 0.36, e: 507.9 })
+      ],
+      figure: null, space: 15 }),
+
+    prob({ n: 6, title: 'Hybrids', level: 1, lessons: ['l05'], units: 'kWh, kg',
+      statementHTML: T`<p>A regional hybrid has two \(1.5\ \text{MW}\) turboprops and two \(0.5\ \text{MW}\) motors. It carries \(3600\ \text{kg}\) of fuel (\(12\,000\ \text{Wh/kg}\)) and \(400\ \text{kg}\) of 250-Wh/kg batteries.</p>`,
+      parts: [
+        part('a', T`Find its power degree of hybridization.`, T`\(0.2500\)`, { h: 0.25 }),
+        part('b', T`Find its battery and fuel energies and its energy degree of hybridization.`, T`\(100\ \text{kWh}\); \(43\,200\ \text{kWh}\); \(0.002309\)`, { b: 100, f: 43200, h: 0.002309 }),
+        part('c', T`A boost must give \(600\ \text{kW}\) for 3 minutes from 200-Wh/kg cells at no more than 4C. Find the battery mass by energy and by power, and the mass needed.`, T`\(150.0\ \text{kg}\); \(750.0\ \text{kg}\); \(750.0\ \text{kg}\) (power governs)`, { e: 150, p: 750 })
+      ],
+      figure: null, space: 15 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 7, title: 'A motor, its gearbox and its heat', level: 1, lessons: ['l06'], units: 'N·m, kW, kg/s',
+      statementHTML: T`<p>A \(350\ \text{kW}\) motor drives a propeller turning at \(2000\ \text{rpm}\). Motor mass is proportional to \(Q^{0.8587}\).</p>`,
+      parts: [
+        part('a', T`Find its torque as a direct drive, and at \(8000\ \text{rpm}\) through a 4:1 gearbox.`, T`\(1671\ \text{N}\cdot\text{m}\); \(417.8\ \text{N}\cdot\text{m}\)`, { a: 1671, b: 417.8 }),
+        part('b', T`How many times heavier is the direct-drive motor?`, T`\(3.288\)`, { r: 3.288 }),
+        part('c', T`At 95.5% efficiency, find the heat it rejects at full power, and the water-glycol flow (\(c_p = 3500\ \text{J/(kg K)}\)) that carries it with a 12-K rise.`, T`\(16.49\ \text{kW}\); \(0.3927\ \text{kg/s}\)`, { q: 16.49, m: 0.3927 })
+      ],
+      figure: null, space: 15 }),
+
+    prob({ n: 8, title: 'Blown high lift', level: 2, lessons: ['l05'], units: 'kg/m², m²',
+      statementHTML: T`<p>A \(2000\ \text{kg}\) aircraft's landing distance limits its wing loading to \(180\ \text{kg/m}^2\) with \(C_{L,L} = 2.0\). Its span is \(11\ \text{m}\) and \(e = 0.8\). High-lift propellers raise \(C_{L,L}\) to 3.0, and the span is kept.</p>`,
+      parts: [
+        part('a', T`Find the new wing loading, and the wing areas before and after.`, T`\(270.0\ \text{kg/m}^2\); \(11.11\ \text{m}^2\); \(7.407\ \text{m}^2\)`, { w: 270, a: 11.11, b: 7.407 }),
+        part('b', T`Find the aspect ratios and the induced-drag factors \(K = 1/(\pi Ae)\) before and after.`, T`\(10.89\), \(0.03654\); \(16.34\), \(0.02436\)`, { a: 10.89, k: 0.03654, b: 16.34, l: 0.02436 }),
+        part('c', T`At \(75\ \text{m/s}\) and 3000&nbsp;m (\(\rho = 1.007\ \text{kg/m}^3\)), find the cruise \(C_L\) of each wing and the induced drag \(W^2/(\pi e q b^2)\). What do you notice?`, T`\(0.6235\); \(0.9352\); \(446.9\ \text{N}\) for both: at constant span the induced drag does not change`, { c: 0.6235, d: 0.9352, i: 446.9 })
+      ],
+      figure: null, space: 17 }),
+
+    prob({ n: 9, title: 'An air taxi in hover', level: 2, lessons: ['l07'], units: 'N/m², m/s, kW',
+      statementHTML: T`<p>A \(2500\ \text{kg}\) air taxi lifts on six rotors of \(2.6\ \text{m}\) diameter, with a download of 5% of its weight and \(FM = 0.72\), at sea level.</p>`,
+      parts: [
+        part('a', T`Find the thrust, the total disk area, the disk loading and the induced velocity.`, T`\(25\,750\ \text{N}\); \(31.86\ \text{m}^2\); \(808.4\ \text{N/m}^2\); \(18.16\ \text{m/s}\)`, { t: 25750, a: 31.86, d: 808.4, v: 18.16 }),
+        part('b', T`Find the hover power.`, T`\(649.7\ \text{kW}\)`, { p: 649.7 }),
+        part('c', T`Find the induced velocity and the power to climb vertically at \(3\ \text{m/s}\).`, T`\(16.73\ \text{m/s}\); \(705.5\ \text{kW}\)`, { v: 16.73, p: 705.5 }),
+        part('d', T`Find the hover power at a hot, high site where \(\rho = 1.0\ \text{kg/m}^3\).`, T`\(719.0\ \text{kW}\)`, { p: 719.0 })
+      ],
+      figure: null, space: 17 }),
+
+    prob({ n: 10, title: 'A tiltrotor and its rules', level: 3, lessons: ['l08', 'l07'], units: 'm, MW, kg',
+      statementHTML: T`<p>A tiltrotor of \(6000\ \text{kg}\) lifts on two proprotors at \(700\ \text{N/m}^2\), with a download of 10% and \(FM = 0.75\). In a second study, a design carrying \(1100\ \text{kg}\) of crew and payload has empty-weight and fuel fractions of 0.52 and 0.22 (held fixed).</p>`,
+      parts: [
+        part('a', T`Find the tiltrotor's hover thrust, disk area, rotor diameter and hover power at sea level.`, T`\(64\,750\ \text{N}\); \(92.49\ \text{m}^2\); \(7.674\ \text{m}\); \(1.459\ \text{MW}\)`, { t: 64750, a: 92.49, d: 7.674, p: 1.459 }),
+        part('b', T`Find the second design's takeoff mass without and with a vertical-lift system of \(f_v = 0.11\).`, T`\(4231\ \text{kg}\); \(7333\ \text{kg}\)`, { a: 4231, b: 7333 }),
+        part('c', T`With nine passengers, could the vertical-lift version be certified under EASA's SC-VTOL-01 <a class="cite" href="../reference/references.html#r5">[5]</a>? By what factor does it exceed the mass limit?`, T`No: \(7333\ \text{kg} \gt 3175\ \text{kg}\), 2.310 times the limit`, { r: 2.31 })
+      ],
+      figure: null, space: 15 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; specific energies in Wh/kg (x3600 for J/kg); jet fuel 12 000 Wh/kg; g = 9.81 m/s^2, rho0 = 1.225 kg/m^3; 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

@@ -15,7 +15,8 @@ WHAT IT IS
 
   The lessons have interactive figures, worked examples and questions
   with instant feedback. There is also a Practice Lab, a Self-Check Quiz,
-  a printable worksheet, the Engine Sizer tool, a formula sheet and a glossary.
+  a printable worksheet, the Engine Sizer tool, a formula sheet, a
+  glossary and a references page.
 
   Everything runs in your web browser from this folder. No internet
   connection, installation or account is needed.
@@ -76,7 +77,7 @@ FOLDER OVERVIEW
   lessons/       Lessons 1-8
   practice/      Practice Lab, Self-Check Quiz, Printable Worksheet
   tools/         Engine Sizer
-  reference/     Formula Sheet and Glossary
+  reference/     Formula Sheet, Glossary and References
   assets/        Styles, scripts, the aircraft data (assets/js/aero.js),
                  the engine data and propulsion library
                  (assets/js/propulsion.js), Module 6's layout library
@@ -95,7 +96,8 @@ DATA
   Loftin, Quest for Performance, NASA SP-468 (1985), as in Module 1, and
   the Cessna Citation CJ3 Gen2 from Textron Aviation's published data.
   The business jet comes from Modules 3 to 6; the other example aircraft
-  are illustrative designs, not real types.
+  are illustrative designs, not real types. The References page
+  (reference/references.html) gives every source in full.
 
 CREDITS AND LICENSES
   This module bundles one open-source library under the MIT License.

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sizing the Launcher and Licensing It · Space Vehicles</title>
+<meta name="description" content="Closing the small launcher's design loop with a bottom-up estimate of its inert masses, the launcher drawn to scale, how its liftoff mass grows with its payload, and the launch license of 14 CFR Part 450: the public-safety criteria, flight abort, collision avoidance and the disposal of the upper stage.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/space.js"></script>
+<style>
+  .loop { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 10px; margin: 0; padding: 14px; }
+  .loop li { counter-increment: step; position: relative; margin: 0; padding: 10px 12px 10px 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev); font-size: 0.9rem; line-height: 1.45; }
+  .loop li::before { content: counter(step); position: absolute; left: 11px; top: 10px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 750; font-size: 0.8rem; line-height: 24px; text-align: center; }
+  .loop li strong { display: block; color: var(--ink); }
+  .loop li .where { color: var(--ink-muted); font-size: 0.82rem; }
+  .loop li.back { border-style: dashed; }
+</style>
+</head>
+<body data-page="l08" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 8 · 35 min</p>
+    <h1>Sizing the Launcher and Licensing It</h1>
+    <p class="lede">Lesson 5 sized the small launcher with assumed structural coefficients, as Module 3 sized the business jet with an assumed empty-weight fraction. This lesson closes the loop. It estimates each stage's inert mass from its tanks, engines and equipment, resizes until the masses agree, and draws the result. It then turns to what a launcher needs before it may fly: a license, which judges the risk the launch puts on the public.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Set out a launcher's sizing loop and estimate a stage's inert mass from the bottom up.</li>
+      <li>Close the loop on the structural coefficients and find how the liftoff mass grows with the payload.</li>
+      <li>State the public-safety criteria of a launch license under 14&nbsp;CFR Part 450, and when flight abort is needed.</li>
+      <li>Explain the license's rules for collision avoidance and for the disposal of an upper stage, and size a disposal burn.</li>
+    </ul>
+  </section>
+
+  <section id="loop">
+    <h2>The launcher's design loop</h2>
+    <figure class="figure wide" aria-labelledby="fig81-cap">
+      <div class="viz stacked">
+        <ol class="loop" role="list" aria-label="The launcher's design loop">
+          <li><strong>The mission</strong>300&nbsp;kg into a 500&nbsp;km sun-synchronous orbit from 45°&nbsp;N. <span class="where">Lesson 1</span></li>
+          <li><strong>The \(\Delta v\) budget</strong>Orbital speed, rotation and losses: 9199&nbsp;m/s. <span class="where">Lessons 2 to 4</span></li>
+          <li><strong>Guess the structural coefficients</strong>\(\varepsilon_1 = 0.08\), \(\varepsilon_2 = 0.10\) to start. <span class="where">Lesson 5</span></li>
+          <li><strong>Stage it</strong>The optimal split and each stage's propellant and inert mass. <span class="where">Lesson 5</span></li>
+          <li><strong>Size the engines</strong>Thrust from \(T/W\) (1.30 and 0.90); engine mass from the engines' \(T/W\). <span class="where">Lesson 6</span></li>
+          <li><strong>Size the tanks</strong>Volumes, pressures and walls, at the minimum gauge where pressure needs less. <span class="where">Lesson 7</span></li>
+          <li><strong>Add up the inert masses</strong>Tanks, engines, residual propellant, structure, avionics and the fairing. <span class="where">this lesson</span></li>
+          <li class="back"><strong>New structural coefficients</strong>\(\varepsilon = m_s/(m_s + m_p)\) of each stage, and back to step 4 until they stop changing. <span class="where">this lesson</span></li>
+        </ol>
+      </div>
+      <figcaption id="fig81-cap"><strong>Figure 8.1</strong> The small launcher's design loop, the counterpart of the business jet's in Module 14. Steps 4 to 8 repeat until the structural coefficients agree with the masses they produce.</figcaption>
+    </figure>
+  </section>
+
+  <section id="bottomup">
+    <h2>The inert mass from the bottom up</h2>
+    <p>Estimate each stage's inert mass from five parts. The tanks and engines follow from Lessons 6 and 7; take the other parts as allowances typical of a small launcher:</p>
+    <ul>
+      <li><strong>Tanks</strong>: wall area times thickness times density, with the thickness the larger of the pressure's (Lesson 7, protoflight factors) and the minimum gauge (1.5&nbsp;mm on the first stage, 1.2&nbsp;mm on the second). The result is multiplied by 1.6 for stiffeners, insulation and fittings. The second stage's tanks share a common bulkhead.</li>
+      <li><strong>Engines</strong>: vacuum thrust over \(g_0\) times the engines' thrust-to-weight ratio, 70 for the first stage and 40 for the second.</li>
+      <li><strong>Residual propellant</strong>: 1% of the propellant, left unburned in the tanks and lines.</li>
+      <li><strong>Structure, avionics and pressurization</strong>: the thrust structure, intertank, interstage, wiring, computers and helium, as 250&nbsp;kg on the first stage and 15&nbsp;kg on the second.</li>
+      <li><strong>Payload fairing</strong>: 50&nbsp;kg, carried by the second stage until it is jettisoned (counted to burnout here, which is conservative).</li>
+    </ul>
+    <div class="example">
+      <p class="example-title">Example 8.1 — Checking Lesson 5's structural coefficients</p>
+      <p>Lesson 5's stages carry 9709.9 and 1546.1&nbsp;kg of propellant, with vacuum thrusts of 178.4 and 17.8&nbsp;kN. The tanks of Lesson 7 have wall areas of 35.6 and 6.7&nbsp;m², and every wall is at its minimum gauge. Estimate each stage's inert mass and structural coefficient.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>First stage, in aluminium 2219 (2840&nbsp;kg/m³):</p>
+          \[ m_{\text{tanks}} = 35.6(0.0015)(2840)(1.6) = 242.7\ \text{kg} \]
+          \[ m_{\text{eng}} = \frac{178\,400}{9.807(70)} = 259.9\ \text{kg} \]
+          \[ m_{s1} = 242.7 + 259.9 + 97.1 + 250 = 849.7\ \text{kg} \]
+          \[ \varepsilon_1 = \frac{849.7}{849.7 + 9709.9} = 0.0805 \]
+          <p>Second stage:</p>
+          \[ m_{\text{tanks}} = 36.7\ \text{kg}, \qquad m_{\text{eng}} = \frac{17\,810}{9.807(40)} = 45.4\ \text{kg} \]
+          \[ m_{s2} = 36.7 + 45.4 + 15.5 + 15 + 50 = 162.6\ \text{kg}, \qquad \varepsilon_2 = 0.0952 \]
+          <p>The first stage is close to its assumed 0.08. The second is lighter than its assumed 0.10, so the launcher can shrink.</p>
+        </div>
+      </details>
+    </div>
+    <p>Feeding the new coefficients back into the staging and repeating (steps 4 to 8) converges in about 20 turns, with each change damped to 70%. The loop settles at \(\varepsilon_1 = 0.0824\) and \(\varepsilon_2 = 0.0920\). The first stage's coefficient rises a little because it shrinks while its fixed allowance of 250&nbsp;kg does not. The closed launcher weighs <strong>12&nbsp;087&nbsp;kg</strong> at liftoff, 485&nbsp;kg less than Lesson 5's:</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Table 8.1 The small launcher, closed (bottom-up structural coefficients)</caption>
+        <thead><tr><th scope="col"></th><th scope="col">First stage</th><th scope="col">Second stage</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">\(\Delta v\) (m/s)</th><td>4162</td><td>5037</td></tr>
+          <tr><th scope="row">Propellant (kg)</th><td>9150.0</td><td>1648.7</td></tr>
+          <tr><th scope="row">Inert mass (kg)</th><td>821.3</td><td>167.0</td></tr>
+          <tr><th scope="row">\(\varepsilon\)</th><td>0.0824</td><td>0.0920</td></tr>
+          <tr><th scope="row">Mass at ignition (kg)</th><td>12&nbsp;087</td><td>2116</td></tr>
+          <tr><th scope="row">Thrust (kN)</th><td>154.1 at sea level, 171.5 in vacuum</td><td>18.7 in vacuum</td></tr>
+          <tr><th scope="row">Burn time (s)</th><td>165</td><td>294</td></tr>
+          <tr><th scope="row">Tank lengths, oxidizer and fuel (m)</th><td>5.56 and 3.14</td><td>1.23 and 0.85</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig82-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig82-stage"></div>
+        <div class="viz-controls" id="fig82-controls"></div>
+      </div>
+      <figcaption id="fig82-cap"><strong>Figure 8.2</strong> The small launcher to scale, lying on its side with its nose to the right: engine bay, fuel and oxygen tanks of each stage, the interstage and the fairing (engine bay, intertank, interstage, equipment bay and fairing 1.2, 0.3, 1.2, 0.3 and 2.5&nbsp;m long). Change the payload, and choose Lesson 5's fixed structural coefficients or the closed loop.</figcaption>
+    </figure>
+    <p>Because the allowances do not grow with the vehicle, the closed launcher grows more slowly than in proportion to its payload. Thirty more kilograms of payload (10%) cost 754&nbsp;kg at liftoff (6.2%), where Lesson 5's fixed coefficients predicted 10%. As in Module 3, the structural fractions are not constants of the design, and a sizing method must say how they change.</p>
+    <aside class="callout note">
+      <p class="callout-title">What the loop has not yet included</p>
+      <p>This is one turn of a conceptual design. The second stage's trajectory and its losses were assumed rather than simulated, and the first stage was flown in a simple gravity turn. The fairing and the payload's environment (acoustics, shock, the 6&nbsp;g at burnout) were not designed. The cost was not estimated, and its model would favor fewer, simpler engines. A preliminary design would simulate the whole ascent with an optimized steering program, recompute the losses, and go around the loop again, as Module 14 did for the business jet's drag and weights.</p>
+    </aside>
+  </section>
+
+  <section id="licensing">
+    <h2>Licensing the launch</h2>
+    <p>An airliner is certified: its type design is shown to meet airworthiness standards such as 14&nbsp;CFR Part 25 (Module 2). In the United States a commercial launch is <strong>licensed</strong> instead. 14&nbsp;CFR Part 450 "prescribes requirements for obtaining and maintaining a license to launch, reenter, or both" (450.1) <a class="cite" href="../reference/references.html#r7">[7]</a>. The license does not certify that the vehicle will work. It requires the operator to show that the launch's risk to people and property who have not chosen to accept it stays below set limits. Its safety criteria, in 450.101 <a class="cite" href="../reference/references.html#r7">[7]</a>, include:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Table 8.2 Launch risk criteria of 14&nbsp;CFR 450.101(a), from liftoff to orbital insertion</caption>
+        <thead><tr><th scope="col">Criterion</th><th scope="col">Limit</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Collective risk to the public (expected casualties \(E_C\))</th><td>\(1\times10^{-4}\) per launch</td></tr>
+          <tr><th scope="row">Collective risk to neighboring operations personnel</th><td>\(2\times10^{-4}\)</td></tr>
+          <tr><th scope="row">Individual risk to any member of the public (probability of casualty \(P_C\))</th><td>\(1\times10^{-6}\) per launch</td></tr>
+          <tr><th scope="row">Individual risk to neighboring operations personnel</th><td>\(1\times10^{-5}\) per launch</td></tr>
+          <tr><th scope="row">Aircraft: probability of impact with debris that could cause a casualty</th><td>\(1\times10^{-6}\)</td></tr>
+          <tr><th scope="row">Critical assets; critical payloads (loss of function)</th><td>\(1\times10^{-3}\); \(1\times10^{-4}\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Source: <a class="cite" href="../reference/references.html#r7">[7]</a>, &sect;&nbsp;450.101(a).</p>
+    <p>The risks count inert and explosive debris, toxic release and far-field blast overpressure. 450.101(c) <a class="cite" href="../reference/references.html#r7">[7]</a> adds protection against a <strong>high consequence event</strong>. In every phase of flight the operator must either use <strong>flight abort</strong> as a hazard control (450.108), or show that the consequence of any reasonably foreseeable failure is no more than \(1\times10^{-3}\) conditional expected casualties, or show sufficient demonstrated reliability. The public must also be told of the regions that contain, with 97% probability, all the debris from normal flight events, such as spent stages and the fairing.</p>
+    <div class="example">
+      <p class="example-title">Example 8.2 — Is flight abort needed?</p>
+      <p>Suppose a risk analysis of the small launcher's flight finds that a failure during its first 30&nbsp;s has a probability of 0.5%. If it happened, the debris near the site would cause 0.004 expected casualties. The rest of the flight contributes \(3\times10^{-5}\) expected casualties. Does the launch meet 450.101?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ E_C = 0.005(0.004) + 3\times10^{-5} = 2\times10^{-5} + 3\times10^{-5} = 5\times10^{-5} \lt 1\times10^{-4} \]
+          <p>The collective risk passes. But the conditional expected casualties of a failure in the first 30&nbsp;s, 0.004, exceed \(1\times10^{-3}\). So unless the vehicle has enough demonstrated reliability, which a new launcher does not, that phase needs flight abort: a system that ends the flight before the vehicle can endanger the public (450.108). A low average risk does not excuse a high consequence.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="orbit">
+    <h2>Collision avoidance and disposal</h2>
+    <p>Part 450 also protects people and property in orbit <a class="cite" href="../reference/references.html#r7">[7]</a>. Under 450.169, the operator must set launch window closures so that the launcher, anything it sheds and its payload keep clear of orbiting objects during the screening time. That time runs from 150&nbsp;km up to orbital insertion, and for at least 3&nbsp;hours from liftoff. For inhabitable objects the probability of collision must not exceed \(1\times10^{-6}\), or the vehicle must keep 200&nbsp;km away (or 200&nbsp;km in-track and 50&nbsp;km cross-track and radially). For other active objects the limits are \(1\times10^{-5}\) or 25&nbsp;km. For tracked debris (radar cross sections above 0.1&nbsp;m²) they are \(1\times10^{-5}\) or 2.5&nbsp;km.</p>
+    <p>At the end of the launch, 450.171 <a class="cite" href="../reference/references.html#r7">[7]</a> requires that any stage left in orbit must not contact its payload after separation, and must not break up from its stored energy. It must be <strong>passivated</strong>: residual propellant depleted with the valves left open, pressurized systems vented, batteries left permanently discharged. The small launcher's second stage reaches 500&nbsp;km with its payload, where drag would take years to bring it down. The cleaner choice is to <strong>deorbit</strong> it with a final burn that lowers its perigee into the atmosphere, then passivate it.</p>
+    <div class="example">
+      <p class="example-title">Example 8.3 — Deorbiting the second stage</p>
+      <p>After releasing the spacecraft, the second stage (167.0&nbsp;kg inert) fires retrograde at 500&nbsp;km to lower its perigee to 50&nbsp;km. Find the \(\Delta v\) and the propellant (\(I_{sp} = 340\)&nbsp;s) it must keep in reserve.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ a = \frac{6878 + 6428}{2} = 6653\ \text{km} \]
+          \[ v_a = \sqrt{\mu\left(\frac{2}{6.878\times10^6} - \frac{1}{6.653\times10^6}\right)} = 7482.8\ \text{m/s} \]
+          \[ \Delta v = 7612.7 - 7482.8 = 129.8\ \text{m/s} \]
+          \[ m_p = 167.0\left(e^{129.8/3334} - 1\right) = 6.6\ \text{kg} \]
+          <p>Six and a half kilograms, about 0.4% of the stage's propellant, which a real design would add to the second stage's budget. The burn also depletes most of the residual propellant before passivation.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A launcher's loop runs mission → \(\Delta v\) → staging → engines → tanks → inert masses → new \(\varepsilon\), until the coefficients agree with the masses.</li>
+      <li>Bottom-up (tanks at minimum gauge ×1.6, engines by their \(T/W\), 1% residuals, allowances) the small launcher closes at \(\varepsilon = 0.0824\) and \(0.0920\), and 12&nbsp;087&nbsp;kg at liftoff. Fixed allowances make it grow less than in proportion to the payload.</li>
+      <li>A launch is licensed, not certified. Under 450.101: \(E_C \le 10^{-4}\), \(P_C \le 10^{-6}\) per launch, aircraft \(10^{-6}\). Flight abort (or demonstrated reliability) is needed where a failure's conditional expected casualties exceed \(10^{-3}\).</li>
+      <li>450.169 keeps the launch clear of orbiting objects; 450.171 requires passivation of any stage left in orbit. Deorbiting the second stage costs 130&nbsp;m/s, 6.6&nbsp;kg of propellant.</li>
+      <li>The <a href="../tools/launch-vehicle-sizer.html">Launch Vehicle Sizer</a> repeats these lessons' sizing for any mission and three more launchers; the <a href="../practice/practice-lab.html">Practice Lab</a> drills every lesson.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 8.2: the launcher to scale ---------- */
+CYL.ready(function () {
+  'use strict';
+  var st = { mpl: 300, close: true }, R = 0.6, H = R / Math.SQRT2;
+  var stage = document.getElementById('fig82-stage'), panel = document.getElementById('fig82-controls');
+  var pl = CYL2D.plane(stage, { xRange: [-0.6, 17], yRange: [-2.3, 1.7], grid: 'none', axes: false, maxHeight: 300, ariaLabel: 'The small launcher to scale.' });
+  var G = pl.group(), lab = [];
+  function box(x0, x1, color, fill, op, dashed) { G.polyline([[x0, -R], [x1, -R], [x1, R], [x0, R]], { color: color, width: 1.4, closed: true, fill: fill, fillOpacity: op == null ? 0.22 : op, dashed: !!dashed }); }
+  function tankShape(x0, L, color) {
+    var P = [], k, n = 16;
+    for (k = 0; k <= n; k++) { var a = Math.PI / 2 + Math.PI * k / n; P.push([x0 + H + H * Math.cos(a), R * Math.sin(a)]); }
+    for (k = 0; k <= n; k++) { var b = -Math.PI / 2 + Math.PI * k / n; P.push([x0 + L - H + H * Math.cos(b), R * Math.sin(b)]); }
+    G.polyline(P, { color: color, width: 1.4, closed: true, fill: color, fillOpacity: 0.28 });
+  }
+  var sP = CYL.slider({ label: 'Payload', min: 100, max: 600, step: 10, value: st.mpl, unit: ' kg', color: 'v', format: function (v) { return CYL.fmtFixed(v, 0); }, onInput: function (v) { st.mpl = v; draw(); } });
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Structural coefficients' }), chips = {};
+  [[false, 'Fixed ε (Lesson 5)'], [true, 'Closed loop']].forEach(function (q) { var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q[1] }); b.addEventListener('click', function () { st.close = q[0]; draw(); }); chips[q[0]] = b; row.appendChild(b); });
+  var ro = { m: CYL.readout('Liftoff mass'), pf: CYL.readout('Payload fraction'), e: CYL.readout('\\(\\varepsilon_1\\), \\(\\varepsilon_2\\)'), s1: CYL.readout('First stage \\(m_p\\), \\(m_s\\)'), s2: CYL.readout('Second stage \\(m_p\\), \\(m_s\\)'), L: CYL.readout('Length') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Structural coefficients' })); panel.appendChild(row);
+  [sP.el, CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.m.el, ro.pf.el, ro.e.el, ro.s1.el, ro.s2.el, ro.L.el])].forEach(function (e) { panel.appendChild(e); });
+  var labels = { s1: pl.label([0, 0], '\\text{Stage 1}', { color: 'ink', anchor: 'n', offset: [0, -4] }), s2: pl.label([0, 0], '\\text{Stage 2}', { color: 'ink', anchor: 'n', offset: [0, -4] }), f: pl.label([0, 0], '\\text{Fairing}', { color: 'v', anchor: 's', offset: [0, 4] }),
+    o: pl.label([0, 0], '\\text{LOX}', { color: 'z', anchor: 'c' }), r: pl.label([0, 0], '\\text{RP-1}', { color: 'r', anchor: 'c' }), L: pl.label([0, 0], '', { color: 'muted', anchor: 'c' }) };
+  CYL.renderMath(panel);
+  function draw() {
+    var p = SPACE.preset('small'); p.mpl = st.mpl;
+    var d = SPACE.design(p, { close: st.close });
+    G.clear();
+    if (!d.ok) return;
+    var s1 = d.stages[0], s2 = d.stages[1], t1 = s1.inert.tanks, t2 = s2.inert.tanks;
+    var x = 0, BAY = 1.2, IT = 0.3, IS = 1.2, EQ = 0.3, FR = 2.5;
+    box(x, x + BAY, 'muted', 'muted', 0.18); G.polyline([[x - 0.35, -0.42], [x, -0.25], [x, 0.25], [x - 0.35, 0.42]], { color: 'muted', width: 1.4, closed: true, fill: 'muted', fillOpacity: 0.3 });
+    x += BAY; var x1a = x;
+    tankShape(x, t1[1].L, 'r'); var xr = x + t1[1].L / 2; x += t1[1].L;
+    box(x, x + IT, 'muted', 'muted', 0.1); x += IT;
+    tankShape(x, t1[0].L, 'z'); var xo = x + t1[0].L / 2; x += t1[0].L;
+    var x1b = x;
+    box(x, x + IS, 'muted', 'muted', 0.1, true); G.polyline([[x + IS, -0.18], [x + IS, 0.18], [x + 0.15, 0.45], [x + 0.15, -0.45]], { color: 'muted', width: 1.2, closed: true, fill: 'muted', fillOpacity: 0.25 }); x += IS;
+    var x2a = x, L2 = t2[0].L + t2[1].L - H;
+    tankShape(x, t2[1].L, 'r'); tankShape(x + t2[1].L - H, t2[0].L, 'z'); x += L2;
+    box(x, x + EQ, 'muted', 'muted', 0.18); x += EQ;
+    var x2b = x, xf = x, fcyl = FR - 1.2, Pn = [[xf, -R], [xf + fcyl, -R]];
+    for (var k = 1; k <= 12; k++) { var u = k / 12; Pn.push([xf + fcyl + 1.2 * u, -R * Math.sqrt(Math.max(0, 1 - u * u))]); }
+    for (k = 11; k >= 1; k--) { var w = k / 12; Pn.push([xf + fcyl + 1.2 * w, R * Math.sqrt(Math.max(0, 1 - w * w))]); }
+    Pn.push([xf + fcyl, R], [xf, R]);
+    G.polyline(Pn, { color: 'v', width: 1.6, closed: true, fill: 'v', fillOpacity: 0.14 });
+    var ps = Math.min(0.9, 0.35 + st.mpl / 1200);
+    G.polyline([[xf + 0.3, -0.35], [xf + 0.3 + ps, -0.35], [xf + 0.3 + ps, 0.35], [xf + 0.3, 0.35]], { color: 'v', width: 1.2, closed: true, fill: 'v', fillOpacity: 0.35 });
+    x = xf + FR;
+    pl.setRange([-0.6, Math.max(17, x + 0.4)], [-2.3, 1.7]);
+    labels.s1.set([(x1a + x1b) / 2, R], '\\text{Stage 1}'); labels.s2.set([(x2a + x2b) / 2, R], '\\text{Stage 2}'); labels.f.set([xf + FR / 2, -R], '\\text{Fairing}');
+    labels.o.set([xo, 0], '\\text{LOX}'); labels.r.set([xr, 0], '\\text{RP-1}'); labels.L.set([(x1a + x1b) / 2, -1.85], '\\text{Length ' + x.toFixed(1) + ' m, diameter 1.2 m}');
+    ro.m.set(CYL.fmtFixed(d.m0, 0) + ' kg'); ro.pf.set(CYL.fmtFixed(100 * d.pf, 2) + '%'); ro.e.set(CYL.fmtFixed(d.eps[0], 4) + ', ' + CYL.fmtFixed(d.eps[1], 4));
+    ro.s1.set(CYL.fmtFixed(s1.mp, 0) + ', ' + CYL.fmtFixed(s1.ms, 0) + ' kg'); ro.s2.set(CYL.fmtFixed(s2.mp, 0) + ', ' + CYL.fmtFixed(s2.ms, 0) + ' kg'); ro.L.set(CYL.fmtFixed(x, 1) + ' m');
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(String(st.close) === k)); });
+    pl.el.querySelector('svg').setAttribute('aria-label', 'The launcher for ' + st.mpl + ' kg of payload: ' + Math.round(d.m0) + ' kg at liftoff, ' + x.toFixed(1) + ' m long.');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var MU = 3.986e14, RE = 6378e3, r = RE + 600e3, a = (r + RE + 100e3) / 2;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l08-q1',
+    type: 'numeric',
+    prompt: 'An upper stage in a 600&nbsp;km circular orbit must lower its perigee to 100&nbsp;km to reenter. What \\(\\Delta v\\) does the burn need?',
+    label: '\\(\\Delta v =\\)', answer: Math.sqrt(MU / r) - Math.sqrt(MU * (2 / r - 1 / a)), unit: 'm/s', tol: 0.6,
+    hints: ['The new orbit has its apogee at 6978 km and its perigee at 6478 km: \\(a = 6728\\) km.', '\\(\\Delta v = v_c - v_a\\), with \\(v_a\\) from vis-viva at 6978 km.'],
+    explain: 'Higher stages need more: from 500 km to the same perigee it is 114.9 m/s.',
+    solution: '\\[ v_c = 7557.9\\ \\text{m/s}, \\qquad v_a = \\sqrt{\\mu\\left(\\frac{2}{6.978\\times10^6} - \\frac{1}{6.728\\times10^6}\\right)} = 7416.2\\ \\text{m/s} \\]\\[ \\Delta v = 141.7\\ \\text{m/s} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l08-q2',
+    type: 'mc',
+    prompt: 'What does a launch license under 14&nbsp;CFR Part 450 establish?',
+    choices: [
+      { html: 'That the launch\'s risks to the public, to aircraft and to property, on the ground and in orbit, stay within set limits', correct: true, feedback: 'Yes: the criteria of 450.101 are limits on risk, not standards of airworthiness.' },
+      { html: 'That the vehicle\'s design meets airworthiness standards, like an aircraft\'s type certificate', feedback: 'That is certification (Module 2); a launch license judges the risk to others.' },
+      { html: 'That the payload will reach its orbit', feedback: 'Mission success is the operator\'s concern; the license protects the public.' },
+      { html: 'That the vehicle\'s structure meets NASA-STD-5001B', feedback: 'That standard applies to NASA missions; Part 450 sets public-safety criteria.' }
+    ],
+    explain: 'The criteria cover the public (\\(E_C \\le 10^{-4}\\), \\(P_C \\le 10^{-6}\\)), aircraft, critical assets, collisions in orbit and the debris left there.'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l08-q3',
+    type: 'numeric',
+    prompt: 'A launch has two hazardous phases: a failure probability of 0.4% with 0.010 expected casualties if it fails, and 1.0% with 0.002. What is its collective risk \\(E_C\\), in units of \\(10^{-5}\\) expected casualties?',
+    label: '\\(E_C/10^{-5} =\\)', answer: (0.004 * 0.010 + 0.010 * 0.002) * 1e5, tol: 0.05,
+    hints: ['Each phase contributes its failure probability times its conditional expected casualties.', '\\(E_C = 0.004(0.010) + 0.010(0.002)\\).'],
+    explain: '\\(6\\times10^{-5}\\) passes the \\(10^{-4}\\) limit, but the first phase\'s conditional 0.010 exceeds \\(10^{-3}\\): it needs flight abort.',
+    solution: '\\[ E_C = 4\\times10^{-5} + 2\\times10^{-5} = 6\\times10^{-5} \\]'
+  });
+});
+</script>
+</body>
+</html>

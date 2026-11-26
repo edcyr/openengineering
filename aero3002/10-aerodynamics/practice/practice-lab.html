@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Lift and the Drag Build-Up</title>
+<meta name="description" content="Unlimited randomized problems on lift and drag: the drag polar, maximum lift, skin friction, form factors, the parasite drag build-up, induced drag, wave drag and the polar in the design, each with hints and a worked solution.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<script src="../assets/js/drag.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #lab-stage { min-height: 280px; }
+  .pl-blank { min-height: 320px; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--c-grid) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--c-grid) 39px 40px); opacity: 0.6; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on every calculation in the module, as many as you like: the drag polar, maximum lift, skin friction, form factors, the drag build-up, induced and wave drag, and the cruise point, with new numbers every time. Each one comes with hints and a worked solution built from its own numbers, and once you have solved it the answer appears on a chart.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The current problem on a chart: the curve, map or diagram it lives on, and your answer as the large dot. It stays hidden until you solve the problem or open its solution, so it never gives the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>buildup-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. buildup-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand math, so you can type an expression instead of working out every decimal first. Each box shows how it read your input (for example <q>= 17.72</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>0.5/sqrt(0.0202*0.04909)</code></td><td>\(15.88\)</td></tr>
+          <tr><td><code>0.455/(log(1.04e7)^2.58*(1+0.144*0.8^2)^0.65)</code></td><td>\(0.002819\)</td></tr>
+          <tr><td><code>(1+2*0.12+100*0.12^4)*1.34*0.8^0.18*cos(24.43deg)^0.28</code></td><td>\(1.581\)</td></tr>
+          <tr><td><code>1.78*(1-0.045*8^0.68)-0.64</code></td><td>\(0.8106\)</td></tr>
+          <tr><td><code>0.95/cos(25deg)-0.12/cos(25deg)^2-0.253/(10*cos(25deg)^3)</code></td><td>\(0.8681\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Type only the number or expression; the unit is shown next to the box. Use \(g = 9.81\ \text{m/s}^2\); coefficients are dimensionless, and Reynolds numbers can be typed as <code>1.04e7</code>. <code>sqrt</code>, <code>^</code>, <code>pi</code>, <code>log</code> (base 10), <code>cos</code> with <code>deg</code> after an angle in degrees, and powers of ten all work. Answers are accepted within 1%, so three or four significant figures are plenty.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the expression you would put in your calculator, such as <code>1.05*(0.01762+0.00165)</code>, avoids rounding errors that pile up when you copy intermediate decimals.</p>
+    </aside>
+  </section>
+</main>
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  3. Registry  4. Self-test (window.__practiceSelfTest)
+   5. The shared 3D view  6. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints and
+   the worked solution from the same numbers, so nothing is typed per instance. A generator returns
+   {spec (a CYLQuiz question spec), view (the scene drawn after solving), test ({right, wrong, check})}.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw, G = 9.81, PI = Math.PI;
+
+  /* ================================================================ 1. Helpers */
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }     // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)); }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  function r4(x) { return +x.toPrecision(4); }                                       // a given value rounded to 4 significant figures
+  var G = 9.81, RHO0 = 1.225, P0 = 101325;
+  var KG = '\\ \\text{kg}', KGS = '\\ \\text{kg/s}', MM = '\\ \\text{m}', MS = '\\ \\text{m/s}', NN = '\\ \\text{N}', KN = '\\ \\text{kN}', KW = '\\ \\text{kW}', PA = '\\ \\text{Pa}',
+    KPA = '\\ \\text{kPa}', MPA = '\\ \\text{MPa}', MMM = '\\ \\text{mm}', DEG = '^\\circ', LB = '\\ \\text{lb}', PSIU = '\\ \\text{psi}', INU = '\\ \\text{in}', IN2 = '\\ \\text{in}^2',
+    FPS = '\\ \\text{ft/s}', LPM = '\\ \\text{L/min}', AMP = '\\ \\text{A}', VOLT = '\\ \\text{V}', M2 = '\\ \\text{m}^2', CM2 = '\\ \\text{cm}^2', LIT = '\\ \\text{L}', KK = '\\ \\text{K}';
+  var D2R = Math.PI / 180, PSI = 6894.757, LBF = 4.4482216;
+  function deg(r) { return r / D2R; }
+  function grp(x) { return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, '\\,'); }   // 13650 → 13\,650 (TeX)
+  function g4(x) { return grp(Math.round(x)); }                                       // a large computed number, rounded, grouped
+  function upN(v, st) { return Math.ceil(v / st) * st; }                               // a tidy axis maximum in steps of st
+  function sci(x) { var e = Math.floor(Math.log10(x)), c = x / Math.pow(10, e); return nn(+c.toFixed(2)) + '\\times 10^{' + e + '}'; }   // 3.2 × 10^7 (TeX)
+
+  /* ================================================================ 2. Generators */
+  /* ---------- 2.1 The drag polar (Lesson 1) ---------- */
+  function genPolar(rng) {
+    var kind = pickW(rng, [['ld', 3], ['cls', 2], ['range', 3], ['at', 2]]), spec, right, wrong;
+    var cd0 = rng.pick(range(0.012, 0.035, 0.0005)), A = rng.pick(range(5, 13, 0.1)), e = rng.pick(range(0.65, 0.9, 0.01)), K = 1 / (Math.PI * A * e);
+    var ld = 0.5 / Math.sqrt(cd0 * K), cs = Math.sqrt(cd0 / K), given = 'An aircraft has \\(C_{D0} = ' + nn(cd0) + '\\), \\(A = ' + nn(A) + '\\) and \\(e = ' + nn(e) + '\\). ', ans, mk;
+    if (kind === 'ld') {
+      ans = ld; spec = { type: 'numeric', prompt: given + 'What is its maximum lift-to-drag ratio?', label: '\\((L/D)_{\\max} =\\)', answer: ans };
+      spec.hints = ['\\(K = 1/(\\pi Ae) = ' + n4(K) + '\\).', '\\((L/D)_{\\max} = 1/(2\\sqrt{C_{D0}K})\\).'];
+      spec.solution = M('K = ' + n4(K) + ', \\qquad \\left(\\frac LD\\right)_{\\max} = \\frac{1}{2\\sqrt{' + nn(cd0) + '(' + n4(K) + ')}} = ' + n4(ld));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [1 / Math.sqrt(cd0 * K), 0.866 * ld, 0.5 / Math.sqrt(cd0 * Math.PI * A * e)])) }; mk = [cs, ld];
+    } else if (kind === 'cls') {
+      ans = cs; spec = { type: 'numeric', prompt: given + 'At what lift coefficient is its lift-to-drag ratio largest?', label: '\\(C_L^* =\\)', answer: ans };
+      spec.hints = ['At the best L/D the two drag terms are equal: \\(C_{D0} = KC_L^2\\).', '\\(C_L^* = \\sqrt{C_{D0}/K}\\), \\(K = ' + n4(K) + '\\).'];
+      spec.solution = M('C_L^* = \\sqrt{\\frac{' + nn(cd0) + '}{' + n4(K) + '}} = ' + n4(cs));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [cs / Math.sqrt(3), cd0 / K, Math.sqrt(cd0 * K)])) }; mk = [cs, ld];
+    } else if (kind === 'range') {
+      ans = cs / Math.sqrt(3); spec = { type: 'numeric', prompt: given + 'At what lift coefficient should it cruise for the best range, as a jet?', label: '\\(C_L =\\)', answer: ans };
+      spec.hints = ['A jet\'s best range maximizes \\(\\sqrt{C_L}/C_D\\), where \\(C_{D0} = 3KC_L^2\\).', '\\(C_L = C_L^*/\\sqrt 3\\), with \\(C_L^* = ' + n4(cs) + '\\).'];
+      spec.solution = M('C_L = \\frac{1}{\\sqrt3}\\sqrt{\\frac{' + nn(cd0) + '}{' + n4(K) + '}} = ' + n4(ans)) + '<p>There \\(L/D = 0.866(' + n4(ld) + ') = ' + n4(0.866 * ld) + '\\).</p>';
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [cs, cs * Math.sqrt(3), cs / 3])) }; mk = [ans, 0.866 * ld];
+    } else {
+      var cl = rng.pick(range(0.15, 1.1, 0.01)); ans = cl / (cd0 + K * cl * cl);
+      spec = { type: 'numeric', prompt: given + 'What is its lift-to-drag ratio at \\(C_L = ' + nn(cl) + '\\)?', label: '\\(L/D =\\)', answer: ans };
+      spec.hints = ['\\(C_D = C_{D0} + KC_L^2\\), \\(K = ' + n4(K) + '\\).', '\\(L/D = C_L/C_D\\).'];
+      spec.solution = M('C_D = ' + nn(cd0) + ' + ' + n4(K) + '(' + nn(cl) + ')^2 = ' + n4(cd0 + K * cl * cl) + ', \\qquad \\frac LD = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [cl / cd0, cl / (K * cl * cl), cl / (cd0 + K * cl)])) }; mk = [cl, ans];
+    }
+    var view = { title: 'L/D against lift coefficient', aria: 'Lift-to-drag ratio against lift coefficient, with this problem marked.',
+      x: { label: '\\(C_L\\)', min: 0, max: upN(Math.max(1.2, mk[0] * 1.3), 0.2) }, y: { label: '\\(L/D\\)', min: 0, max: upN(ld * 1.25, 2) },
+      curves: [{ f: function (c) { return c / (cd0 + K * c * c); }, color: 'z' }], hline: { y: ld, label: 'max' }, marker: { at: mk, label: '' },
+      readouts: [{ label: '\\(K\\)', tex: n4(K) }, { label: '\\(C_L^*\\)', tex: n4(cs) }, { label: '\\((L/D)_{\\max}\\)', tex: n4(ld) }],
+      note: 'The polar \\(C_D = C_{D0} + KC_L^2\\) has its best L/D where both terms are equal.' };
+    spec.explain = 'The parabolic polar sets both the best L/D and where it occurs.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.2 Maximum lift (Lesson 2) ---------- */
+  function genMaxLift(rng) {
+    var kind = pickW(rng, [['clean', 2], ['dcl', 4], ['span', 3]]), spec, right, wrong, view;
+    var sw = rng.pick(range(0, 35, 0.5)), clm = rng.pick(range(1.3, 1.9, 0.01));
+    if (kind === 'clean') {
+      var v = 0.9 * clm * Math.cos(sw * D2R);
+      spec = { type: 'numeric', prompt: 'A wing swept \\(' + nn(sw) + '^\\circ\\) at the quarter chord uses an airfoil with \\(c_{l,\\max} = ' + nn(clm) + '\\). Estimate its clean maximum lift coefficient.', label: '\\(\\CLmax =\\)', answer: v };
+      spec.hints = ['The wing reaches about 90% of its airfoil\'s maximum, reduced by sweep.', '\\(\\CLmax \\approx 0.9\\,c_{l,\\max}\\cos\\Lambda_{c/4}\\).'];
+      spec.solution = M('\\CLmax = 0.9(' + nn(clm) + ')\\cos ' + nn(sw) + '^\\circ = ' + n4(v));
+      right = { value: typed(v) }; wrong = { value: typed(wrongOf(v, [clm * Math.cos(sw * D2R), 0.9 * clm, 0.9 * clm * Math.pow(Math.cos(sw * D2R), 2) * 0.95])) };
+      view = { title: 'Clean maximum lift', aria: 'Clean maximum lift against sweep for this airfoil, with this problem marked.',
+        x: { label: 'Sweep (°)', min: 0, max: 45 }, y: { label: '\\(\\CLmax\\)', min: 0, max: 2 }, curves: [{ f: function (s) { return 0.9 * clm * Math.cos(s * D2R); }, color: 'z' }], marker: { at: [sw, v], label: '' },
+        readouts: [{ label: '\\(c_{l,\\max}\\)', tex: nn(clm) }, { label: '\\(\\CLmax\\)', tex: n4(v) }], note: 'Sweep lowers the maximum lift.' };
+    } else {
+      var dev = rng.pick(DRAG.HL.filter(function (d) { return d.te; })), ext = dev.fowler ? rng.pick(range(1.05, 1.3, 0.01)) : 1, dcl = dev.dcl * ext, hinge = rng.pick(range(0, 30, 0.5)), c = Math.cos(hinge * D2R);
+      var devText = dev.label.toLowerCase() + (dev.fowler ? ' with \\(c\'/c = ' + nn(ext) + '\\)' : '');
+      if (kind === 'dcl') {
+        var sf = rng.pick(range(0.3, 0.8, 0.005)), d = 0.9 * dcl * sf * c;
+        spec = { type: 'numeric', prompt: 'A ' + devText + ' covers \\(S_{\\text{flapped}}/\\Sref = ' + nn(sf) + '\\) of a wing, on a hinge line swept \\(' + nn(hinge) + '^\\circ\\). Its section increment is \\(\\Delta c_{l,\\max} = ' + nn(dev.dcl) + (dev.fowler ? 'c\'/c' : '') + '\\). What does it add to the wing\'s maximum lift coefficient?', label: '\\(\\Delta\\CLmax =\\)', answer: d };
+        spec.hints = ['\\(\\Delta\\CLmax = 0.9\\,\\Delta c_{l,\\max}(S_{\\text{flapped}}/\\Sref)\\cos\\Lambda_{\\text{H.L.}}\\).', '\\(\\Delta c_{l,\\max} = ' + n4(dcl) + '\\).'];
+        spec.solution = M('\\Delta\\CLmax = 0.9(' + n4(dcl) + ')(' + nn(sf) + ')\\cos ' + nn(hinge) + '^\\circ = ' + n4(d));
+        right = { value: typed(d) }; wrong = { value: typed(wrongOf(d, [dcl * sf * c, 0.9 * dev.dcl * sf * c * (dev.fowler ? 1.4 : 1.3), 0.9 * dcl * c])) };
+        view = { title: 'Flapped area and the increment', aria: 'Increment in maximum lift against the flapped area share, with this problem marked.',
+          x: { label: '\\(S_{\\text{flapped}}/\\Sref\\)', min: 0, max: 1 }, y: { label: '\\(\\Delta\\CLmax\\)', min: 0, max: upN(0.9 * dcl * c * 1.05, 0.5) }, curves: [{ f: function (s) { return 0.9 * dcl * s * c; }, color: 'z' }], marker: { at: [sf, d], label: '' },
+          readouts: [{ label: '\\(\\Delta c_{l,\\max}\\)', tex: n4(dcl) }, { label: '\\(\\Delta\\CLmax\\)', tex: n4(d) }], note: 'The increment grows in proportion to the flapped area.' };
+      } else {
+        var cl0 = r4(0.9 * clm * Math.cos(sw * D2R)), need = r4(cl0 + rng.pick(range(0.25, 0.9 * dcl * 0.8 * c, 0.01))), sfr = (need - cl0) / (0.9 * dcl * c);
+        spec = { type: 'numeric', prompt: 'A wing\'s clean \\(\\CLmax\\) is ' + nn(cl0) + '. It needs ' + nn(need) + ' for landing with a ' + devText + ' (\\(\\Delta c_{l,\\max} = ' + nn(dev.dcl) + (dev.fowler ? 'c\'/c' : '') + '\\)) on a hinge line swept \\(' + nn(hinge) + '^\\circ\\). What share of the wing must the flaps cover, \\(S_{\\text{flapped}}/\\Sref\\)?', label: '\\(S_{\\text{flapped}}/\\Sref =\\)', answer: sfr };
+        spec.hints = ['The flaps must add \\(' + nn(need) + ' - ' + nn(cl0) + ' = ' + n4(need - cl0) + '\\).', 'Solve \\(\\Delta\\CLmax = 0.9\\,\\Delta c_{l,\\max}(S_{\\text{flapped}}/\\Sref)\\cos\\Lambda_{\\text{H.L.}}\\).'];
+        spec.solution = M('\\frac{S_{\\text{flapped}}}{\\Sref} = \\frac{' + n4(need - cl0) + '}{0.9(' + n4(dcl) + ')\\cos ' + nn(hinge) + '^\\circ} = ' + n4(sfr));
+        right = { value: typed(sfr) }; wrong = { value: typed(wrongOf(sfr, [need / (0.9 * dcl * c), (need - cl0) / (dcl * c), (need - cl0) / (0.9 * dev.dcl)])) };
+        view = { title: 'Flaps for a landing lift coefficient', aria: 'Wing maximum lift against the flapped share, with this problem marked.',
+          x: { label: '\\(S_{\\text{flapped}}/\\Sref\\)', min: 0, max: 1 }, y: { label: '\\(\\CLmax\\)', min: 0, max: upN(cl0 + 0.9 * dcl * c * 1.05, 0.5) }, curves: [{ f: function (s) { return cl0 + 0.9 * dcl * s * c; }, color: 'z' }], hline: { y: need, label: 'needed' }, marker: { at: [sfr, need], label: '' },
+          readouts: [{ label: 'Clean', tex: nn(cl0) }, { label: 'Needed', tex: nn(need) }, { label: 'Share', tex: n4(sfr) }], note: 'More effective flaps need less of the span, leaving room for ailerons.' };
+      }
+    }
+    spec.explain = 'Flaps add lift through the share of the wing they cover; sweep reduces it. The section increments are those of <a class="cite" href="../reference/references.html#r1">[1]</a>, Table 12.2.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.3 Skin friction (Lesson 3) ---------- */
+  function genFriction(rng) {
+    var kind = pickW(rng, [['re', 2], ['turb', 3], ['lam', 2], ['mix', 2], ['cut', 2]]), spec, right, wrong;
+    var Re = Math.round(rng.pick(range(6, 8.6, 0.01)) * 100) / 100, R = Math.pow(10, Re), Rv = Number(R.toPrecision(3)), Mn = rng.pick(range(0.1, 0.85, 0.01)), ans, mk;
+    if (kind === 're') {
+      var rho = rng.pick(range(0.3, 1.225, 0.001)), V = rng.pick(range(40, 260, 1)), l = rng.pick(range(0.8, 40, 0.05)), mu = r4(1.458e-6 * Math.pow(288.15 - (1.225 - rho) * 70, 1.5) / (288.15 - (1.225 - rho) * 70 + 110.4));
+      ans = rho * V * l / mu; Rv = ans;
+      spec = { type: 'numeric', prompt: 'A component ' + nn(l) + '&nbsp;m long flies at ' + nn(V) + '&nbsp;m/s in air of density ' + nn(rho) + '&nbsp;kg/m³ and viscosity \\(' + sci(mu) + '\\) Pa&nbsp;s. What is its Reynolds number?', label: '\\(Re =\\)', answer: ans };
+      spec.hints = ['\\(Re = \\rho Vl/\\mu\\).', 'Type the result in scientific notation, such as 1.2e7.'];
+      spec.solution = M('Re = \\frac{' + nn(rho) + '(' + nn(V) + ')(' + nn(l) + ')}{' + sci(mu) + '} = ' + sci(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [rho * V / mu, V * l / mu, rho * V * l * mu * 1e10])) }; mk = [Math.log10(ans), DRAG.cfTurb(ans, 0) * 1000];
+    } else if (kind === 'turb') {
+      ans = DRAG.cfTurb(Rv, Mn);
+      spec = { type: 'numeric', prompt: 'Find the turbulent flat-plate skin-friction coefficient at \\(Re = ' + sci(Rv) + '\\) and Mach ' + nn(Mn) + '.', label: '\\(C_f =\\)', answer: ans };
+      spec.hints = ['\\(C_f = 0.455/[(\\log_{10}Re)^{2.58}(1 + 0.144M^2)^{0.65}]\\).', '\\(\\log_{10}Re = ' + n4(Math.log10(Rv)) + '\\).'];
+      spec.solution = M('C_f = \\frac{0.455}{(' + n4(Math.log10(Rv)) + ')^{2.58}(1 + 0.144(' + nn(Mn) + ')^2)^{0.65}} = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [DRAG.cfTurb(Rv, 0) * 1.25, DRAG.cfLam(Rv), 0.455 / Math.pow(Math.log(Rv), 2.58)])) }; mk = [Math.log10(Rv), ans * 1000];
+    } else if (kind === 'lam') {
+      Rv = Number(Math.pow(10, rng.pick(range(5, 7, 0.01))).toPrecision(3)); ans = DRAG.cfLam(Rv);
+      spec = { type: 'numeric', prompt: 'Find the laminar flat-plate skin-friction coefficient at \\(Re = ' + sci(Rv) + '\\).', label: '\\(C_f =\\)', answer: ans };
+      spec.hints = ['Blasius: \\(C_f = 1.328/\\sqrt{Re}\\).', '\\(\\sqrt{Re} = ' + n4(Math.sqrt(Rv)) + '\\).'];
+      spec.solution = M('C_f = \\frac{1.328}{\\sqrt{' + sci(Rv) + '}} = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [0.664 / Math.sqrt(Rv), 1.328 / Rv * 1000, DRAG.cfTurb(Rv, 0)])) }; mk = [Math.log10(Rv), ans * 1000];
+    } else if (kind === 'mix') {
+      var f = rng.pick(range(0.05, 0.5, 0.01)), t = DRAG.cfTurb(Rv, Mn), lm = DRAG.cfLam(Rv); ans = f * lm + (1 - f) * t;
+      spec = { type: 'numeric', prompt: 'At \\(Re = ' + sci(Rv) + '\\) and Mach ' + nn(Mn) + ', a surface keeps ' + nn(100 * f) + '% laminar flow. Its turbulent and laminar coefficients are ' + n4(t) + ' and ' + n4(lm) + '. What is its skin-friction coefficient?', label: '\\(C_f =\\)', answer: ans };
+      spec.hints = ['Weight the two by the shares of the surface.', '\\(C_f = fC_{f,\\text{lam}} + (1 - f)C_{f,\\text{turb}}\\).'];
+      spec.solution = M('C_f = ' + nn(f) + '(' + n4(lm) + ') + ' + nn(1 - f) + '(' + n4(t) + ') = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [f * t + (1 - f) * lm, (1 - f) * t, t])) }; mk = [Math.log10(Rv), ans * 1000];
+    } else {
+      var l2 = rng.pick(range(0.8, 60, 0.1)), rg = rng.pick(DRAG.ROUGH), k = Number(rg.k.toPrecision(3));
+      spec = { type: 'numeric', prompt: 'A component ' + nn(l2) + '&nbsp;m long has a surface of roughness height \\(k = ' + sci(k) + '\\) m (' + rg.label.toLowerCase() + '). What is its cutoff Reynolds number?', label: '\\(Re_{\\text{cutoff}} =\\)', answer: 38.21 * Math.pow(l2 / k, 1.053) };
+      ans = spec.answer;
+      spec.hints = ['\\(Re_{\\text{cutoff}} = 38.21(l/k)^{1.053}\\).', '\\(l/k = ' + sci(l2 / k) + '\\).'];
+      spec.solution = M('Re_{\\text{cutoff}} = 38.21\\left(' + sci(l2 / k) + '\\right)^{1.053} = ' + sci(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [38.21 * l2 / k, Math.pow(l2 / k, 1.053), 38.21 * Math.pow(l2 / k, 0.9)])) }; mk = [Math.log10(ans), DRAG.cfTurb(ans, 0) * 1000];
+    }
+    var view = { title: 'Skin friction against Reynolds number', aria: 'Turbulent and laminar skin friction against the logarithm of the Reynolds number, with this problem marked.',
+      x: { label: '\\(\\log_{10} Re\\)', min: 5, max: 10 }, y: { label: '\\(C_f \\times 1000\\)', min: 0, max: 6 },
+      curves: [{ f: function (x) { return DRAG.cfTurb(Math.pow(10, x), 0) * 1000; }, color: 'z' }, { f: function (x) { return DRAG.cfLam(Math.pow(10, x)) * 1000; }, color: 'muted', dashed: true }], marker: { at: [Math.min(10, Math.max(5, mk[0])), Math.min(6, mk[1])], label: '' },
+      readouts: [{ label: '\\(\\log_{10}Re\\)', tex: n4(mk[0]) }, { label: '\\(C_f \\times 1000\\)', tex: n4(mk[1]) }], note: 'Solid: turbulent at Mach 0; dashed: laminar.' };
+    spec.explain = 'Friction falls slowly with the Reynolds number: larger, faster components have lower coefficients. The friction formulas are those of <a class="cite" href="../reference/references.html#r1">[1]</a>.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.4 Form factors (Lesson 4) ---------- */
+  function genForm(rng) {
+    var kind = pickW(rng, [['wing', 3], ['body', 3], ['nac', 2], ['comp', 2]]), spec, right, wrong, view;
+    if (kind === 'wing') {
+      var tc = rng.pick(range(0.08, 0.18, 0.005)), xm = rng.pick([0.3, 0.35, 0.4, 0.45]), Mn = rng.pick(range(0.2, 0.85, 0.01)), sw = rng.pick(range(0, 35, 0.5)), ff = DRAG.ffWing(tc, xm, Mn, sw), a = 1 + 0.6 / xm * tc + 100 * Math.pow(tc, 4), b = 1.34 * Math.pow(Mn, 0.18) * Math.pow(Math.cos(sw * D2R), 0.28);
+      spec = { type: 'numeric', prompt: 'A wing is ' + nn(100 * tc) + '% thick with its maximum thickness at ' + nn(100 * xm) + '% of the chord, a line swept \\(' + nn(sw) + '^\\circ\\). What is its form factor at Mach ' + nn(Mn) + '?', label: '\\(FF =\\)', answer: ff };
+      spec.hints = ['\\(FF = [1 + 0.6(t/c)/(x/c)_m + 100(t/c)^4][1.34M^{0.18}\\cos^{0.28}\\Lambda_m]\\).', 'The first bracket is ' + n4(a) + '.'];
+      spec.solution = M('FF = ' + n4(a) + '(' + n4(b) + ') = ' + n4(ff));
+      right = { value: typed(ff) }; wrong = { value: typed(wrongOf(ff, [a, a * 1.34, (1 + 0.6 * xm * tc + 100 * Math.pow(tc, 4)) * b])) };
+      view = { title: 'Wing form factor', aria: 'Wing form factor against thickness ratio, with this problem marked.', x: { label: '\\(t/c\\)', min: 0.04, max: 0.2 }, y: { label: '\\(FF\\)', min: 1, max: 2.4 },
+        curves: [{ f: function (t) { return DRAG.ffWing(t, xm, Mn, sw); }, color: 'z' }], marker: { at: [tc, ff], label: '' }, readouts: [{ label: 'Thickness', tex: n4(a) }, { label: 'Mach, sweep', tex: n4(b) }, { label: '\\(FF\\)', tex: n4(ff) }], note: 'Thicker wings and higher Mach numbers raise the form factor.' };
+    } else if (kind === 'body' || kind === 'nac') {
+      var body = kind === 'body', l = body ? rng.pick(range(8, 60, 0.1)) : rng.pick(range(1.2, 6, 0.01)), d = body ? r4(l / rng.pick(range(5, 14, 0.01))) : r4(l / rng.pick(range(1.4, 4.5, 0.01))), f = l / d, v = body ? DRAG.ffBody(f) : DRAG.ffNacelle(f);
+      spec = { type: 'numeric', prompt: 'A ' + (body ? 'fuselage' : 'nacelle') + ' is ' + nn(l) + '&nbsp;m long and ' + nn(d) + '&nbsp;m across. What is its form factor?', label: '\\(FF =\\)', answer: v };
+      spec.hints = ['The fineness ratio is \\(f = l/d = ' + n4(f) + '\\).', body ? '\\(FF = 0.9 + 5/f^{1.5} + f/400\\).' : '\\(FF = 1 + 0.35/f\\).'];
+      spec.solution = M('f = ' + n4(f) + ', \\qquad FF = ' + n4(v));
+      right = { value: typed(v) }; wrong = { value: typed(wrongOf(v, body ? [DRAG.ffNacelle(f), 0.9 + 5 / Math.pow(f, 2.5) + f / 400, 1 + 5 / Math.pow(f, 1.5)] : [DRAG.ffBody(f), 1 + 0.35 * f, 1 + 0.35 / (d / l) / 10])) };
+      view = { title: 'Body form factor', aria: 'Form factor against fineness ratio, with this problem marked.', x: { label: '\\(f = l/d\\)', min: 1, max: 16 }, y: { label: '\\(FF\\)', min: 1, max: 2 },
+        curves: [{ f: function (x) { return body ? DRAG.ffBody(x) : DRAG.ffNacelle(x); }, color: 'z' }], marker: { at: [f, v], label: '' }, readouts: [{ label: '\\(f\\)', tex: n4(f) }, { label: '\\(FF\\)', tex: n4(v) }], note: 'Short, fat bodies have large wakes.' };
+    } else {
+      var cf = rng.pick(range(0.0018, 0.0034, 0.00001)), ff2 = rng.pick(range(1.05, 1.65, 0.001)), Q = rng.pick([1.0, 1.04, 1.1, 1.3, 1.5]), sw2 = rng.pick(range(5, 400, 0.5)), S = r4(sw2 / rng.pick(range(1.5, 4, 0.01))), cd = cf * ff2 * Q * sw2 / S;
+      spec = { type: 'numeric', prompt: 'A component has \\(C_f = ' + nn(cf) + '\\), \\(FF = ' + nn(ff2) + '\\), \\(Q = ' + nn(Q) + '\\) and ' + nn(sw2) + '&nbsp;m² of wetted area; the reference area is ' + nn(S) + '&nbsp;m². What does it add to \\(C_{D0}\\)?', label: '\\(C_D =\\)', answer: cd };
+      spec.hints = ['\\(C_D = C_f\\,FF\\,Q\\,\\Swet/\\Sref\\).', '\\(\\Swet/\\Sref = ' + n4(sw2 / S) + '\\).'];
+      spec.solution = M('C_D = ' + nn(cf) + '(' + nn(ff2) + ')(' + nn(Q) + ')\\frac{' + nn(sw2) + '}{' + nn(S) + '} = ' + n4(cd));
+      right = { value: typed(cd) }; wrong = { value: typed(wrongOf(cd, [cf * sw2 / S, cf * ff2 * Q, cf * ff2 * Q * S / sw2])) };
+      view = { title: 'A component\'s contribution', aria: 'Contribution to the zero-lift drag against wetted area, with this problem marked.', x: { label: '\\(\\Swet\\) (m²)', min: 0, max: upN(sw2 * 1.6, 10) }, y: { label: '\\(C_D \\times 1000\\)', min: 0, max: upN(cd * 1600, 1) },
+        curves: [{ f: function (s) { return 1000 * cf * ff2 * Q * s / S; }, color: 'z' }], marker: { at: [sw2, 1000 * cd], label: '' }, readouts: [{ label: '\\(C_f\\,FF\\,Q\\)', tex: n4(cf * ff2 * Q) }, { label: '\\(C_D\\)', tex: n4(cd) }], note: 'Every square meter of wetted area costs drag.' };
+    }
+    spec.explain = 'The form factor scales flat-plate friction for thickness; interference adds the effect of neighbors. The form factors are those of <a class="cite" href="../reference/references.html#r1">[1]</a>.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.5 The build-up (Lesson 5) ---------- */
+  function genBuildup(rng) {
+    var kind = pickW(rng, [['total', 3], ['cfe', 2], ['up', 3]]), spec, right, wrong, view;
+    if (kind === 'up') {
+      var u = rng.pick(range(3, 14, 0.1)), d = rng.pick(range(1.2, 6.5, 0.01)), S = rng.pick(range(15, 400, 0.5)), A = Math.PI * d * d / 4, Dq = 3.83 * Math.pow(u * D2R, 2.5) * A, cd = Dq / S;
+      spec = { type: 'numeric', prompt: 'A fuselage ' + nn(d) + '&nbsp;m across has a tail cone whose centerline rises at \\(' + nn(u) + '^\\circ\\). With a reference area of ' + nn(S) + '&nbsp;m², what is its upsweep drag coefficient?', label: '\\(C_{D,\\text{upsweep}} =\\)', answer: cd };
+      spec.hints = ['\\(D/q = 3.83u^{2.5}A_{\\max}\\), \\(u\\) in radians.', '\\(u = ' + n4(u * D2R) + '\\) rad, \\(A_{\\max} = ' + n4(A) + '\\) m².'];
+      spec.solution = M('\\frac Dq = 3.83(' + n4(u * D2R) + ')^{2.5}(' + n4(A) + ') = ' + n4(Dq) + '\\ \\text{m}^2, \\qquad C_D = ' + n4(cd));
+      right = { value: typed(cd) }; wrong = { value: typed(wrongOf(cd, [3.83 * Math.pow(u, 2.5) * A / S / 1000, Dq, 3.83 * Math.pow(u * D2R, 2.5) * d / S])) };
+      view = { title: 'Upsweep drag', aria: 'Upsweep drag coefficient against the upsweep angle, with this problem marked.', x: { label: '\\(u\\) (°)', min: 0, max: 16 }, y: { label: '\\(C_D \\times 1000\\)', min: 0, max: upN(1000 * 3.83 * Math.pow(16 * D2R, 2.5) * A / S * 1.05, 1) },
+        curves: [{ f: function (x) { return 1000 * 3.83 * Math.pow(x * D2R, 2.5) * A / S; }, color: 'z' }], marker: { at: [u, 1000 * cd], label: '' }, readouts: [{ label: '\\(A_{\\max}\\)', tex: n4(A) + M2 }, { label: '\\(C_D\\)', tex: n4(cd) }], note: 'Upsweep drag grows with the 2.5 power of the angle.' };
+    } else {
+      var sum = rng.pick(range(0.012, 0.030, 0.0001)), misc = rng.pick(range(0, 0.003, 0.0001)), lp = rng.pick([2, 3, 4, 5, 6, 8, 10]), cd0 = (sum + misc) * (1 + lp / 100), r = rng.pick(range(4, 7, 0.01));
+      if (kind === 'total') {
+        spec = { type: 'numeric', prompt: 'An aircraft\'s components add up to \\(' + nn(sum) + '\\) and its miscellaneous drags to \\(' + nn(misc) + '\\). With ' + lp + '% for leakage and protuberances, what is its \\(C_{D0}\\)?', label: '\\(C_{D0} =\\)', answer: cd0 };
+        spec.hints = ['Leakage and protuberances are a share of everything else.', '\\(C_{D0} = (1 + ' + nn(lp / 100) + ')(\\text{components} + \\text{misc})\\).'];
+        spec.solution = M('C_{D0} = ' + nn(1 + lp / 100) + '(' + nn(sum) + ' + ' + nn(misc) + ') = ' + n4(cd0));
+        right = { value: typed(cd0) }; wrong = { value: typed(wrongOf(cd0, [sum + misc, sum * (1 + lp / 100) + misc * 0.5, sum + misc + lp / 100])) };
+      } else {
+        var cfe = cd0 / r;
+        spec = { type: 'numeric', prompt: 'A build-up gives \\(C_{D0} = ' + n4(cd0) + '\\) for an aircraft with \\(\\Swet/\\Sref = ' + nn(r) + '\\). What is its equivalent skin-friction coefficient?', label: '\\(C_{fe} =\\)', answer: cd0 / r };
+        spec.hints = ['Module 3 wrote \\(C_{D0} = C_{fe}\\Swet/\\Sref\\).', 'Divide the build-up by the wetted-area ratio.'];
+        spec.solution = M('C_{fe} = \\frac{' + n4(cd0) + '}{' + nn(r) + '} = ' + n4(cfe));
+        right = { value: typed(cd0 / r) }; wrong = { value: typed(wrongOf(cfe, [cd0 * r, cd0, cd0 / r * 1.3])) };
+      }
+      view = { title: 'Adding it up', aria: 'Zero-lift drag against the leakage allowance, with this problem marked.', x: { label: 'Leakage and protuberances (%)', min: 0, max: 15 }, y: { label: '\\(C_{D0} \\times 1000\\)', min: 0, max: upN((sum + misc) * 1300, 5) },
+        curves: [{ f: function (p) { return 1000 * (sum + misc) * (1 + p / 100); }, color: 'z' }], marker: { at: [lp, 1000 * cd0], label: '' }, readouts: [{ label: 'Components', tex: nn(sum) }, { label: 'Miscellaneous', tex: nn(misc) }, { label: '\\(C_{D0}\\)', tex: n4(cd0) }], note: 'The leakage allowance scales everything else.' };
+    }
+    spec.explain = 'The build-up adds the components, the miscellaneous drags and an allowance for leakage and protuberances.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.6 Induced drag (Lesson 6) ---------- */
+  function genInduced(rng) {
+    var kind = pickW(rng, [['e', 3], ['K', 2], ['cdi', 3], ['share', 2]]), spec, right, wrong;
+    var A = rng.pick(range(4, 14, 0.1)), e = DRAG.oswald(A), e2 = rng.pick(range(0.65, 0.9, 0.01)), K = 1 / (Math.PI * A * e2), ans, mk;
+    if (kind === 'e') {
+      ans = e; spec = { type: 'numeric', prompt: 'Estimate the Oswald factor of a wing of aspect ratio ' + nn(A) + ', swept less than \\(30^\\circ\\).', label: '\\(e =\\)', answer: ans };
+      spec.hints = ['\\(e = 1.78(1 - 0.045A^{0.68}) - 0.64\\).', '\\(A^{0.68} = ' + n4(Math.pow(A, 0.68)) + '\\).'];
+      spec.solution = M('e = 1.78(1 - 0.045(' + n4(Math.pow(A, 0.68)) + ')) - 0.64 = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [1.78 * (1 - 0.045 * Math.pow(A, 0.68)), 1.78 * (1 - 0.045 * A) - 0.64, 1 - 0.045 * Math.pow(A, 0.68)])) }; mk = [A, ans];
+    } else if (kind === 'K') {
+      ans = K; spec = { type: 'numeric', prompt: 'A wing of aspect ratio ' + nn(A) + ' has an Oswald factor of ' + nn(e2) + '. What is \\(K\\) in its drag polar?', label: '\\(K =\\)', answer: ans };
+      spec.hints = ['\\(K = 1/(\\pi Ae)\\).'];  spec.hints.push('\\(\\pi Ae = ' + n4(Math.PI * A * e2) + '\\).');
+      spec.solution = M('K = \\frac{1}{\\pi(' + nn(A) + ')(' + nn(e2) + ')} = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [1 / (A * e2), Math.PI * A * e2, 1 / (Math.PI * A)])) }; mk = [A, DRAG.oswald(A)];
+    } else {
+      var cl = rng.pick(range(0.2, 1.3, 0.01)), cd0 = rng.pick(range(0.012, 0.035, 0.0005)), cdi = K * cl * cl;
+      if (kind === 'cdi') {
+        ans = cdi; spec = { type: 'numeric', prompt: 'An aircraft with \\(A = ' + nn(A) + '\\) and \\(e = ' + nn(e2) + '\\) flies at \\(C_L = ' + nn(cl) + '\\). What is its induced drag coefficient?', label: '\\(C_{D,i} =\\)', answer: ans };
+        spec.hints = ['\\(C_{D,i} = KC_L^2\\), \\(K = 1/(\\pi Ae)\\).', '\\(K = ' + n4(K) + '\\).'];
+        spec.solution = M('C_{D,i} = ' + n4(K) + '(' + nn(cl) + ')^2 = ' + n4(ans));
+      } else {
+        ans = 100 * cdi / (cd0 + cdi); spec = { type: 'numeric', prompt: 'An aircraft with \\(C_{D0} = ' + nn(cd0) + '\\), \\(A = ' + nn(A) + '\\) and \\(e = ' + nn(e2) + '\\) flies at \\(C_L = ' + nn(cl) + '\\). What share of its drag is induced?', label: 'Share \\(=\\)', answer: ans, unit: '%' };
+        spec.hints = ['\\(C_{D,i} = KC_L^2\\) with \\(K = ' + n4(K) + '\\).', 'Share \\(= C_{D,i}/(C_{D0} + C_{D,i})\\).'];
+        spec.solution = M('C_{D,i} = ' + n4(cdi) + ', \\qquad \\frac{' + n4(cdi) + '}{' + nn(cd0) + ' + ' + n4(cdi) + '} = ' + n4(ans) + '\\%');
+      }
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, kind === 'cdi' ? [K * cl, cl * cl / (A * e2), K * cl * cl * Math.PI] : [100 * cdi / cd0, 100 * cd0 / (cd0 + cdi), 50])) }; mk = [A, DRAG.oswald(A)];
+    }
+    var view = { title: 'Oswald factor', aria: 'Estimated Oswald factor against aspect ratio, with this wing marked.', x: { label: '\\(A\\)', min: 3, max: 16 }, y: { label: '\\(e\\)', min: 0.4, max: 1 },
+      curves: [{ f: function (a) { return DRAG.oswald(a); }, color: 'z' }], marker: { at: [mk[0], Math.max(0.4, Math.min(1, mk[1]))], label: '' }, readouts: [{ label: '\\(A\\)', tex: nn(A) }, { label: 'Estimate of \\(e\\)', tex: n4(e) }, { label: 'Answer', tex: n4(ans) }], note: 'The estimate is for wings swept less than about 30°.' };
+    spec.explain = 'Induced drag grows with the square of the lift and falls with the aspect ratio and the Oswald factor. The Oswald-factor estimate is from <a class="cite" href="../reference/references.html#r1">[1]</a>.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.7 Wave drag (Lesson 7) ---------- */
+  function genWave(rng) {
+    var kind = pickW(rng, [['mdd', 3], ['mcr', 2], ['cdw', 3]]), spec, right, wrong;
+    var kap = rng.pick([0.87, 0.95]), tc = rng.pick(range(0.08, 0.15, 0.005)), cl = rng.pick(range(0.2, 0.7, 0.01)), sw = rng.pick(range(0, 35, 0.5)), mdd = DRAG.korn(kap, tc, cl, sw), mcr = DRAG.mcrit(mdd), ans, mk;
+    var c = Math.cos(sw * D2R), given = 'A wing with ' + (kap > 0.9 ? 'supercritical' : 'conventional') + ' airfoils (\\(\\kappa_A = ' + nn(kap) + '\\)), ' + nn(100 * tc) + '% thick and swept \\(' + nn(sw) + '^\\circ\\), flies at \\(C_L = ' + nn(cl) + '\\). ';
+    if (kind === 'mdd') {
+      ans = mdd; spec = { type: 'numeric', prompt: given + 'Estimate its drag-divergence Mach number.', label: '\\(\\MDD =\\)', answer: ans };
+      spec.hints = ['\\(\\MDD = \\kappa_A/\\cos\\Lambda - (t/c)/\\cos^2\\Lambda - C_L/(10\\cos^3\\Lambda)\\).', '\\(\\cos\\Lambda = ' + n4(c) + '\\).'];
+      spec.solution = M('\\MDD = ' + n4(kap / c) + ' - ' + n4(tc / (c * c)) + ' - ' + n4(cl / (10 * c * c * c)) + ' = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [kap - tc - cl / 10, mcr, kap / c - tc / c - cl / (10 * c)])) }; mk = [ans, 20 * Math.pow(ans - mcr, 4) * 1000];
+    } else if (kind === 'mcr') {
+      ans = mcr; spec = { type: 'numeric', prompt: given + 'Estimate its critical Mach number.', label: '\\(M_{\\text{crit}} =\\)', answer: ans };
+      spec.hints = ['Find \\(\\MDD\\) from Korn\'s equation first: ' + n4(mdd) + '.', '\\(M_{\\text{crit}} = \\MDD - (0.1/80)^{1/3} = \\MDD - 0.108\\).'];
+      spec.solution = M('\\MDD = ' + n4(mdd) + ', \\qquad M_{\\text{crit}} = ' + n4(mdd) + ' - 0.1077 = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [mdd, mdd - 0.05, mdd + 0.108])) }; mk = [ans, 0];
+    } else {
+      var Mf = r4(mcr + rng.pick(range(0.01, 0.12, 0.001))); ans = 20 * Math.pow(Mf - r4(mcr), 4);
+      spec = { type: 'numeric', prompt: 'An aircraft\'s critical Mach number is ' + nn(r4(mcr)) + '. Estimate its wave-drag coefficient at Mach ' + nn(Mf) + '.', label: '\\(\\Delta C_{D,\\text{wave}} =\\)', answer: ans };
+      spec.hints = ['\\(\\Delta C_{D,\\text{wave}} = 20(M - M_{\\text{crit}})^4\\).', '\\(M - M_{\\text{crit}} = ' + n4(Mf - r4(mcr)) + '\\).'];
+      spec.solution = M('\\Delta C_{D,\\text{wave}} = 20(' + n4(Mf - r4(mcr)) + ')^4 = ' + n4(ans));
+      right = { value: typed(ans) }; wrong = { value: typed(wrongOf(ans, [20 * Math.pow(Mf - r4(mcr), 2), Math.pow(Mf - r4(mcr), 4), 20 * (Mf - r4(mcr))])) }; mk = [Mf, 1000 * ans]; mcr = r4(mcr);
+    }
+    var view = { title: 'The drag rise', aria: 'Wave drag against Mach number, with this problem marked.', x: { label: '\\(M\\)', min: 0.5, max: 1.0 }, y: { label: '\\(\\Delta C_{D,\\text{wave}} \\times 1000\\)', min: 0, max: 10 },
+      curves: [{ f: function (m) { return 1000 * DRAG.cdWave(m, mcr); }, color: 'z' }], marker: { at: [Math.min(1, Math.max(0.5, mk[0])), Math.min(10, mk[1])], label: '' },
+      readouts: [{ label: '\\(M_{\\text{crit}}\\)', tex: n4(mcr) }, { label: 'Answer', tex: n4(ans) }], note: 'The fourth-power rise has a slope of 0.1 at \\(\\MDD\\).' };
+    spec.explain = 'Thin, swept, lightly loaded supercritical wings delay the drag rise. The drag-divergence Mach number comes from the Korn equation <a class="cite" href="../reference/references.html#r3">[3]</a>.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ---------- 2.8 The polar in the design (Lesson 8) ---------- */
+  function genDesign(rng) {
+    var kind = pickW(rng, [['cl', 3], ['p', 2], ['flap', 3], ['range', 2]]), spec, right, wrong, view;
+    if (kind === 'cl' || kind === 'p') {
+      var WS = rng.pick(range(150, 700, 1)), Mn = rng.pick(range(0.4, 0.85, 0.01)), h = rng.pick(range(6, 14, 0.1)), p = Math.round(DRAG.isa(h * 1000).p), q = 0.7 * p * Mn * Mn, cl = WS * G / q;
+      if (kind === 'cl') {
+        spec = { type: 'numeric', prompt: 'An aircraft with a wing loading of ' + nn(WS) + '&nbsp;kg/m² cruises at Mach ' + nn(Mn) + ' where the pressure is ' + g4(p) + '&nbsp;Pa. What is its lift coefficient?', label: '\\(C_L =\\)', answer: cl };
+        spec.hints = ['\\(q = 0.7pM^2\\).', '\\(C_L = (W/S)g/q\\), with \\(q = ' + g4(q) + '\\) Pa.'];
+        spec.solution = M('q = 0.7(' + g4(p) + ')(' + nn(Mn) + ')^2 = ' + g4(q) + '\\ \\text{Pa}, \\qquad C_L = \\frac{' + nn(WS) + '(9.81)}{' + g4(q) + '} = ' + n4(cl));
+        right = { value: typed(cl) }; wrong = { value: typed(wrongOf(cl, [WS / q, WS * G / (0.5 * p * Mn * Mn), WS * G / (0.7 * p * Mn)])) };
+        view = { title: 'Cruise lift coefficient', aria: 'Lift coefficient against pressure for this wing loading and Mach number, with this problem marked.', x: { label: 'Pressure (kPa)', min: 5, max: 60 }, y: { label: '\\(C_L\\)', min: 0, max: upN(Math.max(cl * 1.6, 1), 0.5) },
+          curves: [{ f: function (k) { return WS * G / (0.7 * k * 1000 * Mn * Mn); }, color: 'z' }], marker: { at: [p / 1000, cl], label: '' }, readouts: [{ label: '\\(q\\)', tex: g4(q) + PA }, { label: '\\(C_L\\)', tex: n4(cl) }], note: 'Higher altitude, lower pressure: a higher lift coefficient.' };
+      } else {
+        var clt = rng.pick(range(0.3, 0.7, 0.01)), pr = WS * G / (0.7 * Mn * Mn * clt);
+        spec = { type: 'numeric', prompt: 'An aircraft with a wing loading of ' + nn(WS) + '&nbsp;kg/m² wants to cruise at Mach ' + nn(Mn) + ' and \\(C_L = ' + nn(clt) + '\\). At what pressure must it fly, in kPa?', label: '\\(p =\\)', answer: pr / 1000, unit: 'kPa' };
+        spec.hints = ['\\(C_L = (W/S)g/(0.7pM^2)\\).', 'Solve for \\(p\\).'];
+        spec.solution = M('p = \\frac{' + nn(WS) + '(9.81)}{0.7(' + nn(Mn) + ')^2(' + nn(clt) + ')} = ' + g4(pr) + '\\ \\text{Pa}');
+        right = { value: typed(pr / 1000) }; wrong = { value: typed(wrongOf(pr / 1000, [WS / (0.7 * Mn * Mn * clt) / 1000, WS * G / (0.5 * Mn * Mn * clt) / 1000, WS * G * clt / (0.7 * Mn * Mn) / 1000])) };
+        view = { title: 'Pressure for a lift coefficient', aria: 'Pressure needed against the lift coefficient, with this problem marked.', x: { label: '\\(C_L\\)', min: 0.2, max: 0.8 }, y: { label: 'Pressure (kPa)', min: 0, max: upN(WS * G / (0.7 * Mn * Mn * 0.2) / 1000 * 1.05, 10) },
+          curves: [{ f: function (c) { return WS * G / (0.7 * Mn * Mn * c) / 1000; }, color: 'z' }], marker: { at: [clt, pr / 1000], label: '' }, readouts: [{ label: '\\(C_L\\)', tex: nn(clt) }, { label: '\\(p\\)', tex: n4(pr / 1000) + KPA }], note: 'A light wing loading needs a low pressure, a high altitude.' };
+      }
+    } else if (kind === 'flap') {
+      var F = rng.pick([0.0074, 0.0144]), cfc = rng.pick(range(0.2, 0.35, 0.01)), sf = rng.pick(range(0.3, 0.75, 0.005)), de = rng.pick(range(12, 50, 1)), d = F * cfc * sf * (de - 10);
+      spec = { type: 'numeric', prompt: (F < 0.01 ? 'Slotted' : 'Plain') + ' flaps of ' + nn(100 * cfc) + '% of the chord cover \\(S_{\\text{flapped}}/\\Sref = ' + nn(sf) + '\\) and are lowered to \\(' + nn(de) + '^\\circ\\). Estimate their drag (\\(F = ' + nn(F) + '\\)).', label: '\\(\\Delta C_{D0} =\\)', answer: d };
+      spec.hints = ['\\(\\Delta C_{D0} = F(c_f/c)(S_{\\text{flapped}}/\\Sref)(\\delta_f - 10^\\circ)\\).', 'The deflection term is ' + nn(de - 10) + '.'];
+      spec.solution = M('\\Delta C_{D0} = ' + nn(F) + '(' + nn(cfc) + ')(' + nn(sf) + ')(' + nn(de - 10) + ') = ' + n4(d));
+      right = { value: typed(d) }; wrong = { value: typed(wrongOf(d, [F * cfc * sf * de, F * sf * (de - 10), F * cfc * (de - 10)])) };
+      view = { title: 'Flap drag', aria: 'Flap drag against deflection, with this problem marked.', x: { label: '\\(\\delta_f\\) (°)', min: 0, max: 60 }, y: { label: '\\(\\Delta C_{D0}\\)', min: 0, max: upN(F * cfc * sf * 50 * 1.05, 0.02) },
+        curves: [{ f: function (x) { return F * cfc * sf * Math.max(0, x - 10); }, color: 'z' }], marker: { at: [de, d], label: '' }, readouts: [{ label: 'Deflection', tex: nn(de) + DEG }, { label: '\\(\\Delta C_{D0}\\)', tex: n4(d) }], note: 'Landing settings add drag on purpose; takeoff settings keep it small.' };
+    } else {
+      var R0 = rng.pick(range(1500, 9000, 10)), L0 = rng.pick(range(12, 18, 0.1)), L1 = rng.pick(range(9, 17, 0.1)), R1 = R0 * L1 / L0;
+      spec = { type: 'numeric', prompt: 'A jet was sized to fly ' + g4(R0) + '&nbsp;km on its fuel at a cruise \\(L/D\\) of ' + nn(L0) + '. If it actually cruises at \\(L/D = ' + nn(L1) + '\\) at the same speed and fuel consumption, how far does the same fuel take it?', label: '\\(R =\\)', answer: R1, unit: 'km' };
+      spec.hints = ['The Breguet range is proportional to \\(L/D\\) for the same fuel, speed and consumption.', '\\(R = R_0 (L/D)/(L/D)_0\\).'];
+      spec.solution = M('R = ' + g4(R0) + '\\,\\frac{' + nn(L1) + '}{' + nn(L0) + '} = ' + g4(R1) + '\\ \\text{km}');
+      right = { value: typed(R1) }; wrong = { value: typed(wrongOf(R1, [R0 * L0 / L1, R0 * Math.pow(L1 / L0, 2), R0 - (L0 - L1) * 100])) };
+      view = { title: 'Range and L/D', aria: 'Range against cruise lift-to-drag ratio for the same fuel, with this problem marked.', x: { label: 'Cruise \\(L/D\\)', min: 8, max: 20 }, y: { label: 'Range (km)', min: 0, max: upN(R0 * 20 / L0, 1000) },
+        curves: [{ f: function (x) { return R0 * x / L0; }, color: 'z' }], marker: { at: [L1, R1], label: '' }, readouts: [{ label: 'Sized for', tex: g4(R0) + '\\ \\text{km}' }, { label: 'Range', tex: g4(R1) + '\\ \\text{km}' }], note: 'Every point of L/D is range.' };
+    }
+    spec.explain = 'The polar, the wing loading and the flight condition together decide the aircraft\'s performance.';
+    return { spec: spec, view: view, test: { right: [right], wrong: [wrong] } };
+  }
+
+  /* ================================================================ 3. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-drag-polar.html', 'Lift, Drag and the Drag Polar'), l02: L(2, '02-maximum-lift.html', 'Maximum Lift and High-Lift Devices'),
+    l03: L(3, '03-skin-friction.html', 'Skin Friction'), l04: L(4, '04-form-factors.html', 'Form Factors and Interference'),
+    l05: L(5, '05-parasite-drag.html', 'The Parasite Drag Build-Up'), l06: L(6, '06-induced-drag.html', 'Induced Drag and the Lift-to-Drag Ratio'),
+    l07: L(7, '07-wave-drag.html', 'Compressibility and Wave Drag'), l08: L(8, '08-polar-in-design.html', 'The Drag Polar in the Design')
+  };
+  var CATS = [
+    { id: 'polar', label: 'The drag polar', gen: genPolar, lessons: [LES.l01] },
+    { id: 'maxlift', label: 'Maximum lift', gen: genMaxLift, lessons: [LES.l02] },
+    { id: 'friction', label: 'Skin friction', gen: genFriction, lessons: [LES.l03] },
+    { id: 'form', label: 'Form factors', gen: genForm, lessons: [LES.l04] },
+    { id: 'buildup', label: 'The build-up', gen: genBuildup, lessons: [LES.l05] },
+    { id: 'induced', label: 'Induced drag', gen: genInduced, lessons: [LES.l06] },
+    { id: 'wave', label: 'Wave drag', gen: genWave, lessons: [LES.l07] },
+    { id: 'design', label: 'The polar in the design', gen: genDesign, lessons: [LES.l08] }
+  ];
+
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 4. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      if (v.note) out.push(['view note', v.note]);
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|omega|rho|psi|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|left|right|Rightarrow|quad|qquad|dot|ddot|ihat|jhat|vvec|avec|int|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'numeric') return [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['numeric', 'fields'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || !vw.x || !vw.y) f('view has no axes');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            [vw.x.min, vw.x.max, vw.y.min, vw.y.max].forEach(function (q) { if (!isFinite(q)) f('view axis not finite'); });
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('view axis range empty');
+            if (!vw.marker || !vw.marker.at.every(isFinite)) f('view marker not finite');
+            else if (vw.marker.at[0] < vw.x.min || vw.marker.at[0] > vw.x.max || vw.marker.at[1] < vw.y.min || vw.marker.at[1] > vw.y.max) f('view marker outside the axes: ' + JSON.stringify(vw.marker.at));
+            (vw.curves || []).forEach(function (c) { var y = c.f(vw.marker.at[0]); if (typeof y !== 'number') f('curve does not return a number'); });
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 5. The shared chart (redrawn for every problem) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see it on its chart here.' })]);
+    var cur = null, revealed = false;
+    function idle() {
+      stage.innerHTML = '';
+      stage.appendChild(CYL.el('div', { class: 'pl-blank', role: 'img', 'aria-label': 'Empty chart. The chart for the current problem appears here after you solve it or open its solution.' }));
+      stage.appendChild(veil);
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Figure' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: 'Hidden until you solve the problem (or open its solution), so it does not give the answer away.' }));
+    }
+    function draw(vw) {
+      stage.innerHTML = '';
+      var ch = AERO.chart(stage, { x: vw.x, y: vw.y, height: 320, ariaLabel: vw.aria });
+      if (vw.bg) ch.points(vw.bg.list, { x: vw.bg.x, y: vw.bg.y, color: 'muted', r: 4, dim: function () { return false; },
+        title: vw.bg.title || function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } });
+      (vw.curves || []).forEach(function (c) { ch.fn(c.f, { color: c.color, dashed: !!c.dashed, label: c.label || null, width: 2.2, samples: 240 }); });
+      (vw.lines || []).forEach(function (l) { ch.polyline(l.pts, { color: l.color || 'z', width: l.width || 2.2, dashed: !!l.dashed }); });
+      (vw.texts || []).forEach(function (t) { ch.text(t.at, t.s, { color: 'z', weight: 700, dx: 5, dy: -7 }); });
+      if (vw.hline) ch.hline(vw.hline.y, { label: vw.hline.label, color: 'muted' });
+      if (vw.marker) ch.marker(vw.marker.at, { color: 'accent', r: 6, label: vw.marker.label || null });
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title || 'Figure' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      var n2 = CYL.el('p', { class: 'pl-panel-note', html: (vw.note || '') + ' The large dot is this problem.' });
+      panel.appendChild(n2);
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) { cur = problem.view; revealed = false; idle(); veil.hidden = false; };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      try { draw(cur); } catch (e) { CYL.error('Practice Lab view failed:', e); }
+      veil.hidden = true;
+    };
+    VIEW.isRevealed = function () { return revealed; };
+    idle();
+  });
+
+  /* ================================================================ 6. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like range-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

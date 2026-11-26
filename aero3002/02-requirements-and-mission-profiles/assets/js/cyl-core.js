@@ -80,7 +80,8 @@
     pg('worksheet', null, 'Printable Worksheet', 'practice/worksheet.html', null, 'practice'),
     pg('builder', null, 'Mission Profile Builder', 'tools/mission-builder.html', null, 'tools'),
     pg('cheatsheet', null, 'Formula Sheet', 'reference/cheat-sheet.html', null, 'reference'),
-    pg('glossary', null, 'Glossary', 'reference/glossary.html', null, 'reference')
+    pg('glossary', null, 'Glossary', 'reference/glossary.html', null, 'reference'),
+    pg('references', null, 'References', 'reference/references.html', null, 'reference')
   ].filter(function (p) { return INCLUDE_INSTRUCTOR_GUIDE || p.group !== 'instructor'; }));
   /** Sidebar groups, in display order. */
   CYL.GROUPS = Object.freeze([

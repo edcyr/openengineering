@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Aircraft to Space Vehicles · Space Vehicles</title>
+<meta name="description" content="How designing a space vehicle differs from designing an aircraft: the mission and the segments of a space system, the energy of an orbit against the business jet's cruise, the NASA life-cycle phases, technology readiness levels and the mass and power margins of systems engineering.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/space.js"></script>
+<style>
+  .phases { list-style: none; counter-reset: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr)); gap: 10px; margin: 0; padding: 14px; }
+  .phases li { position: relative; margin: 0; padding: 10px 12px 10px 52px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-elev); font-size: 0.9rem; line-height: 1.45; }
+  .phases li .ph { position: absolute; left: 10px; top: 10px; min-width: 32px; height: 24px; padding: 0 4px; border-radius: 12px; background: var(--accent); color: var(--bg); font-weight: 750; font-size: 0.76rem; line-height: 24px; text-align: center; }
+  .phases li.impl .ph { background: var(--c-t); }
+  .phases li strong { display: block; color: var(--ink); }
+  .phases li .where { color: var(--ink-muted); font-size: 0.82rem; }
+  .phases li.here { border-color: var(--accent); border-width: 2px; }
+  .trl-grid { display: grid; gap: 8px; }
+  .trl-grid .field { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem; align-items: center; gap: 8px; }
+  .trl-grid select { width: 100%; }
+  .bar-track .bar-fill + .bar-fill { border-radius: 0 6px 6px 0; }
+</style>
+</head>
+<body data-page="l01" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 1 · 30 min</p>
+    <h1>From Aircraft to Space Vehicles</h1>
+    <p class="lede">Fourteen modules have taken a business jet from a requirement to a closed design. A space vehicle is designed by the same method, starting from a mission, sizing with a few governing equations, then closing a loop of weights and performance. But the numbers are far harsher. This lesson sets out what a space system is, how much energy an orbit takes, and how a space project is organized and kept within its mass.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Name the segments of a space system and the parts of a spacecraft, and state a mission as the requirement for a launch vehicle.</li>
+      <li>Compute the specific energy of an orbit and compare it with an aircraft's cruise.</li>
+      <li>List how launch vehicle design differs from aircraft design: energy, structure, safety factors, rules and reuse.</li>
+      <li>Place conceptual design in the NASA life cycle, and use technology readiness levels and mass margins.</li>
+    </ul>
+  </section>
+
+  <section id="mission">
+    <h2>The mission and the space system</h2>
+    <p>An aircraft program starts from a request for proposal, as in Module 2. A space program starts from a <strong>mission</strong>: what must be done in space, for whom, for how long, and in which orbit. The mission is carried out by a <strong>space system</strong>, which has several <strong>segments</strong>:</p>
+    <ul>
+      <li>the <strong>space segment</strong>: the spacecraft, made of the <strong>payload</strong> (the camera, the radio or the instrument that does the mission) and the <strong>bus</strong> that supports it (structure, power, thermal control, attitude control, propulsion, communications and the computer);</li>
+      <li>the <strong>launch segment</strong>: the launch vehicle and the launch site that put the spacecraft in its orbit;</li>
+      <li>the <strong>ground segment</strong> and operations: the stations, the people and the software that command the spacecraft and receive its data.</li>
+    </ul>
+    <p>Space mission engineering, from the mission to the segments and their trades, is treated in full in <a class="cite" href="../reference/references.html#r2">[2]</a>. The segments trade against each other. A heavier spacecraft needs a larger launcher, and a lower orbit puts more mass in orbit but shortens the spacecraft's life. For the launcher, the mission is a requirement with three main numbers: a <strong>payload</strong> mass, a target <strong>orbit</strong>, and a launch <strong>site</strong>. The lessons follow a small two-stage launcher that must put a <strong>300&nbsp;kg</strong> spacecraft into a <strong>500&nbsp;km circular sun-synchronous orbit</strong> from a site at <strong>45°&nbsp;N</strong>. That class of mission is common for Earth-observation and communication smallsats. The launcher is a hypothetical design, not a real vehicle.</p>
+  </section>
+
+  <section id="energy">
+    <h2>The energy of an orbit</h2>
+    <p>The business jet cruises at Mach 0.80 at 12&nbsp;km, at 236&nbsp;m/s. Each kilogram of it carries a kinetic energy \(v^2/2\) and a potential energy \(gh\):</p>
+    \[ \frac{v^2}{2} = \frac{236.1^2}{2} = 0.0279\ \text{MJ/kg}, \qquad gh = 9.81(12\,000) = 0.1177\ \text{MJ/kg} \]
+    <p>In orbit, gravity weakens with distance, so the potential energy relative to the surface is \(\mu/R_E - \mu/r\), with \(\mu = GM\) Earth's gravitational parameter, \(R_E\) its radius and \(r\) the distance from its center. Lesson 2 shows that a circular orbit needs a speed \(v = \sqrt{\mu/r}\).</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Specific energy of a circular orbit, relative to Earth's surface</p>
+      \[ e = \frac{v^2}{2} + \left(\frac{\mu}{R_E} - \frac{\mu}{r}\right) = \frac{\mu}{2r} + \frac{\mu}{R_E} - \frac{\mu}{r} \]
+      <p>with \(\mu = 3.986\times10^{14}\ \text{m}^3/\text{s}^2\) and \(R_E = 6378\ \text{km}\). Earth's rotation is left out here; Lesson 4 adds it.</p>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 1.1 — A 500 km orbit against the business jet's cruise</p>
+      <p>Find the specific energy of a 500&nbsp;km circular orbit and compare it with the business jet's in cruise.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ r = 6378 + 500 = 6878\ \text{km}, \qquad v = \sqrt{\frac{3.986\times10^{14}}{6.878\times10^6}} = 7613\ \text{m/s} \]
+          \[ \frac{v^2}{2} = 28.98\ \text{MJ/kg}, \qquad \frac{\mu}{R_E} - \frac{\mu}{r} = 62.50 - 57.95 = 4.54\ \text{MJ/kg} \]
+          \[ e = 28.98 + 4.54 = 33.52\ \text{MJ/kg} \]
+          <p>That is 230 times the business jet's 0.146&nbsp;MJ/kg, and almost all of it is speed: only 14% is height. Orbit is a matter of going fast, not of going high.</p>
+        </div>
+      </details>
+    </div>
+    <figure class="figure wide" aria-labelledby="fig11-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig11-stage"></div>
+        <div class="viz-controls" id="fig11-controls"></div>
+      </div>
+      <figcaption id="fig11-cap"><strong>Figure 1.1</strong> Specific energy relative to Earth's surface, as kinetic (blue) and potential (violet) energy, from the business jet's cruise to escape. Choose a case to read its numbers; the business jet's bar is too short to see on this scale.</figcaption>
+    </figure>
+    <p>A jet engine takes its oxygen from the air. A rocket carries its own oxygen, so most of what it burns is oxidizer. Lesson 5 shows that the rocket equation turns this energy into a propellant fraction of more than 90%.</p>
+  </section>
+
+  <section id="differences">
+    <h2>How a launcher differs from an aircraft</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Table 1.1 The business jet against the small launcher</caption>
+        <thead><tr><th scope="col"></th><th scope="col">Business jet (Modules 3–14)</th><th scope="col">Small launcher (this module)</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Payload fraction</th><td>14% (980 of 6943&nbsp;kg)</td><td>2.4% (300 of about 12&nbsp;600&nbsp;kg)</td></tr>
+          <tr><th scope="row">Empty or inert fraction</th><td>0.57 of the takeoff weight</td><td>8–10% of each stage's loaded mass</td></tr>
+          <tr><th scope="row">Governing equation</th><td>Breguet's range, with \(L/D\)</td><td>The rocket equation, with no \(L/D\)</td></tr>
+          <tr><th scope="row">Drag</th><td>Sets the fuel burned</td><td>A loss of about 1% of the velocity needed</td></tr>
+          <tr><th scope="row">Design loads</th><td>Maneuvers and gusts, ultimate factor 1.5 (Module 11)</td><td>Thrust, pressure and max-q, factors 1.25 to 1.4 with tests (Lesson 7)</td></tr>
+          <tr><th scope="row">Life</th><td>Tens of thousands of flights</td><td>One flight, or tens for a reusable stage</td></tr>
+          <tr><th scope="row">The rules</th><td>A type certificate for the aircraft (Module 2)</td><td>A license for each launch, judged by public risk (Lesson 8)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The table explains most of this module. With no wing to multiply the thrust, a launcher must reach orbital speed by burning propellant. The rocket equation makes that propellant grow exponentially with the speed. Every kilogram of structure therefore costs far more than on an aircraft, which is why launchers are built with thin walls and small safety factors, and verified by tests. A launch is also hazardous to people who did not choose to be near it, so it is regulated by the risk it puts on the public rather than by certifying the vehicle.</p>
+  </section>
+
+  <section id="lifecycle">
+    <h2>The life cycle of a space project</h2>
+    <p>NASA divides a project into phases separated by <strong>Key Decision Points</strong> (KDPs) <a class="cite" href="../reference/references.html#r8">[8]</a>. At each one the decision authority judges whether the project is ready to go on to the next phase. The NASA Systems Engineering Handbook <a class="cite" href="../reference/references.html#r8">[8]</a> gives the seven phases of a spaceflight project:</p>
+    <figure class="figure wide" aria-labelledby="fig12-cap">
+      <div class="viz stacked">
+        <ol class="phases" role="list" aria-label="The phases of a NASA spaceflight project">
+          <li class="here"><span class="ph">Pre-A</span><strong>Concept studies</strong>A broad spectrum of ideas and alternatives for missions, from which new projects can be selected. <span class="where">Formulation · this course's conceptual design</span></li>
+          <li class="here"><span class="ph">A</span><strong>Concept and technology development</strong>The chosen concept is defined, and the technologies it needs are identified and matured. <span class="where">Formulation</span></li>
+          <li><span class="ph">B</span><strong>Preliminary design and technology completion</strong>Ends at the Preliminary Design Review (PDR), with the technologies at their required maturity. <span class="where">Formulation</span></li>
+          <li class="impl"><span class="ph">C</span><strong>Final design and fabrication</strong>The detailed design is completed and the flight hardware is built. <span class="where">Implementation</span></li>
+          <li class="impl"><span class="ph">D</span><strong>System assembly, integration and test, launch</strong>Qualification and acceptance tests (Lesson 7), then the launch. <span class="where">Implementation</span></li>
+          <li class="impl"><span class="ph">E</span><strong>Operations and sustainment</strong>The mission itself. <span class="where">Implementation</span></li>
+          <li class="impl"><span class="ph">F</span><strong>Closeout</strong>Disposal of the spacecraft and the end of the project (Lesson 8). <span class="where">Implementation</span></li>
+        </ol>
+      </div>
+      <figcaption id="fig12-cap"><strong>Figure 1.2</strong> The phases of a NASA spaceflight project, after NPR 7120.5. Source: <a class="cite" href="../reference/references.html#r8">[8]</a>, Section 3.0. A Key Decision Point separates each phase from the next. The outlined phases are where this course's methods are used.</figcaption>
+    </figure>
+    <p>The handbook stresses that the analysis and optimization of systems engineering have their largest effect in the early stages <a class="cite" href="../reference/references.html#r8">[8]</a>. That is where conceptual design works, and it is why the methods of this course are worth learning.</p>
+  </section>
+
+  <section id="trl">
+    <h2>Technology readiness</h2>
+    <p>A <strong>technology readiness level</strong> (TRL) measures how mature a technology is. TRLs range from 1, basic technology research, to 9, systems test, launch and operations; typically a technology must reach TRL 6, demonstrated in a relevant environment, before it is integrated into a design <a class="cite" href="../reference/references.html#r8">[8]</a>. Two rules from the same handbook matter most in conceptual design:</p>
+    <ul>
+      <li>A system's TRL is the lowest TRL of its parts: one immature component holds back the whole vehicle.</li>
+      <li>A component with a flight history (heritage) is no longer at TRL 9 if it is used in a new environment or a new architecture.</li>
+    </ul>
+    <figure class="figure wide" aria-labelledby="fig13-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig13-stage"></div>
+        <div class="viz-controls" id="fig13-controls"></div>
+      </div>
+      <figcaption id="fig13-cap"><strong>Figure 1.3</strong> The technology readiness of the small launcher's main elements, at levels given for this example. The system's level is the lowest of them; change any element to see which one holds the launcher back.</figcaption>
+    </figure>
+  </section>
+
+  <section id="margins">
+    <h2>Margins</h2>
+    <p>The handbook <a class="cite" href="../reference/references.html#r8">[8]</a> defines a <strong>margin</strong> as an allowance carried in the budget, the schedule and the technical parameters, such as weight, power or memory, to account for uncertainties and risks. Margins are allocated early and are consumed as the project goes on. NASA's systems engineering requirements (NPR 7123.1) make mass margins and power margins minimum technical performance measures that every project with hardware must track.</p>
+    <p>For a launcher, the mass margin is the most important one. A spacecraft that grows from 280&nbsp;kg to 320&nbsp;kg no longer fits a launcher sized for 300&nbsp;kg. Lesson 5 shows what each extra kilogram costs at liftoff: about 42&nbsp;kg for the small launcher, against about 5.7&nbsp;kg on the business jet in Module 3. Lesson 5 sizes the launcher for a payload of exactly 300&nbsp;kg; a real project would hold a margin on top of that and track it as the spacecraft's design matured.</p>
+    <aside class="callout note">
+      <p class="callout-title">The modules behind this one</p>
+      <p>This module follows the course's method. It starts from a mission (Module 2), sizes with a governing equation, the rocket equation here in place of Breguet's range (Module 3), and estimates loads and factors of safety (Module 11) and component masses (Module 12). It then closes the loop on mass and performance, as Module 14 did for the business jet. The numbers come from other physics: orbital mechanics (Lessons 2 to 4) and rocket propulsion (Lessons 5 and 6).</p>
+    </aside>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>A space system has a space segment (payload and bus), a launch segment and a ground segment. For the launcher, the mission sets a payload, an orbit and a site.</li>
+      <li>A 500&nbsp;km orbit takes 33.5&nbsp;MJ/kg relative to the surface, 230 times the business jet's cruise, and 86% of it is speed.</li>
+      <li>Launchers carry their oxidizer, have no \(L/D\), and are built light with factors near 1.4 verified by tests. Each launch is licensed by its risk to the public.</li>
+      <li>NASA projects run from Pre-Phase A to Phase F between Key Decision Points; conceptual design is Pre-Phase A and Phase A.</li>
+      <li>A system's TRL is its lowest element's, and TRL 6 is typically needed before integration. Mass and power margins are tracked through the project.</li>
+      <li>Next, <a href="02-orbits.html">Lesson 2</a> finds the speeds and periods of the orbits a mission may choose.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 1.1: specific energy from the business jet to escape ---------- */
+CYL.ready(function () {
+  'use strict';
+  var MU = SPACE.MU, RE = SPACE.RE;
+  function orb(h) { var v = SPACE.vc(h); return { ke: v * v / 2 / 1e6, pe: MU * (1 / RE - 1 / (RE + h)) / 1e6 }; }
+  var bj = { ke: 236.06 * 236.06 / 2 / 1e6, pe: 9.81 * 12000 / 1e6 };
+  var CASES = [
+    { id: 'bj', label: 'Business jet in cruise', e: bj, note: 'Mach 0.80 at 12 km' },
+    { id: 'sub', label: 'Suborbital hop to 100 km', e: { ke: 0, pe: MU * (1 / RE - 1 / (RE + 100e3)) / 1e6 }, note: 'straight up and down: height only' },
+    { id: 'leo4', label: '400 km orbit', e: orb(400e3), note: 'circular' },
+    { id: 'leo5', label: '500 km orbit (the launcher\'s)', e: orb(500e3), note: 'circular' },
+    { id: 'geo', label: 'Geostationary orbit', e: orb(35786e3), note: '35 786 km, circular' },
+    { id: 'esc', label: 'Escape', e: { ke: MU / RE / 1e6, pe: 0 }, note: 'kinetic energy at the surface to escape' }
+  ];
+  var MAX = 64, st = { id: 'leo5' };
+  function place(v, frac) { if (frac > 0.55) { v.style.left = 'auto'; v.style.right = 'calc(' + (100 - 100 * frac) + '% + 8px)'; } else { v.style.right = 'auto'; v.style.left = 'calc(' + (100 * frac) + '% + 8px)'; } }
+  var stage = document.getElementById('fig11-stage'), panel = document.getElementById('fig11-controls');
+  var bars = CYL.el('div', { class: 'bars', role: 'img', 'aria-label': 'Specific energy of each case, kinetic and potential.' });
+  var rows = {};
+  CASES.forEach(function (c) {
+    var k = CYL.el('div', { class: 'bar-fill bar-z' }), p = CYL.el('div', { class: 'bar-fill bar-t' }), v = CYL.el('span', { class: 'bar-value' });
+    var tr = CYL.el('div', { class: 'bar-track' }, [k, p, v]);
+    var lab = CYL.el('span', { class: 'bar-label', text: c.label });
+    bars.appendChild(CYL.el('div', { class: 'bar-row' }, [lab, tr]));
+    rows[c.id] = { k: k, p: p, v: v, lab: lab };
+    var tot = c.e.ke + c.e.pe;
+    k.style.width = (100 * c.e.ke / MAX) + '%'; p.style.left = (100 * c.e.ke / MAX) + '%'; p.style.width = (100 * c.e.pe / MAX) + '%';
+    v.textContent = CYL.fmtFixed(tot, tot < 1 ? 3 : 1) + ' MJ/kg';
+    place(v, tot / MAX);
+  });
+  stage.appendChild(bars);
+  var row = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Case' }), chips = {};
+  CASES.forEach(function (c) { var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: c.label.replace(' (the launcher\'s)', '') }); b.addEventListener('click', function () { st.id = c.id; draw(); }); chips[c.id] = b; row.appendChild(b); });
+  var ro = { k: CYL.readout('Kinetic \\(v^2/2\\)'), p: CYL.readout('Potential'), t: CYL.readout('Total'), r: CYL.readout('Against the business jet'), s: CYL.readout('Share that is speed') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Case' })); panel.appendChild(row);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.k.el, ro.p.el, ro.t.el, ro.r.el, ro.s.el]));
+  var note = CYL.el('p', { class: 'fig-note' }); panel.appendChild(note);
+  CYL.renderMath(panel);
+  function draw() {
+    var c = CASES.filter(function (q) { return q.id === st.id; })[0], tot = c.e.ke + c.e.pe;
+    ro.k.set(CYL.fmtFixed(c.e.ke, 3) + ' MJ/kg'); ro.p.set(CYL.fmtFixed(c.e.pe, 3) + ' MJ/kg'); ro.t.set(CYL.fmtFixed(tot, 3) + ' MJ/kg');
+    ro.r.set(c.id === 'bj' ? '1' : CYL.fmtFixed(tot / (bj.ke + bj.pe), 0) + ' times'); ro.s.set(CYL.fmtFixed(100 * c.e.ke / tot, 0) + '%');
+    note.textContent = c.note + '.';
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === st.id)); rows[k].lab.style.color = k === st.id ? 'var(--ink)' : ''; });
+  }
+  draw();
+});
+
+/* ---------- Figure 1.3: technology readiness ---------- */
+CYL.ready(function () {
+  'use strict';
+  var EL = [
+    { id: 'tank', label: 'Aluminium tanks and structure', trl: 9 },
+    { id: 'eng1', label: 'First-stage engine (new; full-duration stand tests)', trl: 6 },
+    { id: 'eng2', label: 'Upper-stage engine (new large nozzle)', trl: 5 },
+    { id: 'avi', label: 'Avionics (heritage, new vibration environment)', trl: 7 },
+    { id: 'fair', label: 'Fairing separation (new design)', trl: 4 }
+  ];
+  var DESC = { 1: 'basic technology research', 2: 'concept formulated', 3: 'proof of concept', 4: 'validated in a laboratory', 5: 'validated in a relevant environment', 6: 'demonstrated in a relevant environment', 7: 'demonstrated in the operational environment', 8: 'qualified', 9: 'flight proven' };
+  var stage = document.getElementById('fig13-stage'), panel = document.getElementById('fig13-controls');
+  function place(v, frac) { if (frac > 0.55) { v.style.left = 'auto'; v.style.right = 'calc(' + (100 - 100 * frac) + '% + 8px)'; } else { v.style.right = 'auto'; v.style.left = 'calc(' + (100 * frac) + '% + 8px)'; } }
+  var bars = CYL.el('div', { class: 'bars', role: 'img', 'aria-label': 'Technology readiness levels of the launcher\'s elements.' }), rows = {};
+  EL.forEach(function (e) {
+    var f = CYL.el('div', { class: 'bar-fill' }), v = CYL.el('span', { class: 'bar-value' }), mk = CYL.el('div', { class: 'bar-mark', style: 'left: ' + (100 * 6 / 9) + '%' });
+    var tr = CYL.el('div', { class: 'bar-track' }, [f, mk, v]);
+    bars.appendChild(CYL.el('div', { class: 'bar-row' }, [CYL.el('span', { class: 'bar-label', text: e.label }), tr]));
+    rows[e.id] = { f: f, v: v };
+  });
+  var sys = CYL.el('div', { class: 'bar-fill bar-r' }), sv = CYL.el('span', { class: 'bar-value' });
+  bars.appendChild(CYL.el('div', { class: 'bar-row' }, [CYL.el('span', { class: 'bar-label', html: '<strong>The launcher</strong>' }), CYL.el('div', { class: 'bar-track' }, [sys, CYL.el('div', { class: 'bar-mark', style: 'left: ' + (100 * 6 / 9) + '%' }), sv])]));
+  stage.appendChild(bars);
+  var grid = CYL.el('div', { class: 'trl-grid' }), sel = {};
+  EL.forEach(function (e) {
+    var s = CYL.el('select', { id: 'trl-' + e.id, 'aria-label': 'TRL of ' + e.label });
+    for (var i = 1; i <= 9; i++) s.appendChild(CYL.el('option', { value: String(i), text: 'TRL ' + i }));
+    s.value = String(e.trl);
+    s.addEventListener('change', function () { e.trl = +s.value; draw(); });
+    sel[e.id] = s;
+    grid.appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: 'trl-' + e.id, text: e.label.split(' (')[0] }), s]));
+  });
+  var ro = { s: CYL.readout('System TRL'), w: CYL.readout('Held back by'), g: CYL.readout('Ready for integration (TRL 6)?') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Readiness of each element' })); panel.appendChild(grid);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.s.el, ro.w.el, ro.g.el]));
+  panel.appendChild(CYL.el('p', { class: 'fig-note', html: 'The dashed line is TRL 6. Levels 1, 6 and 9 as defined in <a class="cite" href="../reference/references.html#r8">[8]</a>; the others in short form.' }));
+  function draw() {
+    var lo = 10, who = [];
+    EL.forEach(function (e) {
+      rows[e.id].f.style.width = (100 * e.trl / 9) + '%'; rows[e.id].f.className = 'bar-fill ' + (e.trl >= 6 ? 'bar-good' : 'bar-warn');
+      rows[e.id].v.textContent = 'TRL ' + e.trl; place(rows[e.id].v, e.trl / 9);
+      if (e.trl < lo) { lo = e.trl; who = [e.label.split(' (')[0]]; } else if (e.trl === lo) who.push(e.label.split(' (')[0]);
+    });
+    sys.style.width = (100 * lo / 9) + '%'; sv.textContent = 'TRL ' + lo; place(sv, lo / 9);
+    ro.s.set(lo + ': ' + DESC[lo]); ro.w.set(who.join(', ')); ro.g.set(lo >= 6 ? 'yes' : 'no: develop ' + (who.length > 1 ? 'these' : 'this') + ' first');
+  }
+  draw();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  var MU = 3.986e14, RE = 6378e3, r = RE + 400e3;
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l01-q1',
+    type: 'numeric',
+    prompt: 'What is the specific energy, relative to Earth\'s surface, of a 400&nbsp;km circular orbit, in MJ/kg? Use \\(\\mu = 3.986\\times10^{14}\\ \\text{m}^3/\\text{s}^2\\) and \\(R_E = 6378\\) km, and leave out Earth\'s rotation.',
+    label: '\\(e =\\)', answer: (MU / (2 * r) + MU / RE - MU / r) / 1e6, unit: 'MJ/kg', tol: 0.05,
+    hints: ['The kinetic energy is \\(v^2/2 = \\mu/(2r)\\) with \\(r = 6778\\) km.', 'Add the potential energy \\(\\mu/R_E - \\mu/r\\).'],
+    explain: 'Only 11% of it is height: the rest is the orbital speed of 7.67 km/s.',
+    solution: '\\[ \\frac{\\mu}{2r} = \\frac{3.986\\times10^{14}}{2(6.778\\times10^6)} = 29.40\\ \\text{MJ/kg}, \\qquad \\frac{\\mu}{R_E} - \\frac{\\mu}{r} = 3.69\\ \\text{MJ/kg} \\]\\[ e = 33.09\\ \\text{MJ/kg} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l01-q2',
+    type: 'mc',
+    prompt: 'In NASA\'s life cycle, where does the conceptual design of a launcher, as in this module, belong?',
+    choices: [
+      { html: 'Pre-Phase A and Phase A: concept studies, and concept and technology development', correct: true, feedback: 'Yes: alternatives are compared and the chosen concept is defined, before preliminary design.' },
+      { html: 'Phase B: preliminary design and technology completion', feedback: 'Phase B ends at the Preliminary Design Review; by then the concept is chosen.' },
+      { html: 'Phase C: final design and fabrication', feedback: 'That is detailed design and building the hardware.' },
+      { html: 'Phase D: system assembly, integration and test, launch', feedback: 'That is integration, testing and the launch itself.' }
+    ],
+    explain: 'The handbook notes that systems engineering has its largest effect in the early stages, where conceptual design works.'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l01-q3',
+    type: 'mc',
+    prompt: 'A spacecraft has a structure at TRL 9, a radio at TRL 7, a heritage star tracker at TRL 6 and a new deployable antenna at TRL 4. What is the spacecraft\'s TRL?',
+    choices: [
+      { html: 'TRL 4', correct: true, feedback: 'Yes: the system is only as mature as its least mature element.' },
+      { html: 'TRL 6, the median of its elements', feedback: 'TRLs are not averaged: one immature element can stop the whole system.' },
+      { html: 'TRL 6.5, the mean of its elements', feedback: 'TRLs are not averaged.' },
+      { html: 'TRL 9, since its structure is flight proven', feedback: 'The structure is mature; the antenna is not.' }
+    ],
+    explain: 'The antenna needs development to reach TRL 6 before it can be integrated into the design.'
+  });
+});
+</script>
+</body>
+</html>

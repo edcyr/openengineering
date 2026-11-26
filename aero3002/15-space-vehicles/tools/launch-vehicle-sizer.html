@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch Vehicle Sizer · Space Vehicles</title>
+<meta name="description" content="A launch vehicle sizing tool: a mission's ascent delta-v budget, the optimal staging of two or three stages, each stage's propellant, inert mass, thrust and burn time, a bottom-up check of the structural coefficients with the option to close the loop, and how the liftoff mass grows with the payload.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/space.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; padding-left: 6px; padding-right: 6px; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-opts { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin: 4px 0 0; }
+</style>
+</head>
+<body data-page="launcher" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Space Vehicles</p>
+    <h1>Launch Vehicle Sizer</h1>
+    <p class="lede">The module on one page. Choose a mission and the stages' propellants, specific impulses and structural coefficients. Then read the ascent \(\Delta v\) budget, the optimal staging, each stage's masses, thrust and burn time, a bottom-up check of the structural coefficients, and how the liftoff mass grows with the payload. Close the loop to let the structural coefficients follow the tanks and engines.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="lv-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="lv-presets" role="group" aria-labelledby="lv-presets-label"></div>
+    <div class="sc-grid" id="lv-grid"></div>
+    <div class="sc-opts" id="lv-opts"></div>
+    <p class="small muted" id="lv-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="lv-totals"></div>
+    <figure class="figure wide" aria-labelledby="lv-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="lv-stage1"></div>
+      </div>
+      <figcaption id="lv-fig1-cap"><strong>Figure T.1</strong> The ascent \(\Delta v\) budget: the orbit's speed, the effect of Earth's rotation (hatched where it is a gain), and the losses.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="lv-fig2-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="lv-stage2"></div>
+      </div>
+      <figcaption id="lv-fig2-cap"><strong>Figure T.2</strong> The launcher's mass at liftoff, stage by stage: propellant and inert mass, and the payload.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="lv-fig3-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="lv-stage3"></div>
+      </div>
+      <figcaption id="lv-fig3-cap"><strong>Figure T.3</strong> Liftoff mass against payload, with the structural coefficients fixed (dashed) and with the loop closed (solid); the dot is this design.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="lv-table">
+        <caption>The stages' masses, from the first up: \(\varepsilon\) used, and \(\varepsilon\) from the bottom-up masses</caption>
+        <thead><tr><th scope="col">Stage</th><th scope="col">\(\Delta v\) (m/s)</th><th scope="col">\(m_p\) (kg)</th><th scope="col">\(m_s\) (kg)</th><th scope="col">\(m_0\) (kg)</th><th scope="col">\(\varepsilon\)</th><th scope="col">\(\varepsilon\) from masses</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table class="data sc-table" id="lv-table2">
+        <caption>The stages' propulsion: thrust at ignition and in vacuum, burn time and acceleration at burnout</caption>
+        <thead><tr><th scope="col">Stage</th><th scope="col">Propellant</th><th scope="col">\(T\) (kN)</th><th scope="col">\(T_{\text{vac}}\) (kN)</th><th scope="col">Burn (s)</th><th scope="col">Burnout (g)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="lv-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>\(\Delta v\) budget (Lesson 4): the circular speed \(\sqrt{\mu/r}\) at the orbit's altitude, relative to the rotating site, \(v_{\text{rel}} = \sqrt{v^2 - 2vv_E\sin A_z + v_E^2}\) with \(\sin A_z = \cos i/\cos\phi\). Add the gravity, drag and steering losses you enter. A sun-synchronous inclination comes from the \(J_2\) regression of the node (Lesson 2).</li>
+      <li>Staging (Lesson 5): the optimal split with a Lagrange multiplier, \(n_i = (c_i\eta - 1)/(c_i\varepsilon_i\eta)\), and the stage masses from the top down. Each stage's \(I_{sp}\) is its mean over its burn; for the first stage the sea-level and vacuum values set its thrust at liftoff and in vacuum.</li>
+      <li>Thrust (Lesson 6): \(T = (T/W)\,m_0g_0\) at ignition (sea level for the first stage), burn time \(m_p/\dot m\), and the acceleration at burnout in vacuum.</li>
+      <li>Bottom-up inert mass (Lessons 7 and 8): tanks sized for ullage pressure (300&nbsp;kPa; a solid motor case for 6&nbsp;MPa) plus the head at liftoff, at the protoflight or prototype factors of NASA-STD-5001B <a class="cite" href="../reference/references.html#r6">[6]</a>, no thinner than the minimum gauge, times a factor for stiffeners and insulation. Add engines by their thrust-to-weight ratio (a nozzle fraction for solids), 1% residual propellant, the stage's allowance for structure, avionics and pressurization, and the fairing on the stage that carries it. Closing the loop repeats the staging with these structural coefficients until they stop changing.</li>
+      <li>The other three launchers are hypothetical designs for comparison. The propellant data, the materials and the mass allowances are typical values.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var G0 = SPACE.G0, IDS = SPACE.PRESETS.map(function (p) { return p.id; }), NAME = {};
+  SPACE.PRESETS.forEach(function (p) { NAME[p.id] = p.label; });
+  function copy(id) { var p = SPACE.preset(id); return { id: id, mpl: p.mpl, h: p.h / 1000, sso: p.inc === 'sso', inc: p.inc === 'sso' ? +SPACE.ssoInc(p.h).toFixed(2) : p.inc, lat: p.lat, gl: p.gl, dl: p.dl, sl: p.sl, close: false, appr: 'protoflight', stages: p.stages }; }
+  var KEY = 'launcher:inputs', st = null;
+  try { st = CYL.store.get(KEY, null); } catch (e) { st = null; }
+  if (!st || IDS.indexOf(st.id) < 0 || !Array.isArray(st.stages)) st = copy('small');
+  function save() { try { CYL.store.set(KEY, st); } catch (e) { /* ignore */ } }
+  var grid = document.getElementById('lv-grid'), msg = document.getElementById('lv-msg'), timer = null;
+  function later() { clearTimeout(timer); timer = setTimeout(update, 150); }
+  var RANGE = { mpl: [1, 100000], h: [150, 2000], inc: [0, 180], lat: [0, 70], gl: [0, 3000], dl: [0, 1000], sl: [0, 1000], isp: [150, 480], ispSL: [100, 460], ispVac: [150, 480], eps: [0.02, 0.4], tw: [0.3, 3], d: [0.3, 12], twEng: [5, 300] };
+  function field(id, label, value, onSet, opt) {
+    var el;
+    if (opt) {
+      el = CYL.el('select', { id: id }); opt.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); }); el.value = value;
+      el.addEventListener('change', function () { onSet(el.value); save(); update(); });
+    } else {
+      el = CYL.el('input', { type: 'number', id: id, step: 'any', inputmode: 'decimal' }); el.value = value;
+      el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v)) { onSet(v); save(); later(); } });
+    }
+    return CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: label }), el]);
+  }
+  function num(k, label) { return field('lv-' + k, label, st[k], function (v) { var R = RANGE[k]; if (!R || (v >= R[0] && v <= R[1])) { st[k] = v; if (k === 'inc') st.sso = false; } }); }
+  function build() {
+    grid.innerHTML = '';
+    var m = CYL.el('div', { class: 'sc-fields' }, [num('mpl', 'Payload (kg)'), num('h', 'Orbit altitude (km)'), num('inc', 'Inclination (°)'), num('lat', 'Site latitude (°)')]);
+    var ssoBox = CYL.el('input', { type: 'checkbox', id: 'lv-sso' }); ssoBox.checked = !!st.sso;
+    ssoBox.addEventListener('change', function () { st.sso = ssoBox.checked; save(); update(); });
+    var mission = CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: 'Mission' }), m, CYL.el('p', { class: 'sc-opts' }, [CYL.el('label', { for: 'lv-sso' }, [ssoBox, ' Sun-synchronous (sets the inclination)'])])]);
+    var losses = CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: 'Losses (m/s)' }), CYL.el('div', { class: 'sc-fields' }, [num('gl', 'Gravity'), num('dl', 'Drag'), num('sl', 'Steering')])]);
+    grid.appendChild(mission); grid.appendChild(losses);
+    var nsel = field('lv-n', 'Number of stages', String(st.stages.length), function (v) {
+      v = +v;
+      if (v === 3 && st.stages.length === 2) {
+        // with three stages, fixed allowances would make the loop run away (a shrinking stage's coefficient grows): scale them with each stage's propellant
+        st.stages.forEach(function (s, i) { if (s.fixed && R && R.ok) { s.fixedFrac = s.fixed / R.stages[i].mp; s.fixed = 0; } });
+        var mid = JSON.parse(JSON.stringify(st.stages[1])); mid.isp = Math.round((st.stages[0].isp + st.stages[1].isp) / 2); mid.ispVac = mid.isp; delete mid.ispSL; delete st.stages[1].fairing; st.stages.splice(1, 0, mid);
+        msg.textContent = 'Three stages: the fairing now goes with the middle stage, and each stage\'s allowance for structure and avionics scales with its propellant.';
+      }
+      if (v === 2 && st.stages.length === 3) { var top = st.stages[2], fr = st.stages[1].fairing; st.stages.splice(1, 1); if (top.fairing == null) top.fairing = fr == null ? 50 : fr; }
+      build();
+    }, [['2', 'Two'], ['3', 'Three']]);
+    losses.appendChild(CYL.el('div', { class: 'sc-wide', style: 'margin-top:8px' }, [nsel]));
+    st.stages.forEach(function (s, i) {
+      var pre = 'lv-s' + i + '-';
+      function sn(k, label) { return field(pre + k, label, s[k] == null ? '' : s[k], function (v) { var R = RANGE[k]; if (!R || (v >= R[0] && v <= R[1])) s[k] = v; }); }
+      var fl = [sn('isp', 'Mean \\(I_{sp}\\) (s)'), sn('eps', 'Assumed \\(\\varepsilon\\)'), sn('tw', '\\(T/W\\) at ignition'), sn('d', 'Diameter (m)')];
+      if (i === 0) { fl.push(sn('ispSL', '\\(I_{sp}\\) sea level (s)')); fl.push(sn('ispVac', '\\(I_{sp}\\) vacuum (s)')); }
+      if (s.prop !== 'solid') fl.push(sn('twEng', 'Engine \\(T/W\\)'));
+      var ps = field(pre + 'prop', 'Propellant', s.prop, function (v) { s.prop = v; var p = SPACE.prop(v); s.isp = i === 0 ? Math.round((p.ispSL + p.ispVac) / 2) : p.ispVac; if (i === 0) { s.ispSL = p.ispSL; s.ispVac = p.ispVac; } if (v === 'solid') { s.twEng = 0; s.nozzleFrac = s.nozzleFrac || 0.025; s.mat = 'cfw'; } else { if (!s.twEng) s.twEng = 70; if (s.mat === 'cfw') s.mat = 'al2219'; } build(); }, SPACE.PROPS.map(function (p) { return [p.id, p.label]; }));
+      grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: 'Stage ' + (i + 1) + (i === st.stages.length - 1 ? ' (top)' : '') }), CYL.el('div', { class: 'sc-wide' }, [ps]), CYL.el('div', { class: 'sc-fields' }, fl)]));
+    });
+    CYL.renderMath(grid);
+    var opts = document.getElementById('lv-opts'); opts.innerHTML = '';
+    var cl = CYL.el('input', { type: 'checkbox', id: 'lv-close' }); cl.checked = !!st.close; cl.addEventListener('change', function () { st.close = cl.checked; save(); update(); });
+    opts.appendChild(CYL.el('label', { for: 'lv-close' }, [cl, ' Close the loop (structural coefficients from the bottom-up masses)']));
+    opts.appendChild(field('lv-appr', 'Verification approach', st.appr, function (v) { st.appr = v; }, [['protoflight', 'Protoflight (yield 1.25)'], ['prototype', 'Prototype (yield 1.0)']]));
+    save(); update();
+  }
+  var pre = document.getElementById('lv-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: NAME[id] });
+    b.addEventListener('click', function () { st = copy(id); build(); msg.textContent = 'Loaded: ' + NAME[id] + (id === 'small' ? '.' : ' (a hypothetical design).'); });
+    chips[id] = b; pre.appendChild(b);
+  });
+  function spec() { return { mpl: st.mpl, h: st.h * 1000, inc: st.sso ? 'sso' : st.inc, lat: st.lat, gl: st.gl, dl: st.dl, sl: st.sl, stages: st.stages.map(function (s) { var c = JSON.parse(JSON.stringify(s)); if (c.ispSL == null || c.ispVac == null) { delete c.ispSL; c.ispVac = c.isp; } return c; }) }; }
+  function design(over) { return SPACE.design(Object.assign(spec(), over || {}), { close: st.close, appr: st.appr }); }
+  /* ---------- figures ---------- */
+  var s1 = document.getElementById('lv-stage1'), s2 = document.getElementById('lv-stage2');
+  function bars(host, label) { host.innerHTML = ''; var b = CYL.el('div', { class: 'bars', role: 'img', 'aria-label': label }); host.appendChild(b); return b; }
+  function bar(host, label, frac, cls, text) {
+    var f = CYL.el('div', { class: 'bar-fill ' + cls, style: 'width:' + (100 * Math.min(1, Math.abs(frac))) + '%' }), v = CYL.el('span', { class: 'bar-value', text: text });
+    if (Math.abs(frac) > 0.55) { v.style.left = 'auto'; v.style.right = 'calc(' + (100 - 100 * Math.min(1, Math.abs(frac))) + '% + 8px)'; } else v.style.left = 'calc(' + (100 * Math.abs(frac)) + '% + 8px)';
+    host.appendChild(CYL.el('div', { class: 'bar-row' }, [CYL.el('span', { class: 'bar-label', html: label }), CYL.el('div', { class: 'bar-track' }, [f, v])]));
+  }
+  var c3 = AERO.chart(document.getElementById('lv-stage3'), { x: { label: 'Payload (kg)', min: 0, max: 600 }, y: { label: 'Liftoff mass (t)', min: 0, max: 30 }, height: 300, ariaLabel: 'Liftoff mass against payload.',
+    legend: [{ label: 'Loop closed', color: 'accent', line: true }, { label: 'Structural coefficients fixed', color: 'muted', line: true, dashed: true }] });
+  var lc = c3.polyline([], { color: 'accent', width: 2.4 }), lf = c3.polyline([], { color: 'muted', width: 2, dashed: true }), dot = c3.marker([300, 12], { color: 'accent', r: 5 });
+  var R = null;
+  function f(v, d) { return CYL.fmtFixed(v, d); }
+  function update() {
+    IDS.forEach(function (id) { chips[id].setAttribute('aria-pressed', String(id === st.id)); });
+    var incEl = document.getElementById('lv-inc');
+    if (st.sso && incEl) { st.inc = +SPACE.ssoInc(st.h * 1000).toFixed(2); incEl.value = st.inc; }
+    R = design();
+    var T = document.getElementById('lv-totals'); T.innerHTML = '';
+    function tile(lab, val, warn) { T.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', html: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    var b = R.budget;
+    if (!R.ok) {
+      tile('Liftoff mass', '—', true); msg.textContent = R.msg;
+      s1.innerHTML = ''; s2.innerHTML = ''; document.querySelector('#lv-table tbody').innerHTML = ''; document.querySelector('#lv-table2 tbody').innerHTML = ''; lc.set([]); lf.set([]);
+      return R;
+    }
+    tile('Liftoff mass (kg)', f(R.m0, 0)); tile('Payload fraction', f(100 * R.pf, 2) + '%'); tile('Ascent \u0394v (m/s)', f(b.total, 0));
+    tile('Inclination (°)', f(b.inc, 2)); tile('Launch azimuth (°)', f(b.Az, 1)); tile('kg at liftoff per kg of payload', f(R.m0 / R.mpl, 1));
+    var bu = R.stages.map(function (s) { return s.inert.eps; }), worst = 0; bu.forEach(function (e, i) { worst = Math.max(worst, Math.abs(e - R.eps[i])); });
+    tile(st.close ? 'Loop closed in' : 'Largest bottom-up \u0394\u03b5', st.close ? R.iter + ' turns' : f(worst, 4), !st.close && worst > 0.01);
+    msg.textContent = st.close ? 'The structural coefficients follow the bottom-up masses.' : 'The structural coefficients are the assumed values; tick "Close the loop" to let them follow the tanks and engines.';
+    // T.1
+    var B = bars(s1, 'Ascent delta-v budget.'), MX = b.total * 1.05;
+    bar(B, 'Orbital speed', b.v / MX, 'bar-z', f(b.v, 0) + ' m/s');
+    bar(B, 'Earth\'s rotation', b.rot / MX, b.rot < 0 ? 'bar-good' : 'bar-r', (b.rot < 0 ? '\u2212' : '') + f(Math.abs(b.rot), 0) + ' m/s' + (b.rot < 0 ? ' (gain)' : ' (penalty)'));
+    bar(B, 'Gravity loss', b.gl / MX, 'bar-warn', f(b.gl, 0) + ' m/s'); bar(B, 'Drag loss', b.dl / MX, 'bar-r', f(b.dl, 0) + ' m/s'); bar(B, 'Steering loss', b.sl / MX, 'bar-v', f(b.sl, 0) + ' m/s');
+    bar(B, '<strong>Total</strong>', b.total / MX, 'bar-good', f(b.total, 0) + ' m/s');
+    // T.2
+    var B2 = bars(s2, 'Mass at liftoff by stage.'), M2 = Math.max.apply(null, R.stages.map(function (s) { return s.mp; })) * 1.05;
+    R.stages.forEach(function (s, i) { bar(B2, 'Stage ' + (i + 1) + ' propellant', s.mp / M2, 'bar-z', f(s.mp, 0) + ' kg'); bar(B2, 'Stage ' + (i + 1) + ' inert', s.ms / M2, 'bar-t', f(s.ms, 0) + ' kg'); });
+    bar(B2, 'Payload', R.mpl / M2, 'bar-v', f(R.mpl, 0) + ' kg');
+    // T.3
+    var top = Math.max(2 * st.mpl, 100), P1 = [], P2 = [];
+    for (var k = 1; k <= 24; k++) {
+      var mp = top * k / 24, a = SPACE.design(Object.assign(spec(), { mpl: mp }), { close: true, appr: st.appr }), c = SPACE.design(Object.assign(spec(), { mpl: mp }), { appr: st.appr });
+      if (a.ok) P1.push([mp, a.m0 / 1000]); if (c.ok) P2.push([mp, c.m0 / 1000]);
+    }
+    var ym = Math.max.apply(null, P1.concat(P2).map(function (q) { return q[1]; }).concat([R.m0 / 1000]));
+    c3.setAxes({ x: { label: 'Payload (kg)', min: 0, max: top }, y: { label: 'Liftoff mass (t)', min: 0, max: Math.ceil(ym * 1.1) } });
+    lc.set(P1); lf.set(P2); dot.set([st.mpl, R.m0 / 1000]);
+    c3.setAriaLabel('Liftoff mass against payload up to ' + Math.round(top) + ' kg; this design is ' + Math.round(R.m0) + ' kg for ' + st.mpl + ' kg.');
+    // table
+    var tb = document.querySelector('#lv-table tbody'), tb2 = document.querySelector('#lv-table2 tbody'); tb.innerHTML = ''; tb2.innerHTML = '';
+    R.stages.forEach(function (s, i) {
+      tb.appendChild(CYL.el('tr', null, [CYL.el('td', { text: String(i + 1) }), CYL.el('td', { text: f(s.dv, 0) }), CYL.el('td', { text: f(s.mp, 1) }), CYL.el('td', { text: f(s.ms, 1) }),
+        CYL.el('td', { text: f(s.m0, 0) }), CYL.el('td', { text: f(R.eps[i], 4) }), CYL.el('td', { text: f(s.inert.eps, 4) })]));
+      tb2.appendChild(CYL.el('tr', null, [CYL.el('td', { text: String(i + 1) }), CYL.el('td', { text: SPACE.prop(s.prop).label.split(' (')[0] }), CYL.el('td', { text: f(s.T / 1000, 1) }), CYL.el('td', { text: f(s.Tvac / 1000, 1) }), CYL.el('td', { text: f(s.tb, 0) }), CYL.el('td', { text: f(s.aBo, 2) })]));
+    });
+    return R;
+  }
+  build();
+  /* ---------- CSV ---------- */
+  document.getElementById('lv-csv').addEventListener('click', function () {
+    if (!R || !R.ok) return;
+    var rows = [['quantity', 'value', 'unit']], b = R.budget;
+    ['mpl', 'h', 'inc', 'lat', 'gl', 'dl', 'sl', 'close', 'appr'].forEach(function (k) { rows.push(['input ' + k, st[k], '']); });
+    rows.push(['orbital speed', b.v.toFixed(1), 'm/s'], ['rotation penalty', b.rot.toFixed(1), 'm/s'], ['launch azimuth', b.Az.toFixed(2), 'deg'], ['total delta-v', b.total.toFixed(1), 'm/s'], ['liftoff mass', R.m0.toFixed(1), 'kg'], ['payload fraction', R.pf.toFixed(5), '']);
+    R.stages.forEach(function (s, i) {
+      var p = 'stage ' + (i + 1) + ' ';
+      rows.push([p + 'propellant', s.prop, ''], [p + 'delta-v', s.dv.toFixed(1), 'm/s'], [p + 'propellant mass', s.mp.toFixed(1), 'kg'], [p + 'inert mass', s.ms.toFixed(1), 'kg'], [p + 'epsilon', R.eps[i].toFixed(5), ''], [p + 'bottom-up epsilon', s.inert.eps.toFixed(5), ''],
+        [p + 'mass at ignition', s.m0.toFixed(1), 'kg'], [p + 'thrust at ignition', (s.T / 1000).toFixed(2), 'kN'], [p + 'burn time', s.tb.toFixed(1), 's'], [p + 'burnout acceleration', s.aBo.toFixed(2), 'g']);
+      s.inert.parts.forEach(function (q) { rows.push([p + q.n.toLowerCase(), q.m.toFixed(1), 'kg']); });
+    });
+    var csv = rows.map(function (r) { return r.map(function (x) { x = String(x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'launch-vehicle-sizer.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+  window.__launcher = { state: function () { return st; }, load: function (id) { st = copy(id); build(); return R; }, set: function (o) { Object.assign(st, o); save(); build(); return R; }, result: function () { return R; }, design: design };
+});
+</script>
+</body>
+</html>

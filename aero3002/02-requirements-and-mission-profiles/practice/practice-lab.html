@@ -240,7 +240,7 @@
       bg: { list: AP, x: function (d) { return d.lon; }, y: function (d) { return d.lat; }, title: function (d) { return '<strong>' + CYL.escapeHtml(d.name) + '</strong>'; } },
       lines: lines, marker: { at: [b.lon, b.lat], label: b.id },
       readouts: [{ label: 'Central angle \\(\\theta\\)', tex: n4(g.theta) + '^\\circ' }, { label: '\\(d\\)', tex: g4(g.km) + KM }, { label: '\\(d\\)', tex: g4(g.nmi) + '\\ \\text{nmi}' }],
-      note: 'On a flat map the shortest route looks curved.' }, test: { right: [right], wrong: [wrong] } };
+      note: 'On a flat map the shortest route looks curved. Land outlines: Natural Earth <a class="cite" href="../reference/references.html#r20">[20]</a>.' }, test: { right: [right], wrong: [wrong] } };
   }
 
   /* ---------- 2.2 Market, fleet and span (Lesson 2) ---------- */
@@ -292,7 +292,7 @@
     } else {
       var code = rng.pick(MISSION.ICAO_CODES.slice(1)), S = rng.pick(code.code === 'B' ? range(30, 70, 1) : code.code === 'C' ? range(80, 135, 1) : code.code === 'D' ? range(180, 300, 5) : code.code === 'E' ? range(300, 480, 5) : range(480, 860, 10));
       var A = code.max * code.max / S;
-      spec = { type: 'numeric', prompt: 'A new aircraft must fit ICAO code ' + code.code + ' gates (wingspan under ' + m(code.max + MM) + '). Its wing area is ' + m(nn(S) + M2) + '. What is the largest aspect ratio its wing can have?',
+      spec = { type: 'numeric', prompt: 'A new aircraft must fit ICAO code ' + code.code + ' gates (wingspan under ' + m(code.max + MM) + ') <a class="cite" href="../reference/references.html#r13">[13]</a>. Its wing area is ' + m(nn(S) + M2) + '. What is the largest aspect ratio its wing can have?',
         label: '\\(A_{\\max} =\\)', answer: A };
       spec.hints = ['Aspect ratio is \\(A = b^2/S\\).', 'Use the largest span the code allows: \\(b_{\\max} = ' + code.max + '\\ \\text{m}\\).'];
       spec.solution = M('A_{\\max} = \\frac{b_{\\max}^2}{S} = \\frac{' + code.max + '^2}{' + nn(S) + '} = ' + n4(A));
@@ -373,7 +373,7 @@
     var seg = s.label.toLowerCase() + ' (' + s.config.charAt(0).toLowerCase() + s.config.slice(1) + ')';
     if (kind === 'tw') {
       spec = { type: 'numeric', prompt: 'A ' + N + '-engine transport has ' + m('L/D = ' + nn(LD)) + ' in the ' + seg + '. What thrust-to-weight ratio does it need to meet the ' + s.label.toLowerCase() + ' climb gradient with one engine inoperative?', label: '\\(\\TW =\\)', answer: TW };
-      spec.hints = ['For ' + N + ' engines the ' + s.label.toLowerCase() + ' gradient is ' + (Gr * 100).toFixed(1) + '%, \\(G = ' + nn(Gr) + '\\).', '\\(\\TW = \\frac{N}{N-1}\\left(\\frac{1}{L/D} + G\\right)\\).'];
+      spec.hints = ['For ' + N + ' engines the ' + s.label.toLowerCase() + ' gradient is ' + (Gr * 100).toFixed(1) + '% <a class="cite" href="../reference/references.html#r5">[5]</a>, \\(G = ' + nn(Gr) + '\\).', '\\(\\TW = \\frac{N}{N-1}\\left(\\frac{1}{L/D} + G\\right)\\).'];
       spec.solution = M('\\frac{T}{W} = \\frac{' + N + '}{' + (N - 1) + '}\\left(\\frac{1}{' + nn(LD) + '} + ' + nn(Gr) + '\\right) = ' + n4(f) + '(' + n4(1 / LD + Gr) + ') = ' + n4(TW));
       right = { value: typed(TW) }; wrong = { value: typed(wrongOf(TW, [1 / LD + Gr, f / LD, f * (1 / LD + Gr * 100)])) };
       mk = [LD, TW];
@@ -419,7 +419,7 @@
       right = { value: typed(WS) }; wrong = { value: typed(wrongOf(WS, [WS * 1.23 * 1.23, WS * G])) };
     } else if (kind === 'vref') {
       var ws = rng.pick(range(250, 650, 10)); Vs = Math.sqrt(2 * ws * G / (rho * CL)); Vref = 1.23 * Vs / KT; WS = ws;
-      spec = { type: 'numeric', prompt: 'An aircraft lands at a wing loading of ' + m(nn(ws) + KGM2) + ' ' + where + ', with ' + m('C_{L_{\\max}} = ' + nn(CL)) + '. What is its approach speed ' + m('V_{\\text{REF}} = 1.23\\,V_{SR}') + ' in knots?', label: '\\(V_{\\text{REF}} =\\)', answer: Vref, unit: 'kt' };
+      spec = { type: 'numeric', prompt: 'An aircraft lands at a wing loading of ' + m(nn(ws) + KGM2) + ' ' + where + ', with ' + m('C_{L_{\\max}} = ' + nn(CL)) + '. What is its approach speed ' + m('V_{\\text{REF}} = 1.23\\,V_{SR}') + ' <a class="cite" href="../reference/references.html#r5">[5]</a> in knots?', label: '\\(V_{\\text{REF}} =\\)', answer: Vref, unit: 'kt' };
       spec.hints = ['\\(V_{SR} = \\sqrt{2(W/S)g/(\\rho C_{L_{\\max}})}\\), with \\(W/S\\) in kg/m².', 'Multiply by 1.23, then divide by 0.5144 for knots.'];
       spec.solution = M('V_{SR} = \\sqrt{\\frac{2(' + nn(ws) + ')(9.81)}{' + n4(rho) + '(' + nn(CL) + ')}} = ' + n4(Vs) + MS + ', \\qquad V_{\\text{REF}} = \\frac{1.23(' + n4(Vs) + ')}{0.5144} = ' + n4(Vref) + '\\ \\text{kt}');
       right = { value: typed(Vref) }; wrong = { value: typed(wrongOf(Vref, [Vs / KT, 1.23 * Vs])) };
@@ -427,10 +427,10 @@
       var sl = rng.pick(range(700, 1900, 25)), sf = sl / 0.6;
       spec = { type: 'fields', prompt: 'Flight tests show a landing distance of ' + m(grp(sl) + MM) + ' from 50 ft to a stop at maximum landing weight. What landing field length does an airline need, on a dry and on a wet runway?',
         fields: [{ name: 'dry', label: 'Dry:', answer: sf, unit: 'm' }, { name: 'wet', label: 'Wet:', answer: 1.15 * sf, unit: 'm' }] };
-      spec.hints = ['The landing distance must fit within 60% of the runway.', 'A wet runway needs 15% more than the dry field length.'];
+      spec.hints = ['The landing distance must fit within 60% of the runway <a class="cite" href="../reference/references.html#r8">[8]</a>.', 'A wet runway needs 15% more than the dry field length <a class="cite" href="../reference/references.html#r8">[8]</a>.'];
       spec.solution = M('s_{\\text{dry}} = \\frac{' + grp(sl) + '}{0.6} = ' + n4(sf) + MM + ', \\qquad s_{\\text{wet}} = 1.15(' + n4(sf) + ') = ' + n4(1.15 * sf) + MM);
       right = { dry: typed(sf), wet: typed(1.15 * sf) }; wrong = { dry: typed(sl * 1.6), wet: typed(1.15 * sf) };
-      return { spec: Object.assign(spec, { explain: 'The 60% rule covers the gap between a test pilot\'s landing and an everyday one.' }), view: {
+      return { spec: Object.assign(spec, { explain: 'The 60% rule <a class="cite" href="../reference/references.html#r8">[8]</a> covers the gap between a test pilot\'s landing and an everyday one.' }), view: {
         title: 'Landing field length', aria: 'Required field length against landing distance, dry and wet, with this problem marked.',
         x: { label: 'Demonstrated landing distance (m)', min: 500, max: 2200 }, y: { label: 'Field length (m)', min: 0, max: 4500 },
         curves: [{ f: function (x) { return x / 0.6; }, color: 'z', label: 'dry' }, { f: function (x) { return 1.15 * x / 0.6; }, color: 'r', label: 'wet' }], marker: { at: [sl, sf], label: '' },
@@ -451,7 +451,7 @@
       x: { label: '\\(V_{\\text{REF}}\\) (kt)', min: Math.min(80, Math.floor(Vref / 10) * 10 - 10), max: Math.max(170, Math.ceil(Vref / 10) * 10 + 10) }, y: { label: 'Landing \\(\\WS\\) (kg/m²)', min: 0, max: Math.max(1000, Math.ceil(WS * 1.2 / 100) * 100) },
       curves: [{ f: function (v) { var s = v * KT / 1.23; return 0.5 * rv * s * s * cv / G; }, color: 'z' }], marker: { at: [Vref, WS], label: '' },
       readouts: [{ label: '\\(V_{\\text{REF}}\\)', tex: n4(Vref) + '\\ \\text{kt}' }, { label: '\\(V_{SR}\\)', tex: n4(Vs) + MS }, { label: 'Landing \\(\\WS\\)', tex: n4(WS) + KGM2 }],
-      note: 'Approach category C ends at 140 kt, D at 165 kt.' }, test: { right: [right], wrong: [wrong] } };
+      note: 'Approach category C ends at 140 kt, D at 165 kt <a class="cite" href="../reference/references.html#r14">[14]</a>, <a class="cite" href="../reference/references.html#r7">[7]</a>.' }, test: { right: [right], wrong: [wrong] } };
   }
 
   /* ---------- 2.6 Mission timeline (Lesson 5) ---------- */
@@ -521,7 +521,7 @@
     } else if (kind === 'intl' || kind === 'icao') {
       var t = rng.pick(range(3, 14, 0.5)), ff = rng.pick(range(2000, 9000, 100)), alt = rng.pick(range(1500, 6000, 100)), hf = Math.round(ff * rng.pick([0.75, 0.8, 0.85]) / 100) * 100;
       var cont = (kind === 'intl' ? 0.10 : 0.05) * t * ff, res = cont + alt + 0.5 * hf;
-      var rule = kind === 'intl' ? 'the US international rule (10% of the flight time at cruise fuel flow, the alternate, and 30 minutes of holding)' : 'the ICAO rule with 5% contingency (5% of the trip fuel, the alternate, and a 30-minute final reserve at the holding fuel flow); take the trip fuel as the flight time times the cruise fuel flow';
+      var rule = kind === 'intl' ? 'the US international rule <a class="cite" href="../reference/references.html#r8">[8]</a> (10% of the flight time at cruise fuel flow, the alternate, and 30 minutes of holding)' : 'the ICAO rule <a class="cite" href="../reference/references.html#r12">[12]</a> with 5% contingency (5% of the trip fuel, the alternate, and a 30-minute final reserve at the holding fuel flow); take the trip fuel as the flight time times the cruise fuel flow';
       spec = { type: 'numeric', prompt: 'A flight of ' + m(nn(t) + '\\ \\text{h}') + ' burns ' + m(grp(ff) + KGH) + ' in cruise. Reaching the alternate needs ' + m(grp(alt) + KG) + ', and holding burns ' + m(grp(hf) + KGH) + '. Find the reserve fuel under ' + rule + '.', label: 'Reserve \\(=\\)', answer: res, unit: 'kg' };
       spec.hints = [kind === 'intl' ? 'Contingency: \\(0.10\\times\\) flight time \\(\\times\\) cruise fuel flow.' : 'Contingency: \\(0.05\\times\\) trip fuel, with trip fuel \\(= t\\times\\) fuel flow.', 'Add the alternate fuel and 30 minutes (0.5 h) at the holding fuel flow.'];
       spec.solution = M((kind === 'intl' ? '0.10' : '0.05') + '(' + nn(t) + ')(' + grp(ff) + ') + ' + grp(alt) + ' + 0.5(' + grp(hf) + ') = ' + g4(cont) + ' + ' + grp(alt) + ' + ' + g4(0.5 * hf) + ' = ' + g4(res) + KG);
@@ -593,7 +593,7 @@
           curves: [{ f: function (x) { return g2 * x; }, color: 'z' }], marker: { at: [dP, dW], label: '' },
           readouts: [{ label: 'Growth factor', tex: n4(gf) }, { label: '\\(\\Delta\\Wo\\)', tex: n4(dW) + KG }], note: 'Every kilogram added costs several at takeoff.' };
       } else {
-        spec = { type: 'numeric', prompt: 'A jet transport carries ' + m(grp(Wp) + KG) + ' of crew and payload, cruises at ' + m(nn(V) + KMH) + ' with ' + m('L/D = ' + nn(LD)) + ' and ' + m('C = ' + nn(C) + PH) + ', and has ' + m('\\We/\\Wo = ' + nn(fe)) + '. With ' + m('\\Wf/\\Wo = 1.06[1 - 0.970(0.985)(0.995)e^{-RC/(V\\,L/D)}]') + ', estimate ' + m('\\Wo') + ' for a design range of ' + m(grp(R) + KM) + '.', label: '\\(\\Wo =\\)', answer: W0, unit: 'kg' };
+        spec = { type: 'numeric', prompt: 'A jet transport carries ' + m(grp(Wp) + KG) + ' of crew and payload, cruises at ' + m(nn(V) + KMH) + ' with ' + m('L/D = ' + nn(LD)) + ' and ' + m('C = ' + nn(C) + PH) + ', and has ' + m('\\We/\\Wo = ' + nn(fe)) + '. With ' + m('\\Wf/\\Wo = 1.06[1 - 0.970(0.985)(0.995)e^{-RC/(V\\,L/D)}]') + ' <a class="cite" href="../reference/references.html#r1">[1]</a>, estimate ' + m('\\Wo') + ' for a design range of ' + m(grp(R) + KM) + '.', label: '\\(\\Wo =\\)', answer: W0, unit: 'kg' };
         spec.hints = ['Cruise fraction: \\(e^{-' + grp(R) + '(' + nn(C) + ')/(' + nn(V) + '(' + nn(LD) + '))}\\); multiply by \\(0.970(0.985)(0.995) = 0.9507\\).', '\\(\\Wf/\\Wo = 1.06(1 - W_x/W_0)\\), then \\(\\Wo = W_{\\text{payload}}/(1 - \\Wf/\\Wo - \\We/\\Wo)\\).'];
         var ex = Math.exp(-R * C / (V * LD));
         spec.solution = M('e^{-' + grp(R) + '(' + nn(C) + ')/(' + nn(V) + '(' + nn(LD) + '))} = ' + n4(ex)) + M('\\frac{W_x}{W_0} = 0.9507(' + n4(ex) + ') = ' + n4(HIST * ex) + ', \\qquad \\frac{\\Wf}{\\Wo} = 1.06(1 - ' + n4(HIST * ex) + ') = ' + n4(ffR)) +

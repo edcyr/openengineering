@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electric and VTOL Sizer · Electric Aircraft and Vertical Flight</title>
+<meta name="description" content="A sizing tool for electric and vertical-takeoff versions of an aircraft: the takeoff weight of a battery-electric design for a range and reserve, the range left at a given weight, the battery's energy, power and C-rate, and the rotors, hover power and weight cost of a vertical-lift system, against the jet sized by Module 3's method.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/electric.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-sub { margin: 1.4rem 0 0.2rem; font-size: 1.05rem; }
+</style>
+</head>
+<body data-page="evtol" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Electric Aircraft and Vertical Flight</p>
+    <h1>Electric and VTOL Sizer</h1>
+    <p class="lede">The module on one page: give the business jet (or any aircraft of its kind) a battery, a mission and, if you like, a vertical-lift system, and read the takeoff weight it needs, the range it would have at a weight you fix, its battery's energy, power and C-rate, and the rotors and hover power of its VTOL system, beside the jet sized by Module 3's method.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="ev-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="ev-presets" role="group" aria-labelledby="ev-presets-label"></div>
+    <div class="sc-grid" id="ev-grid"></div>
+    <p class="small muted" id="ev-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <h3 class="sc-sub">Battery-electric</h3>
+    <div class="sc-totals" id="ev-totals"></div>
+    <figure class="figure wide" aria-labelledby="ev-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="ev-stage1"></div>
+      </div>
+      <figcaption id="ev-fig1-cap"><strong>Figure T.1</strong> Takeoff mass against design range: the battery-electric design at the specific energy chosen (blue) and the jet by Module 3's method (green), with the range chosen marked. The electric curve stops at the battery wall (60&nbsp;t).</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="ev-fig2-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="ev-stage2"></div>
+      </div>
+      <figcaption id="ev-fig2-cap"><strong>Figure T.2</strong> Where the takeoff mass goes: the jet, the electric design sized for the mission, and the electric design at the takeoff mass you fix.</figcaption>
+    </figure>
+    <h3 class="sc-sub">Vertical takeoff</h3>
+    <div class="sc-totals" id="ev-vtol"></div>
+    <figure class="figure wide" aria-labelledby="ev-fig3-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="ev-stage3"></div>
+      </div>
+      <figcaption id="ev-fig3-cap"><strong>Figure T.3</strong> Hover power against disk loading at the takeoff mass you fix, at the hover site chosen (logarithmic disk-loading scale), with the VTOL system chosen marked.</figcaption>
+    </figure>
+    <div class="btn-row"><button type="button" class="btn small" id="ev-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Battery fraction (Lessons 3 and 4): \(gR/(e_b\eta\,\LDmax)\) for the range, plus a reserve flown at the minimum-power speed (\(0.760\,V_{md}\), \(L/D = 0.866\,\LDmax\)) at 1500&nbsp;m at the business jet's wing loading of 248&nbsp;kg/m².</li>
+      <li>Empty weight (Lesson 4): Module 3's jet-transport trend \(0.9727\,W_0^{-0.06}\), less the jet engines' share, plus the installed motor power per kilogram over the drive's specific power.</li>
+      <li>Takeoff mass: \(W_0 = W_{\text{pay}}/(1 - W_e/W_0 - W_b/W_0)\), solved for its single root; past 60&nbsp;t the design is shown as not closing.</li>
+      <li>Battery power (Lesson 2): the installed motor power over the battery, inverter and motor efficiencies (0.95, 0.98, 0.95); C-rate = power over energy.</li>
+      <li>Jet (Module 3, Lesson 8): the same trend with the jet engines, Module 3's mission fractions with \(V = 850\)&nbsp;km/h, \(C = 0.65\)/0.55 per hour, cruise at \(0.866\,\LDmax\), a 45-minute loiter and 6% reserve; a vertical-lift system adds \(f_v\) to the empty-weight fraction.</li>
+      <li>Hover (Lesson 7): \(T = W(1 + \text{download})\), \(A = T/(T/A)\), \(P = T\sqrt{T/(2\rho A)}/FM\), at the hover site's density (standard atmosphere with the temperature offset).</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var G0 = ELEC.G0, IDS = ['bizjet', 'short', 'tilt', 'lc'];
+  var NAME = { bizjet: 'All-electric business jet', short: 'Short-range electric jet', tilt: 'Tiltrotor business jet', lc: 'Lift + cruise business jet' };
+  function copy(id) {
+    var s = { id: id, pay: 980, R: 4600, tres: 45, W0: 6943, LD: +ELEC.polar().LDmax.toFixed(4), eta: +ELEC.chain(['bat', 'inv', 'mot', 'prop']).toFixed(4), e: 200, cmax: 3, pw: 0.30, ped: 5,
+      vtol: 'none', dl: 800, fm: 0.75, dn: 10, fv: 0, n: 2, hh: 0, dT: 0 };
+    if (id === 'short') { s.R = 300; s.tres = 20; s.e = 400; }
+    if (id === 'tilt') { s.vtol = 'tilt'; s.dl = 800; s.fm = 0.75; s.dn = 10; s.fv = 0.12; s.n = 2; }
+    if (id === 'lc') { s.vtol = 'lc'; s.dl = 627; s.fm = 0.74; s.dn = 5; s.fv = 0.10; s.n = 8; }
+    return s;
+  }
+  var KEY = 'evtol:inputs', st = Object.assign(copy('bizjet'), CYL.store.get(KEY, {}) || {});
+  if (IDS.indexOf(st.id) < 0) st = copy('bizjet');
+  function save() { CYL.store.set(KEY, st); }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('ev-grid'), inputs = {};
+  function num(k, label) { return { k: k, label: label, type: 'num' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { t: 'Mission', f: [num('pay', 'Crew and payload (kg)'), num('R', 'Design range (km)'), num('tres', 'Reserve (min)'), num('W0', 'Takeoff mass to evaluate (kg)')] },
+    { t: 'Aircraft and battery', f: [num('LD', '\\((L/D)_{\\max}\\)'), num('eta', 'Battery to thrust \\(\\eta\\)'), num('e', 'Usable \\(e_b\\) (Wh/kg)'), num('cmax', 'C-rate limit (per h)'), num('pw', 'Motor power (kW per kg of \\(W_0\\))'), num('ped', 'Drive specific power (kW/kg)')] },
+    { t: 'Vertical takeoff', f: [opt('vtol', 'System', [['none', 'None'], ['tilt', 'Tiltrotor'], ['lc', 'Lift + cruise'], ['fan', 'Lift fans'], ['jet', 'Jet lift']], true), num('dl', 'Disk loading (N/m²)'), num('n', 'Rotors or fans'), num('fm', 'Figure of merit'), num('dn', 'Download (% of W)'), num('fv', 'System share \\(f_v\\)'), num('hh', 'Hover site altitude (m)'), num('dT', 'Temperature offset (K)')] }
+  ];
+  var LIM = { pay: [50, 50000], R: [0, 20000], tres: [0, 120], W0: [300, 200000], LD: [5, 40], eta: [0.2, 0.95], e: [50, 20000], cmax: [0.2, 50], pw: [0.02, 3], ped: [0.5, 50], dl: [50, 300000], n: [1, 40], fm: [0.3, 1], dn: [0, 40], fv: [0, 0.4], hh: [0, 5000], dT: [-40, 40] };
+  function ok(k, v) { return !LIM[k] || (v >= LIM[k][0] && v <= LIM[k][1]); }
+  var timer = null;
+  function later() { clearTimeout(timer); timer = setTimeout(update, 200); }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'ev-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () {
+          st[q.k] = el.value;
+          if (q.k === 'vtol' && el.value !== 'none') { var v = ELEC.VARIANTS.filter(function (x) { return x.id === el.value; })[0]; st.dl = v.dl; st.fm = v.fm; st.dn = Math.round(100 * v.dn); st.fv = v.fv; st.n = v.n; fill(); }
+          if (q.k === 'vtol' && el.value === 'none') { st.fv = 0; fill(); }
+          save(); update();
+        });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: 'any', inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); later(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f])));
+  });
+  CYL.renderMath(grid);
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = st[k]; }); }
+  var pre = document.getElementById('ev-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: NAME[id] });
+    b.addEventListener('click', function () { st = copy(id); save(); fill(); update(); document.getElementById('ev-msg').textContent = 'Loaded: ' + NAME[id] + '.'; });
+    chips[id] = b; pre.appendChild(b);
+  });
+
+  /* ---------- figures ---------- */
+  var c1 = AERO.chart(document.getElementById('ev-stage1'), { x: { label: 'Design range (km)', min: 0, max: 5000 }, y: { label: 'Takeoff mass (kg)', min: 0, max: 30000 }, height: 320, ariaLabel: 'Takeoff mass against range.',
+    legend: [{ label: 'Battery-electric', color: 'z', line: true }, { label: 'Jet (Module 3\'s method)', color: 'good', line: true }] });
+  var lE = c1.polyline([], { color: 'z', width: 2.6 }), lJ = c1.polyline([], { color: 'good', width: 2.4 }), mE = c1.marker([0, 0], { color: 'z', r: 5 }), mJ = c1.marker([0, 0], { color: 'good', r: 5 });
+  var host2 = document.getElementById('ev-stage2');
+  var c3 = AERO.chart(document.getElementById('ev-stage3'), { x: { label: 'Disk loading (N/m²)', min: 100, max: 200000, log: true }, y: { label: 'Hover power (MW)', min: 0.1, max: 50, log: true }, height: 300, ariaLabel: 'Hover power against disk loading.',
+    legend: [{ label: 'Hover power', color: 'r', line: true }] });
+  var lH = c3.polyline([], { color: 'r', width: 2.4 }), mH = c3.marker([0, 0], { color: 'r', r: 5 });
+
+  /* ---------- results ---------- */
+  var R;
+  function opts() { return { eWh: st.e, t: st.tres, eta: st.eta, LD: st.LD, pw: st.pw, ped: st.ped, Wpay: st.pay, W0max: 60000 }; }
+  function compute() {
+    var o = opts(), el = ELEC.sizeElectric(Object.assign({ R: st.R * 1000 }, o)), jet = ELEC.sizeJet({ R: st.R, LD: st.LD, fv: 0, W0max: 1e6 });
+    var We = ELEC.emptyFrac(st.W0, o) * st.W0, bfAvail = 1 - We / st.W0 - st.pay / st.W0, bfRes = el.bfRes, Ravail = Math.max(0, (bfAvail - bfRes)) * ELEC.rangeBattery(st.e, st.eta, st.LD, 1) / 1000;
+    var Wd = el.ok ? el.W0 : st.W0, Pin = st.pw * Wd, Pbat = Pin / ELEC.chain(['bat', 'inv', 'mot']), Ebat = el.ok ? el.E : NaN, crate = Pbat / Ebat;
+    var mPow = Pbat / st.cmax * 1000 / st.e;
+    var s = ELEC.isa(st.hh, st.dT), T = st.W0 * G0 * (1 + st.dn / 100), A = T / st.dl, hv = ELEC.hover(T, A, s.rho, st.fm), D = ELEC.dia(T, st.n, st.dl);
+    var jv = ELEC.sizeJet({ R: st.R, LD: st.LD, fv: st.fv, W0max: 1e6 }), rv = ELEC.rangeAtW0({ W0: st.W0, LD: st.LD, fv: st.fv });
+    return { el: el, jet: jet, We: We, bfAvail: bfAvail, bfRes: bfRes, Ravail: Ravail, Pin: Pin, Pbat: Pbat, Ebat: Ebat, crate: crate, mPow: mPow, rho: s.rho, T: T, A: A, hv: hv, D: D, jv: jv, rv: rv };
+  }
+  function f(v, d) { return CYL.fmtFixed(v, d); }
+  function update() {
+    IDS.forEach(function (id) { chips[id].setAttribute('aria-pressed', String(id === st.id)); });
+    R = compute();
+    var el = R.el, T = document.getElementById('ev-totals'), V = document.getElementById('ev-vtol'); T.innerHTML = ''; V.innerHTML = '';
+    function tile(host, lab, val, warn) { host.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', html: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    tile(T, 'Electric <i>W</i><sub>0</sub> for the mission (kg)', el.ok ? f(el.W0, 0) : '> 60 t', !el.ok);
+    tile(T, 'Battery (kg)', el.ok ? f(el.Wb, 0) : '\u2014'); tile(T, 'Battery energy (kWh)', el.ok ? f(el.E, 0) : '\u2014');
+    tile(T, 'Battery fraction: range + reserve', f(el.bfR, 4) + ' + ' + f(el.bfRes, 4));
+    tile(T, 'Takeoff battery power (kW)', el.ok ? f(R.Pbat, 0) : '\u2014'); tile(T, 'C-rate at takeoff (per h)', el.ok ? f(R.crate, 2) : '\u2014', el.ok && R.crate > st.cmax);
+    tile(T, 'Jet <i>W</i><sub>0</sub> (kg)', R.jet.ok ? f(R.jet.W0, 0) : 'does not close');
+    tile(T, 'Electric range at ' + f(st.W0, 0) + ' kg (km)', f(R.Ravail, 1), R.Ravail <= 0);
+    tile(V, 'Hover thrust (kN)', f(R.T / 1000, 2)); tile(V, 'Disk area (m²)', f(R.A, 2)); tile(V, st.n + ' disks, diameter (m)', f(R.D, 2));
+    tile(V, 'Hover power (MW)', f(R.hv.P / 1e6, 3)); tile(V, 'Power loading (N/kW)', f(R.hv.PL * 1000, 1));
+    tile(V, 'Jet <i>W</i><sub>0</sub> with <i>f<sub>v</sub></i> (kg)', R.jv.ok && R.jv.W0 < 1e5 ? f(R.jv.W0, 0) : 'does not close', !(R.jv.ok && R.jv.W0 < 1e5));
+    tile(V, 'Jet range at ' + f(st.W0, 0) + ' kg with <i>f<sub>v</sub></i> (km)', f(R.rv.R, 0));
+    var msg = el.ok ? 'The electric design closes at ' + f(el.W0, 0) + ' kg, ' + f(el.W0 / (R.jet.ok ? R.jet.W0 : NaN), 2) + ' times the jet.' : 'The electric design does not close below 60 t: the battery wall. Shorten the range or the reserve, or raise the specific energy.';
+    if (el.ok && R.crate > st.cmax) msg += ' The battery is sized by its energy but would run above the C-rate limit at takeoff; sized by power it would weigh ' + f(R.mPow, 0) + ' kg.';
+    document.getElementById('ev-msg').textContent = msg;
+    // Figure T.1
+    var P = [], J = [], rmax = Math.max(1000, Math.ceil(Math.max(st.R * 1.4, 1000) / 500) * 500);
+    for (var r = 0; r <= rmax; r += rmax / 200) { var s = ELEC.sizeElectric(Object.assign({ R: r * 1000 }, opts())); if (!s.ok) break; P.push([r, s.W0]); if (s.W0 > 31000) break; }
+    for (var r2 = 0; r2 <= rmax; r2 += rmax / 100) { var j = ELEC.sizeJet({ R: r2, LD: st.LD }); if (!j.ok || j.W0 > 31000) break; J.push([r2, j.W0]); }
+    var ymax = Math.min(30000, Math.max(10000, Math.ceil(Math.max(el.ok ? el.W0 : 0, R.jet.ok ? R.jet.W0 : 0, st.W0) * 1.3 / 5000) * 5000));
+    c1.setAxes({ x: { label: 'Design range (km)', min: 0, max: rmax }, y: { label: 'Takeoff mass (kg)', min: 0, max: ymax } });
+    lE.set(P); lJ.set(J); mE.set(el.ok && el.W0 < ymax ? [st.R, el.W0] : null); mJ.set(R.jet.ok && R.jet.W0 < ymax ? [st.R, R.jet.W0] : null);
+    c1.setAriaLabel('For ' + st.R + ' km the electric design ' + (el.ok ? 'weighs ' + Math.round(el.W0) + ' kg' : 'does not close') + ' and the jet ' + (R.jet.ok ? Math.round(R.jet.W0) + ' kg' : 'does not close') + '.');
+    // Figure T.2
+    var rows = [];
+    if (R.jet.ok) rows.push({ label: 'Jet', segs: [{ v: st.pay, col: 't' }, { v: R.jet.We, col: 'muted' }, { v: R.jet.ff * R.jet.W0, col: 'good' }], text: f(R.jet.W0, 0) + ' kg', bold: true });
+    rows.push(el.ok ? { label: 'Electric, sized', segs: [{ v: st.pay, col: 't' }, { v: el.We, col: 'muted' }, { v: el.bfR * el.W0, col: 'z' }, { v: el.bfRes * el.W0, col: 'r' }], text: f(el.W0, 0) + ' kg', bold: true } : { label: 'Electric, sized', segs: [{ v: 0, col: 'z' }], text: 'beyond the wall' });
+    var bres = Math.min(Math.max(R.bfAvail, 0), R.bfRes) * st.W0, brng = Math.max(0, R.bfAvail - R.bfRes) * st.W0;
+    rows.push({ label: 'Electric at ' + f(st.W0, 0) + ' kg', segs: [{ v: st.pay, col: 't' }, { v: R.We, col: 'muted' }, { v: brng, col: 'z' }, { v: bres, col: 'r' }], text: f(R.Ravail, 0) + ' km', bold: true });
+    ELEC.hbars(host2, rows, { legend: [{ label: 'Crew and payload', col: 't' }, { label: 'Empty', col: 'muted' }, { label: 'Fuel', col: 'good' }, { label: 'Battery, range', col: 'z' }, { label: 'Battery, reserve', col: 'r' }], aria: 'Mass breakdowns of the jet and the electric designs.' });
+    // Figure T.3
+    var H = []; for (var k = 0; k <= 120; k++) { var dl = 100 * Math.pow(2000, k / 120), A2 = R.T / dl; H.push([dl, ELEC.hover(R.T, A2, R.rho, st.fm).P / 1e6]); }
+    lH.set(H); mH.set([st.dl, R.hv.P / 1e6]);
+    c3.setAriaLabel('At ' + st.dl + ' N/m2 the hover power is ' + (R.hv.P / 1e6).toFixed(3) + ' MW.');
+    return R;
+  }
+  fill(); update();
+  window.__evtol = { compute: compute, update: update, state: function () { return st; }, load: function (id) { st = copy(id); save(); fill(); return update(); } };
+
+  /* ---------- CSV ---------- */
+  document.getElementById('ev-csv').addEventListener('click', function () {
+    if (!R) return;
+    var rows = [['quantity', 'value', 'unit']];
+    Object.keys(st).forEach(function (k) { rows.push(['input ' + k, st[k], '']); });
+    rows.push(['electric W0', R.el.ok ? R.el.W0.toFixed(1) : 'beyond 60 t', 'kg'], ['battery', R.el.ok ? R.el.Wb.toFixed(1) : '', 'kg'], ['battery energy', R.el.ok ? R.el.E.toFixed(1) : '', 'kWh'],
+      ['battery fraction range', R.el.bfR.toFixed(5), ''], ['battery fraction reserve', R.el.bfRes.toFixed(5), ''], ['takeoff battery power', R.Pbat.toFixed(1), 'kW'], ['C-rate at takeoff', isFinite(R.crate) ? R.crate.toFixed(3) : '', 'per h'],
+      ['jet W0', R.jet.ok ? R.jet.W0.toFixed(1) : '', 'kg'], ['electric range at fixed W0', R.Ravail.toFixed(2), 'km'], ['hover thrust', R.T.toFixed(0), 'N'], ['disk area', R.A.toFixed(3), 'm2'], ['disk diameter', R.D.toFixed(3), 'm'],
+      ['hover power', (R.hv.P / 1000).toFixed(1), 'kW'], ['jet W0 with fv', R.jv.ok ? R.jv.W0.toFixed(1) : '', 'kg'], ['jet range at fixed W0 with fv', R.rv.R.toFixed(1), 'km']);
+    var csv = rows.map(function (r) { return r.map(function (x) { x = String(x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'electric-vtol-sizer.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+});
+</script>
+</body>
+</html>

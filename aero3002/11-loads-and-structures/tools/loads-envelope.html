@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loads Envelope · Loads and Structures</title>
+<meta name="description" content="A loads tool: an aircraft's maneuvering and gust envelopes at any weight and altitude, its design speeds and design load factor, the balanced wing and tail loads at every corner, the wing's shear and bending, and the bending material of its wing box in a chosen material.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<script src="../assets/js/loads.js"></script>
+<style>
+  .sc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; margin: 0.8rem 0 1rem; }
+  .sc-box { padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-box h3 { margin: 0 0 8px; font-size: 0.95rem; }
+  .sc-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); gap: 8px 10px; }
+  .sc-fields .field input, .sc-fields .field select { width: 100%; }
+  .sc-wide { margin-bottom: 8px; display: grid; gap: 8px; }
+  .sc-wide select { width: 100%; }
+  .sc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .sc-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .sc-tile p { margin: 0; }
+  .sc-tile .lab { color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; }
+  .sc-tile .val { margin-top: 2px; font-size: 1.3rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sc-tile.warn .val { color: var(--c-bad); }
+  .sc-table td, .sc-table th { text-align: right; font-variant-numeric: tabular-nums; }
+  .sc-table td:first-child, .sc-table th:first-child { text-align: left; }
+  .sc-table tr.crit td { font-weight: 700; }
+</style>
+</head>
+<body data-page="loads" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tool · Loads and Structures</p>
+    <h1>Loads Envelope</h1>
+    <p class="lede">The module on one page: choose an aircraft, a weight and an altitude, and read its maneuvering and gust envelopes, its design speeds and design load factor, the balanced wing and tail loads at every corner, the shear and bending of its wing, and the bending material of its wing box.</p>
+  </header>
+
+  <section id="inputs">
+    <h2>Inputs</h2>
+    <p class="small muted" id="le-presets-label" style="margin:0 0 6px;font-weight:700;letter-spacing:.07em;text-transform:uppercase">Start from</p>
+    <div class="chip-row" id="le-presets" role="group" aria-labelledby="le-presets-label"></div>
+    <div class="sc-grid" id="le-grid"></div>
+    <p class="small muted" id="le-msg" aria-live="polite"></p>
+  </section>
+
+  <section id="result">
+    <h2>Result</h2>
+    <div class="sc-totals" id="le-totals"></div>
+    <figure class="figure wide" aria-labelledby="le-fig1-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="le-stage1"></div>
+      </div>
+      <figcaption id="le-fig1-cap"><strong>Figure T.1</strong> The maneuvering envelope (filled) and the gust envelope (red) at the weight and altitude chosen, in equivalent airspeed, with the gust lines dashed.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="le-fig2-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="le-stage2"></div>
+      </div>
+      <figcaption id="le-fig2-cap"><strong>Figure T.2</strong> The largest positive load factor against altitude at the weight chosen (gusts and maneuvers), with the maneuvering limit.</figcaption>
+    </figure>
+    <figure class="figure wide" aria-labelledby="le-fig3-cap">
+      <div class="viz stacked">
+        <div class="viz-stage" id="le-stage3"></div>
+      </div>
+      <figcaption id="le-fig3-cap"><strong>Figure T.3</strong> The wing's bending moment along the half span (limit load) for the corner with the largest bending at the side of the fuselage, with the lift's bending alone dashed.</figcaption>
+    </figure>
+    <div class="table-wrap">
+      <table class="data sc-table" id="le-table">
+        <caption>The corners of the envelopes: balanced loads, and the wing's shear \(V\) and bending \(M\) at the side of the fuselage (limit load)</caption>
+        <thead><tr><th scope="col">Point</th><th scope="col">\(V_E\) (m/s)</th><th scope="col">\(n\)</th><th scope="col">\(L_t\) (kN)</th><th scope="col">\(L_w\) (kN)</th><th scope="col">\(V\) (kN)</th><th scope="col">\(M\) (kN·m)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button type="button" class="btn small" id="le-csv">Download CSV</button></div>
+  </section>
+
+  <section id="method">
+    <h2>How it is calculated</h2>
+    <ul>
+      <li>Load factors (Lessons 3 to 5): \(n_{\text{limit}}\) from the design takeoff weight (14&nbsp;CFR 25.337 <a class="cite" href="../reference/references.html#r2">[2]</a>), \(-1\) to \(V_C\) and 0 at \(V_D\), unless the aircraft sets its own (the light aircraft: 3.8 and \(-1.52\)). Gusts by Pratt's formula with the derived gust velocities of 66, 50 and 25&nbsp;ft/s at \(V_B\), \(V_C\) and \(V_D\) to 20&nbsp;000&nbsp;ft, falling to 38, 25 and 12.5&nbsp;ft/s at 50&nbsp;000&nbsp;ft <a class="cite" href="../reference/references.html#r3">[3]</a>; the wing's lift-curve slope at the flight Mach number (Module 4's formula, half-chord sweep).</li>
+      <li>Speeds (Lessons 4 and 5): \(V_{S1}\) and \(V_G\) at the maximum and minimum lift coefficients; \(V_A = V_{S1}\sqrt{n}\); \(V_C\) and \(V_D = V_C/0.8\) in equivalent airspeed, limited by \(M_C\) and \(M_D\) at altitude; \(V_B\) the least of 25.335(d), and the least \(V_C\) of 25.335(a) with the reference gust velocity of 25.341 <a class="cite" href="../reference/references.html#r2">[2]</a>.</li>
+      <li>Design load factor: the largest of the maneuvering limit and the gust load factors at the design takeoff weight, over altitudes from sea level to the aircraft's ceiling.</li>
+      <li>Balance (Lesson 6): wing lift at the wing's aerodynamic center with \(C_{M,ac} = c_{m0}A\cos^2\Lambda/(A + 2\cos\Lambda)\), tail load at the tail's; fuselage and thrust moments neglected.</li>
+      <li>Wing (Lessons 7 and 8): Schrenk's lift <a class="cite" href="../reference/references.html#r4">[4]</a>; the wing's mass as a share of the takeoff weight, spread with the chord; wing-tank fuel up to its capacity (the rest in a center tank), spread with the chord squared to the end of the tanks; panels at ultimate load, the lower by strength, the upper by Farrar's buckling stress (\(F = 0.81\), a typical value); spars at 15% and 60%, mean depth \(0.9\,t\). Typical strengths, not allowables. Your inputs are saved in this browser.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+CYL.ready(function () {
+  'use strict';
+  var KT = LOADS.KT, G0 = LOADS.G0;
+  var IDS = ['bizjet', 'narrow', 'tprop', 'light'], NAME = { bizjet: 'Business jet (from the lessons)', narrow: 'Narrow-body airliner', tprop: 'Regional turboprop', light: 'Light aircraft (Part 23)' };
+  function copy(id) {
+    var p = LOADS.preset(id);
+    return { id: id, W0: p.W0, Wf: p.Wf, S: p.S, A: p.A, lam: p.lam, sweep: p.sweepC4, tc: p.tc, clmax: p.CLmax, clneg: p.CLneg, vc: Math.round(p.VC / KT), mc: p.MC, md: p.MD,
+      wcase: 'mtow', h: id === 'bizjet' ? 6096 : 0, cg: 15, wingPct: Math.round(100 * p.wingFrac), mat: 'al7075', rib: p.rib };
+  }
+  var KEY = 'loads:inputs', st = Object.assign(copy('bizjet'), CYL.store.get(KEY, {}) || {});
+  if (IDS.indexOf(st.id) < 0) st = copy('bizjet');
+  function save() { CYL.store.set(KEY, st); }
+
+  /* ---------- inputs ---------- */
+  var grid = document.getElementById('le-grid'), inputs = {};
+  function num(k, label, step) { return { k: k, label: label, type: 'num', step: step || 'any' }; }
+  function opt(k, label, options, wide) { return { k: k, label: label, type: 'sel', options: options, wide: wide }; }
+  var BOXES = [
+    { t: 'Aircraft', f: [num('W0', 'Design takeoff weight (kg)'), num('Wf', 'Design fuel (kg)'), num('S', 'Wing area (m²)'), num('A', 'Aspect ratio'), num('lam', 'Taper ratio'), num('sweep', 'Quarter-chord sweep (°)'), num('tc', '\\(t/c\\)'), num('clmax', '\\(C_{L\\max}\\), clean'), num('clneg', '\\(C_{L\\min}\\)')] },
+    { t: 'Speeds and flight condition', f: [opt('wcase', 'Weight', [['mtow', 'Design takeoff weight'], ['mlw', 'Landing weight (0.9 W0)'], ['mzfw', 'Zero-fuel weight (W0 − fuel)']], true), num('vc', '\\(V_C\\) (kt, equivalent)'), num('mc', '\\(M_C\\)'), num('md', '\\(M_D\\)'), num('h', 'Altitude (m)'), num('cg', 'CG (% MAC)')] },
+    { t: 'Wing structure', f: [opt('mat', 'Material', LOADS.MAT.map(function (m) { return [m.id, m.label]; }), true), num('rib', 'Rib spacing (m)'), num('wingPct', 'Wing mass (% of W0)')] }
+  ];
+  function ok(k, v) { var R = { W0: [300, 600000], Wf: [0, 300000], S: [5, 900], A: [3, 20], lam: [0.1, 1], sweep: [0, 45], tc: [0.06, 0.2], clmax: [0.8, 2.2], clneg: [-1.6, -0.3], vc: [80, 400], mc: [0.2, 0.92], md: [0.25, 0.98], h: [0, 15000], cg: [0, 50], rib: [0.25, 1.5], wingPct: [3, 20] }[k]; return !R || (v >= R[0] && v <= R[1]); }
+  var timer = null;
+  function later() { clearTimeout(timer); timer = setTimeout(update, 200); }
+  BOXES.forEach(function (bx) {
+    var f = CYL.el('div', { class: 'sc-fields' }), wide = CYL.el('div', { class: 'sc-wide' });
+    bx.f.forEach(function (q) {
+      var id = 'le-' + q.k, el;
+      if (q.type === 'sel') {
+        el = CYL.el('select', { id: id }); q.options.forEach(function (o) { el.appendChild(CYL.el('option', { value: o[0], text: o[1] })); });
+        el.addEventListener('change', function () { st[q.k] = el.value; save(); update(); });
+      } else {
+        el = CYL.el('input', { type: 'number', id: id, step: q.step, inputmode: 'decimal' });
+        el.addEventListener('input', function () { var v = parseFloat(el.value); if (isFinite(v) && ok(q.k, v)) { st[q.k] = v; save(); later(); } });
+      }
+      inputs[q.k] = el;
+      (q.wide ? wide : f).appendChild(CYL.el('div', { class: 'field' }, [CYL.el('label', { for: id, html: q.label }), el]));
+    });
+    grid.appendChild(CYL.el('div', { class: 'sc-box' }, [CYL.el('h3', { text: bx.t })].concat(wide.childNodes.length ? [wide] : [], [f])));
+  });
+  CYL.renderMath(grid);
+  function fill() { Object.keys(inputs).forEach(function (k) { inputs[k].value = st[k]; }); }
+  var pre = document.getElementById('le-presets'), chips = {};
+  IDS.forEach(function (id) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: NAME[id] });
+    b.addEventListener('click', function () { load(id); document.getElementById('le-msg').textContent = 'Loaded: ' + NAME[id] + (id === 'bizjet' ? '.' : ', an illustrative aircraft, not a real type.'); });
+    chips[id] = b; pre.appendChild(b);
+  });
+  function load(id) { st = copy(id); save(); fill(); update(); }
+
+  /* ---------- the aircraft from the inputs ---------- */
+  function aircraft() {
+    var p = LOADS.preset(st.id), sc = Math.sqrt(st.S / p.S);
+    var ac = Object.assign(p, { W0: st.W0, Wf: st.Wf, S: st.S, A: st.A, lam: st.lam, sweepC4: st.sweep, tc: st.tc, CLmax: st.clmax, CLneg: st.clneg, VC: st.vc * KT, MC: st.mc, MD: st.md, wingFrac: st.wingPct / 100, rib: st.rib });
+    if (p.VD) ac.VD = p.VD * st.vc * KT / p.VC;   // a set ratio of V_D to V_C (Part 23)
+    var pf = LOADS.pf(ac); ac.mac = pf.mac; ac.macLE = ac.xAc - 0.25 * pf.mac;
+    ac.wingTank = p.wingTank * Math.pow(sc, 3) * (st.tc / p.tc);     // tank volume scales with S^1.5 and t/c
+    return ac;
+  }
+
+  /* ---------- figures ---------- */
+  var c1 = AERO.chart(document.getElementById('le-stage1'), { x: { label: 'Equivalent airspeed \\(V_E\\) (m/s)', min: 0, max: 200 }, y: { label: 'Load factor \\(n\\)', min: -2.5, max: 5 }, height: 340, ariaLabel: 'Maneuvering and gust envelopes.',
+    legend: [{ label: 'Maneuvering', color: 'accent', line: true }, { label: 'Gust envelope', color: 'r', line: true }, { label: 'Gust lines', color: 'r', line: true, dashed: true }] });
+  var env = c1.polyline([], { color: 'accent', width: 2.2, fill: 'accent', fillOpacity: 0.1 }), genv = c1.polyline([], { color: 'r', width: 2.4 });
+  var rays = [0, 1, 2, 3, 4, 5].map(function () { return c1.polyline([], { color: 'r', width: 1, dashed: true }); });
+  c1.hline(1, { color: 'muted', dashed: true });
+  var c2 = AERO.chart(document.getElementById('le-stage2'), { x: { label: 'Altitude (km)', min: 0, max: 15 }, y: { label: 'Largest positive load factor', min: 2, max: 6 }, height: 280, ariaLabel: 'Largest load factor against altitude.',
+    legend: [{ label: 'Gust (largest of \\(V_B\\), \\(V_C\\), \\(V_D\\))', color: 'r', line: true }, { label: 'Maneuvering limit', color: 'accent', line: true, dashed: true }, { label: 'Altitude chosen', color: 'z' }] });
+  var gl = c2.polyline([], { color: 'r', width: 2.4 }), ml = c2.polyline([], { color: 'accent', width: 2, dashed: true }), hm = c2.marker([0, 0], { color: 'z', r: 5 });
+  var c3 = AERO.chart(document.getElementById('le-stage3'), { x: { label: 'Distance from the centerline \\(y\\) (m)', min: 0, max: 10 }, y: { label: 'Bending moment (kN·m)', min: 0, max: 300 }, height: 300, ariaLabel: 'Wing bending along the half span.',
+    legend: [{ label: 'Bending', color: 'accent', line: true }, { label: 'Lift alone', color: 'z', line: true, dashed: true }] });
+  var bm = c3.polyline([], { color: 'accent', width: 2.6 }), bl = c3.polyline([], { color: 'z', width: 1.8, dashed: true }), sob = c3.vline(0.8, { color: 'muted', dashed: true, label: 'side of fuselage' });
+
+  /* ---------- results ---------- */
+  var R;
+  function weightOf(ac) { return st.wcase === 'mlw' ? 0.9 * ac.W0 : st.wcase === 'mzfw' ? ac.W0 - ac.Wf : ac.W0; }
+  function compute() {
+    var ac = aircraft(), W = weightOf(ac), h = st.h, cg = st.cg / 100, fuel = LOADS.fuelSplit(ac, Math.max(0, W - (ac.W0 - ac.Wf))).wing;
+    var C = LOADS.cases(ac, W, h), sp = C.sp, vm = LOADS.vcMin(ac, ac.W0, 0), m = LOADS.mat(st.mat);
+    // design load factor at the design takeoff weight over altitude
+    var top = ac.hMax || 13000, best = { n: LOADS.nLimit(ac.W0), h: 0, kind: 'maneuver' }, curve = [];
+    var nMan = ac.n || LOADS.nLimit(ac.W0);
+    best.n = nMan;
+    for (var hh = 0; hh <= top; hh += 100) {
+      var g = LOADS.gustEnv(ac, W, hh), ng = Math.max(g.B[0], g.C[0], g.D[0]); curve.push([hh / 1000, ng]);
+      var gD = LOADS.gustEnv(ac, ac.W0, hh), nD = Math.max(gD.B[0], gD.C[0], gD.D[0]);
+      if (nD > best.n) best = { n: nD, h: hh, kind: 'gust' };
+    }
+    // each corner: balance, then the wing
+    var rows = C.list.map(function (c) {
+      var b = LOADS.balance(ac, { n: c.n, W: W, Ve: c.V, xcg: cg }), s = LOADS.span(ac, { L: b.Lw, n: c.n, fuel: fuel });
+      return { c: c, b: b, s: s };
+    });
+    var crit = rows.reduce(function (a, r) { return r.s.Msob > a.s.Msob ? r : a; }, rows[0]);
+    var box = LOADS.box(ac, crit.s, m, { L: st.rib });
+    return { ac: ac, W: W, h: h, fuel: fuel, C: C, sp: sp, vm: vm, best: best, curve: curve, nMan: nMan, rows: rows, crit: crit, box: box, m: m };
+  }
+  function f(v, d) { return CYL.fmtFixed(v, d); }
+  function update() {
+    IDS.forEach(function (id) { chips[id].setAttribute('aria-pressed', String(id === st.id)); });
+    R = compute();
+    var ac = R.ac, sp = R.sp, C = R.C, T = document.getElementById('le-totals'); T.innerHTML = '';
+    function tile(lab, val, warn) { T.appendChild(CYL.el('div', { class: 'sc-tile' + (warn ? ' warn' : '') }, [CYL.el('p', { class: 'lab', html: lab }), CYL.el('p', { class: 'val', text: val })])); }
+    var vcOk = st.vc * KT >= R.vm.VC - 0.05;
+    tile('Weight (kg)', f(R.W, 0)); tile('Maneuvering limit', f(R.nMan, 3)); tile('Largest <i>n</i> here', f(C.max.n, 3) + ' (' + C.max.id + ')');
+    tile('Design limit <i>n</i> at <i>W</i><sub>0</sub>', f(R.best.n, 3)); tile('Ultimate <i>N<sub>z</sub></i> at <i>W</i><sub>0</sub>', f(1.5 * R.best.n, 3));
+    tile('<i>V</i><sub>S1</sub> / <i>V<sub>A</sub></i> (kt)', f(sp.VS1 / KT, 0) + ' / ' + f(sp.VA / KT, 0)); tile('<i>V<sub>B</sub></i> / <i>V<sub>C</sub></i> / <i>V<sub>D</sub></i> (kt)', f(sp.VB / KT, 0) + ' / ' + f(sp.VC / KT, 0) + ' / ' + f(sp.VD / KT, 0));
+    tile('Least <i>V<sub>C</sub></i> at sea level (kt)', f(R.vm.VC / KT, 0), !vcOk);
+    tile('Wing bending, side of fuselage (kN·m)', f(R.crit.s.Msob / 1000, 1) + ' (' + R.crit.c.id + ')');
+    tile('Box bending material (kg)', f(R.box.mass, 1));
+    document.getElementById('le-msg').textContent = 'The design load factor at the design takeoff weight is ' + (R.best.kind === 'gust' ? 'set by a gust at ' + (R.best.h / 1000).toFixed(1) + ' km' : 'the maneuvering limit') + '.' + (vcOk ? '' : ' VC is below its least value at sea level (' + (R.vm.part23 ? '23.335' : '25.335(a)') + ').');
+    // Figure T.1
+    var v = C.vn, ge = C.gust, vmax = Math.max(200, Math.ceil(sp.VD / 20) * 20 + 10), nmx = Math.max(5, Math.ceil(Math.max(ge.C[0], ge.B[0], sp.n) * 1.5 + 0.5));
+    c1.setAxes({ x: { label: 'Equivalent airspeed \\(V_E\\) (m/s)', min: 0, max: vmax }, y: { label: 'Load factor \\(n\\)', min: -Math.max(2.5, nmx / 2), max: nmx } });
+    env.set(v.pos.concat(v.neg.slice().reverse()));
+    [['B', ge.VB], ['C', ge.VC], ['D', ge.VD]].forEach(function (q, i) {
+      var P = [], M = [], V; for (var j = 0; j <= 24; j++) { V = sp.VD * j / 24; var dn = ge.line(V, q[0]); P.push([V, 1 + dn]); M.push([V, 1 - dn]); }
+      rays[2 * i].set(P); rays[2 * i + 1].set(M);
+    });
+    genv.set([[0, 1], [ge.VB, ge.B[0]], [ge.VC, ge.C[0]], [ge.VD, ge.D[0]], [ge.VD, ge.D[1]], [ge.VC, ge.C[1]], [ge.VB, ge.B[1]], [0, 1]]);
+    c1.setAriaLabel('At ' + R.W.toFixed(0) + ' kg and ' + R.h + ' m: maneuvering limit ' + R.nMan.toFixed(3) + ', gust load factors ' + ge.B[0].toFixed(3) + ', ' + ge.C[0].toFixed(3) + ', ' + ge.D[0].toFixed(3) + '.');
+    // Figure T.2
+    var topk = R.curve[R.curve.length - 1][0], ymax = Math.max(4, Math.ceil(Math.max.apply(null, R.curve.map(function (q) { return q[1]; }).concat([R.nMan])) + 0.5));
+    c2.setAxes({ x: { label: 'Altitude (km)', min: 0, max: Math.ceil(topk) }, y: { label: 'Largest positive load factor', min: 1.5, max: ymax } });
+    gl.set(R.curve); ml.set([[0, R.nMan], [topk, R.nMan]]);
+    var here = R.curve.filter(function (q) { return Math.abs(q[0] * 1000 - Math.round(R.h / 100) * 100) < 1; })[0];
+    hm.set(here ? here : [R.h / 1000, 0]);
+    c2.setAriaLabel('Largest gust load factor at ' + R.W.toFixed(0) + ' kg against altitude, with the maneuvering limit ' + R.nMan.toFixed(3) + '.');
+    // Figure T.3
+    var s = R.crit.s, sL = LOADS.span(ac, { L: R.crit.b.Lw, n: 0, fuel: 0, wing: 0 }), mmax = Math.max(50, Math.ceil(sL.Mroot / 1000 / 50) * 50 * 1.05);
+    c3.setAxes({ x: { label: 'Distance from the centerline \\(y\\) (m)', min: 0, max: Math.ceil(s.b2) }, y: { label: 'Bending moment (kN·m)', min: 0, max: mmax } });
+    bm.set(s.y.map(function (y, i) { return [y, s.M[i] / 1000]; })); bl.set(sL.y.map(function (y, i) { return [y, sL.M[i] / 1000]; })); sob.set(ac.r);
+    c3.setAriaLabel('Wing bending for point ' + R.crit.c.id + ': ' + (s.Msob / 1000).toFixed(1) + ' kN·m at the side of the fuselage.');
+    // table
+    var tb = document.querySelector('#le-table tbody'); tb.innerHTML = '';
+    R.rows.forEach(function (r) {
+      tb.appendChild(CYL.el('tr', r === R.crit ? { class: 'crit' } : null, [CYL.el('td', { text: r.c.id + (r.c.kind === 'Gust' ? ' gust' : '') }), CYL.el('td', { text: f(r.c.V, 1) }), CYL.el('td', { text: f(r.c.n, 3) }),
+        CYL.el('td', { text: f(r.b.Lt / 1000, 2) }), CYL.el('td', { text: f(r.b.Lw / 1000, 1) }), CYL.el('td', { text: f(r.s.Vsob / 1000, 1) }), CYL.el('td', { text: f(r.s.Msob / 1000, 1) })]));
+    });
+    return R;
+  }
+  fill(); update();
+
+  /* ---------- CSV ---------- */
+  document.getElementById('le-csv').addEventListener('click', function () {
+    if (!R) return;
+    var rows = [['quantity', 'value', 'unit']], sp = R.sp;
+    Object.keys(st).forEach(function (k) { rows.push(['input ' + k, st[k], '']); });
+    rows.push(['weight', R.W.toFixed(1), 'kg'], ['wing-tank fuel', R.fuel.toFixed(1), 'kg'], ['n limit (maneuver)', R.nMan.toFixed(4), ''], ['design limit n at W0', R.best.n.toFixed(4), ''], ['design altitude', R.best.h, 'm'],
+      ['VS1', sp.VS1.toFixed(2), 'm/s EAS'], ['VA', sp.VA.toFixed(2), 'm/s EAS'], ['VB', sp.VB.toFixed(2), 'm/s EAS'], ['VC', sp.VC.toFixed(2), 'm/s EAS'], ['VD', sp.VD.toFixed(2), 'm/s EAS'], ['VG', sp.VG.toFixed(2), 'm/s EAS'],
+      ['least VC at sea level', (R.vm.VC / KT).toFixed(1), 'kt EAS'], ['box bending material', R.box.mass.toFixed(1), 'kg'], ['box upper panels', R.box.upper.toFixed(1), 'kg'], ['box lower panels', R.box.lower.toFixed(1), 'kg'],
+      ['side of fuselage: N', (R.box.sob.N / 1000).toFixed(1), 'N/mm'], ['upper panel stress', R.box.sob.sU.toFixed(1), 'MPa'], ['upper thickness', (1000 * R.box.sob.tU).toFixed(3), 'mm'], ['lower thickness', (1000 * R.box.sob.tL).toFixed(3), 'mm']);
+    R.rows.forEach(function (r) { rows.push(['point ' + r.c.id + ' V', r.c.V.toFixed(2), 'm/s EAS'], ['point ' + r.c.id + ' n', r.c.n.toFixed(4), ''], ['point ' + r.c.id + ' tail load', r.b.Lt.toFixed(0), 'N'], ['point ' + r.c.id + ' wing lift', r.b.Lw.toFixed(0), 'N'], ['point ' + r.c.id + ' shear at side of fuselage', r.s.Vsob.toFixed(0), 'N'], ['point ' + r.c.id + ' bending at side of fuselage', r.s.Msob.toFixed(0), 'N m']); });
+    var csv = rows.map(function (r) { return r.map(function (x) { x = String(x); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(','); }).join('\n');
+    var a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'loads-envelope.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  window.__loads = { compute: compute, state: function () { return st; }, load: load, set: function (o) { Object.assign(st, o); save(); fill(); return update(); }, result: function () { return R; } };
+});
+</script>
+</body>
+</html>

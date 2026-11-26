@@ -129,7 +129,7 @@
   //   tail: volume coefficients, arm as a share of l_F, planform; eng: rear | wing | nose | none, with nacelle size (m),
   //   xFrac (rear: nacelle center / l_F) or yFrac (wing: nacelle station / half span), prop = propeller diameter.
   X.PRESETS = [
-    { id: 'bizjet', label: 'Business jet (this module)', W0: 6943, fuelFrac: 0.2867, rhoF: 800, Cfe: 0.0030, e: 0.75, crew: 2,
+    { id: 'bizjet', label: 'Business jet (from the lessons)', W0: 6943, fuelFrac: 0.2867, rhoF: 800, Cfe: 0.0030, e: 0.75, crew: 2,
       cabin: { benches: [1, 1], aisles: 1, aisleIn: 15, seatIn: 20, gapIn: 1, rows: 4, pitchIn: 38, lav: 1, galley: 0, extra: 1.0 },
       fus: { lCockpit: 4, kNose: 1.7, kTail: 3.5, kOver: 0, round: 0.1 },
       wing: { S: 28, A: 8, lam: 0.35, sweep: 25, tc: 0.12, tau: 1, pos: 'low', dihedral: 3, xFrac: 0.45 },

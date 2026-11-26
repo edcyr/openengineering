@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Space Vehicles</title>
+<meta name="description" content="Ten printable problems on space vehicles: orbital energy and margins, a transfer orbit, raising and turning an orbit, a spacecraft's delta-v budget, two launches from one site, why launchers stage, optimal staging, a kerosene engine, a propellant tank and closing an upper stage, with final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 10 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Ten problems to work by hand, from the energy of an orbit and a spacecraft's maneuvers, through two launches from one site and the staging of a launcher, to its engine, its oxygen tank and the closing of its upper stage. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Space Vehicles · Worksheet</p>
+      <span class="ws-ph-meta">10 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. SI units; \(\mu = 3.986\times10^{14}\ \text{m}^3/\text{s}^2\), \(R_E = 6378\ \text{km}\), \(g_0 = 9.80665\ \text{m/s}^2\); answers to 4 significant figures. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on five Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A covers orbital energy, orbits and maneuvers, Part B the ascent and staging, and Part C engines, tanks and closing the design. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>SI units, answers to 4 significant figures: radii in m from Earth's center, speeds in m/s, pressures in Pa inside a formula, with \(\mu = 3.986\times10^{14}\ \text{m}^3/\text{s}^2\), \(R_E = 6378\ \text{km}\) and \(g_0 = 9.80665\ \text{m/s}^2\). Leave out Earth's rotation unless a problem includes it. The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · Orbits and maneuvers</h2>
+    <p class="ws-part-sub">Problems 1–4 · Basic to intermediate · Lessons 1–3</p>
+    <div class="ws-list" data-from="1" data-to="4"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Getting to orbit and staging</h2>
+    <p class="ws-part-sub">Problems 5–7 · Basic to challenge · Lessons 4–5</p>
+    <div class="ws-list" data-from="5" data-to="7"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Engines, tanks and the design loop</h2>
+    <p class="ws-part-sub">Problems 8–10 · Intermediate to challenge · Lessons 6–8</p>
+    <div class="ws-list" data-from="8" data-to="10"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers
+       units, figure: {tpl, label, caption, wide} | null, sketch: 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var T = String.raw;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Energy and margins', level: 1, lessons: ['l01'], units: 'MJ/kg, kg',
+      statementHTML: T`<p>Use \(\mu = 3.986\times10^{14}\ \text{m}^3/\text{s}^2\) and \(R_E = 6378\ \text{km}\), and leave out Earth's rotation. A regional turboprop cruises at \(150\ \text{m/s}\) at \(7600\ \text{m}\).</p>`,
+      parts: [
+        part('a', T`Find the specific energy, relative to Earth's surface, of a circular orbit at \(300\ \text{km}\) and of geostationary orbit (\(35\,786\ \text{km}\)).`, T`\(32.65\ \text{MJ/kg}\); \(57.77\ \text{MJ/kg}\)`, { a: 32.652, g: 57.769 }),
+        part('b', T`Find the turboprop's specific energy \(v^2/2 + gh\) and how many times greater the 300&nbsp;km orbit's is.`, T`\(0.08581\ \text{MJ/kg}\); 380.5 times`, { t: 0.085806, r: 380.53 }),
+        part('c', T`A spacecraft's current best estimate is \(220\ \text{kg}\). With a 20% growth allowance and a 10% system margin on top, what payload should its launcher be sized for?`, T`\(290.4\ \text{kg}\)`, { m: 290.4 })
+      ],
+      figure: null, space: 30 }),
+
+    prob({ n: 2, title: 'A transfer orbit', level: 1, lessons: ['l02'], units: 'm/s, min, km, h, °',
+      statementHTML: T`<p>A spacecraft waits in a \(700\ \text{km}\) circular orbit, then moves to an orbit with its perigee at \(700\ \text{km}\) and its apogee at \(20\,000\ \text{km}\).</p>`,
+      parts: [
+        part('a', T`Find the circular orbit's speed and period.`, T`\(7504\ \text{m/s}\); \(98.77\ \text{min}\)`, { v: 7504.35, T: 98.770 }),
+        part('b', T`Find the ellipse's semimajor axis and eccentricity, its speeds at perigee and apogee, and its period.`, T`\(16\,728\ \text{km}\), 0.5769; \(9424\ \text{m/s}\), \(2529\ \text{m/s}\); \(5.981\ \text{h}\)`, { a: 16728, e: 0.57688, vp: 9423.5, va: 2528.6, T: 5.9810 }),
+        part('c', T`What \(\Delta v\) at 700&nbsp;km puts it on the ellipse? What inclination would make the 700&nbsp;km circular orbit sun-synchronous (\(J_2 = 1.08263\times10^{-3}\))?`, T`\(1919\ \text{m/s}\); \(98.19^\circ\)`, { dv: 1919.15, i: 98.188 })
+      ],
+      figure: null, space: 38 }),
+
+    prob({ n: 3, title: 'Raising and turning an orbit', level: 2, lessons: ['l03'], units: 'm/s, min',
+      statementHTML: T`<p>A spacecraft must move from a \(400\ \text{km}\) circular orbit to a \(1200\ \text{km}\) circular orbit whose plane is turned by \(3^\circ\).</p>`,
+      parts: [
+        part('a', T`Find the two burns and the time of a Hohmann transfer between the two altitudes, in the same plane.`, T`\(210.8\ \text{m/s}\), \(205.0\ \text{m/s}\), \(415.7\ \text{m/s}\) in all; \(50.44\ \text{min}\)`, { d1: 210.774, d2: 204.974, dv: 415.748, t: 50.435 }),
+        part('b', T`Add a separate \(3^\circ\) plane change at 1200&nbsp;km. Find its \(\Delta v\) and the total.`, T`\(379.7\ \text{m/s}\); \(795.4\ \text{m/s}\)`, { p: 379.70, s: 795.45 }),
+        part('c', T`Combine the plane change with the second burn instead. Find the combined burn, the total, and the saving.`, T`\(426.7\ \text{m/s}\); \(637.5\ \text{m/s}\); \(157.9\ \text{m/s}\)`, { c: 426.745, t: 637.519, s: 157.928 })
+      ],
+      figure: null, space: 38 }),
+
+    prob({ n: 4, title: 'A spacecraft\'s delta-v budget', level: 2, lessons: ['l03', 'l05'], units: 'm/s, km, kg',
+      statementHTML: T`<p>A \(150\ \text{kg}\) spacecraft is released in a \(550\ \text{km}\) circular orbit. It must raise its orbit to \(600\ \text{km}\), later move \(5^\circ\) ahead along that orbit in one revolution of a phasing orbit, and at the end of its life lower its perigee to \(100\ \text{km}\). Its thrusters have \(I_{sp} = 225\ \text{s}\).</p>`,
+      parts: [
+        part('a', T`Find the \(\Delta v\) of the Hohmann raise.`, T`\(27.22\ \text{m/s}\)`, { r: 27.224 }),
+        part('b', T`Find the phasing orbit's semimajor axis and perigee altitude, and the \(\Delta v\) of the two phasing burns.`, T`\(6913\ \text{km}\); \(470.5\ \text{km}\); \(70.97\ \text{m/s}\)`, { a: 6913.24, p: 470.48, d: 70.968 }),
+        part('c', T`Find the disposal burn, the total, the total with a 10% margin, and the propellant it needs.`, T`\(141.7\ \text{m/s}\); \(239.9\ \text{m/s}\); \(263.9\ \text{m/s}\); \(16.91\ \text{kg}\)`, { d: 141.749, t: 239.940, m: 263.934, p: 16.911 })
+      ],
+      figure: null, space: 42 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 5, title: 'Two launches from one site', level: 1, lessons: ['l04'], units: 'm/s, °',
+      statementHTML: T`<p>A launch site is at \(34.7^\circ\) N (\(\omega_E = 7.2921\times10^{-5}\ \text{rad/s}\)). It launches to a \(400\ \text{km}\) orbit inclined at \(51.6^\circ\), and to a \(600\ \text{km}\) sun-synchronous orbit. Each launch has \(1500\ \text{m/s}\) of gravity, drag and steering losses.</p>`,
+      parts: [
+        part('a', T`Find the site's eastward speed.`, T`\(382.4\ \text{m/s}\)`, { v: 382.372 }),
+        part('b', T`For the \(51.6^\circ\) orbit, find the northeastward launch azimuth, the speed relative to the site, the rotation's gain, and the \(\Delta v\).`, T`\(49.07^\circ\); \(7384\ \text{m/s}\); \(284.6\ \text{m/s}\); \(8884\ \text{m/s}\)`, { az: 49.071, v: 7383.99, g: 284.64, dv: 8883.99 }),
+        part('c', T`For the sun-synchronous orbit, find its inclination, the southward launch azimuth, the rotation's penalty and the \(\Delta v\).`, T`\(97.79^\circ\); \(189.5^\circ\); \(72.35\ \text{m/s}\); \(9130\ \text{m/s}\)`, { i: 97.787, az: 189.486, p: 72.345, dv: 9130.28 })
+      ],
+      figure: null, space: 38 }),
+
+    prob({ n: 6, title: 'Why stage', level: 2, lessons: ['l05'], units: 'm/s, kg',
+      statementHTML: T`<p>A launcher must deliver \(9300\ \text{m/s}\) with stages of \(I_{sp} = 330\ \text{s}\).</p>`,
+      parts: [
+        part('a', T`What is the most \(\Delta v\) one stage with \(\varepsilon = 0.07\) can give?`, T`\(8606\ \text{m/s}\)`, { d: 8605.88 }),
+        part('b', T`With two identical stages (\(\varepsilon = 0.08\)) sharing the \(\Delta v\) equally, find each stage's mass ratio, the payload fraction and the liftoff mass for \(1000\ \text{kg}\) of payload.`, T`4.208; 0.02937; \(34\,047\ \text{kg}\)`, { n: 4.2075, pf: 0.029371, m: 34047 }),
+        part('c', T`Repeat (b) with three identical stages.`, T`2.606; 0.03597; \(27\,801\ \text{kg}\)`, { n: 2.6063, pf: 0.03597, m: 27801 })
+      ],
+      figure: null, space: 34 }),
+
+    prob({ n: 7, title: 'Optimal staging', level: 3, lessons: ['l05'], units: 'm/s, kg',
+      statementHTML: T`<p>A two-stage launcher puts \(500\ \text{kg}\) into orbit with \(\Delta v = 9300\ \text{m/s}\). Its first stage has a mean \(I_{sp} = 295\ \text{s}\) and \(\varepsilon_1 = 0.07\); its second has \(I_{sp} = 345\ \text{s}\) and \(\varepsilon_2 = 0.09\).</p>`,
+      parts: [
+        part('a', T`Find the Lagrange multiplier \(\eta\) for the optimal split, each stage's mass ratio and its share of the \(\Delta v\).`, T`\(\eta = 4.95\times10^{-4}\ \text{s/m}\); 4.312, 4.478; \(4228\ \text{m/s}\), \(5072\ \text{m/s}\)`, { n1: 4.3120, n2: 4.4781, d1: 4227.80, d2: 5072.20 }),
+        part('b', T`Find each stage's propellant and inert mass, the liftoff mass and the payload fraction.`, T`Stage 2: \(2651\ \text{kg}\), \(262.2\ \text{kg}\); stage 1: \(15\,058\ \text{kg}\), \(1133\ \text{kg}\); \(19\,605\ \text{kg}\); 0.02550`, { mp2: 2650.89, ms2: 262.18, mp1: 15058.06, ms1: 1133.40, m0: 19604.53, pf: 0.025504 }),
+        part('c', T`Find the liftoff mass with an equal split of the \(\Delta v\), and how much the optimum saves.`, T`\(19\,906\ \text{kg}\); \(301.8\ \text{kg}\)`, { m: 19906.36, s: 301.83 })
+      ],
+      figure: null, space: 50 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 8, title: 'A kerosene engine', level: 2, lessons: ['l06'], units: 'kPa, s, m², kN, kg/m³, m³',
+      statementHTML: T`<p>A LOX/RP-1 engine has \(c^* = 1780\ \text{m/s}\), \(\gamma = 1.24\), a chamber pressure of \(10\ \text{MPa}\) and an expansion ratio of 16, for which \(p_e/p_c = 0.005971\). It must give \(400\ \text{kN}\) at sea level. Use the ideal thrust coefficient of Lesson 6.</p>`,
+      parts: [
+        part('a', T`Find the exit pressure, the thrust coefficient in vacuum and at sea level, and the two specific impulses.`, T`\(59.71\ \text{kPa}\); 1.768, 1.606; \(321.0\ \text{s}\), \(291.5\ \text{s}\)`, { pe: 59.715, cv: 1.76824, cs: 1.60612, iv: 320.95, is: 291.53 }),
+        part('b', T`Find the throat and exit areas and diameters, and the vacuum thrust.`, T`\(0.02491\ \text{m}^2\), \(178.1\ \text{mm}\); \(0.3985\ \text{m}^2\), \(0.7123\ \text{m}\); \(440.4\ \text{kN}\)`, { At: 0.024905, dt: 178.07, Ae: 0.39848, de: 0.71229, T: 440.38 }),
+        part('c', T`At \(O/F = 2.7\) (LOX 1141, RP-1 \(810\ \text{kg/m}^3\)), find the bulk density and the volumes of oxygen and fuel for \(100\ \text{t}\) of propellant.`, T`\(1028\ \text{kg/m}^3\); \(63.96\ \text{m}^3\), \(33.37\ \text{m}^3\)`, { rb: 1027.52, VO: 63.955, VF: 33.367 })
+      ],
+      figure: null, space: 44 }),
+
+    prob({ n: 9, title: 'A propellant tank', level: 2, lessons: ['l07'], units: 'kPa, mm, MPa, kN',
+      statementHTML: T`<p>An oxygen tank (\(1141\ \text{kg/m}^3\)) of \(1.5\ \text{m}\) radius has an ullage pressure of \(350\ \text{kPa}\). At its design condition the liquid stands \(6.0\ \text{m}\) deep at an axial acceleration of \(3.0\,g\). Use the protoflight factors of NASA-STD-5001B <a class="cite" href="../reference/references.html#r6">[6]</a> (ultimate 1.4, yield 1.25). Aluminium-lithium 2195: \(\sigma_y = 530\), \(\sigma_u = 570\ \text{MPa}\), \(E = 76\ \text{GPa}\), \(\nu = 0.33\); aluminium 2219-T87: \(\sigma_y = 352\), \(\sigma_u = 455\ \text{MPa}\).</p>`,
+      parts: [
+        part('a', T`Find the limit pressure at the bottom of the tank.`, T`\(551.4\ \text{kPa}\)`, { p: 551.41 }),
+        part('b', T`Find the wall each material needs for the hoop stress, and which factor governs.`, T`Al-Li: \(2.032\ \text{mm}\) (ultimate); 2219: \(2.937\ \text{mm}\) (yield)`, { li: 2.0315, al: 2.9372 }),
+        part('c', T`The wall is \(3.0\ \text{mm}\) of Al-Li. Find its hoop stress and its margins of safety.`, T`\(275.7\ \text{MPa}\); \(MS_u = 0.477\), \(MS_y = 0.538\)`, { s: 275.70, mu: 0.4767, my: 0.5379 }),
+        part('d', T`At burnout the tank carries \(30\ \text{t}\) above it at \(4.0\,g\). Check the unstiffened 3&nbsp;mm wall for buckling with the SP-8007 knockdown, taking no credit for pressure.`, T`\(1177\ \text{kN}\); \(41.62\ \text{MPa}\), ultimate \(58.27\ \text{MPa}\); \(\sigma_{cr} = 92.97\ \text{MPa}\), \(\gamma = 0.3217\); \(MS = -0.487\): it buckles`, { F: 1176.80, s: 41.621, cr: 92.965, k: 0.32173, ms: -0.48670 })
+      ],
+      figure: null, space: 48 }),
+
+    prob({ n: 10, title: 'Closing an upper stage', level: 3, lessons: ['l08'], units: 'kg, m/s',
+      statementHTML: T`<p>An upper stage carries \(2400\ \text{kg}\) of propellant and was sized with \(\varepsilon = 0.10\). Its tanks have \(11.5\ \text{m}^2\) of wall at a \(1.2\ \text{mm}\) minimum gauge of aluminium (\(2840\ \text{kg/m}^3\)), multiplied by 1.6 for stiffeners and insulation. Its engine gives \(25\ \text{kN}\) in vacuum with an engine thrust-to-weight ratio of 40. Add 1% residual propellant, \(20\ \text{kg}\) of structure and avionics, and a \(60\ \text{kg}\) fairing. \(I_{sp} = 345\ \text{s}\).</p>`,
+      parts: [
+        part('a', T`Find the tanks', the engine's and the stage's inert masses, and its bottom-up structural coefficient. Will the next turn of the loop make the launcher heavier or lighter?`, T`\(62.71\ \text{kg}\), \(63.73\ \text{kg}\); \(230.4\ \text{kg}\); 0.08761; lighter`, { t: 62.707, e: 63.732, m: 230.44, eps: 0.087605 }),
+        part('b', T`After releasing its payload at \(550\ \text{km}\), the stage lowers its perigee to \(60\ \text{km}\). Find the burn and the propellant it must keep.`, T`\(140.3\ \text{m/s}\); \(9.759\ \text{kg}\)`, { d: 140.335, m: 9.7593 }),
+        part('c', T`Its launch has three hazardous phases: failure probabilities 0.006, 0.012 and 0.004 with conditional expected casualties 0.0008, 0.0015 and 0.0002. Find \(E_C\), and say whether it meets 14 CFR 450.101 <a class="cite" href="../reference/references.html#r7">[7]</a> and whether any phase needs flight abort.`, T`\(E_C = 2.36\times10^{-5}\): meets \(10^{-4}\); the second phase's 0.0015 exceeds \(10^{-3}\), so it needs flight abort (or demonstrated reliability)`, { ec: 2.36 })
+      ],
+      figure: null, space: 46 })
+  ];
+
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'SI units; mu = 3.986e14 m^3/s^2, R_E = 6378 km, g0 = 9.80665 m/s^2; Earth rotation left out unless stated; 4 significant figures.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {};
+  CYL.PAGES.forEach(function (p) { if (p.group === 'lessons') LESSONS[p.id] = [p.href.replace(/^lessons\//, ''), 'Lesson ' + p.num]; });
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

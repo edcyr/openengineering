@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wing Shear and Bending · Loads and Structures</title>
+<meta name="description" content="The wing as a cantilever: the lift along the span from Schrenk's approximation, the relief from the wing's own weight and its fuel, the shear force and bending moment along the span, and why the business jet's wing is sized by a gust at its zero-fuel weight.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/aero.js"></script>
+<script src="../assets/js/wing.js"></script>
+<script src="../assets/js/loads.js"></script>
+</head>
+<body data-page="l07" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 7 · 30 min</p>
+    <h1>Wing Shear and Bending</h1>
+    <p class="lede">The wing carries the aircraft's lift out to its tips and back to the fuselage as a cantilever. What it must be strong enough for is the bending moment where it meets the fuselage, and that depends not only on the lift but on how much weight the wing carries itself. This lesson finds the business jet's wing shear and bending, and the case that sizes it.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Spread the wing's lift along the span with Schrenk's approximation.</li>
+      <li>Find the shear force and bending moment along the span, with the relief from the wing's structure and fuel.</li>
+      <li>Estimate the root bending moment by hand from the centroids of the lift and the masses.</li>
+      <li>Explain why the maximum zero-fuel weight is a structural limit, and find the business jet's critical wing case.</li>
+    </ul>
+  </section>
+
+  <section id="span">
+    <h2>Loads along the span</h2>
+    <p>Module 4 spread a wing's lift along its span with <strong>Schrenk's approximation</strong> <a class="cite" href="../reference/references.html#r4">[4]</a>: the average of an elliptic distribution and one proportional to the chord. Per unit span, with \(L_w\) the wing's whole lift (Lesson 6) and \(\eta = 2y/b\),</p>
+    \[ \ell(y) = \frac{L_w}{b}\,\frac{c(y) + c_e(y)}{2\bar c}, \qquad c_e(y) = \frac{4S}{\pi b}\sqrt{1 - \eta^2} \]
+    <p>At a load factor \(n\), every kilogram of the wing's structure and of the fuel in its tanks presses down with \(n g\) times its mass: an <strong>inertia relief</strong> that opposes the lift. The net load per unit span is \(\ell(y) - n g\,m'(y)\), with \(m'\) the mass per unit span. Starting from the tip, where both are zero, the <strong>shear force</strong> and the <strong>bending moment</strong> at a station \(y\) are</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Shear and bending along the span</p>
+      \[ V(y) = \int_y^{b/2} \left[\ell(\eta) - n g\,m'(\eta)\right] d\eta, \qquad M(y) = \int_y^{b/2} V(\eta)\, d\eta \]
+      <p>The wing box is sized at the side of the fuselage, \(y = r\), where it joins the carry-through; across the fuselage the moment changes little.</p>
+    </div>
+    <p>Take the business jet's wing structure as 8% of the takeoff weight, 555&nbsp;kg, spread along the span in proportion to the chord, until Module 12 estimates it. Its wing tanks hold 1591&nbsp;kg between the side of the fuselage and 85% of the half span, spread in proportion to the box's area, so to \(c^2\) (Lesson 2); the other 400&nbsp;kg of the design fuel is in the center tank, inside the fuselage, where it relieves nothing. The tanks are used last, so they are full whenever the center tank holds fuel.</p>
+    <figure class="figure wide" aria-labelledby="fig71-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig71-stage"></div>
+        <div class="viz-controls" id="fig71-controls"></div>
+      </div>
+      <figcaption id="fig71-cap"><strong>Figure 7.1</strong> The business jet's half wing from the centerline to the tip: the lift and the inertia relief per unit span, the shear force and the bending moment, at limit load with the CG forward (15% MAC). The dashed lines mark the side of the fuselage and the end of the tanks. Choose the case and the quantity.</figcaption>
+    </figure>
+  </section>
+
+  <section id="hand">
+    <h2>An estimate by hand</h2>
+    <p>The bending at the side of the fuselage is each load outboard of it times its arm. For the business jet's planform, integrating once gives the centroids: 85.6% of each half wing's lift acts outboard of the side of the fuselage, 2.824&nbsp;m from it; 84.7% of each half wing's structure, 2.837&nbsp;m from it; and all the wing-tank fuel, 2.157&nbsp;m from it, inboard because the box is deepest at the root. An elliptic lift would act at \(4(b/2)/3\pi\) from the centerline, 3.176&nbsp;m against Schrenk's 3.159&nbsp;m: close enough for a first estimate.</p>
+    <div class="example">
+      <p class="example-title">Example 7.1 — Point A at takeoff weight</p>
+      <p>At point A (\(n = 3.048\)), with the CG forward, the wing lifts \(L_w = 216.2\)&nbsp;kN (Lesson 6). Find the bending moment at the side of the fuselage.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Lift: \(0.856(216.2/2) = 92.5\)&nbsp;kN at 2.824&nbsp;m. Structure: \(0.847(555.4/2) = 235.3\)&nbsp;kg. Fuel: \(1591/2 = 795.5\)&nbsp;kg. Each weighs \(n g = 29.89\)&nbsp;N/kg:</p>
+          \[ M = 92.5(2.824) - 235.3(29.89)(2.837) - 795.5(29.89)(2.157) \]
+          \[ M = 261.3 - 20.0 - 51.3 = 190.0\ \text{kN·m} \]
+          <p>The fuel relieves the lift's bending by 20%, the structure by 8%. The integration of Figure 7.1 gives 190.2&nbsp;kN·m.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="mzfw">
+    <h2>The critical case and the zero-fuel weight</h2>
+    <p>Fuel in the wing reduces its bending; payload in the fuselage does not. An aircraft that has burned its fuel but still carries all its payload has the least relief for its lift. That is why aircraft have a <strong>maximum zero-fuel weight</strong> (MZFW): above it, the extra weight would have to be carried as fuel in the wings, not as payload. For the business jet, whose design payload is its maximum, the MZFW is its takeoff weight less its design fuel: 4952&nbsp;kg.</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Table 7.1 The business jet's wing at the side of the fuselage, at limit load (CG forward; gusts at 20&nbsp;000&nbsp;ft)</caption>
+        <thead><tr><th scope="col">Case</th><th scope="col">\(n\)</th><th scope="col">Wing fuel (kg)</th><th scope="col">\(L_w\) (kN)</th><th scope="col">Shear (kN)</th><th scope="col">Bending (kN·m)</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">1 g at \(V_C\), takeoff weight</th><td>1.000</td><td>1591</td><td>76.1</td><td>22.5</td><td>68.6</td></tr>
+          <tr><th scope="row">Maneuver A, takeoff weight</th><td>3.048</td><td>1591</td><td>216.2</td><td>61.7</td><td>190.2</td></tr>
+          <tr><th scope="row">Gust up, takeoff weight</th><td>3.255</td><td>1591</td><td>233.9</td><td>67.2</td><td>206.6</td></tr>
+          <tr><th scope="row">Gust up, landing weight</th><td>3.488</td><td>1296</td><td>225.8</td><td>66.4</td><td>202.3</td></tr>
+          <tr><th scope="row">Maneuver A, zero-fuel weight</th><td>3.048</td><td>0</td><td>154.2</td><td>59.0</td><td>166.4</td></tr>
+          <tr><th scope="row">Gust up, zero-fuel weight</th><td>4.083</td><td>0</td><td>209.9</td><td>80.4</td><td>226.9</td></tr>
+          <tr><th scope="row">Gust down, zero-fuel weight</th><td>−2.083</td><td>0</td><td>−97.9</td><td>−37.1</td><td>−104.6</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">
+      <p class="example-title">Example 7.2 — The gust at zero-fuel weight</p>
+      <p>In the upward gust at 20&nbsp;000&nbsp;ft at its zero-fuel weight, the business jet pulls \(n = 4.083\) (Lesson 5) and, with the CG forward, its wing lifts 209.9&nbsp;kN. Estimate the bending at the side of the fuselage.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ M = 0.856(104.97)(2.824) - 235.3(4.083)(9.807)(2.837) \]
+          \[ M = 253.7 - 26.7 = 227.0\ \text{kN·m} \]
+          <p>Compare the gust at takeoff weight: its lift bends the wing by 282.6&nbsp;kN·m, and the wing's structure and fuel take back 21.3 and 54.8. At zero-fuel weight the higher load factor does not make up for the lower weight: the lift's bending is 10% less, 253.7&nbsp;kN·m. But only the structure is left to relieve it, so the net bending is 10% more than the gust at takeoff weight, and 19% more than maneuver A. This is the case that sizes the business jet's wing box (Lesson 8). Its shear, 80.4&nbsp;kN, is also the largest.</p>
+        </div>
+      </details>
+    </div>
+    <p>The relief depends on where the masses are. Fuel and engines far out on the span relieve the most bending, which is one reason airliners hang their engines under the wing. The business jet's engines are on the fuselage, and give its wing no relief; its tip tanks, had it any, would. The wing's own mass of 555&nbsp;kg is an estimate: Module 12's statement gives it 644&nbsp;kg once calibrated, which gives a little more relief: 1.9% less bending in the zero-fuel gust.</p>
+    <p>The wing also twists. Its pitching moment, the flaps' and ailerons' loads, and the sweep, which puts the lift at the tip behind the root, make a torque the closed box carries as shear flow in its skins and webs. It rarely sizes a transport's box in conceptual design, but it sets the stiffness that keeps the ailerons effective and the wing free of flutter, which later design phases check.</p>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-1"></div>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>Shear and bending come from integrating the net load, lift less \(ngm'\), from the tip inward: \(V = \int(\ell - ngm')\,dy\), \(M = \int V\,dy\).</li>
+      <li>A hand estimate: each load outboard of the station times its arm. The business jet's lift acts 2.824&nbsp;m outboard of the side of the fuselage; its wing fuel 2.157&nbsp;m.</li>
+      <li>Fuel in the wing relieves bending; payload does not. The maximum zero-fuel weight limits the weight carried as payload.</li>
+      <li>The business jet's wing is sized by the upward gust at its zero-fuel weight: 226.9&nbsp;kN·m and 80.4&nbsp;kN at the side of the fuselage, at limit load.</li>
+      <li>Next, <a href="08-wing-box.html">Lesson 8</a> sizes the wing box for that bending moment.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 7.1: the half wing's loads ---------- */
+CYL.ready(function () {
+  'use strict';
+  var ac = LOADS.preset('bizjet'), W0 = ac.W0, MZFW = W0 - ac.Wf, MLW = 0.9 * W0, pf = LOADS.pf(ac), b2 = pf.b / 2;
+  var s0 = LOADS.speeds(ac, W0, 0);
+  var CASES = [
+    { id: 'c1', label: '1 g, takeoff', W: W0, V: s0.VC, n: 1, fuel: ac.wingTank },
+    { id: 'A', label: 'Maneuver A, takeoff', W: W0, V: s0.VA, n: s0.n, fuel: ac.wingTank },
+    { id: 'gT', label: 'Gust, takeoff', W: W0, V: LOADS.speeds(ac, W0, 6096).VC, n: LOADS.gustEnv(ac, W0, 6096).C[0], fuel: ac.wingTank },
+    { id: 'gL', label: 'Gust, landing', W: MLW, V: LOADS.speeds(ac, MLW, 6096).VC, n: LOADS.gustEnv(ac, MLW, 6096).C[0], fuel: Math.min(ac.wingTank, MLW - MZFW) },
+    { id: 'gZ', label: 'Gust, zero fuel', W: MZFW, V: LOADS.speeds(ac, MZFW, 6096).VC, n: LOADS.gustEnv(ac, MZFW, 6096).C[0], fuel: 0 }
+  ];
+  var Q = [{ id: 'load', label: 'Load per meter' }, { id: 'V', label: 'Shear' }, { id: 'M', label: 'Bending' }];
+  var st = { c: 'gZ', q: 'M' }, stage = document.getElementById('fig71-stage'), chart, l1, l2, l3, mk;
+  function build() {
+    stage.innerHTML = '';
+    var Y = st.q === 'load' ? { label: 'Per meter of span (kN/m)', min: -10, max: 40 } : st.q === 'V' ? { label: 'Shear force \\(V\\) (kN)', min: 0, max: 90 } : { label: 'Bending moment \\(M\\) (kN·m)', min: 0, max: 320 };
+    var leg = st.q === 'load' ? [{ label: 'Lift', color: 'z', line: true }, { label: 'Inertia relief', color: 't', line: true }, { label: 'Net', color: 'accent', line: true }] : [{ label: st.q === 'V' ? 'Shear' : 'Bending', color: 'accent', line: true }, { label: 'Lift alone', color: 'z', line: true, dashed: true }];
+    chart = AERO.chart(stage, { x: { label: 'Distance from the centerline \\(y\\) (m)', min: 0, max: 7.6 }, y: Y, height: 320, ariaLabel: 'Loads along the business jet\'s half wing.', legend: leg });
+    chart.vline(ac.r, { color: 'muted', dashed: true, label: 'side of fuselage' }); chart.vline(ac.tankEnd * b2, { color: 'muted', dashed: true, label: 'tank end' });
+    if (st.q === 'load') chart.hline(0, { color: 'muted' });
+    l1 = chart.polyline([], { color: st.q === 'load' ? 'z' : 'accent', width: 2.6 }); l2 = chart.polyline([], { color: st.q === 'load' ? 't' : 'z', width: 2, dashed: st.q !== 'load' }); l3 = chart.polyline([], { color: 'accent', width: 2.6 });
+    mk = chart.marker([ac.r, 0], { color: 'accent', r: 5 });
+    draw();
+  }
+  var panel = document.getElementById('fig71-controls'), rowC = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Case' }), rowQ = CYL.el('div', { class: 'chip-row', role: 'group', 'aria-label': 'Quantity' }), chC = {}, chQ = {};
+  CASES.forEach(function (c) { var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: c.label }); b.addEventListener('click', function () { st.c = c.id; draw(); }); chC[c.id] = b; rowC.appendChild(b); });
+  Q.forEach(function (q) { var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: q.label }); b.addEventListener('click', function () { st.q = q.id; build(); }); chQ[q.id] = b; rowQ.appendChild(b); });
+  var ro = { n: CYL.readout('\\(n\\), wing fuel'), l: CYL.readout('Wing lift \\(L_w\\)'), v: CYL.readout('\\(V\\), side of fuselage'), m: CYL.readout('\\(M\\), side of fuselage'), r: CYL.readout('Relief') };
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Case' })); panel.appendChild(rowC);
+  panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Show' })); panel.appendChild(rowQ);
+  panel.appendChild(CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' }, [ro.n.el, ro.l.el, ro.v.el, ro.m.el, ro.r.el]));
+  CYL.renderMath(panel);
+  function draw() {
+    var c = CASES.filter(function (q) { return q.id === st.c; })[0];
+    var b = LOADS.balance(ac, { n: c.n, W: c.W, Ve: c.V, xcg: 0.15 }), sp = LOADS.span(ac, { L: b.Lw, n: c.n, fuel: c.fuel }), spL = LOADS.span(ac, { L: b.Lw, n: 0, fuel: 0, wing: 0 });
+    function P(a) { return sp.y.map(function (y, i) { return [y, a[i] / 1000]; }); }
+    if (st.q === 'load') { l1.set(P(sp.lift)); l2.set(P(sp.inertia)); l3.set(P(sp.net)); mk.set([ac.r, sp.at(sp.net, ac.r) / 1000]); }
+    else if (st.q === 'V') { l1.set(P(sp.V)); l2.set(spL.y.map(function (y, i) { return [y, spL.V[i] / 1000]; })); l3.set([]); mk.set([ac.r, sp.Vsob / 1000]); }
+    else { l1.set(P(sp.M)); l2.set(spL.y.map(function (y, i) { return [y, spL.M[i] / 1000]; })); l3.set([]); mk.set([ac.r, sp.Msob / 1000]); }
+    Object.keys(chC).forEach(function (k) { chC[k].setAttribute('aria-pressed', String(k === st.c)); });
+    Object.keys(chQ).forEach(function (k) { chQ[k].setAttribute('aria-pressed', String(k === st.q)); });
+    ro.n.set(CYL.fmtFixed(c.n, 3) + ', ' + CYL.fmtFixed(c.fuel, 0) + ' kg'); ro.l.set(CYL.fmtFixed(b.Lw / 1000, 1) + ' kN');
+    ro.v.set(CYL.fmtFixed(sp.Vsob / 1000, 1) + ' kN'); ro.m.set(CYL.fmtFixed(sp.Msob / 1000, 1) + ' kN·m'); ro.r.set(CYL.fmtFixed(100 * (1 - sp.Msob / spL.Msob), 1) + '% of the lift\'s bending');
+    chart.setAriaLabel(c.label + ': at the side of the fuselage the shear is ' + (sp.Vsob / 1000).toFixed(1) + ' kN and the bending moment ' + (sp.Msob / 1000).toFixed(1) + ' kN·m.');
+  }
+  build();
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l07-q1',
+    type: 'numeric',
+    prompt: 'An unswept wing of 12&nbsp;m span lifts 120&nbsp;kN with an elliptic distribution. What bending moment does the lift alone give at the centerline?',
+    label: '\\(M =\\)', answer: 60 * 4 * 6 / (3 * Math.PI), unit: 'kN·m',
+    hints: ['Each half carries 60 kN.', 'It acts at \\(4(b/2)/3\\pi\\) from the centerline.'],
+    explain: 'A first estimate; the inertia relief then reduces it.',
+    solution: '\\[ M = 60\\,\\frac{4(6)}{3\\pi} = 60(2.546) = 152.8\\ \\text{kN·m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l07-q2',
+    type: 'numeric',
+    prompt: 'Each wing of an aircraft holds 800&nbsp;kg of fuel, centered 2.0&nbsp;m outboard of the side of the fuselage. By how much does the fuel reduce the bending moment there at \\(n = 3\\)?',
+    label: '\\(\\Delta M =\\)', answer: 800 * 3 * 9.80665 * 2.0 / 1000, unit: 'kN·m',
+    hints: ['The fuel presses down with \\(n g\\) times its mass.', '\\(\\Delta M = m\\,n g\\,d\\).'],
+    explain: 'Relief that disappears when the fuel is burned.',
+    solution: '\\[ \\Delta M = 800(3)(9.807)(2.0) = 47.1\\ \\text{kN·m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l07-q3',
+    type: 'mc',
+    prompt: 'Why is the business jet\'s wing sized by a gust at its zero-fuel weight rather than at its takeoff weight?',
+    choices: [
+      { html: 'With no fuel in the wing nothing relieves the lift\'s bending: the wing lifts 10% less, but loses more relief than that', correct: true, feedback: 'Yes: the lift\'s own bending falls from 282.6 to 253.7 kN·m, but the 54.8 kN·m the wing fuel relieved at takeoff weight is gone.' },
+      { html: 'Its gust load factor is higher: 4.083 against 3.255', feedback: 'Higher, but the aircraft is 29% lighter, so its lift \\(nW\\) is 10% less. The load factor alone does not size the wing.' },
+      { html: 'The wing makes more lift at zero-fuel weight', feedback: 'Less: 209.9 kN against 233.9 kN. It is the missing relief that makes the difference.' },
+      { html: 'The gust is stronger when the aircraft is light', feedback: 'The gust is the same; the aircraft responds more to it.' }
+    ],
+    explain: 'What bends the wing is its lift less the weight it carries itself. That is why aircraft have a maximum zero-fuel weight.'
+  });
+});
+</script>
+</body>
+</html>

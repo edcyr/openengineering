@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formula Sheet · Space Vehicles</title>
+<meta name="description" content="Every formula of the Space Vehicles module on one printable page: orbits and the sun-synchronous orbit, maneuvers, the ascent budget and Earth's rotation, the rocket equation and optimal staging, engines and propellants, NASA-STD-5001B's factors, tanks and buckling, and the sizing loop and launch license, with the small launcher's numbers.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ==========================================================================
+   Formula sheet: page-specific styles (screen: multi-column cards; print: 1 page)
+   ========================================================================== */
+.cs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 18px 0 0; }
+.cs-actions .small { margin: 0; max-width: 46ch; line-height: 1.45; }
+
+.cs-sheet { counter-reset: cs; margin-top: 0; margin-bottom: 0; font-size: 0.94rem; }
+@container cylmain (min-width: 820px) {
+  .cs-sheet { column-count: 2; column-gap: 18px; }
+}
+/* From 1360px the shell shows the TOC rail. Its scroll-spy marks the last card whose top has
+   scrolled past, which only tracks reading order when the cards are stacked, so keep one column
+   (at text width) whenever the rail is on screen. Print keeps its own two columns below. */
+@media screen and (min-width: 1360px) {
+  .has-rail .cs-sheet { column-count: auto; --wide-max: var(--content-max); }
+}
+.cs-card {
+  counter-increment: cs;
+  margin: 0 0 18px;
+  padding: 14px 18px 16px;
+  box-shadow: var(--shadow-sm);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.cs-card > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.06rem;
+  line-height: 1.3;
+}
+.cs-card > h2::before {
+  content: counter(cs);
+  flex: none;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cs-card.cs-warn { border-top: 3px solid var(--c-warn); }
+.cs-card.cs-warn > h2::before { background: var(--c-warn); color: var(--bg-elev); }
+
+.cs-card p { margin: 0 0 0.55em; color: var(--ink); font-size: 1em; }
+.cs-card ul { margin: 0 0 0.6em; padding-left: 1.15em; }
+.cs-card li { margin: 0.25em 0; }
+.cs-card li::marker { color: var(--ink-faint); }
+.cs-card h3 {
+  margin: 0.95em 0 0.3em;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-card > h2 + h3 { margin-top: 0; }
+.cs-card .katex-display { margin: 0.45em 0; }
+.cs-card .key-formula { margin: 0.65em 0; padding: 6px 14px 7px; box-shadow: none; }
+.cs-card .key-formula .katex-display { margin: 0.3em 0; }
+.cs-card .key-formula-title { margin-top: 2px; }
+.cs-card .table-wrap { margin: 0.6em 0 0.7em; border-radius: var(--radius-sm); }
+.cs-card table.data { font-size: 0.9em; }
+.cs-card table.data th, .cs-card table.data td { padding: 5px 9px; vertical-align: middle; }
+.cs-card table.data thead th { font-size: 0.85em; white-space: normal; }
+.cs-card table.data tbody th { font-weight: 600; }
+.cs-card table.data caption { padding: 6px 9px; }
+.cs-card table.data .katex { font-size: 1.04em; white-space: nowrap; }
+.cs-card table.cs-eqs td { white-space: nowrap; }
+/* never split an inline formula across lines: on a reference sheet a broken result is easy to misread */
+.cs-sheet .katex { white-space: nowrap; }
+.cs-card .muted { color: var(--ink-muted); }
+.cs-card p.cs-note { color: var(--ink-muted); font-size: 0.9em; }
+.cs-card p.cs-more { margin: 0.75em 0 0; color: var(--ink-muted); font-size: 0.8rem; }
+.cs-card > :last-child { margin-bottom: 0; }
+
+/* two formula boxes side by side, wrapping on narrow cards */
+.cs-pair { display: flex; flex-wrap: wrap; gap: 10px; margin: 0.65em 0; }
+.cs-pair > * { flex: 1 1 250px; min-width: 0; }   /* on screen, a pair stacks before its formulas overflow; print sets its own basis */
+.cs-card .cs-pair > .key-formula { margin: 0; }
+.cs-pair > div:not(.key-formula) .katex-display { margin: 0.2em 0; }
+
+/* symbol / meaning list */
+.cs-dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; margin: 0 0 0.6em; }
+.cs-dl dt { font-weight: 700; text-align: center; }
+.cs-dl dd { margin: 0; }
+
+/* static figures */
+.cs-card .cs-figure { max-width: 250px; margin: 0.3em auto 0.7em; }
+.cs-card .cs-figure.small { max-width: 200px; }
+.cs-figure figcaption { margin-top: 2px; font-size: 0.78rem; line-height: 1.4; text-align: center; }
+.cs-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.cs-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.cs-svg .ax { stroke: var(--c-axis); stroke-width: 1.4; }
+.cs-svg .ax-back { stroke-dasharray: 3 3; opacity: 0.55; }
+.cs-svg .ax-fill { fill: var(--c-axis); }
+.cs-svg .leg, .cs-svg .guide { stroke: var(--ink-faint); stroke-width: 1.1; stroke-dasharray: 3 3; }
+.cs-svg .hidden { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2.5 2.5; opacity: 0.8; }
+.cs-svg .r { stroke: var(--c-r); }
+.cs-svg .t { stroke: var(--c-t); }
+.cs-svg .z { stroke: var(--c-z); }
+.cs-svg .thick { stroke-width: 3; }
+.cs-svg .mid { stroke-width: 2.2; }
+.cs-svg .thin { stroke-width: 1.4; }
+.cs-svg .dash { stroke-width: 1.5; stroke-dasharray: 4 3; }
+.cs-svg .t-fill { fill: var(--c-t); }
+.cs-svg .pt { fill: var(--c-point); }
+.cs-svg .pt-open { fill: var(--bg-elev); stroke: var(--c-point); stroke-width: 1.5; }
+.cs-svg .face { fill: var(--accent); }
+.cs-svg .f-top { fill-opacity: 0.1; }
+.cs-svg .f-out { fill-opacity: 0.24; }
+.cs-svg .f-side { fill-opacity: 0.17; }
+.cs-svg .edge { stroke: var(--ink-muted); stroke-width: 1.2; }
+.cs-svg text {
+  font-family: KaTeX_Math, "Times New Roman", serif;
+  font-size: 15px;
+  font-style: italic;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--bg-elev);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.cs-svg .lbl-ax { fill: var(--c-axis); font-size: 14px; }
+.cs-svg .lbl-mute { fill: var(--ink-muted); font-size: 13px; }
+.cs-svg .lbl-r { fill: var(--c-r); }
+.cs-svg .lbl-t { fill: var(--c-t); }
+.cs-svg .lbl-z { fill: var(--c-z); }
+.cs-svg .sm { font-size: 12.5px; }
+
+/* software notes */
+.cs-tools { display: grid; gap: 7px; margin: 0.5em 0 0; }
+.cs-tool { padding: 7px 11px 8px; border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.cs-tool-name {
+  display: block;
+  margin: 0 0 2px;
+  color: var(--ink-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.cs-tool-name strong { color: var(--c-warn); font-weight: 700; white-space: nowrap; }
+.cs-card .cs-tool p { margin: 0; line-height: 1.55; }
+.cs-tool :not(pre) > code { background: var(--bg-elev); white-space: nowrap; }
+.cs-tool .cs-code > code { white-space: normal; } /* long lines break only between their .nowrap parts */
+.cs-tools { container-type: inline-size; }
+.cs-code { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: baseline; gap: 3px 12px; margin: 2px 0 0; }
+.cs-code > code { justify-self: start; }
+.cs-code > span { color: var(--ink-muted); font-size: 0.86em; line-height: 1.35; }
+.cs-card .cs-tool p.cs-tool-note { margin-top: 4px; color: var(--ink-muted); font-size: 0.9em; }
+@container (max-width: 25em) {
+  .cs-code { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .cs-code > span { margin: 0 0 4px 2px; }
+}
+
+.cs-mistakes li { margin: 0.4em 0; }
+.cs-timeline { padding-left: 1.1em; }
+.cs-timeline li { margin: 0.35em 0; line-height: 1.5; }
+.cs-timeline strong { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+.cs-after { margin: 0.4rem 0 0; color: var(--ink-muted); font-size: 0.92em; }
+
+@media (max-width: 559.98px) {
+  .cs-card { padding: 12px 14px 14px; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px 6px; }
+  .cs-card table.cs-eqs, .cs-card table.cs-quad { font-size: 0.82em; }
+}
+@media (max-width: 379.98px) {
+  /* small phones (320-379px): a little more room so formulas and the surfaces table fit without scrolling */
+  .cs-card { padding: 12px 12px 14px; }
+  .cs-card .key-formula { padding-left: 10px; padding-right: 10px; }
+  .cs-card .katex-display > .katex { font-size: 0.96em; }
+  .cs-card table.data th, .cs-card table.data td { padding: 5px; }
+}
+
+/* ---------- Print: one page on US Letter or A4 ---------- */
+@media screen { .cs-card .katex-display { font-size: 0.9em; } }   /* the long formulas fit the two-column cards on screen */
+@media print {
+  @page { margin: 9mm; }
+  html { font-size: 7.8pt; }
+  .page { font-size: 1rem; line-height: 1.3; }
+  .katex { font-size: 1.04em; }
+  .lesson-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0 6mm;
+    margin: 0 0 2.4mm;
+    padding: 0 0 1.8mm;
+    border-bottom: 0.8pt solid var(--line-strong);
+  }
+  .lesson-header .eyebrow { grid-column: 1 / -1; margin: 0 0 0.4mm; font-size: 6.6pt; }
+  .lesson-header h1 { margin: 0; font-size: 16pt; line-height: 1.1; }
+  .lesson-header .lede { max-width: none; font-size: 8pt; line-height: 1.35; text-align: right; }
+  /* floats: blocks next to a floated figure shrink beside it instead of running underneath */
+  .cs-card > :is(p, ul, .table-wrap, .key-formula) { display: flow-root; }
+  .cs-card > .katex-display, .cs-card .key-formula > .katex-display { display: flow-root; }
+  .cs-card .cs-figure.cs-float { float: right; width: 40%; max-width: none; margin: 0 0 1mm 2.5mm; }
+  .cs-card .cs-figure.small.cs-float { width: 33%; }
+  .cs-sheet {
+    column-count: 2;
+    column-gap: 4mm;
+    font-size: 1rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-card { margin: 0 0 2.6mm; padding: 1.9mm 2.8mm 2.2mm; border-color: var(--line-strong); border-radius: 2mm; box-shadow: none; }
+  .cs-card > h2 { gap: 1.8mm; margin: 0 0 1.4mm; padding: 0 0 1.1mm; font-size: 9.6pt; }
+  .cs-card > h2::before { width: 12.5pt; height: 12.5pt; font-size: 6.8pt; }
+  .cs-card p { margin: 0 0 0.9mm; }
+  .cs-card ul { margin: 0 0 1mm; padding-left: 3.4mm; }
+  .cs-card li { margin: 0.35mm 0; }
+  .cs-card h3 { margin: 1.6mm 0 0.5mm; font-size: 6.6pt; }
+  .cs-card .katex-display { margin: 0.9mm 0; padding: 0; }
+  .cs-card .key-formula { margin: 1.2mm 0; padding: 0.6mm 2.4mm 0.8mm; border-width: 0.8pt; border-radius: 1.6mm; }
+  .cs-card .key-formula .katex-display { margin: 0.5mm 0; }
+  .cs-pair { gap: 1.8mm; margin: 1.2mm 0; }
+  .cs-pair > * { flex-basis: 30mm; }
+  .cs-card .table-wrap { margin: 1.1mm 0 1.3mm; border-radius: 1.4mm; border-color: var(--line-strong); }
+  .cs-card table.data th, .cs-card table.data td { padding: 0.55mm 1.8mm; }
+  .cs-card table.data thead th { font-size: 6.4pt; }
+  .cs-card table.data caption { padding: 0.6mm 1.8mm; font-size: 7pt; }
+  .cs-card .cs-figure { max-width: 43mm; margin: 0.4mm auto 1.2mm; }
+  .cs-card .cs-figure.small { max-width: 36mm; }
+  .cs-figure figcaption { margin-top: 0.3mm; font-size: 6.8pt; }
+  .cs-svg text { font-size: 17.5px; }
+  .cs-svg .lbl-ax { font-size: 16px; }
+  .cs-svg .lbl-mute { font-size: 15px; }
+  .cs-svg .sm { font-size: 14.5px; }
+  .cs-tools { gap: 1.1mm; margin-top: 0.8mm; }
+  .cs-tool { padding: 0.9mm 2mm 1mm; border-radius: 1.4mm; }
+  .cs-tool-name { margin-bottom: 0.3mm; font-size: 6.4pt; }
+  .cs-card .cs-tool p { line-height: 1.45; }
+  .cs-tool :not(pre) > code { font-size: 0.86em; }
+  .cs-mistakes li { margin: 0.5mm 0; }
+  .cs-timeline li { margin: 0.5mm 0; line-height: 1.35; }
+}
+.cs-svg .acc-path { stroke: var(--accent); stroke-width: 3; }
+.cs-svg .r-fill { fill: var(--c-n); }
+.cs-svg .r { stroke: var(--c-n); }
+.cs-svg .sub { font-size: 11px; }
+.cs-svg .bold { font-family: KaTeX_Main, "Times New Roman", serif; font-style: normal; font-weight: 700; }
+</style>
+</head>
+<body data-page="cheatsheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow"><span class="no-print">Reference</span><span class="print-only">Space Vehicles</span></p>
+    <h1>Formula Sheet</h1>
+    <p class="lede">Every key result from the module in one place. SI units: radii in meters from Earth's center, \(c = I_{sp}g_0\). Constants, propellant and material values are typical values; the factors of safety are from NASA-STD-5001B <a class="cite" href="references.html#r6">[6]</a> and the launch criteria from 14&nbsp;CFR 450 <a class="cite" href="references.html#r7">[7]</a>.</p>
+    <div class="cs-actions no-print">
+      <button type="button" class="btn primary" id="cs-print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Print this sheet</button>
+      <p class="small muted">Fits on one page of Letter or A4. For a digital copy, choose “Save as PDF” as the printer.</p>
+    </div>
+  </header>
+
+  <div class="cs-sheet wide">
+
+    <section class="card cs-card" id="orbits">
+      <h2><span>Orbits</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Circular and elliptical orbits</p>
+        \[ v_c = \sqrt{\frac{\mu}{r}}, \qquad T = 2\pi\sqrt{\frac{a^3}{\mu}}, \qquad v = \sqrt{\mu\left(\frac{2}{r} - \frac{1}{a}\right)} \]
+        \[ a = \frac{r_p + r_a}{2}, \quad e = \frac{r_a - r_p}{r_a + r_p}, \quad \varepsilon = -\frac{\mu}{2a}, \quad r_pv_p = r_av_a \]
+        \[ \dot\Omega = -\tfrac32 nJ_2\left(\frac{R_E}{a(1 - e^2)}\right)^2\cos i, \qquad n = \sqrt{\mu/a^3} \]
+      </div>
+      <ul>
+        <li>\(\mu = 3.986\times10^{14}\ \text{m}^3/\text{s}^2\), \(R_E = 6378\)&nbsp;km, \(J_2 = 1.08263\times10^{-3}\), \(\omega_E = 7.2921\times10^{-5}\)&nbsp;rad/s, \(g_0 = 9.80665\ \text{m/s}^2\). \(r = R_E + h\), in meters.</li>
+        <li>500&nbsp;km: 7613&nbsp;m/s, 94.61&nbsp;min, 33.52&nbsp;MJ/kg from the surface. GEO: 35&nbsp;786&nbsp;km, 3075&nbsp;m/s. Sun-synchronous: node 0.9856° east a day, 97.40° at 500&nbsp;km.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/02-orbits.html">Lesson 2</a></p>
+    </section>
+
+    <section class="card cs-card" id="maneuvers">
+      <h2><span>Maneuvers</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Hohmann transfer, plane changes, phasing</p>
+        \[ \Delta v_1 = v_p - v_{c1}, \quad \Delta v_2 = v_{c2} - v_a, \quad t = \pi\sqrt{a_t^3/\mu} \]
+        \[ \Delta v = 2v\sin\frac{\Delta i}{2}, \qquad \Delta v = \sqrt{v_1^2 + v_2^2 - 2v_1v_2\cos\Delta i} \]
+        \[ T_{ph} = T_0\left(1 - \frac{\Delta\theta}{360^\circ}\right), \qquad \Delta v = 2(v_c - v_a) \]
+      </div>
+      <ul>
+        <li>500 to 700&nbsp;km: 108.3&nbsp;m/s. 300&nbsp;km to GEO: 3893&nbsp;m/s, 5.28&nbsp;h. 1° at 500&nbsp;km: 132.9&nbsp;m/s. Change planes at apogee, combined with a burn.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/03-maneuvers.html">Lesson 3</a></p>
+    </section>
+
+    <section class="card cs-card" id="ascent">
+      <h2><span>Getting to orbit</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Ascent budget and Earth's rotation</p>
+        \[ \Delta v = v_{\text{rel}} + \Delta v_g + \Delta v_D + \Delta v_s, \qquad \frac{dv}{dt} = \frac{T - D}{m} - g\sin\gamma \]
+        \[ v_E = \omega_ER_E\cos\phi, \quad \sin A_z = \frac{\cos i}{\cos\phi} \]
+        \[ v_{\text{rel}} = \sqrt{v^2 - 2vv_E\sin A_z + v_E^2} \]
+      </div>
+      <ul>
+        <li>Typical losses: gravity 1.0–1.5, drag 0.05–0.2, steering 0.05–0.2&nbsp;km/s. Direct launch needs \(i \ge \phi\).</li>
+        <li>Small launcher, SSO from 45°: \(A_z = 190.5^\circ\), +66.7&nbsp;m/s; \(9199 = 7679 + 1300 + 120 + 100\)&nbsp;m/s.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/04-ascent.html">Lesson 4</a></p>
+    </section>
+
+    <section class="card cs-card" id="staging">
+      <h2><span>The rocket equation and staging</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Mass ratio, structural coefficient, optimal split</p>
+        \[ \Delta v = c\ln\frac{m_0}{m_f}, \quad c = I_{sp}g_0, \quad \varepsilon = \frac{m_s}{m_s + m_p}, \quad \Delta v_{\max} = c\ln\frac{1}{\varepsilon} \]
+        \[ \frac{m_{pl}}{m_0} = \left(\frac{1 - n\varepsilon}{n(1 - \varepsilon)}\right)^N, \qquad n_i = \frac{c_i\eta - 1}{c_i\varepsilon_i\eta}, \quad \sum c_i\ln n_i = \Delta v \]
+        \[ m_p = m\frac{(n - 1)(1 - \varepsilon)}{1 - n\varepsilon}, \qquad m_s = \frac{\varepsilon\,m_p}{1 - \varepsilon} \quad \text{(top down)} \]
+      </div>
+      <ul>
+        <li>Small launcher (300&nbsp;s/0.08, 340&nbsp;s/0.10): \(\Delta v_1 = 4354\), \(\Delta v_2 = 4846\)&nbsp;m/s; 9710 + 844 and 1546 + 172&nbsp;kg; 12&nbsp;572&nbsp;kg, 41.9&nbsp;kg per kg of payload. Closed loop: 12&nbsp;087&nbsp;kg (\(\varepsilon\) 0.0824, 0.0920).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/05-staging.html">Lesson 5</a></p>
+    </section>
+
+    <section class="card cs-card" id="engines">
+      <h2><span>Engines and propellants</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Thrust, specific impulse, nozzle</p>
+        \[ T = \dot mv_e + (p_e - p_a)A_e = \dot mc = C_Fp_cA_t, \qquad I_{sp} = \frac{c^*C_F}{g_0} \]
+        \[ C_F = C_{F,\text{vac}} - \frac{p_a}{p_c}\frac{A_e}{A_t}, \qquad \rho_{\text{bulk}} = \frac{1 + O/F}{(O/F)/\rho_O + 1/\rho_F} \]
+      </div>
+      <ul>
+        <li>Typical vacuum/sea-level \(I_{sp}\) and bulk density: LOX/RP-1 340/300&nbsp;s, 1025; LOX/CH4 360/320, 829; LOX/LH2 450/390, 362; NTO/MMH 320/280, 1158; solid 285/260, 1800&nbsp;kg/m³.</li>
+        <li>First-stage engine (\(c^* = 1760\), \(\gamma = 1.24\), 8&nbsp;MPa, \(\varepsilon_e = 14\)): 283/315&nbsp;s; upper stage \(\varepsilon_e = 85\): 340&nbsp;s. Flow separates below about \(p_e = 0.4\,p_a\).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/06-engines.html">Lesson 6</a></p>
+    </section>
+
+    <section class="card cs-card" id="structures">
+      <h2><span>Structures (NASA-STD-5001B)</span></h2>
+      <div class="key-formula">
+        <p class="key-formula-title">Factors, margins, tanks, buckling</p>
+        \[ MS = \frac{\text{allowable}}{\text{limit} \times FS} - 1, \qquad \sigma_{\text{hoop}} = \frac{pR}{t} = 2\sigma_{\text{axial}} \]
+        \[ \sigma_{cr} = \frac{\gamma Et}{R\sqrt{3(1 - \nu^2)}}, \qquad \gamma = 1 - 0.901(1 - e^{-\phi}) \]
+        \[ \phi = \frac{\sqrt{R/t}}{16} \]
+      </div>
+      <ul>
+        <li>Metallic: ultimate 1.4; yield 1.0 (prototype) or 1.25 (protoflight); tests 1.4 or 1.2; proof 1.05 (tanks). Composite 1.4 or 1.5; 2.0 at discontinuities. Aircraft: 1.5. Buckling at ultimate load, with a knockdown from SP-8007 <a class="cite" href="references.html#r9">[9]</a>. Source: <a class="cite" href="references.html#r6">[6]</a>.</li>
+        <li>Stage-1 LOX tank: 385.5&nbsp;kPa, needs 0.82&nbsp;mm, minimum gauge 1.5&nbsp;mm; buckling at burnout \(MS = 0.30\).</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/07-structures.html">Lesson 7</a></p>
+    </section>
+
+    <section class="card cs-card" id="licensing">
+      <h2><span>Sizing loop and license (14 CFR 450)</span></h2>
+      <ul>
+        <li>Loop: \(\Delta v\) → staging → engines (\(m = T_{\text{vac}}/(g_0\,T/W_{\text{eng}})\)) → tanks (×1.6) → residuals 1% + allowances → new \(\varepsilon\).</li>
+        <li>450.101 <a class="cite" href="references.html#r7">[7]</a>: \(E_C \le 10^{-4}\) (public), \(2\times10^{-4}\) (neighboring operations); \(P_C \le 10^{-6}\) per launch (\(10^{-5}\)); aircraft \(10^{-6}\). Conditional \(E_C \gt 10^{-3}\) in a phase: flight abort (450.108) or demonstrated reliability. Debris notice: 97% containment.</li>
+        <li>450.169: inhabitable objects \(10^{-6}\) or 200&nbsp;km; others \(10^{-5}\) or 25 (2.5 for debris)&nbsp;km. 450.171: passivate stages left in orbit. Deorbit 500&nbsp;km → 50&nbsp;km perigee: 129.8&nbsp;m/s.</li>
+      </ul>
+      <p class="cs-more no-print">More in <a href="../lessons/08-sizing-and-licensing.html">Lesson 8</a></p>
+    </section>
+
+    <section class="card cs-card cs-warn" id="common-mistakes">
+      <h2><span>Common mistakes</span></h2>
+      <ul class="cs-mistakes">
+        <li><strong>Altitude for radius.</strong> Orbits use \(r = R_E + h\) from Earth's center, in meters.</li>
+        <li><strong>Seconds for velocity.</strong> \(c = I_{sp}\,g_0\): never put seconds into the exponent of the rocket equation.</li>
+        <li><strong>Structural coefficient.</strong> \(\varepsilon\) excludes the payload and the stages above; \(m_0/m_f \ne 1/\varepsilon\) once there is a payload.</li>
+        <li><strong>Vacuum or sea level.</strong> \(T = T_{\text{vac}} - p_aA_e\); an upper-stage nozzle cannot fire at sea level.</li>
+        <li><strong>Average risk.</strong> \(E_C\) below \(10^{-4}\) does not excuse a phase with conditional casualties above \(10^{-3}\).</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+/* Formula sheet: the only control is the print button (the page itself is static reference content). */
+CYL.ready(function () {
+  'use strict';
+  var btn = document.getElementById('cs-print');
+  btn.addEventListener('click', function () { window.print(); });
+});
+</script>
+</body>
+</html>
