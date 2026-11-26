@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Worksheet · Rectilinear Motion</title>
+<meta name="description" content="Twelve printable problems on rectilinear motion, from derivatives, integrals and initial conditions to braking, free fall, variable acceleration, motion graphs, a block and tackle and two cars braking, with work space and final answers to check.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<style>
+/* ---------- Worksheet page (screen) ---------- */
+.ws-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 1.3rem 0; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev); box-shadow: var(--shadow-sm);
+}
+.ws-toolbar .btn-row { gap: 10px; }
+.ws-toolbar .ws-status { flex: 1 1 240px; margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.45; }
+.ws-how ol { padding-left: 1.3em; }
+.ws-how li { margin: 0.45em 0; }
+
+.ws-part-sub { margin: -0.3rem 0 0.4rem; color: var(--ink-muted); font-size: 0.92em; }
+
+.ws-problem {
+  margin: 1.1rem 0 1.5rem;
+  padding: 16px 18px 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 14px);
+}
+.ws-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 8px; }
+.ws-title { margin: 0; font-size: 1.04em; line-height: 1.35; letter-spacing: -0.005em; }
+.ws-num { color: var(--accent); }
+.tag.ws-lv1 { border-color: color-mix(in srgb, var(--c-good) 38%, transparent); background: var(--c-good-soft); color: var(--c-good); }
+.tag.ws-lv2 { border-color: color-mix(in srgb, var(--accent) 38%, transparent); background: var(--accent-soft); color: var(--accent); }
+.tag.ws-lv3 { border-color: color-mix(in srgb, var(--c-warn) 38%, transparent); background: var(--c-warn-soft); color: var(--c-warn); }
+.ws-text > :last-child { margin-bottom: 0; }
+.ws-text > p { margin-bottom: 0.5em; }
+.ws-body.has-fig { display: grid; gap: 14px 24px; }
+@container cylmain (min-width: 620px) {
+  .ws-body.has-fig:not(.fig-wide) { grid-template-columns: minmax(0, 1fr) 232px; align-items: start; }
+}
+.ws-parts { list-style: none; counter-reset: wsp; margin: 0.35em 0 0; padding: 0; }
+.ws-parts > li { counter-increment: wsp; position: relative; margin: 0.4em 0; padding-left: 2.1em; }
+.ws-parts > li::before {
+  content: "(" counter(wsp, lower-alpha) ")";
+  display: inline-block; width: 2.1em; margin-left: -2.1em; /* hangs in the padding, on the first line's baseline */
+  color: var(--ink-muted); font-weight: 650;
+}
+@container cylmain (min-width: 520px) {
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; }
+}
+.ws-given { display: grid; grid-template-columns: repeat(2, max-content); gap: 0.15em 2.2em; margin: 0.2em 0 0.6em 2.1em; padding: 0; list-style: none; }
+.ws-given > li { margin: 0; }
+.ws-given > .ws-given-wide { grid-column: 1 / -1; }
+.figure.ws-fig { margin: 0; }
+.figure.ws-fig > svg { max-width: 290px; }
+.ws-svg-pair { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 12px 18px; margin: 0 auto; }
+.ws-svg-pair > .ws-svg { flex: 210 1 210px; min-width: 0; max-width: 232px; margin: 0; }
+.ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 232px; max-width: 256px; }
+.figure.ws-fig figcaption { margin-top: 6px; }
+
+.callout.ws-answer { --icon: var(--i-check-circle); margin: 14px 0 0; }
+.ws-answer .ws-parts > li::before { color: var(--c-good); }
+.ws-answer .ws-parts > li { margin: 0.3em 0; }
+.ws-answer p:not(.callout-title) { margin-bottom: 0.4em; }
+
+.ws-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+.ws-review { color: var(--ink-muted); font-size: 0.84rem; }
+
+/* Static SVG figures: every color is a module CSS variable, so they follow the theme and print light. */
+.ws-svg { display: block; width: 100%; height: auto; margin: 0 auto; overflow: visible; }
+.ws-svg text { fill: var(--ink); font-family: var(--font-sans); font-size: 13px; }
+.ws-svg .m { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 17px; }
+.ws-svg .mb { font-family: KaTeX_Main, "Times New Roman", serif; font-weight: 700; font-size: 16px; }
+.ws-svg .mlab { font-family: KaTeX_Main, "Times New Roman", serif; font-style: italic; font-size: 14.5px; }
+.ws-svg .sub { font-size: 12px; font-style: normal; font-family: var(--font-sans); }
+.ws-svg .small { font-size: 13px; font-weight: 650; }
+.ws-svg .lbl { font-size: 12.5px; fill: var(--ink-muted); }
+.ws-svg .cap { font-size: 12.5px; font-weight: 700; }
+.ws-svg .num { font-size: 12px; font-weight: 700; }
+.ws-svg .t-r { fill: var(--c-r); }
+.ws-svg .t-t { fill: var(--c-t); }
+.ws-svg .t-z { fill: var(--c-z); }
+.ws-svg .t-acc { fill: var(--accent); }
+.ws-svg .t-warn { fill: var(--c-warn); }
+.ws-svg .t-good { fill: var(--c-good); }
+.ws-svg.lg text, .ws-svg.lg .lbl, .ws-svg.lg .small, .ws-svg.lg .cap { font-size: 15px; }
+.ws-svg.lg .m { font-size: 19px; }
+.ws-svg .halo { paint-order: stroke; stroke: var(--bg-elev); stroke-width: 4px; stroke-linejoin: round; }
+.ws-svg .s-ink { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.ws-svg .s-thin { stroke: var(--ink-muted); stroke-width: 0.9; fill: none; }
+.ws-svg .s-faint { stroke: var(--line-strong); stroke-width: 0.9; fill: none; }
+.ws-svg .s-axis { stroke: var(--c-axis); stroke-width: 1.2; fill: none; }
+.ws-svg .s-r { stroke: var(--c-r); stroke-width: 2; fill: none; }
+.ws-svg .s-r.thin { stroke-width: 1.3; }
+.ws-svg .s-t { stroke: var(--c-t); stroke-width: 1.6; fill: none; }
+.ws-svg .s-z { stroke: var(--c-z); stroke-width: 1.4; fill: none; }
+.ws-svg .s-acc { stroke: var(--accent); stroke-width: 2.4; fill: none; }
+.ws-svg .s-arrow { stroke: var(--accent); stroke-width: 1.4; fill: none; }
+.ws-svg .s-coil { stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ws-svg .s-coil-back { stroke: var(--ink-faint); stroke-width: 1.3; fill: none; stroke-linecap: round; }
+.ws-svg .dash { stroke-dasharray: 5 4; }
+.ws-svg .f-part { fill: var(--c-surface); fill-opacity: 0.14; }
+.ws-svg .f-face { fill: var(--c-surface); fill-opacity: 0.32; }
+.ws-svg .f-bg { fill: var(--bg-elev); }
+.ws-svg .f-ink { fill: var(--ink); }
+.ws-svg .f-axis { fill: var(--c-axis); }
+.ws-svg .f-r { fill: var(--c-r); }
+.ws-svg .f-t { fill: var(--c-t); }
+.ws-svg .f-z { fill: var(--c-z); }
+.ws-svg .f-acc { fill: var(--accent); }
+.ws-svg .f-warn { fill: var(--c-warn); }
+.ws-svg .s-warn { stroke: var(--c-warn); stroke-width: 2.4; fill: none; }
+.ws-svg .s-good { stroke: var(--c-good); stroke-width: 2.2; fill: none; }
+.ws-svg .f-good { fill: var(--c-good); }
+.ws-svg .s-bad { stroke: var(--c-bad); stroke-width: 2.2; fill: none; }
+.ws-svg .f-bad { fill: var(--c-bad); }
+.ws-svg .t-bad { fill: var(--c-bad); }
+
+/* ---------- Print: header, work space, page breaks ---------- */
+.ws-print-head .ws-ph-key { display: none; }
+@media print {
+  @page { margin: 11mm 12mm 12mm; }
+  html { font-size: 9.8pt; }
+  .page { line-height: 1.42; }
+  .lesson-header, .ws-how, .ws-actions, .ws-part-sub { display: none !important; }
+  .page > section.ws-part { margin-top: 2.5mm; }
+  .page > section.ws-part:first-of-type { margin-top: 0; }
+  .ws-print-head { margin: 0 0 3mm; }
+  .ws-ph-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--ink); }
+  .ws-ph-title { margin: 0; font-size: 15pt; font-weight: 750; letter-spacing: -0.01em; }
+  .ws-ph-meta { color: var(--ink-muted); font-size: 8.5pt; }
+  .ws-namebar { display: grid; grid-template-columns: auto 3fr auto 2fr auto 1.3fr; align-items: end; gap: 0 2.5mm; margin: 4mm 0 2.5mm; font-size: 9pt; font-weight: 650; }
+  .ws-namebar .ws-blank { height: 5mm; border-bottom: 1px solid var(--ink); }
+  .ws-ph-rules { margin: 0; color: var(--ink-muted); font-size: 8.4pt; line-height: 1.45; }
+  body.ws-all-answers .ws-namebar, body.ws-all-answers .ws-ph-rules { display: none; }
+  body.ws-all-answers .ws-print-head .ws-ph-key { display: block; margin: 2mm 0 0; font-weight: 700; color: var(--c-good); }
+
+  .ws-part > h2 { margin: 0 0 2mm; padding-bottom: 0.6mm; border-bottom: 1px solid var(--line-strong); font-size: 10.5pt; }
+  .ws-problem {
+    margin: 0 0 2.8mm; padding: 1.9mm 3mm 2.3mm;
+    border: 1px solid var(--line-strong); border-left: 2.5px solid var(--ink); border-radius: 2mm;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .ws-head { margin-bottom: 0.8mm; }
+  .ws-title { font-size: 10.6pt; }
+  .tag.ws-lv1, .tag.ws-lv2, .tag.ws-lv3 { border-color: var(--line-strong); background: none; color: var(--ink-muted); font-size: 6.8pt; }
+  .ws-text > p { margin-bottom: 1mm; }
+  .ws-parts { margin-top: 0.8mm; }
+  /* print: r | r-dot, r-ddot | theta-dot, theta-ddot | z-dot, z-ddot as four columns of two rows */
+  .ws-given { grid-template-columns: repeat(4, max-content); margin: 0.5mm 0 1mm 6mm; gap: 0.3mm 5mm; }
+  .ws-given > .ws-given-wide { grid-column: 1; grid-row: 1; }
+  .ws-given > li:nth-child(2) { grid-area: 1 / 2; } .ws-given > li:nth-child(3) { grid-area: 2 / 2; }
+  .ws-given > li:nth-child(4) { grid-area: 1 / 3; } .ws-given > li:nth-child(5) { grid-area: 2 / 3; }
+  .ws-given > li:nth-child(6) { grid-area: 1 / 4; } .ws-given > li:nth-child(7) { grid-area: 2 / 4; }
+  .ws-parts > li { margin: 0.6mm 0; }
+  .ws-parts.ws-cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-parts.ws-cols-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 6mm; }
+  .ws-body.has-fig { display: grid; grid-template-columns: minmax(0, 1fr) 48mm; gap: 1mm 5mm; align-items: start; }
+  .ws-body.has-fig.fig-wide { grid-template-columns: minmax(0, 1fr) 80mm; }
+  .figure.ws-fig > svg { max-width: 48mm; }
+  .ws-svg-pair { flex-wrap: nowrap; gap: 0 3mm; max-width: 80mm; }
+  .ws-svg-pair > .ws-svg { flex: 210 1 0; max-width: none; }
+  .ws-svg-pair > .ws-svg + .ws-svg { flex: 232 1 0; max-width: none; }
+  .figure.ws-fig figcaption { margin-top: 0.6mm; font-size: 7.4pt; line-height: 1.3; text-align: center; }
+  .ws-cap-text { display: none; }
+  .ws-answer { margin-top: 2mm; padding: 2mm 3mm; }
+  body:not(.ws-all-answers) .ws-answer { display: none !important; }
+  .ws-work {
+    height: var(--h, 40mm); margin-top: 1.6mm;
+    border: 1px solid var(--line-strong); border-radius: 1.5mm;
+    background-color: var(--bg-elev);
+    background-image: radial-gradient(circle, var(--line-strong) 0.45px, transparent 0.8px);
+    background-size: 5mm 5mm; background-position: 2.5mm 2.5mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .ws-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5mm; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ws-pair > .ws-problem { display: flex; flex-direction: column; margin: 0; }
+  .ws-pair > .ws-problem > .ws-work { flex: 1 0 auto; }
+  .ws-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 2mm; padding: 1mm 2mm; }
+  .ws-tiles svg { max-height: 34mm; }
+  /* Answer sheet (all answers shown): titles and final answers only */
+  body.ws-all-answers .ws-work, body.ws-all-answers .ws-body { display: none !important; }
+  body.ws-all-answers .ws-answer { margin-top: 1mm; }
+}
+</style>
+</head>
+<body data-page="worksheet" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page worksheet">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · 12 problems · Paper</p>
+    <h1>Printable Worksheet</h1>
+    <p class="lede">Twelve problems to work by hand, from derivatives and integrals to a car that must stop in time, a stone thrown from a bridge, a rocket sled, a block on a spring, a train between stations, a block and tackle and two cars braking one behind the other. Print it, show your work in the space provided, then check your final answers here.</p>
+  </header>
+
+  <div class="ws-print-head print-only">
+    <div class="ws-ph-top">
+      <p class="ws-ph-title">Rectilinear Motion · Worksheet</p>
+      <span class="ws-ph-meta">12 problems · Parts A–C</span>
+    </div>
+    <div class="ws-namebar">
+      <span>Name</span><span class="ws-blank"></span>
+      <span>Course / section</span><span class="ws-blank"></span>
+      <span>Date</span><span class="ws-blank"></span>
+    </div>
+    <p class="ws-ph-rules">Show your work in the space provided. Unless a problem says otherwise: \(g = 9.81\ 	ext{m/s}^2\), bodies are treated as particles, angles are in radians, answers to 4 significant figures with units. Sketch the motion and choose a positive direction first. You may use the Formula Sheet.</p>
+    <p class="ws-ph-key">Answer sheet: final answers only.</p>
+  </div>
+
+  <section id="ws-how" class="ws-how">
+    <h2>How to use this worksheet</h2>
+    <ol>
+      <li><strong>Print it</strong>, or save it as a PDF. Each problem gets a dotted work space. It fits on six Letter or A4 pages.</li>
+      <li><strong>Work on paper.</strong> Part A is the calculus refresher, Part B the kinematics of one particle, and Part C graphs, dependent motion and relative motion. Each problem names the lesson to review if you get stuck.</li>
+      <li><strong>Check your final answers</strong> with <em>Show answer</em> under each problem, or show them all at once. Only final answers are given here.</li>
+    </ol>
+    <div class="ws-toolbar" id="ws-toolbar"></div>
+    <aside class="callout note">
+      <p class="callout-title">Conventions</p>
+      <p>Unless a problem says otherwise: \(g = 9.81\ 	ext{m/s}^2\); bodies are treated as particles and air resistance is neglected; angles inside sines and cosines are in radians; choose a positive direction and keep to it. Give answers to 4 significant figures with units. The <a href="../reference/cheat-sheet.html">Formula Sheet</a> is allowed.</p>
+    </aside>
+    <noscript><p class="callout warning">The problems on this page are drawn by JavaScript. Turn JavaScript on to see them.</p></noscript>
+  </section>
+
+  <section id="part-a" class="ws-part">
+    <h2>Part A · The calculus refresher</h2>
+    <p class="ws-part-sub">Problems 1–3 · Basic to intermediate · Lessons 1–2</p>
+    <div class="ws-list" data-from="1" data-to="3"></div>
+  </section>
+
+  <section id="part-b" class="ws-part">
+    <h2>Part B · Kinematics of a particle</h2>
+    <p class="ws-part-sub">Problems 4–8 · Basic to challenge · Lessons 3–5</p>
+    <div class="ws-list" data-from="4" data-to="8"></div>
+  </section>
+
+  <section id="part-c" class="ws-part">
+    <h2>Part C · Graphs, dependent motion and relative motion</h2>
+    <p class="ws-part-sub">Problems 9–12 · Intermediate to challenge · Lessons 4 and 6–8</p>
+    <div class="ws-list" data-from="9" data-to="12"></div>
+  </section>
+</main>
+
+<!-- Static figures (inline SVG, colored with the module's CSS variables). Cloned into the problems below. -->
+<template id="ws-fig-vt"><svg class="ws-svg" viewBox="0 0 260 168" role="img" aria-label="A velocity–time graph of a train: a straight rise from 0 to 20 meters per second in the first 40 seconds, a level stretch at 20 meters per second until 100 seconds, and a straight fall to zero at 150 seconds.">
+<line x1="40" y1="130" x2="244" y2="130" class="s-axis"/><path d="M250.0 130.0 L244.0 132.7 L244.0 127.3 Z" class="f-axis"/><line x1="40" y1="130" x2="40" y2="24" class="s-axis"/><path d="M40.0 18.0 L42.7 24.0 L37.3 24.0 Z" class="f-axis"/><text x="142" y="162" class="lbl" text-anchor="middle">t (s)</text><text x="46" y="22" class="lbl" text-anchor="start">v (m/s)</text><path d="M40.0 130.0 L93.3 40.0 L173.3 40.0 L240.0 130.0" class="s-good"/><line x1="93.3" y1="40.0" x2="93.3" y2="130" class="s-faint dash"/><text x="93.3" y="146" class="lbl" text-anchor="middle">40</text><line x1="173.3" y1="40.0" x2="173.3" y2="130" class="s-faint dash"/><text x="173.3" y="146" class="lbl" text-anchor="middle">100</text><line x1="240.0" y1="130.0" x2="240.0" y2="130" class="s-faint dash"/><text x="240.0" y="146" class="lbl" text-anchor="middle">150</text><line x1="40" y1="40.0" x2="93.3" y2="40.0" class="s-faint dash"/><text x="34" y="44.0" class="lbl" text-anchor="end">20</text><text x="34" y="134" class="lbl" text-anchor="end">0</text>
+</svg></template>
+<template id="ws-fig-at"><svg class="ws-svg" viewBox="0 0 260 142" role="img" aria-label="An acceleration–time graph of a cart: 4 meters per second squared from 0 to 3 seconds, zero from 3 to 8 seconds, and minus 3 meters per second squared from 8 to 12 seconds.">
+<line x1="40" y1="82" x2="244" y2="82" class="s-axis"/><path d="M250.0 82.0 L244.0 84.7 L244.0 79.3 Z" class="f-axis"/><line x1="40" y1="136" x2="40" y2="20" class="s-axis"/><path d="M40.0 14.0 L42.7 20.0 L37.3 20.0 Z" class="f-axis"/><text x="252" y="75" class="lbl" text-anchor="end">t (s)</text><text x="46" y="18" class="lbl" text-anchor="start">a (m/s²)</text><path d="M40.0 30.0 L90.0 30.0 M90.0 82.0 L173.3 82.0 M173.3 121.0 L240.0 121.0" class="s-bad"/><path d="M90.0 30.0 L90.0 82.0 M173.3 82.0 L173.3 121.0 M240.0 121.0 L240.0 82.0" class="s-faint dash"/><text x="90.0" y="97" class="lbl" text-anchor="middle">3</text><text x="173.3" y="97" class="lbl" text-anchor="middle">8</text><text x="240.0" y="97" class="lbl" text-anchor="middle">12</text><text x="34" y="34.0" class="lbl" text-anchor="end">4</text><text x="34" y="125.0" class="lbl" text-anchor="end">−3</text><text x="34" y="86" class="lbl" text-anchor="end">0</text><line x1="40" y1="30.0" x2="40.0" y2="30.0" class="s-faint dash"/><line x1="40" y1="121.0" x2="173.3" y2="121.0" class="s-faint dash"/>
+</svg></template>
+<template id="ws-fig-tackle"><svg class="ws-svg" viewBox="0 0 260 190" role="img" aria-label="A block and tackle: load B hangs from a movable pulley, held by three vertical parts of one rope; the dead end of the rope is tied to the load. The rope runs over two fixed pulleys at the ceiling and down to its free end A, which is pulled down at 2 meters per second.">
+<line x1="40" y1="12" x2="200" y2="12" class="s-ink"/><line x1="43" y1="12" x2="37" y2="5" class="s-faint"/><line x1="52" y1="12" x2="46" y2="5" class="s-faint"/><line x1="61" y1="12" x2="55" y2="5" class="s-faint"/><line x1="70" y1="12" x2="64" y2="5" class="s-faint"/><line x1="79" y1="12" x2="73" y2="5" class="s-faint"/><line x1="88" y1="12" x2="82" y2="5" class="s-faint"/><line x1="97" y1="12" x2="91" y2="5" class="s-faint"/><line x1="106" y1="12" x2="100" y2="5" class="s-faint"/><line x1="115" y1="12" x2="109" y2="5" class="s-faint"/><line x1="124" y1="12" x2="118" y2="5" class="s-faint"/><line x1="133" y1="12" x2="127" y2="5" class="s-faint"/><line x1="142" y1="12" x2="136" y2="5" class="s-faint"/><line x1="151" y1="12" x2="145" y2="5" class="s-faint"/><line x1="160" y1="12" x2="154" y2="5" class="s-faint"/><line x1="169" y1="12" x2="163" y2="5" class="s-faint"/><line x1="178" y1="12" x2="172" y2="5" class="s-faint"/><line x1="187" y1="12" x2="181" y2="5" class="s-faint"/><line x1="196" y1="12" x2="190" y2="5" class="s-faint"/><line x1="40" y1="12" x2="232" y2="12" class="s-faint dash"/><text x="236" y="16" class="lbl" text-anchor="start">datum</text><line x1="96" y1="34" x2="96" y2="112" class="s-ink"/><line x1="116" y1="34" x2="116" y2="112" class="s-ink"/><line x1="136" y1="34" x2="136" y2="112" class="s-ink"/><line x1="176" y1="34" x2="176" y2="150" class="s-ink"/><line x1="106.0" y1="12" x2="106.0" y2="34" class="s-ink"/><circle cx="106.0" cy="34" r="10" class="s-ink f-bg"/><circle cx="106.0" cy="34" r="2" class="f-ink"/><line x1="156.0" y1="12" x2="156.0" y2="34" class="s-ink"/><circle cx="156.0" cy="34" r="20" class="s-ink f-bg"/><circle cx="156.0" cy="34" r="2" class="f-ink"/><circle cx="126.0" cy="112" r="10" class="s-ink f-bg"/><circle cx="126.0" cy="112" r="2" class="f-ink"/><line x1="126.0" y1="112" x2="126.0" y2="128" class="s-ink"/><line x1="96" y1="112" x2="96" y2="128" class="s-ink"/><path d="M84 128 L148 128 L148 160 L84 160 Z" class="s-ink f-face"/><text x="116" y="149" class="m" text-anchor="middle">B</text><path d="M166 150 L186 150 L186 168 L166 168 Z" class="s-ink f-acc"/><text x="194" y="164" class="m" text-anchor="start">A</text><line x1="208" y1="150" x2="208" y2="176" class="s-good"/><path d="M208.0 182.0 L205.3 176.0 L210.7 176.0 Z" class="f-good"/><text x="214" y="182" class="lbl t-good" text-anchor="start">2 m/s</text>
+</svg></template>
+<template id="ws-fig-cars"><svg class="ws-svg" viewBox="0 0 260 142" role="img" aria-label="Two cars in the same lane on a straight road, both moving to the right at 30 meters per second; car B is 50 meters behind car A.">
+<line x1="8" y1="70" x2="252" y2="70" class="s-ink"/><line x1="8" y1="104" x2="252" y2="104" class="s-ink"/><line x1="8" y1="87" x2="252" y2="87" class="s-faint dash"/><path d="M42 98 L78 98 L78 89 L68 88 L63 81 L49 81 L42 89 Z" class="s-ink f-warn"/><text x="57" y="94" class="m" text-anchor="middle">B</text><path d="M178 98 L214 98 L214 89 L204 88 L199 81 L185 81 L178 89 Z" class="s-ink f-acc"/><text x="193" y="94" class="m" text-anchor="middle">A</text><line x1="50" y1="62" x2="80" y2="62" class="s-good"/><path d="M86.0 62.0 L80.0 64.7 L80.0 59.3 Z" class="f-good"/><text x="66" y="54" class="lbl t-good" text-anchor="middle">30 m/s</text><line x1="186" y1="62" x2="216" y2="62" class="s-good"/><path d="M222.0 62.0 L216.0 64.7 L216.0 59.3 Z" class="f-good"/><text x="202" y="54" class="lbl t-good" text-anchor="middle">30 m/s</text><line x1="60" y1="118" x2="196" y2="118" class="s-thin"/><path d="M60.0 118.0 L65.0 115.8 L65.0 120.2 Z" class="f-ink"/><path d="M196.0 118.0 L191.0 120.2 L191.0 115.8 Z" class="f-ink"/><text x="128" y="134" class="lbl" text-anchor="middle">50 m</text>
+</svg></template>
+<template id="ws-tile"><svg class="ws-svg tile" viewBox="0 0 160 104" role="img" aria-label="Blank x, y, z axes for a sketch.">
+<text x="6" y="14" class="cap" text-anchor="start">(a)</text><line x1="70" y1="64" x2="70" y2="10" class="s-axis"/><path d="M70 6 L73 13 L67 13Z" class="f-axis"/><line x1="70" y1="64" x2="150" y2="64" class="s-axis"/><path d="M154 64 L147 67 L147 61Z" class="f-axis"/><line x1="70" y1="64" x2="24" y2="94" class="s-axis"/><path d="M20 96.6 L24.2 90.3 L27.5 95.3Z" class="f-axis"/><text x="77" y="14" class="m" text-anchor="start">z</text><text x="152" y="57" class="m" text-anchor="end">y</text><text x="16" y="96" class="m" text-anchor="end">x</text><line x1="70" y1="64" x2="70" y2="100" class="s-faint dash"/><line x1="70" y1="64" x2="20" y2="64" class="s-faint dash"/><line x1="70" y1="64" x2="100" y2="44" class="s-faint dash"/>
+</svg></template>
+
+<script>
+/* ==========================================================================================
+   window.CYL_WORKSHEET: the single source of truth for the worksheet. Schema:
+     problems[i] = {
+       n, id ('ws-pN'), title, level (1 Basic | 2 Intermediate | 3 Challenge), levelName,
+       lessons: ['l04', …],                 registry ids of the lessons to review
+       statementHTML,                       intro text; HTML with \( \) TeX
+       parts: [{label:'a', html, answerHTML, values}],
+       answerHTML,                          all final answers as one HTML list (built from parts)
+       answerValues: {a: …, b: …},          numbers (or objects of named numbers); omitted for written answers
+       units, figure: {tpl, label, caption, wide} | null, sketch: n tiles | 0, space (print mm)
+     }
+   Final answers only.
+   ========================================================================================== */
+(function () {
+  'use strict';
+  var G = 9.81, D = Math.PI / 180;
+  var LEVELS = { 1: 'Basic', 2: 'Intermediate', 3: 'Challenge' };
+
+  function prob(o) {
+    o.id = 'ws-p' + o.n;
+    o.levelName = LEVELS[o.level];
+    o.answerValues = {};
+    o.parts.forEach(function (p) { if (p.values !== undefined) o.answerValues[p.label] = p.values; });
+    o.answerHTML = '<ol class="ws-parts">' + o.parts.map(function (p) { return '<li>' + p.answerHTML + '</li>'; }).join('') + '</ol>';
+    return o;
+  }
+  function part(label, html, answerHTML, values) { return { label: label, html: html, answerHTML: answerHTML, values: values }; }
+
+  var problems = [
+    /* ------------------------------ Part A ------------------------------ */
+    prob({ n: 1, title: 'Derivatives', level: 1, lessons: ['l01'], units: '—',
+      statementHTML: String.raw`<p>Differentiate each function with respect to \(t\). Angles are in radians.</p>`,
+      parts: [
+        part('a', String.raw`\(s = 4t^3 - 6t + 2\)`, String.raw`\(12t^2 - 6\)`),
+        part('b', String.raw`\(f = t^2\sin 3t\)`, String.raw`\(2t\sin 3t + 3t^2\cos 3t\)`),
+        part('c', String.raw`\(g = \dfrac{e^{-2t}}{1 + t}\)`, String.raw`\(-\dfrac{e^{-2t}(3 + 2t)}{(1 + t)^2}\)`),
+        part('d', String.raw`\(h = \ln(4t^2 + 1)\)`, String.raw`\(\dfrac{8t}{4t^2 + 1}\)`)
+      ],
+      figure: null, sketch: 0, space: 38 }),
+
+    prob({ n: 2, title: 'Integrals', level: 1, lessons: ['l02'], units: '—',
+      statementHTML: String.raw`<p>Evaluate each integral. Angles are in radians.</p>`,
+      parts: [
+        part('a', String.raw`\(\displaystyle\int (3t^2 - 4t + 5)\,dt\)`, String.raw`\(t^3 - 2t^2 + 5t + C\)`),
+        part('b', String.raw`\(\displaystyle\int_0^{\pi/4} 4\cos 2t\,dt\)`, String.raw`\(2\sin\tfrac{\pi}{2} = 2\)`, 2),
+        part('c', String.raw`\(\displaystyle\int_1^{e} \frac{2}{t}\,dt\)`, String.raw`\(2\ln e = 2\)`, 2),
+        part('d', String.raw`\(\displaystyle\int_0^2 6e^{-3t}\,dt\)`, String.raw`\(2(1 - e^{-6}) = 1.995\)`, 2 * (1 - Math.exp(-6)))
+      ],
+      figure: null, sketch: 0, space: 38 }),
+
+    prob({ n: 3, title: 'Initial conditions and separating the variables', level: 2, lessons: ['l02'], units: 'm, s',
+      statementHTML: String.raw`<p>A particle moves with \(v = 6t - 3t^2\ \text{m/s}\), and is at \(s = 4\ \text{m}\) when \(t = 0\).</p>`,
+      parts: [
+        part('a', String.raw`Find \(s(t)\).`, String.raw`\(s = 3t^2 - t^3 + 4\ \text{m}\)`),
+        part('b', String.raw`Find the position at \(t = 3\ \text{s}\), and the distance traveled from \(t = 0\) to \(3\ \text{s}\).`, String.raw`\(s(3) = 4\ \text{m}\); it turns at \(t = 2\ \text{s}\) (\(s = 8\ \text{m}\)), so \(s_T = 4 + 4 = 8\ \text{m}\)`, { s: 4, sT: 8 }),
+        part('c', String.raw`A second particle slows with \(dv/dt = -2v\) from \(v_0 = 8\ \text{m/s}\). Separate the variables to find \(v(t)\), and the time to slow to \(1\ \text{m/s}\).`, String.raw`\(v = 8e^{-2t}\ \text{m/s}\); \(t = \tfrac12\ln 8 = 1.040\ \text{s}\)`, Math.log(8) / 2)
+      ],
+      figure: null, sketch: 0, space: 50 }),
+
+    /* ------------------------------ Part B ------------------------------ */
+    prob({ n: 4, title: 'A particle that reverses', level: 1, lessons: ['l03'], units: 'm, m/s, m/s²',
+      statementHTML: String.raw`<p>A particle moves along a straight line with \(s = 2t^3 - 15t^2 + 24t\), with \(s\) in meters and \(t\) in seconds.</p>`,
+      parts: [
+        part('a', String.raw`Find its velocity and acceleration at \(t = 2\ \text{s}\). Is it speeding up or slowing down?`, String.raw`\(v = -12\ \text{m/s}\), \(a = -6\ \text{m/s}^2\): same signs, so speeding up`, { v: -12, a: -6 }),
+        part('b', String.raw`At what times does it stop?`, String.raw`\(t = 1\ \text{s}\) and \(t = 4\ \text{s}\)`, { t1: 1, t2: 4 }),
+        part('c', String.raw`Find the distance traveled from \(t = 0\) to \(5\ \text{s}\).`, String.raw`\(s_T = 11 + 27 + 11 = 49\ \text{m}\)`, 49),
+        part('d', String.raw`Find the average velocity and the average speed over the same interval.`, String.raw`\(v_{\text{avg}} = -1.00\ \text{m/s}\), \((v_{sp})_{\text{avg}} = 9.80\ \text{m/s}\)`, { vavg: -1, sp: 9.8 })
+      ],
+      figure: null, sketch: 0, space: 50 }),
+
+    prob({ n: 5, title: 'Stopping in time', level: 2, lessons: ['l04'], units: 'm, s, m/s',
+      statementHTML: String.raw`<p>A driver traveling at \(108\ \text{km/h}\) sees a stalled car \(100\ \text{m}\) ahead. The brakes decelerate the car at \(7\ \text{m/s}^2\).</p>`,
+      parts: [
+        part('a', String.raw`With a reaction time of \(0.7\ \text{s}\), does the car stop in time? By how much?`, String.raw`Stopping distance \(21 + 64.29 = 85.29\ \text{m}\): it stops \(14.71\ \text{m}\) short`, 85.29),
+        part('b', String.raw`How long does it take to stop?`, String.raw`\(t = 0.7 + 30/7 = 4.986\ \text{s}\)`, 0.7 + 30 / 7),
+        part('c', String.raw`If the reaction time were \(1.5\ \text{s}\), at what speed would the car hit the stalled car?`, String.raw`\(v = \sqrt{30^2 - 2(7)(55)} = 11.40\ \text{m/s}\)`, Math.sqrt(130))
+      ],
+      figure: null, sketch: 0, space: 46 }),
+
+    prob({ n: 6, title: 'A stone from a bridge', level: 2, lessons: ['l04'], units: 's, m/s',
+      statementHTML: String.raw`<p>A stone is thrown straight down at \(4\ \text{m/s}\) from a bridge \(30\ \text{m}\) above the water. Neglect air resistance.</p>`,
+      parts: [
+        part('a', String.raw`How long does it take to reach the water?`, String.raw`\(t = 2.099\ \text{s}\)`, (-4 + Math.sqrt(16 + 2 * G * 30)) / G),
+        part('b', String.raw`How fast is it moving when it hits the water?`, String.raw`\(v = \sqrt{4^2 + 2(9.81)(30)} = 24.59\ \text{m/s}\)`, Math.sqrt(16 + 2 * G * 30)),
+        part('c', String.raw`If it were thrown straight up at \(4\ \text{m/s}\) instead, how long would it take, and how fast would it hit the water?`, String.raw`\(t = 2.914\ \text{s}\); the same \(24.59\ \text{m/s}\)`, { t: (4 + Math.sqrt(16 + 2 * G * 30)) / G, v: Math.sqrt(16 + 2 * G * 30) })
+      ],
+      figure: null, sketch: 0, space: 46 }),
+
+    prob({ n: 7, title: 'A rocket sled', level: 2, lessons: ['l05'], units: 'm/s, m',
+      statementHTML: String.raw`<p>A rocket sled starts from rest. While its motor burns, its acceleration is \(a = 30 - 2t\ \text{m/s}^2\); the motor burns out at \(t = 10\ \text{s}\). After burnout, drag gives \(a = -0.002v^2\) (\(a\) in \(\text{m/s}^2\), \(v\) in m/s).</p>`,
+      parts: [
+        part('a', String.raw`Find the velocity and the distance traveled at burnout.`, String.raw`\(v = 200\ \text{m/s}\), \(s = 1167\ \text{m}\)`, { v: 200, s: 1500 - 1000 / 3 }),
+        part('b', String.raw`How far does the sled coast after burnout while it slows to \(50\ \text{m/s}\)?`, String.raw`\(s = \ln 4/0.002 = 693.1\ \text{m}\)`, Math.log(4) / 0.002)
+      ],
+      figure: null, sketch: 0, space: 50 }),
+
+    prob({ n: 8, title: 'A block on a spring', level: 3, lessons: ['l05'], units: 'm/s, m, s',
+      statementHTML: String.raw`<p>A block on a spring has \(a = -9s\), with \(s\) in meters from the unstretched position and \(a\) in \(\text{m/s}^2\). It passes \(s = 0\) moving at \(6\ \text{m/s}\) in the positive direction.</p>`,
+      parts: [
+        part('a', String.raw`Find its velocity as a function of position.`, String.raw`\(v = \sqrt{36 - 9s^2}\ \text{m/s}\)`),
+        part('b', String.raw`How far does it go before it stops?`, String.raw`\(s_{\max} = 2.000\ \text{m}\)`, 2),
+        part('c', String.raw`How long does it take to get there? (Use \(ds/dt = v(s)\).)`, String.raw`\(t = \int_0^2 \dfrac{ds}{\sqrt{36 - 9s^2}} = \tfrac13\sin^{-1}1 = \pi/6 = 0.5236\ \text{s}\)`, Math.PI / 6)
+      ],
+      figure: null, sketch: 0, space: 50 }),
+
+    /* ------------------------------ Part C ------------------------------ */
+    prob({ n: 9, title: 'A train between stations', level: 2, lessons: ['l06'], units: 'm/s², m, m/s',
+      statementHTML: String.raw`<p>Figure W.1 is the velocity–time graph of a train between two stations.</p>`,
+      parts: [
+        part('a', String.raw`Find its acceleration in each of the three stages.`, String.raw`\(0.5\), \(0\) and \(-0.4\ \text{m/s}^2\)`, { a1: 0.5, a2: 0, a3: -0.4 }),
+        part('b', String.raw`How far apart are the stations?`, String.raw`\(400 + 1200 + 500 = 2100\ \text{m}\)`, 2100),
+        part('c', String.raw`Where is the train at \(t = 120\ \text{s}\)?`, String.raw`\(s = 1600 + 20(20) - \tfrac12(0.4)(20)^2 = 1920\ \text{m}\)`, 1920),
+        part('d', String.raw`Find its average speed.`, String.raw`\(2100/150 = 14.0\ \text{m/s}\)`, 14)
+      ],
+      figure: { tpl: 'ws-fig-vt', label: 'Figure W.1', caption: 'The train’s velocity against time.' }, sketch: 0, space: 46 }),
+
+    prob({ n: 10, title: 'From an acceleration graph', level: 3, lessons: ['l06'], units: 'm/s, m',
+      statementHTML: String.raw`<p>A cart starts from rest at \(s = 0\). Figure W.2 shows its acceleration.</p>`,
+      parts: [
+        part('a', String.raw`Find its velocity at \(t = 3\), \(8\) and \(12\ \text{s}\).`, String.raw`\(12\), \(12\) and \(0\ \text{m/s}\)`, { v3: 12, v8: 12, v12: 0 }),
+        part('b', String.raw`Find its position at \(t = 12\ \text{s}\).`, String.raw`\(18 + 60 + 24 = 102\ \text{m}\)`, 102),
+        part('c', String.raw`Sketch the \(v\)–\(t\) and \(s\)–\(t\) graphs from 0 to \(12\ \text{s}\).`, String.raw`\(v\)–\(t\): straight rise to 12, level, straight fall to 0. \(s\)–\(t\): parabola to \(18\ \text{m}\), straight line to \(78\ \text{m}\), parabola leveling off at \(102\ \text{m}\)`)
+      ],
+      figure: { tpl: 'ws-fig-at', label: 'Figure W.2', caption: 'The cart’s acceleration against time.' }, sketch: 0, space: 56 }),
+
+    prob({ n: 11, title: 'A block and tackle, and a truck', level: 2, lessons: ['l07'], units: 'm/s, s, m/s²',
+      statementHTML: String.raw`<p>In Figure W.3, the free end \(A\) of the rope is pulled down at \(2\ \text{m/s}\).</p>`,
+      parts: [
+        part('a', String.raw`Write the length of the rope in terms of \(s_A\) and \(s_B\), measured down from the datum, and find the velocity of the load \(B\).`, String.raw`\(3s_B + s_A = l_T\): \(v_B = -0.6667\ \text{m/s}\) (up)`, -2 / 3),
+        part('b', String.raw`How long does it take to raise the load \(1.5\ \text{m}\)?`, String.raw`\(t = 1.5/0.6667 = 2.250\ \text{s}\)`, 2.25),
+        part('c', String.raw`The load is now lifted instead by a cord running over a pulley \(12\ \text{m}\) above a truck’s hitch, and the truck drives away at a constant \(3\ \text{m/s}\). When the truck is \(9\ \text{m}\) from the point below the pulley, find the load’s velocity and acceleration.`, String.raw`\(v_B = 9(3)/15 = 1.800\ \text{m/s}\), \(a_B = 3^2(12)^2/15^3 = 0.3840\ \text{m/s}^2\)`, { v: 1.8, a: 0.384 })
+      ],
+      figure: { tpl: 'ws-fig-tackle', label: 'Figure W.3', caption: 'Three parts of the rope hold the load \\(B\\).' }, sketch: 0, space: 50 }),
+
+    prob({ n: 12, title: 'Two cars braking', level: 3, lessons: ['l04', 'l08'], units: 'm/s², m, s',
+      statementHTML: String.raw`<p>Cars \(A\) and \(B\) travel at \(30\ \text{m/s}\) in the same lane, \(B\) \(50\ \text{m}\) behind \(A\) (Figure W.4). Car \(A\) brakes at \(4\ \text{m/s}^2\). The driver of \(B\) reacts \(1\ \text{s}\) later and brakes at \(6\ \text{m/s}^2\).</p>`,
+      parts: [
+        part('a', String.raw`Find \(a_{B/A}\) before and after \(B\) starts to brake.`, String.raw`\(+4\ \text{m/s}^2\), then \(-2\ \text{m/s}^2\) (while both are moving)`, { a1: 4, a2: -2 }),
+        part('b', String.raw`Find the smallest gap between the cars, and when it occurs.`, String.raw`\(44.0\ \text{m}\), at \(t = 3\ \text{s}\), when \(v_{B/A} = 0\)`, { gap: 44, t: 3 }),
+        part('c', String.raw`How far apart are the cars when both have stopped?`, String.raw`\(A\) stops \(112.5\ \text{m}\) from its start, \(B\) \(105\ \text{m}\) from its own: the gap is \(57.5\ \text{m}\)`, 57.5)
+      ],
+      figure: { tpl: 'ws-fig-cars', label: 'Figure W.4', caption: 'The two cars when \\(A\\) starts to brake.' }, sketch: 0, space: 56 })
+  ];
+  window.CYL_WORKSHEET = {
+    title: 'Printable Worksheet',
+    conventions: 'g = 9.81 m/s^2; particles; no air resistance; angles in radians; a positive direction chosen and kept; 4 significant figures; SI units.',
+    problems: problems
+  };
+
+  /* ---------- Render the problems into the three parts (runs before the shell boots and renders math) ---------- */
+  var LESSONS = {
+    l01: ['01-derivatives.html', 'Lesson 1'], l02: ['02-integrals.html', 'Lesson 2'],
+    l03: ['03-position-velocity-acceleration.html', 'Lesson 3'], l04: ['04-constant-acceleration.html', 'Lesson 4'],
+    l05: ['05-variable-acceleration.html', 'Lesson 5'], l06: ['06-erratic-motion.html', 'Lesson 6'],
+    l07: ['07-dependent-motion.html', 'Lesson 7'], l08: ['08-relative-motion.html', 'Lesson 8']
+  };
+  var LETTERS = 'abcdefghij';
+
+  function tileSVG(label) {
+    var tpl = document.getElementById('ws-tile');
+    var svg = tpl.content.firstElementChild.cloneNode(true);
+    svg.querySelector('.cap').textContent = label;
+    return svg;
+  }
+
+  function render(p) {
+    var el = document.createElement('article');
+    el.className = 'example ws-problem';
+    el.id = p.id;
+    el.setAttribute('aria-labelledby', p.id + '-title');
+    var fig = p.figure;
+    var html =
+      '<div class="ws-head"><h3 class="ws-title" id="' + p.id + '-title"><span class="ws-num">Problem ' + p.n + '</span> · ' + p.title + '</h3>' +
+      '<span class="tag ws-lv' + p.level + '">' + p.levelName + '</span></div>' +
+      '<div class="ws-body' + (fig ? ' has-fig' + (fig.wide ? ' fig-wide' : '') : '') + '">' +
+        '<div class="ws-text">' + p.statementHTML +
+          '<ol class="ws-parts' + (p.cols ? ' ws-cols-' + p.cols : '') + '">' + p.parts.map(function (q) { return '<li>' + q.html + '</li>'; }).join('') + '</ol>' +
+        '</div>' +
+        (fig ? '<figure class="figure ws-fig' + (fig.wide ? ' wide-fig' : '') + '" aria-labelledby="' + p.id + '-cap"><figcaption id="' + p.id + '-cap"><strong>' + fig.label + '</strong> <span class="ws-cap-text">' + fig.caption + '</span></figcaption></figure>' : '') +
+      '</div>' +
+      '<div class="callout tip ws-answer" id="' + p.id + '-ans" hidden><p class="callout-title">Answer' + (p.parts.length > 1 ? 's' : '') + '</p>' + p.answerHTML + '</div>' +
+      '<div class="ws-actions"><button type="button" class="btn small ws-toggle" aria-expanded="false" aria-controls="' + p.id + '-ans">Show answer</button>' +
+        '<span class="ws-review">Review: ' + p.lessons.map(function (id) {
+          return '<a href="../lessons/' + LESSONS[id][0] + '">' + LESSONS[id][1] + '</a>';
+        }).join(', ') + '</span></div>' +
+      '<div class="ws-work print-only" aria-hidden="true"></div>';
+    el.innerHTML = html;
+    if (fig) {
+      var figEl = el.querySelector('.ws-fig');
+      figEl.insertBefore(document.getElementById(fig.tpl).content.firstElementChild.cloneNode(true), figEl.firstChild);
+    }
+    var work = el.querySelector('.ws-work');
+    if (p.sketch) {
+      var tiles = document.createElement('div');
+      tiles.className = 'ws-tiles';
+      for (var i = 0; i < p.sketch; i++) tiles.appendChild(tileSVG('(' + LETTERS[i] + ')'));
+      work.appendChild(tiles);
+      work.style.setProperty('--h', (Math.ceil(p.sketch / 3) * 36 + 2 + (p.space || 0)) + 'mm');
+    } else {
+      work.style.setProperty('--h', p.space + 'mm');
+    }
+    return el;
+  }
+
+  // data-pairs lists the first problem of each pair that prints side by side (two short problems share a row on paper)
+  Array.prototype.forEach.call(document.querySelectorAll('.ws-list'), function (list) {
+    var from = +list.getAttribute('data-from'), to = +list.getAttribute('data-to');
+    var pairs = (list.getAttribute('data-pairs') || '').split(/\s+/).filter(Boolean).map(Number);
+    var pairEl = null;
+    problems.forEach(function (p) {
+      if (p.n < from || p.n > to) return;
+      if (pairs.indexOf(p.n) >= 0) { pairEl = document.createElement('div'); pairEl.className = 'ws-pair'; list.appendChild(pairEl); pairEl.appendChild(render(p)); return; }
+      if (pairEl) { pairEl.appendChild(render(p)); pairEl = null; return; }
+      list.appendChild(render(p));
+    });
+  });
+})();
+
+/* ---------- Toolbar and answer toggles ---------- */
+CYL.ready(function () {
+  'use strict';
+  var bar = document.getElementById('ws-toolbar');
+  var toggles = Array.prototype.slice.call(document.querySelectorAll('.ws-toggle'));
+  var status = CYL.el('p', { class: 'ws-status', 'aria-live': 'polite' });
+
+  function panelOf(btn) { return document.getElementById(btn.getAttribute('aria-controls')); }
+  function setOne(btn, open) {
+    panelOf(btn).hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Hide answer' : 'Show answer';
+  }
+  function sync() {
+    var n = toggles.filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; }).length;
+    var all = n === toggles.length;
+    showAll.set(all, true);
+    document.body.classList.toggle('ws-all-answers', all);
+    status.textContent = all
+      ? 'All answers are showing. Printing now gives a short answer sheet without work space.'
+      : n ? n + ' of ' + toggles.length + ' answers showing. Printing gives the worksheet without them; show all answers to print the answer sheet.'
+        : 'Printing gives the worksheet with work space. Show all answers first to print a short answer sheet.';
+  }
+
+  var printBtn = CYL.button('Print / Save as PDF', function () { window.print(); }, { primary: true });
+  var showAll = CYL.toggle({
+    label: 'Show all answers', value: false,
+    onChange: function (on) { toggles.forEach(function (b) { setOne(b, on); }); sync(); }
+  });
+  bar.appendChild(CYL.el('div', { class: 'btn-row' }, [printBtn, showAll.el]));
+  bar.appendChild(status);
+
+  toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setOne(b, b.getAttribute('aria-expanded') !== 'true');
+      sync();
+    });
+  });
+  sync();
+});
+</script>
+</body>
+</html>

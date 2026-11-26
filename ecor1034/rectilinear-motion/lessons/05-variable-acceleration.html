@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceleration as a Function of Time, Velocity or Position · Rectilinear Motion</title>
+<meta name="description" content="Motion with an acceleration that varies: a given as a function of time, of velocity (drag, terminal velocity) or of position (springs), solved by separating variables and integrating with limits.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/rect.js"></script>
+</head>
+<body data-page="l05" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 5 · 40 min</p>
+    <h1>Acceleration as a Function of Time, Velocity or Position</h1>
+    <p class="lede">The forces on a body usually change as it moves: a rocket's thrust changes as its fuel burns, air drag grows with speed, and a spring pushes harder the farther it is stretched. The acceleration then depends on time, on velocity or on position, and the constant-acceleration equations no longer apply. This lesson shows how to handle each case by choosing the right kinematic relation, separating the variables and integrating with limits.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Find the velocity and position when the acceleration is a given function of time.</li>
+      <li>Handle an acceleration that depends on velocity, such as drag, and find a terminal velocity.</li>
+      <li>Handle an acceleration that depends on position, such as a spring or gravity that weakens with height.</li>
+      <li>Choose among \(a = dv/dt\), \(v = ds/dt\) and \(a\,ds = v\,dv\) so that the variables can be separated.</li>
+    </ul>
+  </section>
+
+  <section id="plan">
+    <h2>One question decides the method</h2>
+    <p>Ask what the acceleration depends on. Then pick the kinematic relation that pairs \(a\) with that variable, so that each side of the equation holds only one variable and can be integrated:</p>
+    <div class="table-wrap">
+      <table class="data">
+        <caption>Choosing the relation to integrate</caption>
+        <thead><tr><th scope="col">Given</th><th scope="col">For the velocity, integrate</th><th scope="col">Then</th></tr></thead>
+        <tbody>
+          <tr><td>\(a = f(t)\)</td><td>\(\displaystyle\int_{v_0}^{v} dv = \int_0^t f(t)\,dt\)</td><td>\(\displaystyle s = s_0 + \int_0^t v\,dt\)</td></tr>
+          <tr><td>\(a = f(v)\)</td><td>\(\displaystyle\int_{v_0}^{v} \frac{dv}{f(v)} = t\) for \(v(t)\), or \(\displaystyle\int_{v_0}^{v} \frac{v\,dv}{f(v)} = s - s_0\) for \(v(s)\)</td><td>the other one, as needed</td></tr>
+          <tr><td>\(a = f(s)\)</td><td>\(\displaystyle\int_{v_0}^{v} v\,dv = \int_{s_0}^{s} f(s)\,ds\)</td><td>\(\displaystyle t = \int_{s_0}^{s} \frac{ds}{v(s)}\) if the time is needed</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>In every case the lower limits are the known starting state and the upper limits are the general state, so the constants of integration are handled automatically.</p>
+
+    <figure class="figure wide" aria-labelledby="fig51-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig51-stage"></div>
+        <div class="viz-controls" id="fig51-controls"></div>
+      </div>
+      <figcaption id="fig51-cap"><strong>Figure 5.1</strong> Four motions whose acceleration varies, integrated step by step. Choose \(a(t)\), the particle of Example 5.1; drag that grows with \(v^2\), the boat of Example 5.2; a fall with drag that reaches a terminal velocity; or a spring force that grows with \(s\), Example 5.4. Compare the shapes of the acceleration graphs: a straight line in time, a curve that fades as the body slows, and a wave.</figcaption>
+    </figure>
+  </section>
+
+  <section id="time">
+    <h2>Acceleration as a function of time</h2>
+    <p>This is the most direct case: integrate the acceleration to get the velocity, then the velocity to get the position.</p>
+    <div class="example">
+      <p class="example-title">Example 5.1 — Integrating twice</p>
+      <p>A particle starts at \(s = 0\) with \(v = 9\ \text{m/s}\), and its acceleration is \(a = 6t - 12\ \text{m/s}^2\). Find \(v(t)\) and \(s(t)\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \int_{9}^{v} dv = \int_0^t (6t - 12)\,dt \quad\Rightarrow\quad v = 9 - 12t + 3t^2\ \text{m/s} \]
+          \[ \int_{0}^{s} ds = \int_0^t (9 - 12t + 3t^2)\,dt \quad\Rightarrow\quad s = 9t - 6t^2 + t^3\ \text{m} \]
+          <p>This is the particle of Lesson 3, reached from the other end: there you differentiated \(s\) twice to get \(a\); here you integrated \(a\) twice to get \(s\). The two starting values \(s_0\) and \(v_0\) are exactly what the two integrations need.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="velocity">
+    <h2>Acceleration as a function of velocity</h2>
+    <p>Drag forces depend on speed. A boat coasting with its engine off, a car with no power, and a falling object all have an acceleration that depends on \(v\). Separate the variables in \(a = dv/dt\) for the time, or in \(a\,ds = v\,dv\) for the distance.</p>
+    <div class="example">
+      <p class="example-title">Example 5.2 — A boat coasting against drag</p>
+      <p>A boat shuts off its engine at \(20\ \text{m/s}\). The water drag gives it an acceleration \(a = -0.01v^2\), with \(a\) in \(\text{m/s}^2\) and \(v\) in m/s. How long does it take to slow to \(5\ \text{m/s}\), and how far does it travel meanwhile?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p><strong>Time:</strong> separate \(dv/dt = -0.01v^2\):</p>
+          \[ \int_{20}^{v} \frac{dv}{v^2} = -0.01\int_0^t dt \quad\Rightarrow\quad \frac{1}{v} - \frac{1}{20} = 0.01t \quad\Rightarrow\quad v = \frac{20}{1 + 0.2t} \]
+          <p>For \(v = 5\): \(1 + 0.2t = 4\), so \(t = 15.0\ \text{s}\).</p>
+          <p><strong>Distance:</strong> separate \(v\,dv = -0.01v^2\,ds\), which simplifies to \(dv/v = -0.01\,ds\):</p>
+          \[ \int_{20}^{5} \frac{dv}{v} = -0.01\int_0^s ds \quad\Rightarrow\quad s = 100\ln\frac{20}{5} = 139\ \text{m} \]
+          <p>In this model the boat never quite stops: \(v\) approaches zero as \(t\) grows without bound, while \(s = 100\ln(1 + 0.2t)\) keeps growing slowly.</p>
+        </div>
+      </details>
+    </div>
+    <p>When an object falls through air or a liquid, gravity pulls it down and the drag pushes back, harder and harder as it speeds up. The acceleration fades toward zero, and the velocity levels off at the <dfn>terminal velocity</dfn>, where the drag balances the weight and \(a = 0\).</p>
+    <div class="example">
+      <p class="example-title">Example 5.3 — Terminal velocity</p>
+      <p>A small steel ball is released from rest in a tank of oil. With down positive, its acceleration is \(a = 9.81 - 3v\), with \(a\) in \(\text{m/s}^2\) and \(v\) in m/s. Find its terminal velocity, \(v(t)\), and the time to reach \(99\%\) of the terminal velocity.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Terminal velocity: \(a = 0\), so \(v_t = 9.81/3 = 3.27\ \text{m/s}\). For \(v(t)\), separate the variables and use the table of Lesson 2, \(\int dv/(a + bv) = (1/b)\ln(a + bv)\):</p>
+          \[ \int_0^v \frac{dv}{9.81 - 3v} = \int_0^t dt \quad\Rightarrow\quad -\frac13\ln\frac{9.81 - 3v}{9.81} = t \]\[ v = 3.27\left(1 - e^{-3t}\right)\ \text{m/s} \]
+          <p>For \(v = 0.99v_t\): \(e^{-3t} = 0.01\), so \(t = \ln(100)/3 = 1.54\ \text{s}\).</p>
+        </div>
+      </details>
+    </div>
+    <div class="check" id="check-1"></div>
+  </section>
+
+  <section id="position">
+    <h2>Acceleration as a function of position</h2>
+    <p>Springs and gravity give accelerations that depend on where the body is. Use \(a\,ds = v\,dv\): it pairs \(a(s)\) with \(ds\) and leaves \(v\) on the other side.</p>
+    <div class="example">
+      <p class="example-title">Example 5.4 — A spring</p>
+      <p>A block attached to a spring slides on a smooth surface with \(a = -4s\), where \(s\) is in meters from the unstretched position and \(a\) in \(\text{m/s}^2\). It passes \(s = 0\) at \(6\ \text{m/s}\). Find its speed at \(s = 2\ \text{m}\), and how far it goes before it stops.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \int_6^v v\,dv = \int_0^s -4s\,ds \quad\Rightarrow\quad \tfrac12 v^2 - 18 = -2s^2 \quad\Rightarrow\quad v^2 = 36 - 4s^2 \]
+          <p>At \(s = 2\ \text{m}\): \(v = \sqrt{36 - 16} = 4.47\ \text{m/s}\). The block stops where \(v = 0\): \(s_{\max} = 3.00\ \text{m}\). The spring then pulls it back, and the block vibrates between \(-3\) and \(3\ \text{m}\): its position is \(s = 3\sin 2t\), the vibration of Example 1.4 of Lesson 1.</p>
+        </div>
+      </details>
+    </div>
+    <p>Gravity also depends on position: it weakens with the square of the distance from the Earth's center. A rocket that coasts upward after its engine stops has \(a = -g R^2/(R + y)^2\), where \(R\) is the Earth's radius and \(y\) the height above the surface.</p>
+    <div class="example">
+      <p class="example-title">Example 5.5 — Escape velocity</p>
+      <p>With what speed must a projectile leave the Earth's surface so that it never falls back? Neglect air resistance, and take \(R = 6371\ \text{km}\) <a class="cite" href="../reference/references.html#r3">[3]</a> and \(g = 9.81\ \text{m/s}^2\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \int_{v_0}^{v} v\,dv = -gR^2\int_0^y \frac{dy}{(R + y)^2} \quad\Rightarrow\quad v^2 = v_0^2 - 2gR^2\left(\frac{1}{R} - \frac{1}{R + y}\right) \]
+          <p>The projectile escapes if \(v^2\) stays positive as \(y \to \infty\), where the bracket tends to \(1/R\). The smallest such launch speed makes \(v \to 0\) there:</p>
+          \[ v_{\text{esc}} = \sqrt{2gR} = \sqrt{2(9.81)(6.371\times 10^6)} = 11.2\times 10^3\ \text{m/s} = 11.2\ \text{km/s} \]
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(a(t)\): integrate \(dv = a\,dt\), then \(ds = v\,dt\).</li>
+      <li>\(a(v)\): separate \(dt = dv/a(v)\) for time, or \(ds = v\,dv/a(v)\) for distance. Drag leads to a terminal velocity where \(a = 0\).</li>
+      <li>\(a(s)\): integrate \(v\,dv = a\,ds\) for \(v(s)\); a spring gives a vibration.</li>
+      <li>Put the starting state in the lower limits and the general state in the upper limits.</li>
+      <li>Next, <a href="06-erratic-motion.html">Lesson 6</a> handles motions given by graphs instead of formulas.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figure 5.1: four motions with a varying acceleration ---------- */
+CYL.ready(function () {
+  'use strict';
+  var G = 9.81, vt = 50, c = G / (vt * vt);
+  var SCENES = {
+    at: { label: 'a = 6t − 12 (a function of time)', desc: '\\(a = 6t - 12\\ \\text{m/s}^2\\), \\(v_0 = 9\\ \\text{m/s}\\), \\(s_0 = 0\\): the particle of Example 5.1.',
+      spec: { kind: 'a', a: function (t) { return 6 * t - 12; }, s0: 0, v0: 9, T: 5 } },
+    drag: { label: 'a = −0.01v² (drag, a function of velocity)', desc: '\\(a = -0.01v^2\\), \\(v_0 = 20\\ \\text{m/s}\\): the coasting boat of Example 5.2. It slows quickly at first, then ever more gently.',
+      spec: { kind: 'a', a: function (t, s, v) { return -0.01 * v * Math.abs(v); }, s0: 0, v0: 20, T: 30 } },
+    fall: { label: 'a = −g + cv² (a fall with drag)', desc: 'A body dropped from rest, up positive, with drag \\(c v^2\\) and \\(c = g/v_t^2\\) for a terminal velocity \\(v_t = 50\\ \\text{m/s}\\), typical of a skydiver. The acceleration fades from \\(-g\\) to zero.',
+      spec: { kind: 'a', a: function (t, s, v) { return -G + c * v * v; }, s0: 0, v0: 0, T: 25 }, vertical: true },
+    spring: { label: 'a = −4s (a spring, a function of position)', desc: '\\(a = -4s\\), \\(v_0 = 6\\ \\text{m/s}\\) at \\(s = 0\\): the block of Example 5.4. The acceleration always points back toward \\(s = 0\\).',
+      spec: { kind: 'a', a: function (t, s) { return -4 * s; }, s0: 0, v0: 6, T: 2 * Math.PI } }
+  };
+  var stage = document.getElementById('fig51-stage'), panel = document.getElementById('fig51-controls');
+  var fig = null, cur = 'at', top = CYL.el('div'), descEl;
+  function mount(key) {
+    cur = key;
+    var sc = SCENES[key];
+    if (fig) fig.destroy();
+    while (panel.firstChild && panel.lastChild !== top) panel.removeChild(panel.lastChild);
+    stage.innerHTML = '';
+    descEl.innerHTML = sc.desc; CYL.renderMath(descEl);
+    fig = RECT.figure({ stage: stage, controls: panel, spec: sc.spec,
+      aria: 'A particle on a straight line whose acceleration varies: ' + sc.label + '. Below, its position, velocity and acceleration graphs with a cursor at the current time.',
+      track: sc.vertical ? { axis: 'y' } : {}, names: sc.vertical ? { s: 'y' } : {}, body: sc.vertical ? 'ball' : 'block', toggles: ['v', 'a', 'strobe'],
+      markTurns: key !== 'spring', speed: key === 'drag' || key === 'fall' ? 3 : 1, readouts: ['t', 's', 'v', 'a'] });
+  }
+  panel.appendChild(top);
+  top.appendChild(CYL.el('p', { class: 'viz-title', text: 'Acceleration' }));
+  var sel = CYL.select({ label: 'Choose the motion', value: cur, options: Object.keys(SCENES).map(function (k) { return { value: k, label: SCENES[k].label }; }), onChange: mount });
+  top.appendChild(sel.el);
+  descEl = CYL.el('div', { class: 'mf-desc' }); top.appendChild(descEl);
+  top.style.display = 'grid'; top.style.gap = '12px';
+  mount(cur);
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l05-q1', type: 'mc',
+    prompt: 'The acceleration of a car is given as \\(a = 2 - 0.004v^2\\). You need its velocity as a function of position. Which relation do you integrate?',
+    choices: [
+      { html: '\\(\\displaystyle\\int \\frac{v\\,dv}{2 - 0.004v^2} = \\int ds\\)', correct: true, feedback: 'From \\(a\\,ds = v\\,dv\\): each side then holds only one variable.' },
+      { html: '\\(\\displaystyle\\int \\frac{dv}{2 - 0.004v^2} = \\int dt\\)', feedback: 'This gives \\(v(t)\\), not \\(v(s)\\).' },
+      { html: '\\(v = v_0 + a t\\)', feedback: 'That needs a constant acceleration; this one changes with \\(v\\).' },
+      { html: '\\(\\displaystyle\\int dv = \\int (2 - 0.004v^2)\\,dt\\)', feedback: 'The right side still contains \\(v\\), which changes with \\(t\\): the variables are not separated.' }
+    ],
+    explain: 'For \\(v(s)\\), use \\(a\\,ds = v\\,dv\\).'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l05-q2', type: 'numeric',
+    prompt: 'A particle has \\(a = 4t\\ \\text{m/s}^2\\), and starts at \\(s = 0\\) with \\(v = 2\\ \\text{m/s}\\). Find its position at \\(t = 3\\ \\text{s}\\).',
+    label: '\\(s =\\)', answer: 24, unit: 'm',
+    hints: ['Integrate once: \\(v = 2 + 2t^2\\).', 'Integrate again from \\(s_0 = 0\\).'],
+    explain: '\\(v = 2 + 2t^2\\), \\(s = 2t + \\tfrac23 t^3\\).',
+    solution: '\\[ v = 2 + 2t^2 \\qquad s = 2t + \\tfrac23 t^3 \\;\\Rightarrow\\; s(3) = 6 + 18 = 24\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l05-q3', type: 'numeric',
+    prompt: 'A puck slides with \\(a = -0.5v\\) (in \\(\\text{m/s}^2\\), with \\(v\\) in m/s), starting at \\(8\\ \\text{m/s}\\). How far does it slide while its speed drops to \\(2\\ \\text{m/s}\\)?',
+    label: '\\(s =\\)', answer: 12, unit: 'm',
+    hints: ['Use \\(v\\,dv = a\\,ds\\): \\(v\\,dv = -0.5v\\,ds\\), so \\(dv = -0.5\\,ds\\).'],
+    explain: '\\(ds = -dv/0.5\\).',
+    solution: '\\[ \\int_8^2 dv = -0.5\\int_0^s ds \\;\\Rightarrow\\; s = \\frac{8 - 2}{0.5} = 12.0\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l05-q4', type: 'numeric',
+    prompt: 'A block on a spring has \\(a = -9s\\) (with \\(s\\) in m and \\(a\\) in \\(\\text{m/s}^2\\)) and passes \\(s = 0\\) at \\(6\\ \\text{m/s}\\). How far from \\(s = 0\\) does it go before it stops?',
+    label: '\\(s_{\\max} =\\)', answer: 2, unit: 'm',
+    hints: ['Integrate \\(v\\,dv = -9s\\,ds\\) from \\((s, v) = (0, 6)\\).', 'Set \\(v = 0\\).'],
+    explain: '\\(v^2 = 36 - 9s^2\\).',
+    solution: '\\[ \\tfrac12 v^2 - 18 = -\\tfrac92 s^2 \\;\\Rightarrow\\; v^2 = 36 - 9s^2 = 0 \\;\\Rightarrow\\; s_{\\max} = 2.00\\ \\text{m} \\]'
+  });
+});
+</script>
+</body>
+</html>

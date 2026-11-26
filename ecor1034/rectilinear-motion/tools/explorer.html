@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion Lab · Rectilinear Motion</title>
+<meta name="description" content="Pick a scene: type a position or an acceleration formula, set a constant acceleration, draw a velocity graph or an acceleration–position graph, follow two cars, or pull on a block and tackle, and watch the particle with its position, velocity and acceleration graphs.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<style>
+  /* ---- Motion Lab: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-desc { margin: 10px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-events { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; }
+  .ex-events p { margin: 0 0 0.4em; }
+  .ex-bad { color: var(--c-bad); }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+  .ex-head, .ex-figpanel { display: grid; gap: 14px; min-width: 0; }
+  .ex-formula-row { display: flex; gap: 8px; align-items: center; }
+  .ex-formula-row .q-input { flex: 1 1 auto; min-width: 0; font-family: var(--font-mono, ui-monospace, monospace); }
+  .ex-formula-msg { margin: 4px 0 0; min-height: 1.4em; color: var(--ink-muted); font-size: 0.88rem; overflow-x: auto; }
+  .ex-formula-msg.is-bad { color: var(--c-bad); }
+</style>
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/rect.js"></script>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Motion Lab</h1>
+    <p class="lede">Pick a scene, type a formula or change the numbers, and watch a particle move along a line with its position, velocity and acceleration graphs. Give the position as a function of time and see its derivatives, or give the acceleration as a function of time, velocity or position and let the lab integrate it. Draw a velocity graph point by point, follow two cars from each other's point of view, or pull on a block and tackle.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a scene</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label" id="ex-scene-label">Scene</p>
+        <div class="chip-row" id="ex-scene" role="group" aria-labelledby="ex-scene-label"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide" aria-labelledby="ex-cap">
+      <div class="viz" id="ex-viz">
+        <div class="viz-stage" id="ex-stage"></div>
+        <div class="viz-controls" id="ex-controls"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure M.1</strong> The chosen scene. Press <em>Play</em> or drag the time slider, and change the formula or the numbers in the panel; the motion is recomputed at once. Colors are the module's: position blue, velocity green, acceleration red; amber lines on the graphs mark the instants where the velocity is zero.</figcaption>
+    </figure>
+    <div class="ex-events" id="ex-events" aria-live="polite"></div>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>A vibration.</strong> Type \(s = 0.5\sin 2t\): the acceleration graph is the position graph turned upside down and four times as tall, because \(a = -4s\). <button type="button" class="btn small" data-load="stype" data-set='{"s": "0.5sin(2t)", "T": 6.3}'>Load</button></li>
+      <li><strong>Up and down.</strong> A ball thrown up at \(15\ \text{m/s}\) has \(a = -9.81\ \text{m/s}^2\) at every instant, including at the top where \(v = 0\). <button type="button" class="btn small" data-load="const" data-set='{"s0": 0, "v0": 15, "ac": -9.81, "T": 3}'>Load</button></li>
+      <li><strong>Drag.</strong> With \(a = -0.01v^2\) the boat of Lesson 5 never quite stops: the distance keeps growing, ever more slowly. <button type="button" class="btn small" data-load="atype" data-set='{"a": "-0.01v^2", "s0": 0, "v0": 20, "T": 30}'>Load</button></li>
+      <li><strong>A spring with damping.</strong> Add a drag term to the spring: \(a = -4s - 0.5v\). The vibration dies away, and the amber lines mark each turn. <button type="button" class="btn small" data-load="atype" data-set='{"a": "-4s - 0.5v", "s0": 0, "v0": 6, "T": 12}'>Load</button></li>
+      <li><strong>Back and forth.</strong> Drag the velocity graph below zero for a stretch: the particle backs up, the position graph turns down, and the distance traveled keeps growing while the position falls. <button type="button" class="btn small" data-load="graph" data-set='{"pts": [[0, 0], [10, 15], [20, -10], [30, -10], [40, 0]]}'>Load</button></li>
+      <li><strong>Overtaking from rest.</strong> Car \(B\) starts \(60\ \text{m}\) behind \(A\), at rest, with \(a = 3\ \text{m/s}^2\), while \(A\) cruises at \(20\ \text{m/s}\). Watch from \(A\). <button type="button" class="btn small" data-load="relative" data-set='{"A": {"s0": 0, "v0": 20, "ac": 0}, "B": {"s0": -60, "v0": 0, "ac": 3}}'>Load</button></li>
+      <li><strong>Four parts of rope.</strong> The load rises at a quarter of the speed of the free end. <button type="button" class="btn small" data-load="tackle" data-set='{"n": 4, "vA": 1}'>Load</button></li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the lab works</h2>
+    <p>A position formula is differentiated numerically to give \(v\) and \(a\) (<a href="../lessons/03-position-velocity-acceleration.html">Lesson 3</a>). An acceleration formula \(a(t, s, v)\) is integrated in thousands of small time steps with the fourth-order Runge–Kutta method, which handles accelerations that depend on time, velocity or position alike (<a href="../lessons/05-variable-acceleration.html">Lesson 5</a>). Constant acceleration and the velocity graph are solved exactly (<a href="../lessons/04-constant-acceleration.html">Lesson 4</a> and <a href="../lessons/06-erratic-motion.html">Lesson 6</a>). The distance traveled adds up every small step as a positive length.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Typing formulas</p>
+      <p>Use <code>t</code>, <code>s</code> and <code>v</code> as the variables and <code>^</code> for powers: <code>t^3 - 6t^2 + 9t</code>, <code>20 - 2t</code>, <code>-9.81 - 0.02v*abs(v)</code>, <code>5e^(-0.4t)</code>, <code>2sin(3t)</code>, <code>ln(1+t)</code>. Angles inside <code>sin</code> and <code>cos</code> are in radians.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ---------- Motion Lab: scenes are RECT figures and widgets ---------- */
+CYL.ready(function () {
+  'use strict';
+  var stage = document.getElementById('ex-stage'), panel = document.getElementById('ex-controls');
+  var eventsEl = document.getElementById('ex-events'), descEl = document.getElementById('ex-desc');
+
+  /* ----- a formula box: label, input, Apply, and a message ----- */
+  function formula(host, label, value, vars, onApply) {
+    var id = 'ex-f-' + Math.random().toString(36).slice(2, 8);
+    var wrap = CYL.el('div', { class: 'field ex-formula' });
+    wrap.appendChild(CYL.el('label', { for: id, html: label }));
+    var row = CYL.el('div', { class: 'ex-formula-row' });
+    var inp = CYL.el('input', { type: 'text', id: id, class: 'q-input', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+    inp.value = value;
+    var btn = CYL.button('Apply', function () { apply(); }, { small: true });
+    row.appendChild(inp); row.appendChild(btn); wrap.appendChild(row);
+    var msg = CYL.el('p', { class: 'ex-formula-msg', 'aria-live': 'polite' });
+    wrap.appendChild(msg);
+    function apply() {
+      var f;
+      try { f = CYLExpr.compile(inp.value, vars); }
+      catch (e) { msg.textContent = e.message || 'Could not read the formula.'; msg.classList.add('is-bad'); return; }
+      msg.classList.remove('is-bad');
+      var tex = CYLExpr.toTex ? CYLExpr.toTex(inp.value, { vars: vars }) : null;
+      msg.innerHTML = tex ? CYL.tex(tex) : '';
+      onApply(f, inp.value);
+    }
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); apply(); } });
+    host.appendChild(wrap);
+    if (CYL.renderMath) CYL.renderMath(wrap);
+    return { apply: apply, input: inp, msg: msg };
+  }
+  function num(host, label, value, min, max, step, unit, color, onInput) {
+    var s = CYL.slider({ label: label, min: min, max: max, step: step, value: value, unit: unit || '', color: color, onInput: onInput });
+    host.appendChild(s.el); return s;
+  }
+  function title(host, text) { host.appendChild(CYL.el('p', { class: 'viz-title', text: text })); }
+
+  /* ----- scenes ----- */
+  // a figure whose panel sits under the scene's own inputs
+  function figScene(o, top, makeSpec, extra) {
+    var head = CYL.el('div', { class: 'ex-head' }), figPanel = CYL.el('div', { class: 'ex-figpanel' });
+    o.controls.appendChild(head); o.controls.appendChild(figPanel);
+    var fig = null, lastSpec = null;
+    function show(spec) {
+      lastSpec = spec;
+      var run = RECT.run(spec);
+      var bad = !run.samples.s.every(isFinite) || !run.samples.v.every(isFinite) || Math.max(Math.abs(run.ext.s[0]), Math.abs(run.ext.s[1])) > 1e7;
+      if (bad) { eventsEl.innerHTML = '<p class="ex-bad">This motion runs away to very large values or is undefined somewhere in the time chosen. Try a shorter time or another formula.</p>'; return; }
+      if (fig) fig.destroy();
+      figPanel.innerHTML = '';
+      fig = RECT.figure(Object.assign({ stage: o.stage, controls: figPanel, spec: spec, toggles: ['v', 'a', 'strobe'],
+        aria: 'A particle moving along a straight line, with its position, velocity and acceleration graphs and a cursor at the current time.' }, extra || {}));
+      var tt = run.turns.length ? run.turns.map(function (t) { return CYL.fmt(t, 3) + ' s'; }).join(', ') : 'never';
+      eventsEl.innerHTML = '<p><strong>The particle stops (v = 0) at:</strong> ' + tt + '. <strong>Distance traveled:</strong> ' + CYL.fmt(run.ext.d[1], 4) + ' m; <strong>displacement:</strong> ' + CYL.fmt(run.at(run.T).s - run.at(0).s, 4) + ' m.</p>';
+    }
+    top(head, show);
+    return { destroy: function () { if (fig) fig.destroy(); }, fig: function () { return fig; }, spec: function () { return lastSpec; } };
+  }
+
+  var SCENES = [
+    { id: 'stype', label: 'Type s(t)', desc: 'Give the position as a formula in t. The lab differentiates it for the velocity and the acceleration.',
+      look: 'Where the position graph peaks or bottoms out, the velocity graph crosses zero; where the velocity graph peaks, the acceleration crosses zero.',
+      mount: function (o, set) {
+        var st = Object.assign({ s: 't^3 - 6t^2 + 9t', T: 5 }, set || {}), fn = null;
+        return figScene(o, function (head, show) {
+          title(head, 'Position');
+          var f = formula(head, '\\(s(t) =\\) (m, with \\(t\\) in s)', st.s, ['t'], function (g) { fn = g; go(); });
+          num(head, 'Duration \\(T\\)', st.T, 1, 30, 0.5, 's', null, function (v) { st.T = v; go(); });
+          function go() { if (fn) show({ kind: 's', s: function (t) { return fn(t); }, T: st.T }); }
+          f.apply();
+        });
+      } },
+    { id: 'atype', label: 'Type a(t, s, v)', desc: 'Give the acceleration as a formula in t, s and v, with the starting position and velocity. The lab integrates it step by step.',
+      look: 'An acceleration that depends on v fades as the body slows; one that depends on −s pulls the body back and makes it vibrate.',
+      mount: function (o, set) {
+        var st = Object.assign({ a: '6t - 12', s0: 0, v0: 9, T: 5 }, set || {}), fn = null;
+        return figScene(o, function (head, show) {
+          title(head, 'Acceleration');
+          var f = formula(head, '\\(a(t, s, v) =\\) (m/s²)', st.a, ['t', 's', 'v'], function (g) { fn = g; go(); });
+          num(head, 'Start at \\(s_0\\)', st.s0, -20, 20, 0.5, 'm', 'z', function (v) { st.s0 = v; go(); });
+          num(head, 'Start with \\(v_0\\)', st.v0, -30, 30, 0.5, 'm/s', 'good', function (v) { st.v0 = v; go(); });
+          num(head, 'Duration \\(T\\)', st.T, 1, 40, 0.5, 's', null, function (v) { st.T = v; go(); });
+          function go() { if (fn) show({ kind: 'a', a: function (t, s, v) { return fn(t, s, v); }, s0: st.s0, v0: st.v0, T: st.T }); }
+          f.apply();
+        }, { speed: 1 });
+      } },
+    { id: 'const', label: 'Constant acceleration', desc: 'Set the starting position and velocity and a constant acceleration.',
+      look: 'The velocity graph is a straight line and the position graph a parabola. The particle turns back once if v₀ and a_c have opposite signs.',
+      mount: function (o, set) {
+        var st = Object.assign({ s0: 0, v0: 12, ac: -4, T: 6 }, set || {});
+        return figScene(o, function (head, show) {
+          title(head, 'Change the motion');
+          function go() { show({ kind: 'const', s0: st.s0, v0: st.v0, ac: st.ac, T: st.T }); }
+          num(head, 'Start at \\(s_0\\)', st.s0, -20, 20, 0.5, 'm', 'z', function (v) { st.s0 = v; go(); });
+          num(head, 'Start with \\(v_0\\)', st.v0, -30, 30, 0.5, 'm/s', 'good', function (v) { st.v0 = v; go(); });
+          num(head, 'Acceleration \\(a_c\\)', st.ac, -10, 10, 0.25, 'm/s²', 'bad', function (v) { st.ac = v; go(); });
+          num(head, 'Duration \\(T\\)', st.T, 1, 20, 0.5, 's', null, function (v) { st.T = v; go(); });
+          go();
+        });
+      } },
+    { id: 'graph', label: 'Draw a v–t graph', desc: 'Drag the corner points of the velocity graph. Between them the graph is straight, so each stage has a constant acceleration.',
+      look: 'The acceleration is the slope of each segment; the position is the area under the velocity graph, counted negative below the axis.',
+      mount: function (o, set) {
+        var pts = (set && set.pts) || [[0, 0], [10, 20], [20, 20], [30, 20], [40, 0]];
+        return figScene(o, function (head, show) { show({ kind: 'vpts', pts: pts, s0: 0 }); },
+          { editable: { key: 'v', snap: 1, range: [-25, 25] }, ranges: { v: [-25, 25] }, speed: 4, body: 'car' });
+      } },
+    { id: 'asgraph', label: 'An a–s graph', desc: 'Drag the corner points of the acceleration–position graph of a car on a test track.',
+      look: 'The area under the a–s graph is ½(v² − v₀²): a negative area slows the car, and if it reaches ½v₀² the car stops.',
+      mount: function (o) { return RECT.asGraph({ stage: o.stage, controls: o.controls }); } },
+    { id: 'relative', label: 'Two cars', desc: 'Two cars on a straight road, each with a constant acceleration, seen from the ground or from car A.',
+      look: 'Seen from A, B moves with the relative motion only: v_B/A = v_B − v_A and a_B/A = a_B − a_A.',
+      mount: function (o, set) { return RECT.relative(Object.assign({ stage: o.stage, controls: o.controls }, set || {})); } },
+    { id: 'tackle', label: 'A block and tackle', desc: 'A load held by 2, 3 or 4 parts of one cord; pull the free end and watch the load.',
+      look: 'n s_B + s_A stays constant, so the load moves at 1/n of the speed of the free end, the other way.',
+      mount: function (o, set) { return RECT.tackle(Object.assign({ stage: o.stage, controls: o.controls }, set || {})); } }
+  ];
+  var SCENE = {};
+  SCENES.forEach(function (s) { SCENE[s.id] = s; });
+  var cur = null, widget = null, chips = {};
+
+  function clear() {
+    if (widget && widget.destroy) widget.destroy();
+    else if (widget && widget.player) widget.player.destroy();
+    widget = null;
+    stage.innerHTML = ''; panel.innerHTML = '';
+    stage.className = 'viz-stage';
+    var main = stage.parentNode;
+    if (main && main.classList.contains('mf-main')) Array.prototype.forEach.call(main.querySelectorAll(':scope > .mf-transport'), function (nd) { nd.remove(); });
+  }
+  function choose(id, set) {
+    cur = SCENE[id] || SCENES[0];
+    clear();
+    eventsEl.innerHTML = '';
+    widget = cur.mount({ stage: stage, controls: panel }, set);
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === cur.id)); });
+    descEl.textContent = cur.desc;
+    var look = CYL.el('p', { class: 'ex-look', html: '<strong>Look for:</strong> ' + cur.look });
+    eventsEl.appendChild(look);
+    try { CYL.store.set('explorer:scene', cur.id); } catch (e) { /* fine without */ }
+  }
+
+  var sceneRow = document.getElementById('ex-scene');
+  SCENES.forEach(function (sc) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: sc.label });
+    b.addEventListener('click', function () { if (!cur || cur.id !== sc.id) choose(sc.id); });
+    chips[sc.id] = b; sceneRow.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var set = null;
+      try { set = btn.getAttribute('data-set') ? JSON.parse(btn.getAttribute('data-set')) : null; } catch (e) { set = null; }
+      choose(btn.getAttribute('data-load'), set);
+      document.getElementById('explore').scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+
+  choose(CYL.store.get('explorer:scene', 'stype'));
+  window.__explorer = { choose: choose, state: function () { return { scene: cur.id, widget: widget }; }, scenes: SCENES.map(function (s) { return s.id; }) };   // for QA scripts
+});
+</script>
+</body>
+</html>

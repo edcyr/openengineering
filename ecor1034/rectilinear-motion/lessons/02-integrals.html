@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Integrals: A Calculus Refresher · Rectilinear Motion</title>
+<meta name="description" content="A calculus refresher for dynamics: antiderivatives and the constant of integration, initial conditions, definite integrals with limits as signed areas, basic integrals of polynomial, trigonometric, exponential and reciprocal functions, substitution and separation of variables.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/rect.js"></script>
+</head>
+<body data-page="l02" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page lesson">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Lesson 2 · 35 min</p>
+    <h1>Integrals: A Calculus Refresher</h1>
+    <p class="lede">Integration undoes differentiation. If you know how fast something changes, integrating tells you how much it has changed: the velocity gives the position, and the acceleration gives the velocity. This lesson reviews antiderivatives and the constant of integration, definite integrals with limits, and the integrals of the basic functions, with the two techniques dynamics uses most: substitution and separating the variables.</p>
+  </header>
+
+  <section class="objectives">
+    <h2>Learning objectives</h2>
+    <ul>
+      <li>Find antiderivatives of polynomials, powers, trigonometric, exponential and reciprocal functions.</li>
+      <li>Explain the constant of integration, and fix it with an initial condition.</li>
+      <li>Evaluate definite integrals with limits, and read them as signed areas.</li>
+      <li>Integrate with limits from a known starting state, and separate the variables in a rate equation.</li>
+    </ul>
+  </section>
+
+  <section id="antiderivatives">
+    <h2>Antiderivatives and the constant of integration</h2>
+    <p>A function \(F(t)\) is an <dfn>antiderivative</dfn> of \(f(t)\) if \(F\,'(t) = f(t)\). Since the derivative of a constant is zero, adding any constant \(C\) to \(F\) gives another antiderivative. The <dfn>indefinite integral</dfn> collects them all:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The indefinite integral</p>
+      \[ \int f(t)\,dt = F(t) + C \qquad\text{where}\qquad F\,'(t) = f(t) \]
+      <p>\(C\) is the <dfn>constant of integration</dfn>. It is unknown until you know the value of \(F\) at one instant: an <dfn>initial condition</dfn>.</p>
+    </div>
+    <p>Every derivative in Lesson 1 gives an integral when you read it backward <a class="cite" href="../reference/references.html#r2">[2]</a>. The table holds the ones you need; check any line by differentiating its right side.</p>
+    <div class="table-wrap">
+      <table class="data tnum">
+        <caption>Integrals of the basic functions (add \(+\,C\) to each)</caption>
+        <thead><tr><th scope="col">\(f(t)\)</th><th scope="col">\(\int f(t)\,dt\)</th><th scope="col">Note</th></tr></thead>
+        <tbody>
+          <tr><td>\(t^n\)</td><td>\(\dfrac{t^{n+1}}{n + 1}\)</td><td>any \(n \ne -1\)</td></tr>
+          <tr><td>\(\dfrac{1}{t}\)</td><td>\(\ln\lvert t\rvert\)</td><td>the case \(n = -1\)</td></tr>
+          <tr><td>\(\dfrac{1}{a + bt}\)</td><td>\(\dfrac{1}{b}\ln\lvert a + bt\rvert\)</td><td>by substitution, \(u = a + bt\)</td></tr>
+          <tr><td>\(e^{kt}\)</td><td>\(\dfrac{1}{k}\,e^{kt}\)</td><td></td></tr>
+          <tr><td>\(\sin kt\)</td><td>\(-\dfrac{1}{k}\cos kt\)</td><td>\(t\) in radians</td></tr>
+          <tr><td>\(\cos kt\)</td><td>\(\dfrac{1}{k}\sin kt\)</td><td>\(t\) in radians</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Integrals also work term by term, and constant factors come outside: \(\int (c\,f + g)\,dt = c\int f\,dt + \int g\,dt\). There is no product rule in reverse, so a product such as \(t\,e^{t}\) needs a technique (substitution below, or integration by parts in a calculus text).</p>
+
+    <figure class="figure wide" aria-labelledby="fig21-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig21-stage"></div>
+        <div class="viz-controls" id="fig21-controls"></div>
+      </div>
+      <figcaption id="fig21-cap"><strong>Figure 2.1</strong> One velocity, many positions. Integrating \(v(t)\) gives a whole family of position curves \(s = F(t) + C\) (gray), all with the same slope at every instant. The initial position \(s_0\) picks one of them (blue) and fixes \(C\). Change \(s_0\) and the bold curve slides up or down without changing shape.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 2.1 — Fixing the constant</p>
+      <p>A particle has velocity \(v = 6t^2 - 4\ \text{m/s}\). At \(t = 0\) it is at \(s = 2\ \text{m}\). Find its position at \(t = 3\ \text{s}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>Integrate term by term:</p>
+          \[ s = \int (6t^2 - 4)\,dt = 2t^3 - 4t + C \]
+          <p>The initial condition fixes \(C\): at \(t = 0\), \(2 = 0 - 0 + C\), so \(C = 2\ \text{m}\). Then</p>
+          \[ s = 2t^3 - 4t + 2 \qquad\Rightarrow\qquad s(3) = 54 - 12 + 2 = 44\ \text{m} \]
+          <p>Check: differentiating \(s\) gives back \(6t^2 - 4\).</p>
+        </div>
+      </details>
+    </div>
+    <div class="check" id="check-1"></div>
+  </section>
+
+  <section id="definite">
+    <h2>Definite integrals and areas</h2>
+    <p>A <dfn>definite integral</dfn> has limits. It adds up \(f(t)\,dt\) over every small step from \(t = a\) to \(t = b\), and the result is a number, with no constant:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">The fundamental theorem of calculus</p>
+      \[ \int_a^b f(t)\,dt = \Big[F(t)\Big]_a^b = F(b) - F(a) \]
+      <p>Any antiderivative \(F\) will do: the constant \(C\) cancels in the subtraction.</p>
+    </div>
+    <p>On a graph, the definite integral is the <strong>signed area</strong> between the curve and the \(t\)-axis: area above the axis counts as positive, and area below counts as negative. Figure 2.2 builds that area out of thin rectangles; as they become narrower, their total approaches the exact integral.</p>
+    <p>This is the key to the graphical method of Lesson 6. Because \(ds = v\,dt\), the area under a velocity–time graph between two instants is the change in position, the <strong>displacement</strong>. The <strong>distance traveled</strong> is the total area with every part counted as positive.</p>
+
+    <figure class="figure wide" aria-labelledby="fig22-cap">
+      <div class="viz">
+        <div class="viz-stage" id="fig22-stage"></div>
+        <div class="viz-controls" id="fig22-controls"></div>
+      </div>
+      <figcaption id="fig22-cap"><strong>Figure 2.2</strong> The definite integral as a signed area. The area between \(\colPos{f(t)}\) and the axis, from the lower limit \(a\) to the upper limit \(b\), is shaded green above the axis and red below. The midpoint rectangles approximate it; add more and their sum closes in on \(F(b) - F(a)\). For \(f(t) = 12 - 3t\) from 0 to 6, the integral is 18 but the total area is 30.</figcaption>
+    </figure>
+
+    <div class="example">
+      <p class="example-title">Example 2.2 — A definite integral</p>
+      <p>Evaluate \(\displaystyle\int_0^{\pi} 3\sin t\,dt\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \int_0^{\pi} 3\sin t\,dt = \Big[-3\cos t\Big]_0^{\pi} = -3\cos\pi - (-3\cos 0) = 3 + 3 = 6 \]
+          <p>The whole arch of \(3\sin t\) from 0 to \(\pi\) lies above the axis, so its area is \(6\). Choose the cosine in Figure 2.2 to see a curve that crosses the axis.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 2.3 — Displacement and distance</p>
+      <p>A particle moves with \(v = 12 - 3t\ \text{m/s}\) for \(6\ \text{s}\). Find its displacement and the distance it travels.</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          <p>The displacement is the definite integral of the velocity:</p>
+          \[ \Delta s = \int_0^6 (12 - 3t)\,dt = \Big[12t - 1.5t^2\Big]_0^6 = 72 - 54 = 18\ \text{m} \]
+          <p>But \(v\) changes sign at \(t = 4\ \text{s}\), where the particle turns back. Integrate each part separately:</p>
+          \[ \int_0^4 (12 - 3t)\,dt = 48 - 24 = 24\ \text{m} \qquad \int_4^6 (12 - 3t)\,dt = 18 - 24 = -6\ \text{m} \]
+          <p>It goes \(24\ \text{m}\) forward and \(6\ \text{m}\) back: the distance traveled is \(24 + 6 = 30\ \text{m}\), and the displacement \(24 - 6 = 18\ \text{m}\). This is the case drawn in Figure 2.2.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="limits">
+    <h2>Integrating with limits from a known start</h2>
+    <p>In dynamics you usually know the state at one instant, such as the position \(s_0\) at \(t = 0\). Instead of finding \(C\) separately, put the known state into the limits. From \(ds = v\,dt\), integrate the left side from \(s_0\) to \(s\) while the right side runs from \(0\) to \(t\):</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Matching limits</p>
+      \[ \int_{s_0}^{s} ds = \int_0^t v\,dt \qquad\Rightarrow\qquad s = s_0 + \int_0^t v\,dt \]
+      <p>The lower limits are a matching pair (\(s_0\) at \(t = 0\)), and so are the upper limits (\(s\) at \(t\)). Inside the integral, write the variable of integration as a dummy, \(\int_0^t v(\tau)\,d\tau\), if the letter \(t\) in the limit is confusing.</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 2.4 — A coasting car</p>
+      <p>A car coasts with \(v = 20\,e^{-0.1t}\ \text{m/s}\), starting at \(s = 0\). How far has it gone after \(10\ \text{s}\), and how far will it ever go?</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ s = 0 + \int_0^t 20\,e^{-0.1\tau}\,d\tau = \Big[-200\,e^{-0.1\tau}\Big]_0^t = 200\,(1 - e^{-0.1t})\ \text{m} \]
+          <p>At \(t = 10\ \text{s}\): \(s = 200(1 - e^{-1}) = 126\ \text{m}\). As \(t \to \infty\), \(e^{-0.1t} \to 0\), so the car approaches, but never passes, \(200\ \text{m}\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="techniques">
+    <h2>Substitution and separating the variables</h2>
+    <p><strong>Substitution</strong> reverses the chain rule. When the integrand contains a function \(u(t)\) together with its derivative \(du/dt\), replace \(u'(t)\,dt\) by \(du\):</p>
+    \[ \int t\cos(t^2)\,dt \;=\; \tfrac12\int \cos u\,du \;=\; \tfrac12\sin(t^2) + C \qquad (u = t^2,\ du = 2t\,dt) \]
+    <p><strong>Separating the variables</strong> handles rate equations in which the rate depends on the quantity itself. A boat that has cut its engine slows at a rate proportional to its speed, \(dv/dt = -kv\). Move everything with \(v\) to one side and everything with \(t\) to the other, then integrate both sides with matching limits:</p>
+    <div class="key-formula">
+      <p class="key-formula-title">Separating the variables</p>
+      \[ \frac{dv}{dt} = g(v) \quad\Rightarrow\quad \int_{v_0}^{v} \frac{dv}{g(v)} = \int_0^t dt = t \]
+      <p>Lesson 5 uses this for accelerations that depend on velocity or on position.</p>
+    </div>
+
+    <div class="example">
+      <p class="example-title">Example 2.5 — Separating the variables</p>
+      <p>A boat slows with \(dv/dt = -0.5v\) (in \(\text{m/s}^2\), with \(v\) in m/s) from \(v_0 = 10\ \text{m/s}\). Find \(v(t)\), and the time to slow to \(1\ \text{m/s}\).</p>
+      <details class="solution">
+        <summary>Show solution</summary>
+        <div>
+          \[ \int_{10}^{v} \frac{dv}{v} = \int_0^t -0.5\,dt \quad\Rightarrow\quad \ln\frac{v}{10} = -0.5t \quad\Rightarrow\quad v = 10\,e^{-0.5t}\ \text{m/s} \]
+          <p>For \(v = 1\ \text{m/s}\): \(t = \ln(10)/0.5 = 2\ln 10 = 4.61\ \text{s}\).</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="check">
+    <h2>Check your understanding</h2>
+    <div class="check" id="check-2"></div>
+    <div class="check" id="check-3"></div>
+    <div class="check" id="check-4"></div>
+  </section>
+
+  <section class="takeaways">
+    <h2>Key takeaways</h2>
+    <ul>
+      <li>\(\int t^n\,dt = t^{n+1}/(n + 1) + C\) for \(n \ne -1\); \(\int dt/t = \ln\lvert t\rvert + C\); \(\int e^{kt}\,dt = e^{kt}/k + C\); \(\int \sin kt\,dt = -\cos(kt)/k + C\); \(\int \cos kt\,dt = \sin(kt)/k + C\).</li>
+      <li>An indefinite integral has a constant \(C\); an initial condition fixes it.</li>
+      <li>\(\int_a^b f\,dt = F(b) - F(a)\) is a signed area: above the axis counts positive, below negative.</li>
+      <li>Displacement is the integral of the velocity; distance traveled counts every part as positive, so split the integral where \(v\) changes sign.</li>
+      <li>Put a known start into the limits: \(s = s_0 + \int_0^t v\,dt\). Separate the variables when the rate depends on the quantity itself.</li>
+      <li>Next, <a href="03-position-velocity-acceleration.html">Lesson 3</a> applies all this to a particle moving along a line.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+/* ---------- Figures 2.1 and 2.2 ---------- */
+CYL.ready(function () {
+  'use strict';
+  RECT.family({ stage: document.getElementById('fig21-stage'), controls: document.getElementById('fig21-controls'), fam: 'lin', s0: 2 });
+  RECT.area({ stage: document.getElementById('fig22-stage'), controls: document.getElementById('fig22-controls'), fn: 'vel', a: 0, b: 6, n: 6 });
+});
+
+/* ---------- Check your understanding ---------- */
+CYL.ready(function () {
+  'use strict';
+  CYLQuiz.question(document.getElementById('check-1'), {
+    id: 'l02-q1', type: 'mc',
+    prompt: 'Two students integrate \\(v = 3t^2\\). One writes \\(s = t^3 + 5\\) and the other \\(s = t^3 - 2\\). Which is right?',
+    choices: [
+      { html: 'Both are antiderivatives; the initial position decides which one describes the motion.', correct: true, feedback: 'Both differentiate to \\(3t^2\\). They differ only in the constant of integration, which an initial condition fixes.' },
+      { html: 'Only \\(t^3 + 5\\): the constant must be positive.', feedback: 'The constant can have either sign; it is the position at \\(t = 0\\) here.' },
+      { html: 'Neither: the answer is \\(6t\\).', feedback: '\\(6t\\) is the derivative of \\(3t^2\\), not its integral.' },
+      { html: 'Neither: an integral has no constant.', feedback: 'An indefinite integral always has a constant; only a definite integral does not.' }
+    ],
+    explain: 'Antiderivatives differ by a constant.'
+  });
+  CYLQuiz.question(document.getElementById('check-2'), {
+    id: 'l02-q2', type: 'numeric',
+    prompt: 'Evaluate \\(\\displaystyle\\int_1^3 (4t^3 - 2t)\\,dt\\).',
+    label: 'Integral \\(=\\)', answer: 72,
+    hints: ['An antiderivative is \\(F(t) = t^4 - t^2\\).', 'Evaluate \\(F(3) - F(1)\\).'],
+    explain: '\\(F(3) - F(1)\\) with \\(F = t^4 - t^2\\).',
+    solution: '\\[ \\Big[t^4 - t^2\\Big]_1^3 = (81 - 9) - (1 - 1) = 72 \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-3'), {
+    id: 'l02-q3', type: 'numeric',
+    prompt: 'A particle moves with \\(v = 8 - 2t\\ \\text{m/s}\\) and is at \\(s = 3\\ \\text{m}\\) when \\(t = 0\\). Find its position at \\(t = 5\\ \\text{s}\\).',
+    label: '\\(s =\\)', answer: 18, unit: 'm',
+    hints: ['\\(s = s_0 + \\int_0^t v\\,dt\\).', '\\(\\int_0^t (8 - 2\\tau)\\,d\\tau = 8t - t^2\\).'],
+    explain: 'Integrate with limits from the known start.',
+    solution: '\\[ s = 3 + \\Big[8t - t^2\\Big]_0^5 = 3 + 40 - 25 = 18\\ \\text{m} \\]'
+  });
+  CYLQuiz.question(document.getElementById('check-4'), {
+    id: 'l02-q4', type: 'numeric',
+    prompt: 'A particle moves with \\(v = 6 - 2t\\ \\text{m/s}\\) from \\(t = 0\\) to \\(t = 5\\ \\text{s}\\). Find the total distance it travels.',
+    label: '\\(d =\\)', answer: 13, unit: 'm',
+    hints: ['The velocity changes sign at \\(t = 3\\ \\text{s}\\). Integrate from 0 to 3 and from 3 to 5 separately.', 'Add the magnitudes of the two parts.'],
+    explain: 'Split the integral where \\(v = 0\\), and add magnitudes.',
+    solution: '\\[ \\int_0^3 (6 - 2t)\\,dt = 9\\ \\text{m} \\qquad \\int_3^5 (6 - 2t)\\,dt = -4\\ \\text{m} \\qquad d = 9 + 4 = 13\\ \\text{m} \\]<p>The displacement is only \\(9 - 4 = 5\\ \\text{m}\\).</p>'
+  });
+});
+</script>
+</body>
+</html>

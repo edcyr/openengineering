@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Rectilinear Motion</title>
+<meta name="description" content="Unlimited randomized practice on rectilinear motion: derivatives and integrals, position, velocity and acceleration, constant acceleration, accelerations that depend on time, velocity or position, erratic motion graphs, dependent motion and relative motion, each problem with hints, a worked solution and a graph.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/rect.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+  .pl-viewhost { min-height: 250px; padding: 16px 18px 12px; }
+  .pl-viewhost .lg { margin: 0; }
+  .pl-ghost { display: grid; gap: 14px; padding: 34px 0 10px; opacity: 0.35; }
+  .pl-ghost-row { height: 22px; border-radius: 4px; background: var(--bg-sunken); }
+  .pl-ghost-row span { display: block; height: 100%; border-radius: 4px; background: var(--line); }
+  @media (max-width: 520px) { .pl-viewhost { padding: 12px 10px 8px; } }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like: derivatives and integrals, position, velocity and acceleration, constant acceleration, accelerations that depend on time, velocity or position, erratic motion graphs, dependent motion with cords, and relative motion. Each problem comes with hints, a worked solution and a graph of its motion.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The picture behind the current problem: a graph of the motion, such as a function and its derivative, a velocity graph whose shaded area is the distance traveled, or the position of one particle relative to another. It stays hidden until you solve the problem or open its solution.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>const-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. const-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand arithmetic, so you can type the expression you wrote on paper instead of working it out on a calculator first. Each box shows how it read your input (for example <q>= 23.16</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>sqrt(12^2+2*9.81*20)</code></td><td>\(\sqrt{12^2 + 2(9.81)(20)} = 23.16\)</td></tr>
+          <tr><td><code>(5+sqrt(265))/2</code></td><td>\(\frac{5 + \sqrt{265}}{2} = 10.64\)</td></tr>
+          <tr><td><code>100*ln(20/5)</code></td><td>\(100\ln 4 = 138.6\)</td></tr>
+          <tr><td><code>-1.2</code></td><td>\(-1.2\): a velocity in the negative direction</td></tr>
+          <tr><td><code>3t^2 - 12t + 9</code></td><td>a derivative, in boxes that ask for an expression in \(t\)</td></tr>
+          <tr><td><code>-6*sin(2t)</code>, <code>4e^(-2t)</code>, <code>12/(t+3)^2</code></td><td>\(-6\sin 2t\), \(4e^{-2t}\), \(\frac{12}{(t + 3)^2}\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Give each answer in the unit shown next to its box: meters, seconds, meters per second or meters per second squared. Signs matter where the problem names a positive direction: type the minus sign for a velocity or an acceleration the other way. Derivative problems ask for an expression in \(t\): use <code>^</code> for powers, <code>e^(...)</code> for the exponential and <code>ln</code> for the natural logarithm; angles inside <code>sin</code> and <code>cos</code> are in radians.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the whole expression is faster and safer than rounding at each step: <code>(5+sqrt(25+240))/2</code> is exact, while a rounded square root carried into later steps can drift past the 1% tolerance.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  5. Registry  6. Self-test (window.__practiceSelfTest)
+   7. The shared view (a graph of the motion, with an optional shaded area)  8. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints, the worked
+   solution and the picture from the same numbers, so nothing is typed per instance.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  /* ================================================================ 1. Helpers */
+  var PI = Math.PI, G = 9.81;
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }       // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)) + 1e-9; }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var MS = '\\ \\text{m/s}', MU = '\\ \\text{m}', SU = '\\ \\text{s}', AU = '\\ \\text{m/s}^2', KMH = '\\ \\text{km/h}';
+  function ro(label, tex, color) { return { label: label, tex: tex, color: color || null }; }
+  function done(spec, view, right, wrong) { return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } }; }
+  function doneExpr(spec, view, right, wrong) { return { spec: spec, view: view, test: { right: [{ value: right }], wrong: [{ value: wrong }] } }; }
+  function mcDone(spec, view) {
+    var k = -1; spec.choices.forEach(function (c, i) { if (c.correct) k = i; });
+    return { spec: spec, view: view, test: { right: [k], wrong: [(k + 1) % spec.choices.length] } };
+  }
+  function sample(f, a, b, n) { var o = []; n = n || 160; for (var i = 0; i <= n; i++) { var x = a + (b - a) * i / n, y = f(x); if (isFinite(y)) o.push([x, y]); } return o; }
+  function ext(pts, incl0) { var lo = incl0 === false ? Infinity : 0, hi = incl0 === false ? -Infinity : 0; pts.forEach(function (q) { lo = Math.min(lo, q[1]); hi = Math.max(hi, q[1]); }); if (hi - lo < 1e-9) { hi += 1; lo -= 1; } var p = 0.08 * (hi - lo); return [lo - p, hi + p]; }
+  // ---- the view: a chart with curves, an optional shaded area, markers and vertical lines
+  function graph(o) {
+    var all = [];
+    (o.curves || []).forEach(function (c) { all = all.concat(c.pts); });
+    if (o.shade) all = all.concat(o.shade.pts);
+    (o.marks || []).forEach(function (mk) { all.push([mk.x, mk.y]); });
+    var yr = o.y.range || ext(all, o.y.incl0);
+    return { kind: 'graph', title: o.title, aria: o.aria, x: { label: o.x.label, min: o.x.min, max: o.x.max }, y: { label: o.y.label, min: yr[0], max: yr[1] },
+      curves: o.curves || [], shade: o.shade || null, marks: o.marks || [], vlines: o.vlines || [], readouts: o.readouts, note: o.note, legend: o.legend || null };
+  }
+  function curve(pts, color, label, dashed) { return { pts: pts, color: color, label: label || null, dashed: !!dashed }; }
+  // polynomial TeX and typed strings from coefficients [c0, c1, c2, …] (c_k multiplies t^k)
+  function polyTex(c, v) {
+    v = v || 't';
+    var out = '';
+    for (var k = c.length - 1; k >= 0; k--) {
+      var a = c[k]; if (!a) continue;
+      var mag = Math.abs(a), sgn = a < 0 ? '-' : '+';
+      var coef = (mag === 1 && k > 0) ? '' : nn(mag);
+      var term = coef + (k === 0 ? '' : k === 1 ? v : v + '^{' + k + '}');
+      out += out ? ' ' + sgn + ' ' + term : (a < 0 ? '-' : '') + term;
+    }
+    return out || '0';
+  }
+  function polyStr(c, v) {
+    v = v || 't';
+    var out = '';
+    for (var k = c.length - 1; k >= 0; k--) {
+      var a = c[k]; if (!a) continue;
+      var mag = Math.abs(a), sgn = a < 0 ? '-' : '+';
+      var term = typed(mag) + (k === 0 ? '' : k === 1 ? '*' + v : '*' + v + '^' + k);
+      out += out ? ' ' + sgn + ' ' + term : (a < 0 ? '-' : '') + term;
+    }
+    return out || '0';
+  }
+  function polyVal(c, t) { var s = 0; for (var k = c.length - 1; k >= 0; k--) s = s * t + c[k]; return s; }
+  function polyDer(c) { var d = []; for (var k = 1; k < c.length; k++) d.push(k * c[k]); return d.length ? d : [0]; }
+  function polyInt(c) { var d = [0]; for (var k = 0; k < c.length; k++) d.push(c[k] / (k + 1)); return d; }
+  function sgnTex(x) { return x < 0 ? '- ' + nn(-x) : '+ ' + nn(x); }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 Derivatives (Lesson 1) ---------- */
+  function genDeriv(rng) {
+    var kind = pickW(rng, [['poly', 3], ['trig', 2], ['exp', 2], ['log', 1], ['product', 2], ['quotient', 1], ['point', 3]]);
+    var spec, view, right, wrong, f, df, fTex, dfTex, T = 4;
+    function exprSpec(prompt, rule, hints, sol) {
+      return { type: 'numeric', expr: { vars: ['t'] }, prompt: prompt, label: '\\(\\dfrac{ds}{dt} =\\)', answer: right, answerTex: dfTex, hints: hints, explain: 'By the ' + rule + '.',
+        solution: sol };
+    }
+    if (kind === 'poly' || kind === 'point') {
+      var c = [rng.int(-9, 9), rng.pick([-8, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 8]), rng.pick([-6, -4, -3, -2, -1, 1, 2, 3, 4, 6]), rng.pick([-3, -2, -1, 1, 2, 3, 4])];
+      var d = polyDer(c), dd = polyDer(d);
+      f = function (t) { return polyVal(c, t); }; df = function (t) { return polyVal(d, t); };
+      fTex = polyTex(c); dfTex = polyTex(d);
+      if (kind === 'poly') {
+        right = polyStr(d); wrong = polyStr([d[0], d[1], c[3]]);
+        spec = exprSpec('A particle\u2019s position is ' + m('s = ' + fTex) + ', with \\(s\\) in meters and \\(t\\) in seconds. Find its velocity \\(v = ds/dt\\) as a function of \\(t\\).', 'power rule, term by term',
+          ['Differentiate term by term: \\(d(t^n)/dt = n\\,t^{n-1}\\).', 'The constant term has zero derivative.'],
+          M('v = \\frac{ds}{dt} = ' + dfTex + '\\ \\text{m/s}'));
+      } else {
+        var t0 = rng.pick([1, 1.5, 2, 2.5, 3]), ask = rng.pick(['v', 'a']);
+        var ans = ask === 'v' ? polyVal(d, t0) : polyVal(dd, t0);
+        if (Math.abs(ans) < 1e-9) { t0 += 0.5; ans = ask === 'v' ? polyVal(d, t0) : polyVal(dd, t0); }
+        spec = { type: 'numeric', prompt: 'A particle moves along a line with ' + m('s = ' + fTex) + ' (\\(s\\) in m, \\(t\\) in s). Find its ' + (ask === 'v' ? 'velocity' : 'acceleration') + ' at ' + m('t = ' + nn(t0) + SU) + '.',
+          label: ask === 'v' ? '\\(v =\\)' : '\\(a =\\)', answer: ans, unit: ask === 'v' ? 'm/s' : 'm/s²',
+          hints: ['\\(v = ds/dt = ' + dfTex + '\\).', ask === 'v' ? 'Substitute \\(t = ' + nn(t0) + '\\).' : 'Differentiate again: \\(a = dv/dt = ' + polyTex(dd) + '\\).'],
+          explain: ask === 'v' ? 'Differentiate once.' : 'Differentiate twice.',
+          solution: M('v = ' + dfTex + (ask === 'a' ? '\\qquad a = ' + polyTex(dd) : '')) + M((ask === 'v' ? 'v' : 'a') + '(' + nn(t0) + ') = ' + n4(ans) + (ask === 'v' ? MS : AU)) };
+        right = ans; wrong = wrongOf(ans, [ask === 'v' ? f(t0) : polyVal(d, t0), ans + 3, -ans]);
+        view = graph({ title: 's and v against t', aria: 'The position of the particle and its velocity, the slope of the position graph, against time.', x: { label: '\\(t\\) (s)', min: 0, max: T },
+          y: { label: '\\(s\\) (m), \\(v\\) (m/s)' }, curves: [curve(sample(f, 0, T), 'z'), curve(sample(df, 0, T), 'good')],
+          marks: [{ x: t0, y: ask === 'v' ? polyVal(d, t0) : f(t0), color: ask === 'v' ? 'good' : 'z' }], vlines: [{ x: t0 }],
+          readouts: [ro('\\(v(' + nn(t0) + ')\\)', n4(polyVal(d, t0)) + MS, 'good'), ro('\\(a(' + nn(t0) + ')\\)', n4(polyVal(dd, t0)) + AU, 'bad')],
+          legend: [{ label: '\\(s\\)', color: 'z' }, { label: '\\(v\\)', color: 'good' }], note: 'The velocity is the slope of the position graph.' });
+        return done(spec, view, right, wrong);
+      }
+    } else if (kind === 'trig') {
+      var A = rng.pick([2, 3, 4, 5, 6]), k = rng.pick([2, 3, 4, 0.5]), isSin = rng.next() < 0.5;
+      var Ak = A * k;
+      f = isSin ? function (t) { return A * Math.sin(k * t); } : function (t) { return A * Math.cos(k * t); };
+      df = isSin ? function (t) { return Ak * Math.cos(k * t); } : function (t) { return -Ak * Math.sin(k * t); };
+      var arg = (k === 1 ? '' : nn(k)) + 't';
+      fTex = nn(A) + (isSin ? '\\sin ' : '\\cos ') + arg; dfTex = (isSin ? '' : '-') + nn(Ak) + (isSin ? '\\cos ' : '\\sin ') + arg;
+      right = (isSin ? '' : '-') + typed(Ak) + (isSin ? '*cos(' : '*sin(') + typed(k) + 't)';
+      wrong = isSin ? typed(A) + '*cos(' + typed(k) + 't)' : typed(Ak) + '*sin(' + typed(k) + 't)';
+      spec = exprSpec('A machine part vibrates with ' + m('s = ' + fTex) + ' (\\(s\\) in mm, \\(t\\) in s, angles in radians). Find \\(v = ds/dt\\).', 'chain rule',
+        ['The inside function is \\(u = ' + arg + '\\), with \\(du/dt = ' + nn(k) + '\\).', isSin ? '\\(d(\\sin u)/du = \\cos u\\).' : '\\(d(\\cos u)/du = -\\sin u\\): mind the sign.'],
+        M('v = ' + nn(A) + '\\,(' + nn(k) + ')\\,' + (isSin ? '\\cos ' : '(-\\sin ') + arg + (isSin ? '' : ')') + ' = ' + dfTex));
+    } else if (kind === 'exp') {
+      var A2 = rng.pick([2, 3, 5, 8, 10]), k2 = rng.pick([-2, -0.5, -0.4, 0.3, 2, 3]), Ak2 = A2 * k2;
+      f = function (t) { return A2 * Math.exp(k2 * t); }; df = function (t) { return Ak2 * Math.exp(k2 * t); };
+      fTex = nn(A2) + 'e^{' + nn(k2) + 't}'; dfTex = nn(Ak2) + '\\,e^{' + nn(k2) + 't}';
+      right = typed(Ak2) + '*e^(' + typed(k2) + 't)'; wrong = typed(A2) + '*e^(' + typed(k2) + 't)';
+      T = k2 > 0 ? 2 : 4;
+      spec = exprSpec('A quantity grows or decays as ' + m('s = ' + fTex) + '. Find \\(ds/dt\\).', 'chain rule for the exponential',
+        ['\\(d(e^{kt})/dt = k\\,e^{kt}\\).'],
+        M('\\frac{ds}{dt} = ' + nn(A2) + '\\,(' + nn(k2) + ')\\,e^{' + nn(k2) + 't} = ' + dfTex));
+      spec.hints.push('Keep the exponential unchanged and multiply by the derivative of its exponent.');
+    } else if (kind === 'log') {
+      var A3 = rng.pick([2, 3, 4, 6, 10]), b3 = rng.pick([2, 3, 4, 5]);
+      f = function (t) { return A3 * Math.log(b3 * t + 1); }; df = function (t) { return A3 * b3 / (b3 * t + 1); };
+      fTex = nn(A3) + '\\ln(' + nn(b3) + 't + 1)'; dfTex = '\\dfrac{' + nn(A3 * b3) + '}{' + nn(b3) + 't + 1}';
+      right = typed(A3 * b3) + '/(' + typed(b3) + 't + 1)'; wrong = typed(A3) + '/(' + typed(b3) + 't + 1)';
+      spec = exprSpec('A sliding block\u2019s position is ' + m('s = ' + fTex) + ' (\\(s\\) in m, \\(t\\) in s). Find its velocity \\(v = ds/dt\\).', 'chain rule for the logarithm',
+        ['\\(d(\\ln u)/du = 1/u\\), with \\(u = ' + nn(b3) + 't + 1\\).', 'Multiply by \\(du/dt = ' + nn(b3) + '\\).'],
+        M('v = ' + nn(A3) + '\\cdot\\frac{1}{' + nn(b3) + 't + 1}\\cdot ' + nn(b3) + ' = ' + dfTex));
+    } else if (kind === 'product') {
+      var useExp = rng.next() < 0.5, k4 = useExp ? rng.pick([-2, -1, -0.5, 2, 3]) : rng.pick([2, 3, 4]);
+      if (useExp) {
+        f = function (t) { return t * t * Math.exp(k4 * t); }; df = function (t) { return (2 * t + k4 * t * t) * Math.exp(k4 * t); };
+        fTex = 't^2 e^{' + nn(k4) + 't}'; dfTex = '2t\\,e^{' + nn(k4) + 't} ' + sgnTex(k4) + 't^2 e^{' + nn(k4) + 't}';
+        right = '2t*e^(' + typed(k4) + 't) + ' + typed(k4) + '*t^2*e^(' + typed(k4) + 't)'; wrong = '2t*e^(' + typed(k4) + 't)';
+        T = k4 > 0 ? 1.5 : 4;
+      } else {
+        f = function (t) { return t * Math.sin(k4 * t); }; df = function (t) { return Math.sin(k4 * t) + k4 * t * Math.cos(k4 * t); };
+        fTex = 't\\sin ' + nn(k4) + 't'; dfTex = '\\sin ' + nn(k4) + 't + ' + nn(k4) + 't\\cos ' + nn(k4) + 't';
+        right = 'sin(' + typed(k4) + 't) + ' + typed(k4) + '*t*cos(' + typed(k4) + 't)'; wrong = typed(k4) + '*cos(' + typed(k4) + 't)';
+      }
+      spec = exprSpec('Differentiate ' + m('s = ' + fTex) + '.', 'product rule, with the chain rule for the second factor',
+        ['It is a product \\(f\\,g\\): use \\(f\\,\'g + f\\,g\'\\).', useExp ? '\\(d(e^{kt})/dt = k\\,e^{kt}\\).' : '\\(d(\\sin kt)/dt = k\\cos kt\\).'],
+        M('\\frac{ds}{dt} = ' + dfTex));
+    } else {
+      var a5 = rng.pick([6, 10, 12, 20, 24]), b5 = rng.pick([1, 2, 3, 4, 5]);
+      f = function (t) { return a5 * t / (t + b5); }; df = function (t) { return a5 * b5 / Math.pow(t + b5, 2); };
+      fTex = '\\dfrac{' + nn(a5) + 't}{t + ' + nn(b5) + '}'; dfTex = '\\dfrac{' + nn(a5 * b5) + '}{(t + ' + nn(b5) + ')^2}';
+      right = typed(a5 * b5) + '/(t + ' + typed(b5) + ')^2'; wrong = typed(a5) + '/(t + ' + typed(b5) + ')';
+      spec = exprSpec('A car pulls away with velocity ' + m('v = ' + fTex) + ' (m/s). Find its acceleration \\(a = dv/dt\\).', 'quotient rule',
+        ['Quotient rule: \\((f\\,\'g - f\\,g\')/g^2\\) with \\(f = ' + nn(a5) + 't\\), \\(g = t + ' + nn(b5) + '\\).', 'The numerator simplifies to a constant.'],
+        M('a = \\frac{' + nn(a5) + '(t + ' + nn(b5) + ') - ' + nn(a5) + 't(1)}{(t + ' + nn(b5) + ')^2} = ' + dfTex));
+      spec.label = '\\(\\dfrac{dv}{dt} =\\)';
+    }
+    view = graph({ title: 'The function and its derivative', aria: 'The function and its derivative plotted against time: the derivative is the slope of the function at each instant.',
+      x: { label: '\\(t\\)', min: 0, max: T }, y: { label: 'value' }, curves: [curve(sample(f, 0, T), 'z'), curve(sample(df, 0, T), 'warn')],
+      readouts: [ro('Function', fTex, 'z'), ro('Derivative', dfTex, 'warn')], legend: [{ label: 'function', color: 'z' }, { label: 'derivative', color: 'warn' }],
+      note: 'Where the function peaks or bottoms out, its derivative crosses zero.' });
+    return doneExpr(spec, view, right, wrong);
+  }
+
+  /* ---------- 2.2 Integrals (Lesson 2) ---------- */
+  function genInteg(rng) {
+    var kind = pickW(rng, [['poly', 3], ['trig', 2], ['exp', 2], ['recip', 1], ['vel', 3]]);
+    var f, F, fTex, FTex, a, b, ans, spec, right, wrong, shadeTitle = 'The integral as an area';
+    if (kind === 'poly') {
+      var c = [rng.int(-4, 6), rng.pick([-4, -2, 2, 3, 4, 6]), rng.pick([3, 6, -3, 1.5])];
+      var Ci = polyInt(c);
+      a = rng.pick([0, 1]); b = a + rng.pick([1, 2, 3]);
+      f = function (t) { return polyVal(c, t); }; F = function (t) { return polyVal(Ci, t); };
+      fTex = polyTex(c); FTex = polyTex(Ci);
+    } else if (kind === 'trig') {
+      var A = rng.pick([2, 3, 4, 6]), k = rng.pick([1, 2, 0.5]), isSin = rng.next() < 0.5;
+      a = 0; b = rng.pick([0.5, 1, 1.5, 2]);
+      f = isSin ? function (t) { return A * Math.sin(k * t); } : function (t) { return A * Math.cos(k * t); };
+      F = isSin ? function (t) { return -A / k * Math.cos(k * t); } : function (t) { return A / k * Math.sin(k * t); };
+      var arg = (k === 1 ? '' : nn(k)) + 't';
+      fTex = nn(A) + (isSin ? '\\sin ' : '\\cos ') + arg; FTex = (isSin ? '-' : '') + nn(+(A / k).toFixed(6)) + (isSin ? '\\cos ' : '\\sin ') + arg;
+    } else if (kind === 'exp') {
+      var A2 = rng.pick([2, 4, 5, 10, 12]), k2 = rng.pick([0.5, 1, 2, 0.2]);
+      a = 0; b = rng.pick([1, 2, 3, 5]);
+      f = function (t) { return A2 * Math.exp(-k2 * t); }; F = function (t) { return -A2 / k2 * Math.exp(-k2 * t); };
+      fTex = nn(A2) + 'e^{-' + nn(k2) + 't}'; FTex = '-' + nn(+(A2 / k2).toFixed(6)) + 'e^{-' + nn(k2) + 't}';
+    } else if (kind === 'recip') {
+      var A3 = rng.pick([2, 3, 5, 10]);
+      a = 1; b = rng.pick([2, 3, 4, 5, 10]);
+      f = function (t) { return A3 / t; }; F = function (t) { return A3 * Math.log(t); };
+      fTex = '\\dfrac{' + nn(A3) + '}{t}'; FTex = nn(A3) + '\\ln t';
+    } else {
+      // a velocity: position at a time, or distance traveled across a turn
+      var v0 = rng.pick([6, 8, 10, 12, 15, 18]), dv = rng.pick([2, 3, 4, 5]), s0 = rng.pick([0, 0, 2, 5, -3]);
+      var tz = v0 / dv, ask = rng.pick(['pos', 'dist']), T = ask === 'dist' ? +(tz + rng.pick([1, 2, 3])).toFixed(2) : rng.pick([1, 2, 3, 4]);
+      f = function (t) { return v0 - dv * t; }; F = function (t) { return v0 * t - dv * t * t / 2; };
+      fTex = nn(v0) + ' - ' + nn(dv) + 't';
+      if (ask === 'pos') {
+        ans = s0 + F(T);
+        spec = { type: 'numeric', prompt: 'A particle moves with ' + m('v = ' + fTex + MS) + ' and is at ' + m('s = ' + nn(s0) + MU) + ' when \\(t = 0\\). Find its position at ' + m('t = ' + nn(T) + SU) + '.',
+          label: '\\(s =\\)', answer: ans, unit: 'm', hints: ['\\(s = s_0 + \\int_0^t v\\,dt\\).', '\\(\\int (' + fTex + ')\\,dt = ' + nn(v0) + 't - ' + nn(dv / 2) + 't^2\\).'],
+          explain: 'Integrate with limits from the known start.',
+          solution: M('s = ' + nn(s0) + ' + \\Big[' + nn(v0) + 't - ' + nn(dv / 2) + 't^2\\Big]_0^{' + nn(T) + '} = ' + n4(ans) + MU) };
+        right = ans; wrong = wrongOf(ans, [F(T), s0 + v0 * T, s0 + v0 * T - dv * T * T]);
+      } else {
+        var d1 = F(tz), d2 = F(T) - F(tz); ans = Math.abs(d1) + Math.abs(d2);
+        spec = { type: 'numeric', prompt: 'A particle moves with ' + m('v = ' + fTex + MS) + ' from \\(t = 0\\) to ' + m('t = ' + nn(T) + SU) + '. Find the total distance it travels.',
+          label: '\\(s_T =\\)', answer: ans, unit: 'm', hints: ['The velocity changes sign at \\(t = ' + n4(tz) + '\\ \\text{s}\\). Integrate on each side separately.', 'Add the magnitudes of the two parts.'],
+          explain: 'Split the integral where \\(v = 0\\).',
+          solution: M('\\int_0^{' + n4(tz) + '} v\\,dt = ' + n4(d1) + MU + '\\qquad \\int_{' + n4(tz) + '}^{' + nn(T) + '} v\\,dt = ' + n4(d2) + MU) + M('s_T = ' + n4(Math.abs(d1)) + ' + ' + n4(Math.abs(d2)) + ' = ' + n4(ans) + MU) };
+        right = ans; wrong = wrongOf(ans, [F(T), Math.abs(F(T)), d1]);
+      }
+      var Tv = ask === 'pos' ? Math.max(T, 1) : T;
+      return done(spec, graph({ title: 'Velocity against time', aria: 'The velocity against time, with the area under it shaded: green above the axis, red below. The area is the displacement.',
+        x: { label: '\\(t\\) (s)', min: 0, max: Tv }, y: { label: '\\(v\\) (m/s)' }, curves: [curve(sample(f, 0, Tv), 'good')], shade: { pts: sample(f, 0, ask === 'pos' ? T : Tv), from: 0, to: ask === 'pos' ? T : Tv, signed: true },
+        readouts: [ro('Displacement', n4(F(ask === 'pos' ? T : Tv)) + MU), ro('\\(v = 0\\) at', n4(tz) + SU)], note: 'Area above the axis moves the particle forward; area below moves it back.' }), right, wrong);
+    }
+    ans = F(b) - F(a);
+    spec = { type: 'numeric', prompt: 'Evaluate ' + m('\\displaystyle\\int_{' + nn(a) + '}^{' + nn(b) + '} ' + (kind === 'recip' ? fTex : '\\left(' + fTex + '\\right)') + '\\,dt') + (kind === 'trig' ? ' (angles in radians).' : '.'),
+      label: 'Integral \\(=\\)', answer: ans, hints: ['An antiderivative is \\(F(t) = ' + FTex + '\\).', 'Evaluate \\(F(' + nn(b) + ') - F(' + nn(a) + ')\\).'],
+      explain: '\\(F(b) - F(a)\\).', solution: M('\\Big[' + FTex + '\\Big]_{' + nn(a) + '}^{' + nn(b) + '} = ' + n4(F(b)) + ' - (' + n4(F(a)) + ') = ' + n4(ans)) };
+    right = ans; wrong = wrongOf(ans, [F(b), f(b) - f(a), -ans, ans + 1]);
+    var lo = Math.max(0, a - 0.5), hi = b + 0.5;
+    return done(spec, graph({ title: shadeTitle, aria: 'The function plotted against t with the area between the curve and the axis shaded from the lower to the upper limit: above the axis in green, below it in red.',
+      x: { label: '\\(t\\)', min: kind === 'recip' ? 0.5 : lo, max: hi }, y: { label: '\\(f(t)\\)' }, curves: [curve(sample(f, kind === 'recip' ? 0.5 : lo, hi), 'z')], shade: { pts: sample(f, a, b), from: a, to: b, signed: true },
+      readouts: [ro('\\(F(t)\\)', FTex), ro('Integral', n4(ans), 'z')], note: 'The integral is the area above the axis minus the area below.' }), right, wrong);
+  }
+
+  /* ---------- 2.3 Position, velocity and acceleration (Lesson 3) ---------- */
+  function genKin(rng) {
+    var r1 = rng.pick([1, 2]), r2 = r1 + rng.pick([1, 2, 3]), k = rng.pick([1, 2]), s0 = rng.pick([0, 0, 2, 5, -4]);
+    // v = 3k(t − r1)(t − r2), s = k(t³ − 1.5(r1 + r2)t² + 3r1r2 t) + s0
+    var c = [s0, 3 * k * r1 * r2, -1.5 * k * (r1 + r2), k], d = polyDer(c), dd = polyDer(d);
+    var s = function (t) { return polyVal(c, t); }, v = function (t) { return polyVal(d, t); }, a = function (t) { return polyVal(dd, t); };
+    var sTex = polyTex(c), vTex = polyTex(d), aTex = polyTex(dd);
+    var T = r2 + rng.pick([1, 2]), ask = pickW(rng, [['v', 2], ['a', 2], ['stop', 2], ['dist', 3], ['avgsp', 1]]);
+    var t0 = rng.pick([0.5, 1.5, 2.5, 3.5, 4.5].filter(function (x) { return x < T && Math.abs(v(x)) > 1e-9; }).concat([T]));
+    var spec, ans, wrong;
+    var dist = Math.abs(s(r1) - s(0)) + Math.abs(s(r2) - s(r1)) + Math.abs(s(T) - s(r2));
+    var stem = 'A particle moves along a straight line with ' + m('s = ' + sTex) + ', with \\(s\\) in meters and \\(t\\) in seconds. ';
+    if (ask === 'v' || ask === 'a') {
+      ans = ask === 'v' ? v(t0) : a(t0);
+      if (Math.abs(ans) < 1e-9) { ask = 'v'; t0 = T; ans = v(T); }
+      spec = { type: 'numeric', prompt: stem + 'Find its ' + (ask === 'v' ? 'velocity' : 'acceleration') + ' at ' + m('t = ' + nn(t0) + SU) + '.', label: ask === 'v' ? '\\(v =\\)' : '\\(a =\\)', answer: ans, unit: ask === 'v' ? 'm/s' : 'm/s²',
+        hints: ['\\(v = ds/dt = ' + vTex + '\\).', ask === 'a' ? '\\(a = dv/dt = ' + aTex + '\\).' : 'Substitute the time.'],
+        explain: ask === 'v' ? '\\(v = ds/dt\\).' : '\\(a = dv/dt\\).', solution: M('v = ' + vTex + '\\qquad a = ' + aTex) + M((ask === 'v' ? 'v' : 'a') + '(' + nn(t0) + ') = ' + n4(ans) + (ask === 'v' ? MS : AU)) };
+      wrong = wrongOf(ans, [s(t0), ask === 'v' ? a(t0) : v(t0), -ans]);
+    } else if (ask === 'stop') {
+      ans = r2;
+      spec = { type: 'numeric', prompt: stem + 'It stops twice. At what time does it stop the <strong>second</strong> time?', label: '\\(t =\\)', answer: ans, unit: 's',
+        hints: ['Set \\(v = ds/dt = ' + vTex + ' = 0\\).', 'Factor: \\(v = ' + nn(3 * k) + '(t - ' + r1 + ')(t - ' + r2 + ')\\).'],
+        explain: 'The particle stops where \\(v = 0\\).', solution: M('v = ' + vTex + ' = ' + nn(3 * k) + '(t - ' + r1 + ')(t - ' + r2 + ') = 0 \\;\\Rightarrow\\; t = ' + r1 + '\\ \\text{s or } ' + r2 + SU) };
+      wrong = r1;
+    } else {
+      ans = ask === 'dist' ? dist : dist / T;
+      spec = { type: 'numeric', prompt: stem + (ask === 'dist' ? 'Find the total distance it travels from \\(t = 0\\) to ' + m('t = ' + nn(T) + SU) + '.' : 'Find its average speed from \\(t = 0\\) to ' + m('t = ' + nn(T) + SU) + '.'),
+        label: ask === 'dist' ? '\\(s_T =\\)' : '\\((v_{sp})_{\\text{avg}} =\\)', answer: ans, unit: ask === 'dist' ? 'm' : 'm/s',
+        hints: ['It turns back where \\(v = ' + vTex + ' = 0\\): at \\(t = ' + r1 + '\\) and \\(' + r2 + '\\ \\text{s}\\).', 'Find \\(s\\) at \\(t = 0\\), at each stop and at the end, and add the lengths of the legs.'],
+        explain: 'Add each leg as a positive length.',
+        solution: M('s(0) = ' + n4(s(0)) + ',\\ \\ s(' + r1 + ') = ' + n4(s(r1)) + ',\\ \\ s(' + r2 + ') = ' + n4(s(r2)) + ',\\ \\ s(' + nn(T) + ') = ' + n4(s(T)) + '\\ \\text{m}') +
+          M('s_T = ' + n4(Math.abs(s(r1) - s(0))) + ' + ' + n4(Math.abs(s(r2) - s(r1))) + ' + ' + n4(Math.abs(s(T) - s(r2))) + ' = ' + n4(dist) + MU + (ask === 'avgsp' ? '\\qquad (v_{sp})_{\\text{avg}} = \\frac{' + n4(dist) + '}{' + nn(T) + '} = ' + n4(ans) + MS : '')) };
+      var disp = s(T) - s(0);
+      wrong = wrongOf(ans, ask === 'dist' ? [Math.abs(disp), disp, s(T)] : [Math.abs(disp) / T, dist, s(T) / T]);
+    }
+    var view = graph({ title: 's and v against t', aria: 'The position and the velocity of the particle against time; the instants where the velocity is zero are marked.',
+      x: { label: '\\(t\\) (s)', min: 0, max: T }, y: { label: '\\(s\\) (m), \\(v\\) (m/s)' }, curves: [curve(sample(s, 0, T), 'z'), curve(sample(v, 0, T), 'good')],
+      vlines: [{ x: r1, label: 'v = 0' }, { x: r2, label: 'v = 0' }], legend: [{ label: '\\(s\\)', color: 'z' }, { label: '\\(v\\)', color: 'good' }],
+      readouts: [ro('\\(v = 0\\) at', nn(r1) + '\\text{ and }' + nn(r2) + SU), ro('Distance to ' + m('t = ' + nn(T)), n4(dist) + MU), ro('Displacement', n4(s(T) - s(0)) + MU)],
+      note: 'The particle turns back where the position graph peaks or bottoms out.' });
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ---------- 2.4 Constant acceleration (Lesson 4) ---------- */
+  function genConst(rng) {
+    var kind = pickW(rng, [['brake', 3], ['drop', 2], ['throw', 2], ['two', 2], ['time', 1]]), spec, ans, wrong, view;
+    if (kind === 'brake') {
+      var kmh = rng.pick([50, 60, 72, 80, 90, 100, 108, 120]), v0 = kmh / 3.6, tr = rng.pick([0.5, 0.6, 0.75, 1, 1.2, 1.5]), dec = rng.pick([4, 5, 6, 7, 8]);
+      var d1 = v0 * tr, d2 = v0 * v0 / (2 * dec); ans = d1 + d2;
+      spec = { type: 'numeric', prompt: 'A car travels at ' + m(nn(kmh) + KMH) + '. The driver needs ' + m(nn(tr) + SU) + ' to react, and the brakes then decelerate the car at ' + m(nn(dec) + AU) + '. Find the stopping distance.',
+        label: '\\(s_T =\\)', answer: ans, unit: 'm', hints: ['Convert the speed: divide km/h by 3.6.', 'Reaction: \\(v_0 t_r\\). Braking: from \\(0 = v_0^2 - 2(' + nn(dec) + ')\\Delta s\\).'],
+        explain: 'Reaction distance plus braking distance.',
+        solution: M('v_0 = \\frac{' + nn(kmh) + '}{3.6} = ' + n4(v0) + MS + '\\qquad s_1 = ' + n4(v0) + '(' + nn(tr) + ') = ' + n4(d1) + MU) + M('s_2 = \\frac{' + n4(v0) + '^2}{2(' + nn(dec) + ')} = ' + n4(d2) + MU + '\\qquad s_T = ' + n4(ans) + MU) };
+      wrong = wrongOf(ans, [d2, kmh * kmh / (2 * dec), d1 + kmh * kmh / (2 * dec) / 13]);
+      var tb = v0 / dec, vf = function (t) { return t < tr ? v0 : Math.max(0, v0 - dec * (t - tr)); };
+      view = graph({ title: 'Velocity against time', aria: 'The velocity of the car: constant during the reaction time, then falling in a straight line to zero. The shaded area under it is the stopping distance.',
+        x: { label: '\\(t\\) (s)', min: 0, max: tr + tb + 0.5 }, y: { label: '\\(v\\) (m/s)' }, curves: [curve(sample(vf, 0, tr + tb + 0.5, 300), 'good')], shade: { pts: sample(vf, 0, tr + tb, 300), from: 0, to: tr + tb, color: 'good' },
+        readouts: [ro('Reaction distance', n4(d1) + MU), ro('Braking distance', n4(d2) + MU), ro('Stopping distance', n4(ans) + MU, 'z')], note: 'The braking distance grows with the square of the speed.' });
+    } else if (kind === 'drop' || kind === 'throw') {
+      if (kind === 'drop') {
+        var h = rng.pick([5, 8, 10, 12, 15, 20, 25, 30, 45]), ask = rng.pick(['t', 'v']), tf = Math.sqrt(2 * h / G), vf2 = Math.sqrt(2 * G * h);
+        ans = ask === 't' ? tf : vf2;
+        spec = { type: 'numeric', prompt: 'A stone is dropped from rest from a height of ' + m(nn(h) + MU) + '. Neglect air resistance. ' + (ask === 't' ? 'How long does it take to reach the ground?' : 'How fast is it moving just before it lands?'),
+          label: ask === 't' ? '\\(t =\\)' : '\\(v =\\)', answer: ans, unit: ask === 't' ? 's' : 'm/s', hints: ['Constant acceleration \\(g = 9.81\\ \\text{m/s}^2\\) downward, from rest.', ask === 't' ? 'Use \\(h = \\tfrac12 g t^2\\).' : 'Use \\(v^2 = 2gh\\).'],
+          explain: 'Free fall from rest.', solution: ask === 't' ? M('t = \\sqrt{\\frac{2(' + nn(h) + ')}{9.81}} = ' + n4(tf) + SU) : M('v = \\sqrt{2(9.81)(' + nn(h) + ')} = ' + n4(vf2) + MS) };
+        wrong = wrongOf(ans, ask === 't' ? [Math.sqrt(h / G), 2 * h / G, h / G] : [G * h, Math.sqrt(G * h), 2 * G * h]);
+        var yf = function (t) { return h - 0.5 * G * t * t; };
+        view = graph({ title: 'Height against time', aria: 'The height of the stone against time: a parabola from the release height down to the ground.', x: { label: '\\(t\\) (s)', min: 0, max: tf * 1.05 }, y: { label: '\\(y\\) (m)' },
+          curves: [curve(sample(yf, 0, tf), 'z')], marks: [{ x: tf, y: 0, color: 'z' }], readouts: [ro('Time to land', n4(tf) + SU), ro('Landing speed', n4(vf2) + MS, 'good')], note: 'Up is positive, with the ground at \\(y = 0\\).' });
+      } else {
+        var u = rng.pick([8, 10, 12, 15, 18, 20, 25]), ask2 = rng.pick(['h', 'T']), hm = u * u / (2 * G), Tr = 2 * u / G;
+        ans = ask2 === 'h' ? hm : Tr;
+        spec = { type: 'numeric', prompt: 'A ball is thrown straight up from the ground at ' + m(nn(u) + MS) + '. ' + (ask2 === 'h' ? 'How high does it rise?' : 'How long is it in the air before it returns to the ground?'),
+          label: ask2 === 'h' ? '\\(y_{\\max} =\\)' : '\\(t =\\)', answer: ans, unit: ask2 === 'h' ? 'm' : 's', hints: ['\\(a_c = -9.81\\ \\text{m/s}^2\\) with up positive.', ask2 === 'h' ? 'At the top \\(v = 0\\): use \\(v^2 = v_0^2 - 2g(y - y_0)\\).' : 'It lands where \\(y = 0\\): \\(0 = v_0 t - \\tfrac12 g t^2\\).'],
+          explain: 'Free fall with \\(a = -g\\).', solution: ask2 === 'h' ? M('y_{\\max} = \\frac{' + nn(u) + '^2}{2(9.81)} = ' + n4(hm) + MU) : M('t = \\frac{2(' + nn(u) + ')}{9.81} = ' + n4(Tr) + SU) };
+        wrong = wrongOf(ans, ask2 === 'h' ? [u * u / G, u / G, 2 * hm] : [u / G, Tr * 2, Math.sqrt(2 * u / G)]);
+        var yf2 = function (t) { return u * t - 0.5 * G * t * t; };
+        view = graph({ title: 'Height against time', aria: 'The height of the ball against time: a parabola that peaks where the velocity is zero.', x: { label: '\\(t\\) (s)', min: 0, max: Tr }, y: { label: '\\(y\\) (m)' },
+          curves: [curve(sample(yf2, 0, Tr), 'z')], vlines: [{ x: u / G, label: 'v = 0' }], marks: [{ x: u / G, y: hm, color: 'z' }],
+          readouts: [ro('Greatest height', n4(hm) + MU), ro('Time up', n4(u / G) + SU), ro('Time in the air', n4(Tr) + SU)], note: 'The acceleration is \\(-9.81\\ \\text{m/s}^2\\) at every instant, including at the top.' });
+      }
+    } else if (kind === 'two') {
+      var v1 = rng.pick([5, 8, 10, 12, 15]), v2 = v1 + rng.pick([5, 8, 10, 12]), dd = rng.pick([40, 50, 60, 80, 100, 120]), ask3 = rng.pick(['a', 't']);
+      var ac = (v2 * v2 - v1 * v1) / (2 * dd), tt = (v2 - v1) / ac;
+      ans = ask3 === 'a' ? ac : tt;
+      spec = { type: 'numeric', prompt: 'A car accelerating uniformly passes one marker at ' + m(nn(v1) + MS) + ' and a second marker ' + m(nn(dd) + MU) + ' farther on at ' + m(nn(v2) + MS) + '. ' + (ask3 === 'a' ? 'Find its acceleration.' : 'How long does it take between the markers?'),
+        label: ask3 === 'a' ? '\\(a_c =\\)' : '\\(t =\\)', answer: ans, unit: ask3 === 'a' ? 'm/s²' : 's', hints: ['The time is not given: start with \\(v^2 = v_0^2 + 2a_c(s - s_0)\\).', ask3 === 't' ? 'Then \\(t = (v - v_0)/a_c\\), or \\(t = 2\\Delta s/(v_0 + v)\\).' : 'Solve for \\(a_c\\).'],
+        explain: 'Constant acceleration, without the time.', solution: M('a_c = \\frac{' + nn(v2) + '^2 - ' + nn(v1) + '^2}{2(' + nn(dd) + ')} = ' + n4(ac) + AU + (ask3 === 't' ? '\\qquad t = \\frac{' + nn(v2) + ' - ' + nn(v1) + '}{' + n4(ac) + '} = ' + n4(tt) + SU : '')) };
+      wrong = wrongOf(ans, ask3 === 'a' ? [(v2 - v1) / dd, (v2 * v2 - v1 * v1) / dd, v2 * v2 / (2 * dd)] : [dd / v2, dd / v1, dd / (v2 - v1)]);
+      var vf3 = function (t) { return v1 + ac * t; };
+      view = graph({ title: 'Velocity against time', aria: 'The velocity rises in a straight line between the markers; the shaded area under it is the distance between them.', x: { label: '\\(t\\) (s)', min: 0, max: tt }, y: { label: '\\(v\\) (m/s)' },
+        curves: [curve(sample(vf3, 0, tt), 'good')], shade: { pts: sample(vf3, 0, tt), from: 0, to: tt, color: 'good' }, readouts: [ro('\\(a_c\\)', n4(ac) + AU, 'bad'), ro('Time', n4(tt) + SU), ro('Area', nn(dd) + MU)], note: 'The area under the velocity graph is the distance between the markers.' });
+    } else {
+      var w0 = rng.pick([0, 2, 5, 10]), acc = rng.pick([1.5, 2, 2.5, 3, 4]), w1 = w0 + rng.pick([10, 15, 20, 25]);
+      var ds = (w1 * w1 - w0 * w0) / (2 * acc), t1 = (w1 - w0) / acc;
+      ans = ds;
+      spec = { type: 'numeric', prompt: 'A train speeds up uniformly at ' + m(nn(acc) + AU) + ' from ' + m(nn(w0) + MS) + ' to ' + m(nn(w1) + MS) + '. How far does it travel meanwhile?', label: '\\(\\Delta s =\\)', answer: ans, unit: 'm',
+        hints: ['Use \\(v^2 = v_0^2 + 2a_c\\,\\Delta s\\).'], explain: 'Constant acceleration, without the time.', solution: M('\\Delta s = \\frac{' + nn(w1) + '^2 - ' + nn(w0) + '^2}{2(' + nn(acc) + ')} = ' + n4(ds) + MU) };
+      spec.hints.push('Or find the time first, \\(t = (v - v_0)/a_c\\), then use the average velocity.');
+      wrong = wrongOf(ans, [(w1 - w0) * (w1 - w0) / (2 * acc), w1 * t1, (w1 * w1 - w0 * w0) / acc]);
+      var vf4 = function (t) { return w0 + acc * t; };
+      view = graph({ title: 'Velocity against time', aria: 'The velocity rises in a straight line; the shaded trapezoid under it is the distance traveled.', x: { label: '\\(t\\) (s)', min: 0, max: t1 }, y: { label: '\\(v\\) (m/s)' },
+        curves: [curve(sample(vf4, 0, t1), 'good')], shade: { pts: sample(vf4, 0, t1), from: 0, to: t1, color: 'good' }, readouts: [ro('Time', n4(t1) + SU), ro('Distance', n4(ds) + MU, 'z')], note: 'The trapezoid\u2019s area is the average velocity times the time.' });
+    }
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ---------- 2.5 Acceleration as a function of time (Lesson 5) ---------- */
+  function genAt(rng) {
+    var c0 = rng.pick([-6, -4, -2, 0, 2, 3, 4, 6, 8]), c1 = rng.pick([-3, -2, -1, 1, 2, 3, 4, 6]), c2 = rng.pick([0, 0, 0.5, -0.5, 1, 3]);
+    var v0 = rng.pick([0, 0, 2, 4, -3, 5, 10]), s0 = rng.pick([0, 0, 0, 2, -5, 10]);
+    var ac = [c0, c1, c2].slice(0, c2 ? 3 : 2), vc = polyInt(ac); vc[0] = v0; var sc = polyInt(vc); sc[0] = s0;
+    var T = rng.pick([1, 2, 3, 4]), ask = rng.pick(['v', 's']);
+    var vf = function (t) { return polyVal(vc, t); }, sf = function (t) { return polyVal(sc, t); };
+    var ans = ask === 'v' ? vf(T) : sf(T);
+    var aTex = polyTex(ac), vTex = polyTex(vc), sTex = polyTex(sc);
+    var spec = { type: 'numeric', prompt: 'A particle has acceleration ' + m('a = ' + aTex + AU) + ' (with \\(t\\) in s). At \\(t = 0\\) it is at ' + m('s = ' + nn(s0) + MU) + ' with ' + m('v = ' + nn(v0) + MS) + '. Find its ' + (ask === 'v' ? 'velocity' : 'position') + ' at ' + m('t = ' + nn(T) + SU) + '.',
+      label: ask === 'v' ? '\\(v =\\)' : '\\(s =\\)', answer: ans, unit: ask === 'v' ? 'm/s' : 'm',
+      hints: ['Integrate with limits: \\(v = v_0 + \\int_0^t a\\,dt = ' + vTex + '\\).', ask === 's' ? 'Integrate again: \\(s = s_0 + \\int_0^t v\\,dt\\).' : 'Substitute the time.'],
+      explain: 'Integrate \\(a(t)\\) once for \\(v\\), twice for \\(s\\).', solution: M('v = ' + vTex + '\\ \\text{m/s}' + (ask === 's' ? '\\qquad s = ' + sTex + '\\ \\text{m}' : '')) + M((ask === 'v' ? 'v' : 's') + '(' + nn(T) + ') = ' + n4(ans) + (ask === 'v' ? MS : MU)) };
+    var wrong = wrongOf(ans, ask === 'v' ? [polyVal(ac, T) * T + v0, polyVal(ac, T), vf(T) - v0 + 1] : [s0 + v0 * T + 0.5 * polyVal(ac, T) * T * T, sf(T) - s0 - v0 * T + 2, vf(T) * T]);
+    var view = graph({ title: 'a, v and s against t', aria: 'The acceleration, the velocity and the position of the particle against time.', x: { label: '\\(t\\) (s)', min: 0, max: Math.max(T, 2) }, y: { label: 'value' },
+      curves: [curve(sample(function (t) { return polyVal(ac, t); }, 0, Math.max(T, 2)), 'bad'), curve(sample(vf, 0, Math.max(T, 2)), 'good'), curve(sample(sf, 0, Math.max(T, 2)), 'z')],
+      vlines: [{ x: T }], legend: [{ label: '\\(a\\) (m/s²)', color: 'bad' }, { label: '\\(v\\) (m/s)', color: 'good' }, { label: '\\(s\\) (m)', color: 'z' }],
+      readouts: [ro('\\(v(t)\\)', vTex, 'good'), ro('\\(s(t)\\)', sTex, 'z')], note: 'Each integration adds one starting value: \\(v_0\\), then \\(s_0\\).' });
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ---------- 2.6 Acceleration as a function of velocity or position (Lesson 5) ---------- */
+  function genAvs(rng) {
+    var kind = pickW(rng, [['lin', 2], ['quad', 2], ['spring', 2], ['grow', 1], ['terminal', 1]]), spec, ans, wrong, view;
+    if (kind === 'lin' || kind === 'quad') {
+      var k = kind === 'lin' ? rng.pick([0.1, 0.2, 0.25, 0.5, 0.8]) : rng.pick([0.002, 0.005, 0.01, 0.02]), v0 = rng.pick([10, 12, 15, 20, 25, 30]);
+      var v1 = +(v0 * rng.pick([0.2, 0.25, 0.4, 0.5])).toFixed(2), ask = rng.pick(['s', 't']);
+      var aTex = kind === 'lin' ? '-' + nn(k) + 'v' : '-' + nn(k) + 'v^2';
+      if (kind === 'lin') ans = ask === 's' ? (v0 - v1) / k : Math.log(v0 / v1) / k;
+      else ans = ask === 's' ? Math.log(v0 / v1) / k : (1 / v1 - 1 / v0) / k;
+      spec = { type: 'numeric', prompt: 'A boat coasting with its engine off has ' + m('a = ' + aTex) + ' (\\(a\\) in \\(\\text{m/s}^2\\), \\(v\\) in m/s). ' + (ask === 's' ? 'How far does it travel' : 'How long does it take') + ' to slow from ' + m(nn(v0) + MS) + ' to ' + m(nn(v1) + MS) + '?',
+        label: ask === 's' ? '\\(s =\\)' : '\\(t =\\)', answer: ans, unit: ask === 's' ? 'm' : 's',
+        hints: [ask === 's' ? 'Use \\(v\\,dv = a\\,ds\\) and separate the variables.' : 'Use \\(a = dv/dt\\) and separate the variables: \\(dt = dv/a\\).', kind === 'lin' ? (ask === 's' ? '\\(v\\,dv = -' + nn(k) + 'v\\,ds\\) simplifies to \\(dv = -' + nn(k) + '\\,ds\\).' : '\\(\\int dv/v = \\ln v\\).') : (ask === 's' ? '\\(v\\,dv = -' + nn(k) + 'v^2\\,ds\\) simplifies to \\(dv/v = -' + nn(k) + '\\,ds\\).' : '\\(\\int dv/v^2 = -1/v\\).')],
+        explain: 'Separate the variables and integrate with limits.',
+        solution: kind === 'lin' ? (ask === 's' ? M('\\int_{' + nn(v0) + '}^{' + nn(v1) + '} dv = -' + nn(k) + '\\int_0^s ds \\;\\Rightarrow\\; s = \\frac{' + nn(v0) + ' - ' + nn(v1) + '}{' + nn(k) + '} = ' + n4(ans) + MU)
+                                              : M('\\int_{' + nn(v0) + '}^{' + nn(v1) + '} \\frac{dv}{v} = -' + nn(k) + 't \\;\\Rightarrow\\; t = \\frac{\\ln(' + nn(v0) + '/' + nn(v1) + ')}{' + nn(k) + '} = ' + n4(ans) + SU))
+          : (ask === 's' ? M('\\int_{' + nn(v0) + '}^{' + nn(v1) + '} \\frac{dv}{v} = -' + nn(k) + 's \\;\\Rightarrow\\; s = \\frac{\\ln(' + nn(v0) + '/' + nn(v1) + ')}{' + nn(k) + '} = ' + n4(ans) + MU)
+                         : M('\\int_{' + nn(v0) + '}^{' + nn(v1) + '} \\frac{dv}{v^2} = -' + nn(k) + 't \\;\\Rightarrow\\; t = \\frac{1/' + nn(v1) + ' - 1/' + nn(v0) + '}{' + nn(k) + '} = ' + n4(ans) + SU)) };
+      wrong = wrongOf(ans, [(v0 - v1) / (k * v0), (v0 * v0 - v1 * v1) / (2 * k * v0), ans * 2, (v0 - v1) / k / v1]);
+      var vs = kind === 'lin' ? function (s) { return Math.max(0, v0 - k * s); } : function (s) { return v0 * Math.exp(-k * s); };
+      var smax = kind === 'lin' ? v0 / k : Math.log(v0 / v1) / k * 1.4;
+      view = graph({ title: 'Velocity against distance', aria: 'The boat\u2019s velocity against the distance it has traveled, falling as the drag slows it.', x: { label: '\\(s\\) (m)', min: 0, max: smax }, y: { label: '\\(v\\) (m/s)' },
+        curves: [curve(sample(vs, 0, smax), 'good')], marks: [{ x: kind === 'lin' ? (v0 - v1) / k : Math.log(v0 / v1) / k, y: v1, color: 'good' }],
+        readouts: [ro('\\(a\\)', aTex), ro(ask === 's' ? 'Distance' : 'Time', n4(ans) + (ask === 's' ? MU : SU), 'z')], note: kind === 'lin' ? 'With \\(a = -kv\\) the velocity falls linearly with distance.' : 'With \\(a = -kv^2\\) the velocity falls exponentially with distance; the boat never quite stops.' });
+    } else if (kind === 'spring' || kind === 'grow') {
+      var w2 = rng.pick([1, 4, 9, 16, 25]), w = Math.sqrt(w2), u = rng.pick([2, 3, 4, 5, 6, 8]), ask2;
+      if (kind === 'spring') {
+        ask2 = rng.pick(['max', 'v']);
+        var smx = u / w, sq = +(smx * rng.pick([0.4, 0.5, 0.6, 0.8])).toFixed(3);
+        ans = ask2 === 'max' ? smx : Math.sqrt(u * u - w2 * sq * sq);
+        spec = { type: 'numeric', prompt: 'A block on a spring has ' + m('a = -' + nn(w2) + 's') + ' (\\(s\\) in m from the unstretched position, \\(a\\) in \\(\\text{m/s}^2\\)) and passes \\(s = 0\\) at ' + m(nn(u) + MS) + '. ' + (ask2 === 'max' ? 'How far from \\(s = 0\\) does it go before it stops?' : 'Find its speed at ' + m('s = ' + nn(sq) + MU) + '.'),
+          label: ask2 === 'max' ? '\\(s_{\\max} =\\)' : '\\(v =\\)', answer: ans, unit: ask2 === 'max' ? 'm' : 'm/s',
+          hints: ['Use \\(v\\,dv = a\\,ds\\) with limits from \\((s, v) = (0, ' + nn(u) + ')\\).', 'You get \\(v^2 = ' + nn(u * u) + ' - ' + nn(w2) + 's^2\\).'],
+          explain: '\\(v^2 = v_0^2 - ' + nn(w2) + 's^2\\).', solution: M('v^2 = ' + nn(u * u) + ' - ' + nn(w2) + 's^2') + (ask2 === 'max' ? M('v = 0 \\;\\Rightarrow\\; s_{\\max} = \\frac{' + nn(u) + '}{' + n4(w) + '} = ' + n4(ans) + MU) : M('v = \\sqrt{' + nn(u * u) + ' - ' + nn(w2) + '(' + nn(sq) + ')^2} = ' + n4(ans) + MS)) };
+        wrong = wrongOf(ans, ask2 === 'max' ? [u / w2, u * u / w2, u / (2 * w)] : [u - w2 * sq, Math.sqrt(u * u - w2 * sq), u - w * sq]);
+        view = graph({ title: 'Velocity against position', aria: 'The block\u2019s speed against its position: an ellipse-shaped arch, largest at s = 0 and zero at the extreme positions.', x: { label: '\\(s\\) (m)', min: 0, max: smx * 1.1 }, y: { label: '\\(v\\) (m/s)' },
+          curves: [curve(sample(function (s) { return Math.sqrt(Math.max(0, u * u - w2 * s * s)); }, 0, smx, 200), 'good')], marks: ask2 === 'v' ? [{ x: sq, y: ans, color: 'good' }] : [{ x: smx, y: 0, color: 'z' }],
+          readouts: [ro('\\(v^2\\)', nn(u * u) + ' - ' + nn(w2) + 's^2'), ro('\\(s_{\\max}\\)', n4(smx) + MU, 'z')], note: 'The spring takes speed away as the block moves out, and gives it back as it returns.' });
+      } else {
+        var cc = rng.pick([2, 3, 4, 6, 8]), sx = rng.pick([1, 2, 3, 5]); ans = Math.sqrt(u * u + cc * sx * sx);
+        spec = { type: 'numeric', prompt: 'A particle is pushed away from a point with ' + m('a = ' + nn(cc) + 's') + ' (\\(s\\) in m, \\(a\\) in \\(\\text{m/s}^2\\)). It passes \\(s = 0\\) at ' + m(nn(u) + MS) + '. Find its speed at ' + m('s = ' + nn(sx) + MU) + '.', label: '\\(v =\\)', answer: ans, unit: 'm/s',
+          hints: ['Use \\(v\\,dv = a\\,ds\\).', '\\(\\tfrac12(v^2 - ' + nn(u) + '^2) = \\int_0^{' + nn(sx) + '} ' + nn(cc) + 's\\,ds\\).'], explain: '\\(v^2 = v_0^2 + ' + nn(cc) + 's^2\\).',
+          solution: M('\\tfrac12(v^2 - ' + nn(u * u) + ') = \\tfrac{' + nn(cc) + '}{2}(' + nn(sx) + ')^2 \\;\\Rightarrow\\; v = \\sqrt{' + nn(u * u) + ' + ' + nn(cc * sx * sx) + '} = ' + n4(ans) + MS) };
+        wrong = wrongOf(ans, [u + cc * sx, Math.sqrt(u * u + 2 * cc * sx * sx), Math.sqrt(u * u + cc * sx)]);
+        view = graph({ title: 'Velocity against position', aria: 'The speed of the particle against its position, growing as it is pushed outward.', x: { label: '\\(s\\) (m)', min: 0, max: sx * 1.2 }, y: { label: '\\(v\\) (m/s)' },
+          curves: [curve(sample(function (s) { return Math.sqrt(u * u + cc * s * s); }, 0, sx * 1.2), 'good')], marks: [{ x: sx, y: ans, color: 'good' }], readouts: [ro('\\(v^2\\)', nn(u * u) + ' + ' + nn(cc) + 's^2'), ro('\\(v\\) at ' + m(nn(sx) + MU), n4(ans) + MS, 'good')], note: 'Here the acceleration grows as the particle moves away.' });
+      }
+    } else {
+      var cT = rng.pick([0.5, 1, 2, 3, 5, 10]), vt = G / cT, pct = rng.pick([90, 95, 99]), ask3 = rng.pick(['vt', 't']);
+      var tt = Math.log(100 / (100 - pct)) / cT; ans = ask3 === 'vt' ? vt : tt;
+      spec = { type: 'numeric', prompt: 'A small sphere is released from rest in a liquid. With down positive, its acceleration is ' + m('a = 9.81 - ' + nn(cT) + 'v') + ' (\\(a\\) in \\(\\text{m/s}^2\\), \\(v\\) in m/s). ' + (ask3 === 'vt' ? 'Find its terminal velocity.' : 'How long does it take to reach ' + pct + '% of its terminal velocity?'),
+        label: ask3 === 'vt' ? '\\(v_t =\\)' : '\\(t =\\)', answer: ans, unit: ask3 === 'vt' ? 'm/s' : 's',
+        hints: ['At the terminal velocity \\(a = 0\\).', ask3 === 't' ? 'Separating the variables gives \\(v = v_t(1 - e^{-' + nn(cT) + 't})\\).' : 'Solve \\(9.81 - ' + nn(cT) + 'v = 0\\).'],
+        explain: ask3 === 'vt' ? 'Terminal velocity: \\(a = 0\\).' : '\\(e^{-ct} = 1 - ' + pct / 100 + '\\).',
+        solution: M('v_t = \\frac{9.81}{' + nn(cT) + '} = ' + n4(vt) + MS) + (ask3 === 't' ? M('v = v_t(1 - e^{-' + nn(cT) + 't}) \\;\\Rightarrow\\; t = \\frac{\\ln(100/' + (100 - pct) + ')}{' + nn(cT) + '} = ' + n4(tt) + SU) : '') };
+      wrong = wrongOf(ans, ask3 === 'vt' ? [9.81 * cT, cT / 9.81, Math.sqrt(9.81 / cT)] : [pct / 100 / cT, 1 / cT, tt * 2]);
+      view = graph({ title: 'Velocity against time', aria: 'The sphere\u2019s velocity against time, rising quickly at first and leveling off at the terminal velocity.', x: { label: '\\(t\\) (s)', min: 0, max: 5 / cT }, y: { label: '\\(v\\) (m/s)' },
+        curves: [curve(sample(function (t) { return vt * (1 - Math.exp(-cT * t)); }, 0, 5 / cT), 'good')], marks: [{ x: tt, y: vt * pct / 100, color: 'good' }],
+        readouts: [ro('\\(v_t\\)', n4(vt) + MS, 'good'), ro(pct + '% at', n4(tt) + SU)], note: 'The drag grows with \\(v\\) until it balances the weight.' });
+    }
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ---------- 2.7 Erratic motion: graphs (Lesson 6) ---------- */
+  function genGraph(rng) {
+    var kind = pickW(rng, [['trap', 3], ['steps', 2], ['as', 1]]), spec, ans, wrong, view;
+    if (kind === 'trap') {
+      var V = rng.pick([10, 12, 15, 18, 20, 24, 30]), t1 = rng.pick([4, 5, 6, 8, 10]), t2 = t1 + rng.pick([5, 10, 15, 20]), t3 = t2 + rng.pick([4, 5, 6, 8, 10]);
+      var vf = function (t) { return t < t1 ? V * t / t1 : t < t2 ? V : t < t3 ? V * (t3 - t) / (t3 - t2) : 0; };
+      var sAt = function (t) { if (t <= t1) return 0.5 * V * t * t / t1; if (t <= t2) return 0.5 * V * t1 + V * (t - t1); var u = t - t2, a3 = V / (t3 - t2); return 0.5 * V * t1 + V * (t2 - t1) + V * u - 0.5 * a3 * u * u; };
+      var ask = rng.pick(['total', 'acc', 'pos']), tq = +(t1 + rng.next() * (t3 - t1)).toFixed(1);
+      if (ask === 'total') {
+        ans = sAt(t3);
+        spec = { type: 'numeric', prompt: 'A car starts from rest and accelerates uniformly to ' + m(nn(V) + MS) + ' in ' + m(nn(t1) + SU) + ', cruises until ' + m('t = ' + nn(t2) + SU) + ', then brakes uniformly to a stop at ' + m('t = ' + nn(t3) + SU) + '. How far does it travel?',
+          label: '\\(\\Delta s =\\)', answer: ans, unit: 'm', hints: ['The distance is the area under the \\(v\\)–\\(t\\) graph.', 'It is a trapezoid: two triangles and a rectangle.'], explain: 'Area under the \\(v\\)–\\(t\\) graph.',
+          solution: M('\\Delta s = \\tfrac12(' + nn(t1) + ')(' + nn(V) + ') + (' + nn(t2 - t1) + ')(' + nn(V) + ') + \\tfrac12(' + nn(t3 - t2) + ')(' + nn(V) + ') = ' + n4(ans) + MU) };
+        wrong = wrongOf(ans, [V * t3, V * (t2 - t1), 0.5 * V * t3]);
+      } else if (ask === 'acc') {
+        var brake = rng.next() < 0.5; ans = brake ? -V / (t3 - t2) : V / t1;
+        spec = { type: 'numeric', prompt: 'A car starts from rest and accelerates uniformly to ' + m(nn(V) + MS) + ' in ' + m(nn(t1) + SU) + ', cruises until ' + m('t = ' + nn(t2) + SU) + ', then brakes uniformly to a stop at ' + m('t = ' + nn(t3) + SU) + '. Find its acceleration while ' + (brake ? 'braking' : 'speeding up') + '.',
+          label: '\\(a =\\)', answer: ans, unit: 'm/s²', hints: ['The acceleration is the slope of the \\(v\\)–\\(t\\) graph.', brake ? 'The velocity falls by ' + nn(V) + ' m/s in ' + nn(t3 - t2) + ' s.' : 'The velocity rises by ' + nn(V) + ' m/s in ' + nn(t1) + ' s.'],
+          explain: 'Slope of the \\(v\\)–\\(t\\) graph.', solution: M('a = \\frac{\\Delta v}{\\Delta t} = \\frac{' + (brake ? '0 - ' + nn(V) : nn(V) + ' - 0') + '}{' + nn(brake ? t3 - t2 : t1) + '} = ' + n4(ans) + AU) };
+        wrong = -ans;
+      } else {
+        ans = sAt(tq);
+        spec = { type: 'numeric', prompt: 'A car starts from rest at \\(s = 0\\) and accelerates uniformly to ' + m(nn(V) + MS) + ' in ' + m(nn(t1) + SU) + ', cruises until ' + m('t = ' + nn(t2) + SU) + ', then brakes uniformly to a stop at ' + m('t = ' + nn(t3) + SU) + '. Find its position at ' + m('t = ' + nn(tq) + SU) + '.',
+          label: '\\(s =\\)', answer: ans, unit: 'm', hints: ['The position is the area under the \\(v\\)–\\(t\\) graph from 0 to ' + nn(tq) + ' s.', 'Split the area at the corners of the graph.'], explain: 'Area under the \\(v\\)–\\(t\\) graph up to that time.',
+          solution: M('s(' + nn(tq) + ') = \\int_0^{' + nn(tq) + '} v\\,dt = ' + n4(ans) + MU) + '<p>Area of the triangle to \\(' + nn(t1) + '\\ \\text{s}\\): \\(' + n4(0.5 * V * t1) + '\\ \\text{m}\\); the rest follows stage by stage.</p>' };
+        wrong = wrongOf(ans, [V * tq, vf(tq) * tq, 0.5 * V * tq]);
+      }
+      view = graph({ title: 'Velocity against time', aria: 'The car\u2019s velocity: a straight rise, a level stretch and a straight fall. The shaded area under it is the distance.', x: { label: '\\(t\\) (s)', min: 0, max: t3 }, y: { label: '\\(v\\) (m/s)' },
+        curves: [curve([[0, 0], [t1, V], [t2, V], [t3, 0]], 'good')], shade: { pts: [[0, 0], [t1, V], [t2, V], [t3, 0]].filter(function (q) { return ask !== 'pos' || q[0] <= tq; }).concat(ask === 'pos' ? [[tq, vf(tq)]] : []), from: 0, to: ask === 'pos' ? tq : t3, color: 'good' },
+        readouts: [ro('Speeding up', n4(V / t1) + AU, 'bad'), ro('Braking', n4(-V / (t3 - t2)) + AU, 'bad'), ro('Total distance', n4(sAt(t3)) + MU, 'z')], note: 'Slopes give the accelerations; areas give the distances.' });
+    } else if (kind === 'steps') {
+      var a1 = rng.pick([2, 3, 4, 5]), d1 = rng.pick([3, 4, 5, 6]), a2 = -rng.pick([1, 1.5, 2, 2.5]), w0 = rng.pick([0, 0, 2, 5]);
+      var v1 = w0 + a1 * d1, d2 = v1 / -a2, tEnd = d1 + d2, ask2 = rng.pick(['tstop', 'dist']);
+      var s1 = w0 * d1 + 0.5 * a1 * d1 * d1, s2 = v1 * d2 + 0.5 * a2 * d2 * d2;
+      ans = ask2 === 'tstop' ? tEnd : s1 + s2;
+      spec = { type: 'numeric', prompt: 'A sled starts at ' + m(nn(w0) + MS) + ' with ' + m('a = ' + nn(a1) + AU) + ' for ' + m(nn(d1) + SU) + ', then brakes with ' + m('a = ' + nn(a2) + AU) + ' until it stops. ' + (ask2 === 'tstop' ? 'At what time does it stop?' : 'How far does it travel in all?'),
+        label: ask2 === 'tstop' ? '\\(t =\\)' : '\\(\\Delta s =\\)', answer: ans, unit: ask2 === 'tstop' ? 's' : 'm',
+        hints: ['The area under the \\(a\\)–\\(t\\) graph for the first stage gives the change in velocity: \\(v = ' + nn(w0) + ' + ' + nn(a1) + '(' + nn(d1) + ') = ' + n4(v1) + '\\ \\text{m/s}\\).', ask2 === 'tstop' ? 'Braking at ' + nn(-a2) + ' m/s² must remove that velocity.' : 'Then add the areas under the \\(v\\)–\\(t\\) graph for both stages.'],
+        explain: 'Area under \\(a\\)–\\(t\\) for \\(\\Delta v\\), under \\(v\\)–\\(t\\) for \\(\\Delta s\\).',
+        solution: M('v_1 = ' + n4(v1) + MS + '\\qquad t_{\\text{brake}} = \\frac{' + n4(v1) + '}{' + nn(-a2) + '} = ' + n4(d2) + SU + '\\qquad t = ' + n4(tEnd) + SU) + (ask2 === 'dist' ? M('\\Delta s = ' + n4(s1) + ' + ' + n4(s2) + ' = ' + n4(s1 + s2) + MU) : '') };
+      wrong = wrongOf(ans, ask2 === 'tstop' ? [d1 + v1 / a1, d2, d1 - v1 / a2 + 2] : [s1, 0.5 * v1 * tEnd + w0 * tEnd + 3, v1 * tEnd]);
+      view = graph({ title: 'Velocity against time', aria: 'The sled\u2019s velocity: a straight rise while the acceleration is positive, then a straight fall to zero. The shaded area is the distance.', x: { label: '\\(t\\) (s)', min: 0, max: tEnd }, y: { label: '\\(v\\) (m/s)' },
+        curves: [curve([[0, w0], [d1, v1], [tEnd, 0]], 'good')], shade: { pts: [[0, w0], [d1, v1], [tEnd, 0]], from: 0, to: tEnd, color: 'good' },
+        readouts: [ro('\\(v\\) at ' + m(nn(d1) + SU), n4(v1) + MS, 'good'), ro('Stops at', n4(tEnd) + SU), ro('Distance', n4(s1 + s2) + MU, 'z')], note: 'Constant acceleration in each stage: the velocity graph is straight.' });
+    } else {
+      var A = rng.pick([1, 2, 3, 4]), L = rng.pick([20, 25, 40, 50]), u0 = rng.pick([0, 0, 2, 4]), half = rng.next() < 0.5;
+      var area = half ? A * L + 0.5 * A * L : A * L;   // constant over [0, L], then (half) falling linearly to 0 over [L, 2L]
+      var se = half ? 2 * L : L;
+      ans = Math.sqrt(u0 * u0 + 2 * area);
+      spec = { type: 'numeric', prompt: 'A car passes \\(s = 0\\) at ' + m(nn(u0) + MS) + '. Its acceleration is ' + m(nn(A) + AU) + ' for the first ' + m(nn(L) + MU) + (half ? ', then decreases linearly to zero at ' + m('s = ' + nn(2 * L) + MU) : '') + '. Find its speed at ' + m('s = ' + nn(se) + MU) + '.',
+        label: '\\(v =\\)', answer: ans, unit: 'm/s', hints: ['The area under the \\(a\\)–\\(s\\) graph is \\(\\tfrac12(v^2 - v_0^2)\\).', half ? 'The area is a rectangle plus a triangle.' : 'The area is a rectangle.'], explain: '\\(\\tfrac12(v^2 - v_0^2) = \\int a\\,ds\\).',
+        solution: M('\\int_0^{' + nn(se) + '} a\\,ds = ' + n4(area) + '\\ \\text{m}^2/\\text{s}^2 \\qquad v = \\sqrt{' + nn(u0) + '^2 + 2(' + n4(area) + ')} = ' + n4(ans) + MS) };
+      wrong = wrongOf(ans, [Math.sqrt(area), u0 + area, Math.sqrt(u0 * u0 + area)]);
+      var apts = half ? [[0, A], [L, A], [2 * L, 0]] : [[0, A], [L, A]];
+      view = graph({ title: 'Acceleration against position', aria: 'The acceleration against position, with the area under it shaded: one half of the change in v squared.', x: { label: '\\(s\\) (m)', min: 0, max: se }, y: { label: '\\(a\\) (m/s²)' },
+        curves: [curve(apts, 'bad')], shade: { pts: apts, from: 0, to: se, color: 'bad' }, readouts: [ro('Area', n4(area) + '\\ \\text{m}^2/\\text{s}^2', 'bad'), ro('\\(v\\)', n4(ans) + MS, 'good')], note: 'The area gives \\(\\tfrac12 v^2\\), not \\(v\\).' });
+    }
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ---------- 2.8 Dependent motion (Lesson 7) ---------- */
+  function genDep(rng) {
+    var kind = pickW(rng, [['tackle', 3], ['tackleInv', 2], ['truck', 2], ['two', 2]]), spec, ans, wrong, view;
+    if (kind === 'tackle' || kind === 'tackleInv') {
+      var n = rng.pick([2, 3, 4, 5, 6]), vA = rng.pick([0.6, 0.8, 1, 1.2, 1.5, 2, 2.4, 3]), acc = rng.next() < 0.3, aA = rng.pick([0.3, 0.6, 0.9, 1.2]);
+      if (kind === 'tackle') {
+        ans = acc ? -aA / n : -vA / n;
+        spec = { type: 'numeric', prompt: 'A load hangs from a block and tackle with ' + n + ' parts of rope holding it. The free end of the rope is pulled down ' + (acc ? 'with an acceleration of ' + m(nn(aA) + AU) : 'at ' + m(nn(vA) + MS)) + '. Find the ' + (acc ? 'acceleration' : 'velocity') + ' of the load, positive down.',
+          label: acc ? '\\(a_B =\\)' : '\\(v_B =\\)', answer: ans, unit: acc ? 'm/s²' : 'm/s', hints: ['With both positions measured down from the ceiling, \\(' + n + 's_B + s_A = l_T\\).', 'Differentiate: \\(' + n + (acc ? 'a_B + a_A' : 'v_B + v_A') + ' = 0\\).'],
+          explain: 'The load moves at \\(1/' + n + '\\) of the rope end\u2019s rate, the other way.', solution: M(n + (acc ? 'a_B' : 'v_B') + ' + ' + (acc ? 'a_A' : 'v_A') + ' = 0 \\;\\Rightarrow\\; ' + (acc ? 'a_B' : 'v_B') + ' = -\\frac{' + nn(acc ? aA : vA) + '}{' + n + '} = ' + n4(ans) + (acc ? AU : MS)) + '<p>Negative: the load rises.</p>' };
+        wrong = -ans;
+      } else {
+        var vB = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5]); ans = n * vB;
+        spec = { type: 'numeric', prompt: 'A winch must raise a load at ' + m(nn(vB) + MS) + ' with a block and tackle that has ' + n + ' parts of rope holding the load. How fast must the winch reel in the rope?',
+          label: '\\(v_A =\\)', answer: ans, unit: 'm/s', hints: ['\\(' + n + 's_B + s_A = l_T\\) with positions measured from the fixed pulleys.', 'Each of the ' + n + ' parts must shorten at the load\u2019s speed.'], explain: '\\(v_A = ' + n + '\\,v_B\\) in magnitude.',
+          solution: M('\\lvert v_A\\rvert = ' + n + '(' + nn(vB) + ') = ' + n4(ans) + MS) };
+        wrong = wrongOf(ans, [vB / n, vB * (n - 1), vB * (n + 1)]);
+      }
+      var nn2 = n, vAA = kind === 'tackle' ? vA : ans, sA0 = 1, sB0 = 3;
+      view = graph({ title: 'Positions against time', aria: 'The positions of the rope end and of the load, measured down from the ceiling, against time: one straight line falls at n times the rate the other rises.', x: { label: '\\(t\\) (s)', min: 0, max: 2 }, y: { label: 'position (m)' },
+        curves: [curve(sample(function (t) { return sA0 + vAA * t; }, 0, 2), 'accent', 's_A'), curve(sample(function (t) { return sB0 - vAA / nn2 * t; }, 0, 2), 'warn', 's_B')],
+        legend: [{ label: '\\(s_A\\) (rope end)', color: 'accent' }, { label: '\\(s_B\\) (load)', color: 'warn' }], readouts: [ro('\\(' + n + 's_B + s_A\\)', 'constant'), ro('\\(v_B/v_A\\)', '-1/' + n)], note: 'Both positions are measured down from the ceiling.' });
+    } else if (kind === 'truck') {
+      var trip = rng.pick([[6, 8], [8, 6], [5, 12], [12, 5], [9, 12], [7, 24], [8, 15]]), h = trip[0], x = trip[1], L = Math.hypot(x, h), vT = rng.pick([1, 1.5, 2, 2.5, 3, 4]);
+      var ask = rng.next() < 0.7 ? 'v' : 'a';
+      ans = ask === 'v' ? x * vT / L : vT * vT * h * h / Math.pow(L, 3);
+      spec = { type: 'numeric', prompt: 'A truck drives away at a constant ' + m(nn(vT) + MS) + ', pulling a cord that runs over a pulley ' + m(nn(h) + MU) + ' above the truck\u2019s hitch and down to a crate. When the truck is ' + m(nn(x) + MU) + ' from the point below the pulley, find the ' + (ask === 'v' ? 'velocity' : 'acceleration') + ' of the crate.',
+        label: ask === 'v' ? '\\(v_B =\\)' : '\\(a_B =\\)', answer: ans, unit: ask === 'v' ? 'm/s' : 'm/s²',
+        hints: ['\\(l_T = (h - y_B) + \\sqrt{x_A^2 + h^2}\\).', ask === 'v' ? 'Differentiate: \\(v_B = x_A v_A/\\sqrt{x_A^2 + h^2}\\).' : 'Differentiate twice with \\(a_A = 0\\): \\(a_B = v_A^2 h^2/(x_A^2 + h^2)^{3/2}\\).'],
+        explain: 'Differentiate the cord length with the chain rule.', solution: M('\\sqrt{' + nn(x) + '^2 + ' + nn(h) + '^2} = ' + n4(L) + MU) + M(ask === 'v' ? 'v_B = \\frac{' + nn(x) + '(' + nn(vT) + ')}{' + n4(L) + '} = ' + n4(ans) + MS : 'a_B = \\frac{' + nn(vT) + '^2(' + nn(h) + ')^2}{' + n4(L) + '^3} = ' + n4(ans) + AU) };
+      wrong = wrongOf(ans, ask === 'v' ? [vT, h * vT / L, x * vT / h] : [vT * vT / L, vT * vT * x * x / Math.pow(L, 3), 0]);
+      view = graph({ title: 'Crate speed against the truck\u2019s position', aria: 'The crate\u2019s speed against the truck\u2019s distance: it starts at zero and approaches the truck\u2019s speed as the cord flattens.', x: { label: '\\(x_A\\) (m)', min: 0, max: Math.max(2 * x, 20) }, y: { label: '\\(v_B\\) (m/s)', range: [0, vT * 1.1] },
+        curves: [curve(sample(function (xx) { return xx * vT / Math.hypot(xx, h); }, 0, Math.max(2 * x, 20)), 'good')], marks: [{ x: x, y: x * vT / L, color: 'good' }],
+        readouts: [ro('Cord from pulley', n4(L) + MU), ro('\\(v_B\\)', n4(x * vT / L) + MS, 'good'), ro('\\(a_B\\)', n4(vT * vT * h * h / Math.pow(L, 3)) + AU, 'bad')], note: 'The crate speeds up although the truck does not.' });
+    } else {
+      var a = rng.pick([0.2, 0.4, 0.5, 0.6, 0.8]), sg = rng.pick([1, -1]), b = sg * rng.pick([0.2, 0.3, 0.4, 0.6]);
+      ans = -2 * a - b;
+      spec = { type: 'numeric', prompt: 'Block \\(A\\) hangs from a cord that runs over a fixed pulley \\(D\\) to the axle of a movable pulley \\(P\\); a second cord over \\(P\\) carries blocks \\(B\\) and \\(C\\) (Figure 7.2 of Lesson 7). With all positions measured down from \\(D\\)\u2019s axle, \\(A\\) moves down at ' + m(nn(a) + MS) + ' and \\(B\\) moves ' + (b > 0 ? 'down' : 'up') + ' at ' + m(nn(Math.abs(b)) + MS) + '. Find the velocity of \\(C\\), positive down.',
+        label: '\\(v_C =\\)', answer: ans, unit: 'm/s', hints: ['Cord 1: \\(s_A + s_P = l_1\\). Cord 2: \\((s_B - s_P) + (s_C - s_P) = l_2\\).', 'Together: \\(v_B + v_C + 2v_A = 0\\).'], explain: '\\(v_C = -2v_A - v_B\\).',
+        solution: M('v_C = -2(' + nn(a) + ') - (' + nn(b) + ') = ' + n4(ans) + MS) + '<p>' + (ans < 0 ? 'Negative: \\(C\\) moves up.' : 'Positive: \\(C\\) moves down.') + '</p>' };
+      wrong = wrongOf(ans, [2 * a - b, -a - b, -2 * a + b]);
+      view = graph({ title: 'Velocities (positive down)', aria: 'Bars of the velocities of A, P, B and C as points: the cords make v_B plus v_C plus 2 v_A equal to zero.', x: { label: 'body', min: 0, max: 5 }, y: { label: 'velocity (m/s)' },
+        curves: [], marks: [{ x: 1, y: a, color: 'accent', label: 'A' }, { x: 2, y: -a, color: 'muted', label: 'P' }, { x: 3, y: b, color: 'warn', label: 'B' }, { x: 4, y: ans, color: 't', label: 'C' }],
+        readouts: [ro('\\(v_P\\)', n4(-a) + MS), ro('\\(v_C\\)', n4(ans) + MS, 't')], note: 'Positive is down; each cord adds one equation.' });
+    }
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ---------- 2.9 Relative motion (Lesson 8) ---------- */
+  function genRel(rng) {
+    var kind = pickW(rng, [['catch', 3], ['trains', 2], ['accel', 2], ['elevator', 2]]), spec, ans, wrong, view;
+    if (kind === 'catch') {
+      var vA = rng.pick([22, 25, 28, 30, 32]), vB = vA - rng.pick([2, 3, 4, 5, 6, 8]), gap = rng.pick([40, 50, 60, 80, 100, 120]);
+      ans = gap / (vA - vB);
+      spec = { type: 'numeric', prompt: 'Car \\(A\\) travels at a steady ' + m(nn(vA) + MS) + '. Car \\(B\\) is ' + m(nn(gap) + MU) + ' ahead of it in the next lane, at a steady ' + m(nn(vB) + MS) + ' in the same direction. How long until \\(A\\) draws level with \\(B\\)?', label: '\\(t =\\)', answer: ans, unit: 's',
+        hints: ['Work in the frame of \\(B\\): \\(A\\) starts ' + nn(gap) + ' m behind and closes at \\(v_{A/B} = v_A - v_B\\).'], explain: '\\(t = \\text{gap}/v_{A/B}\\).', solution: M('v_{A/B} = ' + nn(vA) + ' - ' + nn(vB) + ' = ' + nn(vA - vB) + MS + '\\qquad t = \\frac{' + nn(gap) + '}{' + nn(vA - vB) + '} = ' + n4(ans) + SU) };
+      spec.hints.push('The time is the gap divided by the closing speed.');
+      wrong = wrongOf(ans, [gap / vA, gap / (vA + vB), gap / vB]);
+      view = graph({ title: 'Position of B relative to A', aria: 'The position of B relative to A against time: a straight line falling to zero when A draws level.', x: { label: '\\(t\\) (s)', min: 0, max: ans * 1.3 }, y: { label: '\\(s_{B/A}\\) (m)' },
+        curves: [curve(sample(function (t) { return gap - (vA - vB) * t; }, 0, ans * 1.3), 't')], marks: [{ x: ans, y: 0, color: 't' }], readouts: [ro('\\(v_{B/A}\\)', n4(vB - vA) + MS, 't'), ro('Level at', n4(ans) + SU)], note: 'Seen from \\(A\\), \\(B\\) comes back toward it at constant speed.' });
+    } else if (kind === 'trains') {
+      var v1 = rng.pick([15, 20, 25, 30]), v2 = rng.pick([10, 15, 20, 25]), Lt = rng.pick([100, 150, 200, 250, 300]), opp = rng.next() < 0.6;
+      if (!opp && v1 === v2) v2 = v1 - 5;
+      var rel = opp ? v1 + v2 : Math.abs(v1 - v2); ans = Lt / rel;
+      spec = { type: 'numeric', prompt: 'Two trains travel on parallel tracks ' + (opp ? 'in opposite directions' : 'in the same direction') + ', at ' + m(nn(v1) + MS) + ' and ' + m(nn(v2) + MS) + '. The second train is ' + m(nn(Lt) + MU) + ' long. How long does it take to pass a passenger sitting in the first train?', label: '\\(t =\\)', answer: ans, unit: 's',
+        hints: ['Relative to the passenger, the second train moves at \\(v_{2/1} = v_2 - v_1\\), with signs.', 'It must move its own length relative to the passenger.'], explain: '\\(t = L/\\lvert v_{2/1}\\rvert\\).', solution: M('\\lvert v_{2/1}\\rvert = ' + n4(rel) + MS + '\\qquad t = \\frac{' + nn(Lt) + '}{' + n4(rel) + '} = ' + n4(ans) + SU) };
+      wrong = wrongOf(ans, [Lt / (opp ? Math.abs(v1 - v2) || 1 : v1 + v2), Lt / v1, Lt / v2]);
+      view = graph({ title: 'Relative position of the train\u2019s front', aria: 'The distance the second train has moved past the passenger, against time, reaching the train\u2019s length when it has passed.', x: { label: '\\(t\\) (s)', min: 0, max: ans * 1.2 }, y: { label: 'distance past (m)' },
+        curves: [curve(sample(function (t) { return rel * t; }, 0, ans * 1.2), 't')], marks: [{ x: ans, y: Lt, color: 't' }], readouts: [ro('Relative speed', n4(rel) + MS, 't'), ro('Passing time', n4(ans) + SU)], note: opp ? 'In opposite directions the speeds add.' : 'In the same direction the speeds subtract.' });
+    } else if (kind === 'accel') {
+      var vA2 = rng.pick([15, 20, 25]), vB2 = rng.pick([0, 5, 10, 15]), aB = rng.pick([1, 1.5, 2, 2.5, 3]), gap2 = rng.pick([20, 40, 50, 60, 80]);
+      // s_B/A = −gap + (vB − vA)t + ½ aB t² = 0
+      var bq = vB2 - vA2, disc = bq * bq + 2 * aB * gap2; ans = (-bq + Math.sqrt(disc)) / aB;
+      spec = { type: 'numeric', prompt: 'Car \\(A\\) cruises at ' + m(nn(vA2) + MS) + '. Car \\(B\\), ' + m(nn(gap2) + MU) + ' behind it in the next lane, is moving at ' + m(nn(vB2) + MS) + ' when it starts to accelerate at ' + m(nn(aB) + AU) + '. When does \\(B\\) draw level with \\(A\\)?', label: '\\(t =\\)', answer: ans, unit: 's',
+        hints: ['In the frame of \\(A\\): \\((s_{B/A})_0 = -' + nn(gap2) + '\\ \\text{m}\\), \\((v_{B/A})_0 = ' + nn(bq) + '\\ \\text{m/s}\\), \\(a_{B/A} = ' + nn(aB) + '\\ \\text{m/s}^2\\).', 'Solve \\(0 = -' + nn(gap2) + ' + (' + nn(bq) + ')t + \\tfrac12(' + nn(aB) + ')t^2\\) for the positive root.'],
+        explain: 'Set \\(s_{B/A} = 0\\).', solution: M('0 = -' + nn(gap2) + ' + (' + nn(bq) + ')t + ' + nn(aB / 2) + 't^2 \\;\\Rightarrow\\; t = ' + n4(ans) + SU) };
+      wrong = wrongOf(ans, [Math.sqrt(2 * gap2 / aB), gap2 / Math.abs(bq || 1), (-bq - Math.sqrt(disc)) / aB + 2 * ans]);
+      view = graph({ title: 'Position of B relative to A', aria: 'The position of B relative to A against time: a parabola that crosses zero when B draws level.', x: { label: '\\(t\\) (s)', min: 0, max: ans * 1.2 }, y: { label: '\\(s_{B/A}\\) (m)' },
+        curves: [curve(sample(function (t) { return -gap2 + bq * t + 0.5 * aB * t * t; }, 0, ans * 1.2), 't')], marks: [{ x: ans, y: 0, color: 't' }], readouts: [ro('\\(a_{B/A}\\)', nn(aB) + AU, 't'), ro('Level at', n4(ans) + SU), ro('\\(v_{B/A}\\) then', n4(bq + aB * ans) + MS)], note: 'A constant relative acceleration: the equations of Lesson 4 apply to the relative motion.' });
+    } else {
+      var hh = rng.pick([1, 1.2, 1.5, 1.8, 2]), aE = rng.pick([0, 0, 1, 1.5, 2, -1, -2]), arel = G + aE;
+      ans = Math.sqrt(2 * hh / arel);
+      spec = { type: 'numeric', prompt: 'An elevator ' + (aE === 0 ? 'moves up at a constant velocity' : aE > 0 ? 'accelerates upward at ' + m(nn(aE) + AU) : 'accelerates downward at ' + m(nn(-aE) + AU)) + '. A passenger drops a coin from ' + m(nn(hh) + MU) + ' above the floor. How long does the coin take to reach the floor?', label: '\\(t =\\)', answer: ans, unit: 's',
+        hints: ['Work relative to the floor. The coin starts at rest relative to the elevator.', 'Up positive: \\(a_{C/E} = -9.81 - a_E\\), with \\(a_E = ' + nn(aE) + '\\ \\text{m/s}^2\\).'], explain: 'Relative acceleration \\(-(9.81 + a_E)\\).',
+        solution: M('a_{C/E} = -9.81 - (' + nn(aE) + ') = -' + n4(arel) + AU + '\\qquad t = \\sqrt{\\frac{2(' + nn(hh) + ')}{' + n4(arel) + '}} = ' + n4(ans) + SU) };
+      wrong = wrongOf(ans, [Math.sqrt(2 * hh / G) * (aE === 0 ? 1.5 : 1), Math.sqrt(2 * hh / Math.abs(G - aE)), Math.sqrt(hh / arel)]);
+      view = graph({ title: 'Height of the coin above the floor', aria: 'The coin\u2019s height above the elevator floor against time: a parabola reaching zero when it lands.', x: { label: '\\(t\\) (s)', min: 0, max: ans * 1.05 }, y: { label: 'height (m)' },
+        curves: [curve(sample(function (t) { return hh - 0.5 * arel * t * t; }, 0, ans), 't')], marks: [{ x: ans, y: 0, color: 't' }], readouts: [ro('\\(a_{C/E}\\)', '-' + n4(arel) + AU, 't'), ro('Time', n4(ans) + SU)], note: aE === 0 ? 'At a constant velocity the elevator is just like a room at rest.' : 'The elevator\u2019s acceleration changes the relative acceleration.' });
+    }
+    return done(spec, view, ans, wrong);
+  }
+
+  /* ================================================================ 5. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-derivatives.html', 'Derivatives: A Calculus Refresher'), l02: L(2, '02-integrals.html', 'Integrals: A Calculus Refresher'),
+    l03: L(3, '03-position-velocity-acceleration.html', 'Position, Velocity and Acceleration'), l04: L(4, '04-constant-acceleration.html', 'Constant Acceleration'),
+    l05: L(5, '05-variable-acceleration.html', 'Acceleration as a Function of Time, Velocity or Position'), l06: L(6, '06-erratic-motion.html', 'Erratic Motion: The Graphical Method'),
+    l07: L(7, '07-dependent-motion.html', 'Absolute Dependent Motion'), l08: L(8, '08-relative-motion.html', 'Relative Motion Along a Line')
+  };
+  var CATS = [
+    { id: 'deriv', label: 'Derivatives', gen: genDeriv, lessons: [LES.l01] },
+    { id: 'integ', label: 'Integrals', gen: genInteg, lessons: [LES.l02] },
+    { id: 'kin', label: 'Position, velocity, acceleration', gen: genKin, lessons: [LES.l03] },
+    { id: 'const', label: 'Constant acceleration', gen: genConst, lessons: [LES.l04] },
+    { id: 'at', label: 'Acceleration a(t)', gen: genAt, lessons: [LES.l05] },
+    { id: 'avs', label: 'Acceleration a(v), a(s)', gen: genAvs, lessons: [LES.l05] },
+    { id: 'graph', label: 'Erratic motion graphs', gen: genGraph, lessons: [LES.l06] },
+    { id: 'dep', label: 'Dependent motion', gen: genDep, lessons: [LES.l07] },
+    { id: 'rel', label: 'Relative motion', gen: genRel, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 6. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      if (v.note) out.push(['view note', v.note]);
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      out.push(['x label', v.x.label]); out.push(['y label', v.y.label]);
+      (v.legend || []).forEach(function (lg) { out.push(['legend', lg.label]); });
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|sec|csc|arctan|left|right|Longrightarrow|quad|dot|ddot|ihat|jhat|khat|er|et|ez|Fvec|vvec|avec|int|iiint|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'point') return spec.answerPoint.every(isFinite);
+    if (spec.type === 'numeric') return spec.expr ? [].concat(spec.answer).every(function (a) { return typeof a === 'string' || typeof a === 'function'; }) : [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {}, kinds = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        kinds[p.view && p.view.kind] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['mc', 'numeric', 'fields', 'point'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          if (s.type === 'mc') {
+            if (s.choices.length < 4) f('fewer than 4 choices');
+            if (s.choices.filter(function (c) { return c.correct; }).length !== 1) f('not exactly one correct choice');
+            var hs = s.choices.map(function (c) { return c.html; });
+            if (hs.some(function (h, j) { return hs.indexOf(h) !== j; })) f('duplicate choices');
+            if (s.choices.some(function (c) { return !c.correct && !c.feedback; })) f('distractor without feedback');
+          }
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || vw.kind !== 'graph') f('bad view');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            var okv = function (q) { return isFinite(q[0]) && isFinite(q[1]); };
+            if (!vw.curves.every(function (c) { return c.pts.length && c.pts.every(okv); }) || (vw.shade && !vw.shade.pts.every(okv)) || !vw.marks.every(function (mk) { return isFinite(mk.x) && isFinite(mk.y); })) f('graph view not finite');
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('graph view has an empty range');
+            if (!vw.curves.length && !vw.marks.length) f('graph view is empty');
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      st.viewKinds = Object.keys(kinds);
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec, view: sp.view }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 7. The shared view (a graph of the motion) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  function interp(pts) {
+    return function (x) {
+      if (x <= pts[0][0]) return pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        if (x <= pts[i][0]) { var a = pts[i - 1], b = pts[i], u = (x - a[0]) / ((b[0] - a[0]) || 1); return a[1] + u * (b[1] - a[1]); }
+      }
+      return pts[pts.length - 1][1];
+    };
+  }
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var host = CYL.el('div', { class: 'pl-viewhost' });
+    stage.appendChild(host);
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see its picture here.' })]);
+    stage.appendChild(veil);
+    var cur = null, revealed = false;
+    function hint(text) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The picture' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: text }));
+    }
+    function idle() {                                      // a neutral placeholder the same size as a real view
+      host.innerHTML = '';
+      var g = CYL.el('div', { class: 'pl-ghost', 'aria-hidden': 'true' });
+      [62, 38, 80, 24, 54].forEach(function (w, i) {
+        var r = CYL.el('div', { class: 'pl-ghost-row' }), b = CYL.el('span');
+        b.style.marginLeft = (i % 2 ? 18 : 6) + '%'; b.style.width = w * 0.7 + '%';
+        r.appendChild(b); g.appendChild(r);
+      });
+      host.appendChild(g);
+      host.setAttribute('role', 'img');
+      host.setAttribute('aria-label', 'Placeholder: the picture for the current problem appears here after you solve it or open its solution.');
+    }
+    function build(vw) {
+      host.innerHTML = '';
+      host.removeAttribute('role'); host.removeAttribute('aria-label');
+      host.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title }));
+      var ch = ENERGY.chart(host, { x: vw.x, y: vw.y, height: 280, ariaLabel: vw.aria, legend: vw.legend || null });
+      if (vw.shade) {
+        var f = interp(vw.shade.pts), a = Math.min(vw.shade.from, vw.shade.to), b = Math.max(vw.shade.from, vw.shade.to);
+        if (vw.shade.signed) {
+          ch.area(function (x) { return Math.max(0, f(x)); }, { domain: [a, b], color: 'good', fillOpacity: 0.28 });
+          ch.area(function (x) { return Math.min(0, f(x)); }, { domain: [a, b], color: 'bad', fillOpacity: 0.28 });
+        } else ch.area(f, { domain: [a, b], color: vw.shade.color || 'accent', fillOpacity: 0.28 });
+      }
+      if (vw.y.min < 0 && vw.y.max > 0) ch.hline(0, { color: 'ink', dashed: false, width: 1 });
+      (vw.vlines || []).forEach(function (vl) { ch.vline(vl.x, { color: 'warn', width: 1.2, label: vl.label || null }); });
+      vw.curves.forEach(function (c) { ch.polyline(c.pts, { color: c.color, width: 2.6, dashed: c.dashed }); });
+      (vw.marks || []).forEach(function (mk) { ch.marker([mk.x, mk.y], { color: mk.color || 'accent', r: 5, label: mk.label || null }); });
+    }
+    function fillPanel(vw) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Numbers' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      if (vw.note) { var n = CYL.el('p', { class: 'pl-panel-note', html: vw.note }); panel.appendChild(n); CYL.renderMath(n); }
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+      hint('Hidden until you solve the problem (or open its solution), so it does not give the answer away.');
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      build(cur);
+      veil.hidden = true;
+      fillPanel(cur);
+    };
+    VIEW.isRevealed = function () { return revealed; };
+  });
+
+  /* ================================================================ 8. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like incline-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>
