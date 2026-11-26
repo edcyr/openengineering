@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Lab · Free Vibration</title>
+<meta name="description" content="Unlimited randomized practice on free vibration: simple harmonic motion, velocity and acceleration, natural frequency, initial conditions, vertical springs, springs in parallel and series, the simple pendulum and energy, with hints, worked solutions and a graph of each problem.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/vib.js"></script>
+<style>
+  /* Practice Lab: page-specific layout (design tokens from module.css only) */
+  .pl-label { margin: 0 0 8px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .pl-topics { margin: 1.2rem 0 1rem; }
+  .pl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-bar .spacer { flex: 1 1 auto; }
+  .pl-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pl-pill { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border-radius: 99px; background: var(--bg-sunken); color: var(--ink-muted); font-size: 0.84rem; white-space: nowrap; }
+  .pl-pill strong { color: var(--ink); font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+  .pl-pill.is-hot strong { color: var(--c-good); }
+  .pl-meta { margin: 8px 2px 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-meta code { font-size: 0.92em; }
+  .pl-card { margin: 1rem 0 0; }
+  .pl-next { margin: 12px 0 0; }
+  .pl-next[hidden] { display: none; }
+  .pl-veil { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 18px; pointer-events: none; }
+  .pl-veil[hidden] { display: none; }
+  .pl-veil > p { max-width: 21rem; margin: 0; padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-elev); background: color-mix(in srgb, var(--bg-elev) 90%, transparent); color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; text-align: center; }
+  .pl-panel-note { margin: 0; color: var(--ink-muted); font-size: 0.86rem; line-height: 1.5; }
+  .pl-loadrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; margin: 10px 0 0; }
+  .pl-loadrow .field { flex: 1 1 14rem; }
+  .pl-loadrow input { width: 100%; }
+  .pl-loadmsg { margin: 8px 0 0; font-size: 0.88rem; min-height: 1.3em; }
+  .pl-loadmsg.is-bad { color: var(--c-bad); }
+  .pl-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 10px; margin: 1rem 0; }
+  .pl-tile { min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-elev); }
+  .pl-tile-label { margin: 0; color: var(--ink-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+  .pl-tile-value { margin: 2px 0 0; color: var(--ink); font-size: 1.45rem; font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pl-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-sunken); }
+  .pl-confirm[hidden] { display: none; }
+  .pl-confirm p { margin: 0; flex: 1 1 14rem; }
+  #progress-table th, #progress-table td { padding-left: 10px; padding-right: 10px; }
+  #progress-table td { text-align: right; white-space: nowrap; }
+  #progress-table thead th:not(:first-child) { text-align: right; }
+  #progress-table tfoot th, #progress-table tfoot td { border-top: 2px solid var(--line); font-weight: 700; }
+  @media (max-width: 520px) {
+    #progress-table th, #progress-table td { padding-left: 6px; padding-right: 6px; }
+    #progress-table thead th { letter-spacing: 0.02em; }
+  }
+  .pl-typing code { white-space: nowrap; }
+  .pl-viewhost { min-height: 250px; padding: 16px 18px 12px; }
+  .pl-viewhost .lg { margin: 0; }
+  .pl-ghost { display: grid; gap: 14px; padding: 34px 0 10px; opacity: 0.35; }
+  .pl-ghost-row { height: 22px; border-radius: 4px; background: var(--bg-sunken); }
+  .pl-ghost-row span { display: block; height: 100%; border-radius: 4px; background: var(--line); }
+  @media (max-width: 520px) { .pl-viewhost { padding: 12px 10px 8px; } }
+</style>
+</head>
+<body data-page="practice" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Practice · Unlimited problems</p>
+    <h1>Practice Lab</h1>
+    <p class="lede">Fresh problems on everything in the module, as many as you like: simple harmonic motion, velocity and acceleration, natural frequency, initial conditions and the time response, vertical springs, springs in parallel and in series, the simple pendulum and energy. Each problem has hints, a full worked solution and a graph of the motion.</p>
+  </header>
+
+  <section id="lab">
+    <h2>Practice problems</h2>
+    <p>Choose a topic, or <strong>Mixed</strong> for a bit of everything. Type your answer and press <strong>Check</strong> (or Enter). Stuck? Take a hint, or open the worked solution, then try another problem of the same kind.</p>
+
+    <div class="pl-topics">
+      <p class="pl-label" id="lab-topics-label">Topic</p>
+      <div class="chip-row" id="lab-topics" role="group" aria-labelledby="lab-topics-label"></div>
+    </div>
+
+    <div class="pl-bar">
+      <button type="button" class="btn primary" id="lab-new">New problem</button>
+      <div class="pl-pills" aria-live="polite">
+        <span class="pl-pill" id="lab-streak-pill">Streak <strong id="lab-streak">0</strong></span>
+        <span class="pl-pill">Best <strong id="lab-best">0</strong></span>
+        <span class="pl-pill">Solved <strong id="lab-solved">0</strong></span>
+      </div>
+    </div>
+    <p class="pl-meta" id="lab-meta">Problem code <code id="lab-code">…</code><span id="lab-lesson"></span></p>
+
+    <div class="check pl-card" id="lab-card"></div>
+    <div class="btn-row pl-next" id="lab-next" hidden>
+      <button type="button" class="btn primary" id="lab-next-btn">Next problem</button>
+      <span class="small muted" id="lab-next-msg"></span>
+    </div>
+
+    <figure class="figure wide" id="lab-fig" aria-labelledby="lab-fig-cap">
+      <div class="viz">
+        <div class="viz-stage" id="lab-stage"></div>
+        <div class="viz-controls" id="lab-controls"></div>
+      </div>
+      <figcaption id="lab-fig-cap"><strong>Figure P.1</strong> The picture behind the current problem: the displacement, velocity or energy of the vibration against time, or its velocity against its displacement. It stays hidden until you answer or open the solution, so it does not give the answer away.</figcaption>
+    </figure>
+
+    <details class="reveal" id="lab-load">
+      <summary>Load a problem by its code</summary>
+      <div>
+        <p>Every problem has a code such as <code>nat-40718</code>, shown above the problem and in the page address. The same code always gives the same problem, so you can send one to a classmate or your instructor, or come back to it later.</p>
+        <div class="pl-loadrow">
+          <div class="field">
+            <label for="lab-load-input">Problem code</label>
+            <input type="text" class="q-input" id="lab-load-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. nat-40718">
+          </div>
+          <button type="button" class="btn" id="lab-load-btn">Load problem</button>
+        </div>
+        <p class="pl-loadmsg" id="lab-load-msg" aria-live="polite"></p>
+      </div>
+    </details>
+  </section>
+
+  <section id="progress">
+    <h2>Your progress</h2>
+    <p>Your <strong>streak</strong> counts problems solved on the first try, in a row. Hints are fine. A wrong answer, or opening the solution before you answer, starts the streak again.</p>
+    <div class="pl-totals" id="progress-totals"></div>
+    <div class="table-wrap">
+      <table class="data" id="progress-table">
+        <caption>Problems by topic. Rate = first-try solves as a share of problems tried.</caption>
+        <thead><tr><th scope="col">Topic</th><th scope="col">Tried</th><th scope="col">First try</th><th scope="col">Solved</th><th scope="col">Rate</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn small" id="progress-reset">Reset stats</button>
+    </div>
+    <div class="pl-confirm" id="progress-confirm" hidden>
+      <p>Reset your streak and all topic stats? This cannot be undone.</p>
+      <button type="button" class="btn small primary" id="progress-reset-yes">Yes, reset</button>
+      <button type="button" class="btn small" id="progress-reset-no">Cancel</button>
+    </div>
+    <p class="small muted" id="progress-note"></p>
+  </section>
+
+  <section id="typing">
+    <h2>Typing answers</h2>
+    <p>Answer boxes understand arithmetic, so you can type the expression you wrote on paper instead of working it out on a calculator first. Each box shows how it read your input (for example <q>= 23.16</q>), so you can catch a typo before you check.</p>
+    <div class="table-wrap pl-typing">
+      <table class="data">
+        <caption>What you can type</caption>
+        <thead><tr><th scope="col">You type</th><th scope="col">It reads</th></tr></thead>
+        <tbody>
+          <tr><td><code>sqrt(900/4)</code></td><td>\(\sqrt{900/4} = 15\)</td></tr>
+          <tr><td><code>2*pi*sqrt(0.8/9.81)</code></td><td>\(2\pi\sqrt{0.8/9.81} = 1.794\)</td></tr>
+          <tr><td><code>sqrt(0.03^2+(0.4/10)^2)</code></td><td>\(\sqrt{0.03^2 + (0.4/10)^2} = 0.05\)</td></tr>
+          <tr><td><code>0.05*sin(8*0.25+0.6)</code></td><td>\(0.05\sin 2.6 = 0.02578\) (angles in radians)</td></tr>
+          <tr><td><code>atan(-0.03/0.04)*180/pi</code></td><td>\(\tan^{-1}(-0.75)\) in degrees: \(-36.87\)</td></tr>
+          <tr><td><code>-0.45</code></td><td>\(-0.45\): a velocity in the negative direction</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Give each answer in the unit shown next to its box: meters, seconds, hertz, radians per second, newtons per meter, newtons, joules or degrees. Angles inside <code>sin</code> and <code>cos</code> are in radians; phase angles and pendulum angles are asked for in degrees. Signs matter where the problem names a positive direction.</p>
+    <aside class="callout tip">
+      <p class="callout-title">Tip</p>
+      <p>Typing the whole expression is faster and safer than rounding at each step: <code>2*pi*sqrt(2/800)</code> is exact, while a rounded square root carried into later steps can drift past the 1% tolerance.</p>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ==============================================================================================
+   Practice Lab
+   1. Helpers  2. Generators (one per topic)  5. Registry  6. Self-test (window.__practiceSelfTest)
+   7. The shared view (a graph of the motion, with an optional shaded area)  8. The lab UI and stats
+   Every generator draws "nice" values with CYLQuiz.rng(seed) and computes the answer, the hints, the worked
+   solution and the picture from the same numbers, so nothing is typed per instance.
+   ============================================================================================== */
+(function () {
+  'use strict';
+  /* ================================================================ 1. Helpers */
+  var PI = Math.PI, G = 9.81;
+  function m(t) { return '\\(' + t + '\\)'; }
+  function M(t) { return '\\[' + t + '\\]'; }
+  function n4(x) { return CYL.fmtTex(Math.abs(x) < 5e-12 ? 0 : x, 4); }       // a computed number, 4 significant figures
+  function nn(x) { return CYL.fmtTex(+(+x).toPrecision(6), 6); }             // a given (nice) number, shown exactly
+  function typed(x) { return CYL.fmt(x, 6).replace(/\u2212/g, '-').replace(/\u2009/g, ''); }
+  function far(a, b) { return Math.abs(a - b) > 0.03 * Math.max(Math.abs(a), Math.abs(b)) + 1e-9; }
+  function wrongOf(right, cands) { for (var i = 0; i < cands.length; i++) if (isFinite(cands[i]) && far(cands[i], right)) return cands[i]; return right * 1.5 + 1; }
+  function pickW(rng, pairs) {
+    var tot = 0, i; for (i = 0; i < pairs.length; i++) tot += pairs[i][1];
+    var r = rng.next() * tot;
+    for (i = 0; i < pairs.length; i++) { r -= pairs[i][1]; if (r < 0) return pairs[i][0]; }
+    return pairs[pairs.length - 1][0];
+  }
+  function range(a, b, st) { var o = []; for (var x = a; x <= b + 1e-9; x += st) o.push(+x.toFixed(6)); return o; }
+  var MS = '\\ \\text{m/s}', MU = '\\ \\text{m}', SU = '\\ \\text{s}', AU = '\\ \\text{m/s}^2', KMH = '\\ \\text{km/h}';
+  function ro(label, tex, color) { return { label: label, tex: tex, color: color || null }; }
+  function done(spec, view, right, wrong) { return { spec: spec, view: view, test: { right: [{ value: typed(right) }], wrong: [{ value: typed(wrong) }] } }; }
+  function doneExpr(spec, view, right, wrong) { return { spec: spec, view: view, test: { right: [{ value: right }], wrong: [{ value: wrong }] } }; }
+  function mcDone(spec, view) {
+    var k = -1; spec.choices.forEach(function (c, i) { if (c.correct) k = i; });
+    return { spec: spec, view: view, test: { right: [k], wrong: [(k + 1) % spec.choices.length] } };
+  }
+  function sample(f, a, b, n) { var o = []; n = n || 160; for (var i = 0; i <= n; i++) { var x = a + (b - a) * i / n, y = f(x); if (isFinite(y)) o.push([x, y]); } return o; }
+  function ext(pts, incl0) { var lo = incl0 === false ? Infinity : 0, hi = incl0 === false ? -Infinity : 0; pts.forEach(function (q) { lo = Math.min(lo, q[1]); hi = Math.max(hi, q[1]); }); if (hi - lo < 1e-9) { hi += 1; lo -= 1; } var p = 0.08 * (hi - lo); return [lo - p, hi + p]; }
+  // ---- the view: a chart with curves, an optional shaded area, markers and vertical lines
+  function graph(o) {
+    var all = [];
+    (o.curves || []).forEach(function (c) { all = all.concat(c.pts); });
+    if (o.shade) all = all.concat(o.shade.pts);
+    var yr = o.y.range || ext(all, o.y.incl0);
+    return { kind: 'graph', title: o.title, aria: o.aria, x: { label: o.x.label, min: o.x.min, max: o.x.max }, y: { label: o.y.label, min: yr[0], max: yr[1] },
+      curves: o.curves || [], shade: o.shade || null, marks: o.marks || [], vlines: o.vlines || [], readouts: o.readouts, note: o.note, legend: o.legend || null };
+  }
+  function curve(pts, color, label, dashed) { return { pts: pts, color: color, label: label || null, dashed: !!dashed }; }
+  var NU = '\\ \\text{N}', NM = '\\ \\text{N/m}', KG = '\\ \\text{kg}', HZ = '\\ \\text{Hz}', RS = '\\ \\text{rad/s}', JU = '\\ \\text{J}', MM = '\\ \\text{mm}';
+  var DEG = PI / 180;
+  // x(t) of a free vibration from its initial conditions
+  function resp(wn, x0, v0) { return function (t) { return x0 * Math.cos(wn * t) + v0 / wn * Math.sin(wn * t); }; }
+  function xGraph(o) {
+    var T = o.T, f = o.f;
+    return graph({ title: o.title || 'Displacement against time', aria: o.aria || 'The displacement of the vibrating body against time: a sine wave.',
+      x: { label: '\\(t\\) (s)', min: 0, max: T }, y: { label: o.ylabel || '\\(x\\) (m)', incl0: true }, curves: [curve(sample(f, 0, T, 240), 'z')].concat(o.extra || []),
+      marks: o.marks || [], vlines: o.vlines || [], readouts: o.readouts, note: o.note, legend: o.legend || null });
+  }
+
+  /* ================================================================ 2. Generators */
+
+  /* ---------- 2.1 Simple harmonic motion (Lesson 1) ---------- */
+  function genShm(rng) {
+    var kind = pickW(rng, [['read', 3], ['cycles', 2], ['xat', 3], ['omega', 2]]), spec, ans, wrong;
+    var C = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12]), w = rng.pick([2, 3, 4, 5, 6, 8, 10, 12, 15]), ph = rng.pick([0, 0.3, 0.5, 0.8, 1.2]);
+    var f = function (t) { return C * Math.sin(w * t + ph); }, tau = 2 * PI / w;
+    var xTex = 'x = ' + nn(C) + '\\sin(' + nn(w) + 't' + (ph ? ' + ' + nn(ph) : '') + ')';
+    if (kind === 'read') {
+      var ask = rng.pick(['f', 'tau']);
+      ans = ask === 'f' ? w / (2 * PI) : tau;
+      spec = { type: 'numeric', prompt: 'A body moves with ' + m(xTex + MU) + ', with \\(t\\) in seconds. Find its ' + (ask === 'f' ? 'frequency in hertz' : 'period') + '.',
+        label: ask === 'f' ? '\\(f =\\)' : '\\(\\tau =\\)', answer: ans, unit: ask === 'f' ? 'Hz' : 's',
+        hints: ['The circular frequency is the coefficient of \\(t\\): \\(\\omega = ' + nn(w) + '\\ \\text{rad/s}\\).', ask === 'f' ? '\\(f = \\omega/2\\pi\\).' : '\\(\\tau = 2\\pi/\\omega\\).'],
+        explain: ask === 'f' ? '\\(f = \\omega/2\\pi\\).' : '\\(\\tau = 2\\pi/\\omega\\).',
+        solution: M(ask === 'f' ? 'f = \\frac{\\omega}{2\\pi} = \\frac{' + nn(w) + '}{2\\pi} = ' + n4(ans) + HZ : '\\tau = \\frac{2\\pi}{\\omega} = \\frac{2\\pi}{' + nn(w) + '} = ' + n4(ans) + SU) };
+      wrong = wrongOf(ans, [ask === 'f' ? w : 1 / w, ask === 'f' ? 1 / w : w / (2 * PI), ans * 2 * PI]);
+    } else if (kind === 'cycles') {
+      var n = rng.pick([5, 8, 10, 12, 15, 20, 24, 30]), secs = rng.pick([2, 3, 4, 5, 6, 10]);
+      ans = 2 * PI * n / secs; w = ans; tau = secs / n; f = function (t) { return C * Math.sin(w * t); };
+      spec = { type: 'numeric', prompt: 'A part vibrates through ' + n + ' complete cycles in ' + m(nn(secs) + SU) + '. Find its circular frequency \\(\\omega\\).', label: '\\(\\omega =\\)', answer: ans, unit: 'rad/s',
+        hints: ['The frequency is cycles per second: \\(f = ' + n + '/' + nn(secs) + '\\).', '\\(\\omega = 2\\pi f\\).'], explain: '\\(\\omega = 2\\pi f\\).',
+        solution: M('f = \\frac{' + n + '}{' + nn(secs) + '} = ' + n4(n / secs) + HZ + '\\qquad \\omega = 2\\pi f = ' + n4(ans) + RS) };
+      wrong = wrongOf(ans, [n / secs, secs / n, 2 * PI * secs / n]);
+      xTex = 'x = ' + nn(C) + '\\sin(' + n4(w) + 't)';
+    } else if (kind === 'xat') {
+      var t0 = rng.pick([0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75]);
+      ans = f(t0);
+      if (Math.abs(ans) < 0.05 * C) { t0 += 0.05; ans = f(t0); }
+      spec = { type: 'numeric', prompt: 'A body moves with ' + m(xTex + MU) + '. Find its displacement at ' + m('t = ' + nn(t0) + SU) + '.', label: '\\(x =\\)', answer: ans, unit: 'm',
+        hints: ['The angle is \\(' + nn(w) + '(' + nn(t0) + ')' + (ph ? ' + ' + nn(ph) : '') + ' = ' + n4(w * t0 + ph) + '\\ \\text{rad}\\).', 'Set your calculator to radians.'],
+        explain: 'Substitute, in radians.', solution: M('x = ' + nn(C) + '\\sin(' + n4(w * t0 + ph) + ') = ' + n4(ans) + MU) };
+      wrong = wrongOf(ans, [C * Math.sin((w * t0 + ph) * DEG), C * Math.cos(w * t0 + ph), -ans]);
+      return done(spec, xGraph({ f: f, T: 2.2 * tau, marks: [{ x: t0, y: ans, color: 'z' }], vlines: [{ x: t0 }], readouts: [ro('\\(x(' + nn(t0) + ')\\)', n4(ans) + MU, 'z'), ro('Period', n4(tau) + SU)], note: 'Angles inside the sine are in radians.' }), ans, wrong);
+    } else {
+      var start = rng.pick(['zero', 'top']);
+      var Tp = rng.pick([0.2, 0.25, 0.4, 0.5, 0.8, 1, 1.25, 2]);
+      w = 2 * PI / Tp; tau = Tp; ans = w;
+      f = start === 'zero' ? function (t) { return C * Math.sin(w * t); } : function (t) { return C * Math.cos(w * t); };
+      spec = { type: 'numeric', prompt: 'A body vibrates with a period of ' + m(nn(Tp) + SU) + ' and an amplitude of ' + m(nn(C * 1000) + MM) + '. At \\(t = 0\\) it is ' + (start === 'zero' ? 'at equilibrium, moving in the positive direction' : 'at its positive extreme') + '. Its motion is \\(x = C' + (start === 'zero' ? '\\sin' : '\\cos') + '\\,\\omega t\\). Find \\(\\omega\\).',
+        label: '\\(\\omega =\\)', answer: ans, unit: 'rad/s', hints: ['The phase angle only sets the start; the circular frequency comes from the period alone.', '\\(\\omega = 2\\pi/\\tau\\).'], explain: '\\(\\omega = 2\\pi/\\tau\\).',
+        solution: M('\\omega = \\frac{2\\pi}{' + nn(Tp) + '} = ' + n4(ans) + RS) + '<p>So \\(x = ' + nn(C) + (start === 'zero' ? '\\sin ' : '\\cos ') + n4(ans) + 't\\ \\text{m}\\).</p>' };
+      wrong = wrongOf(ans, [1 / Tp, 2 * PI * Tp, PI / Tp]);
+    }
+    return done(spec, xGraph({ f: f, T: 2.2 * tau, readouts: [ro('Period \\(\\tau\\)', n4(tau) + SU), ro('Circular frequency \\(\\omega\\)', n4(w) + RS)], note: 'One cycle takes one period; the body turns \\(2\\pi\\) radians around the reference circle per cycle.' }), ans, wrong);
+  }
+
+  /* ---------- 2.2 Velocity and acceleration in SHM (Lesson 2) ---------- */
+  function genXva(rng) {
+    var kind = pickW(rng, [['max', 3], ['at', 3], ['speedx', 2], ['back', 2]]), spec, ans, wrong;
+    var C = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1]), w = rng.pick([4, 5, 6, 8, 10, 12, 15, 20]);
+    var f = function (t) { return C * Math.sin(w * t); }, tau = 2 * PI / w, extra = [], legend = null, readouts;
+    if (kind === 'max') {
+      var ask = rng.pick(['v', 'a']), useF = rng.next() < 0.5, fr = w / (2 * PI);
+      if (useF) { var fz = rng.pick([1, 2, 2.5, 4, 5, 10]); w = 2 * PI * fz; fr = fz; tau = 1 / fz; f = function (t) { return C * Math.sin(w * t); }; }
+      ans = ask === 'v' ? C * w : C * w * w;
+      var given = useF ? 'vibrates at ' + m(nn(fr) + HZ) : 'moves with ' + m('x = ' + nn(C) + '\\sin ' + nn(w) + 't\\ \\text{m}');
+      spec = { type: 'numeric', prompt: 'A body ' + given + (useF ? ' with an amplitude of ' + m(nn(C * 1000) + MM) : '') + '. Find its largest ' + (ask === 'v' ? 'speed' : 'acceleration') + '.',
+        label: ask === 'v' ? '\\(v_{\\max} =\\)' : '\\(a_{\\max} =\\)', answer: ans, unit: ask === 'v' ? 'm/s' : 'm/s²',
+        hints: [useF ? 'First \\(\\omega = 2\\pi f = ' + n4(w) + '\\ \\text{rad/s}\\), and \\(C\\) in meters.' : '\\(C = ' + nn(C) + '\\ \\text{m}\\), \\(\\omega = ' + nn(w) + '\\ \\text{rad/s}\\).', ask === 'v' ? '\\(v_{\\max} = C\\omega\\).' : '\\(a_{\\max} = C\\omega^2\\).'],
+        explain: ask === 'v' ? '\\(v_{\\max} = C\\omega\\).' : '\\(a_{\\max} = C\\omega^2\\).',
+        solution: M((ask === 'v' ? 'v_{\\max} = C\\omega = ' + nn(C) + '(' + n4(w) + ')' : 'a_{\\max} = C\\omega^2 = ' + nn(C) + '(' + n4(w) + ')^2') + ' = ' + n4(ans) + (ask === 'v' ? MS : AU)) };
+      wrong = wrongOf(ans, [ask === 'v' ? C * w * w : C * w, ask === 'v' ? C * fr : C * fr * fr, ans * 2 * PI]);
+    } else if (kind === 'at') {
+      var ask2 = rng.pick(['v', 'a']), t0 = rng.pick([0.05, 0.1, 0.15, 0.2, 0.25, 0.3]);
+      var th = w * t0; if (Math.abs(Math.cos(th)) < 0.1 || Math.abs(Math.sin(th)) < 0.1) { t0 += 0.02; th = w * t0; }
+      ans = ask2 === 'v' ? C * w * Math.cos(th) : -C * w * w * Math.sin(th);
+      spec = { type: 'numeric', prompt: 'A body moves with ' + m('x = ' + nn(C) + '\\sin ' + nn(w) + 't\\ \\text{m}') + '. Find its ' + (ask2 === 'v' ? 'velocity' : 'acceleration') + ' at ' + m('t = ' + nn(t0) + SU) + '.',
+        label: ask2 === 'v' ? '\\(\\dot x =\\)' : '\\(\\ddot x =\\)', answer: ans, unit: ask2 === 'v' ? 'm/s' : 'm/s²',
+        hints: [ask2 === 'v' ? '\\(\\dot x = C\\omega\\cos\\omega t\\).' : '\\(\\ddot x = -C\\omega^2\\sin\\omega t\\).', 'The angle \\(\\omega t = ' + n4(th) + '\\ \\text{rad}\\).'],
+        explain: 'Differentiate, then substitute.', solution: M((ask2 === 'v' ? '\\dot x = ' + nn(C) + '(' + nn(w) + ')\\cos ' + n4(th) : '\\ddot x = -' + nn(C) + '(' + nn(w) + ')^2\\sin ' + n4(th)) + ' = ' + n4(ans) + (ask2 === 'v' ? MS : AU)) };
+      wrong = wrongOf(ans, [ask2 === 'v' ? C * w * Math.sin(th) : -C * w * Math.sin(th), -ans, C * Math.cos(th)]);
+      var g2 = ask2 === 'v' ? function (t) { return C * w * Math.cos(w * t); } : function (t) { return -C * w * w * Math.sin(w * t); };
+      return done(spec, graph({ title: (ask2 === 'v' ? 'Velocity' : 'Acceleration') + ' against time', aria: 'The ' + (ask2 === 'v' ? 'velocity' : 'acceleration') + ' of the body against time, with the asked instant marked.',
+        x: { label: '\\(t\\) (s)', min: 0, max: 2 * tau }, y: { label: ask2 === 'v' ? '\\(\\dot x\\) (m/s)' : '\\(\\ddot x\\) (m/s²)' }, curves: [curve(sample(g2, 0, 2 * tau, 240), ask2 === 'v' ? 'good' : 'bad')],
+        marks: [{ x: t0, y: ans, color: ask2 === 'v' ? 'good' : 'bad' }], vlines: [{ x: t0 }], readouts: [ro('\\(x(' + nn(t0) + ')\\)', n4(f(t0)) + MU, 'z'), ro(ask2 === 'v' ? '\\(\\dot x\\)' : '\\(\\ddot x\\)', n4(ans) + (ask2 === 'v' ? MS : AU), ask2 === 'v' ? 'good' : 'bad')],
+        note: ask2 === 'v' ? 'The velocity leads the displacement by a quarter cycle.' : 'The acceleration is the displacement times \\(-\\omega^2\\).' }), ans, wrong);
+    } else if (kind === 'speedx') {
+      var frac = rng.pick([0.25, 0.4, 0.5, 0.6, 0.75, 0.8]), xq = +(frac * C).toFixed(4);
+      ans = w * Math.sqrt(C * C - xq * xq);
+      spec = { type: 'numeric', prompt: 'A body in simple harmonic motion has an amplitude of ' + m(nn(C) + MU) + ' and a circular frequency of ' + m(nn(w) + RS) + '. Find its speed when it is ' + m(nn(xq) + MU) + ' from equilibrium.',
+        label: '\\(|\\dot x| =\\)', answer: ans, unit: 'm/s', hints: ['\\(\\dot x^2 = \\omega^2(C^2 - x^2)\\).', 'Square \\(C\\) and \\(x\\) before subtracting.'], explain: '\\(|\\dot x| = \\omega\\sqrt{C^2 - x^2}\\).',
+        solution: M('|\\dot x| = ' + nn(w) + '\\sqrt{' + nn(C) + '^2 - ' + nn(xq) + '^2} = ' + n4(ans) + MS) };
+      wrong = wrongOf(ans, [w * (C - xq), w * C, w * w * Math.sqrt(C * C - xq * xq)]);
+      var ell = []; for (var i = 0; i <= 200; i++) { var u = 2 * PI * i / 200; ell.push([C * Math.sin(u), C * w * Math.cos(u)]); }
+      return done(spec, graph({ title: 'Velocity against displacement', aria: 'The velocity of the body against its displacement: an ellipse, with the asked position marked.', x: { label: '\\(x\\) (m)', min: -1.15 * C, max: 1.15 * C }, y: { label: '\\(\\dot x\\) (m/s)' },
+        curves: [curve(ell, 'good')], marks: [{ x: xq, y: ans, color: 'good' }, { x: xq, y: -ans, color: 'good' }], vlines: [{ x: xq }], readouts: [ro('\\(v_{\\max} = C\\omega\\)', n4(C * w) + MS, 'good'), ro('\\(|\\dot x|\\) here', n4(ans) + MS, 'good')], note: 'The ellipse: the speed is largest at \\(x = 0\\) and zero at \\(x = \\pm C\\).' }), ans, wrong);
+    } else {
+      var vm = rng.pick([0.4, 0.5, 0.6, 0.8, 1, 1.2, 1.5, 2]), wq = rng.pick([5, 8, 10, 12, 15, 20, 25]), am = vm * wq, ask3 = rng.pick(['C', 'w']);
+      C = vm / wq; w = wq; tau = 2 * PI / w; f = function (t) { return C * Math.sin(w * t); };
+      ans = ask3 === 'C' ? C : w;
+      spec = { type: 'numeric', prompt: 'A body in simple harmonic motion has a largest speed of ' + m(nn(vm) + MS) + ' and a largest acceleration of ' + m(nn(am) + AU) + '. Find its ' + (ask3 === 'C' ? 'amplitude' : 'circular frequency') + '.',
+        label: ask3 === 'C' ? '\\(C =\\)' : '\\(\\omega =\\)', answer: ans, unit: ask3 === 'C' ? 'm' : 'rad/s',
+        hints: ['\\(a_{\\max}/v_{\\max} = C\\omega^2/(C\\omega) = \\omega\\).', ask3 === 'C' ? 'Then \\(C = v_{\\max}/\\omega\\).' : 'Divide.'], explain: '\\(\\omega = a_{\\max}/v_{\\max}\\).',
+        solution: M('\\omega = \\frac{' + nn(am) + '}{' + nn(vm) + '} = ' + n4(w) + RS + (ask3 === 'C' ? '\\qquad C = \\frac{' + nn(vm) + '}{' + n4(w) + '} = ' + n4(C) + MU : '')) };
+      wrong = wrongOf(ans, [ask3 === 'C' ? vm * wq : am / (vm * vm), ask3 === 'C' ? vm / (wq * wq) : Math.sqrt(am), ans * 2]);
+    }
+    readouts = [ro('\\(v_{\\max} = C\\omega\\)', n4(C * w) + MS, 'good'), ro('\\(a_{\\max} = C\\omega^2\\)', n4(C * w * w) + AU, 'bad')];
+    extra = [curve(sample(function (t) { return C * w * Math.cos(w * t) / Math.max(w, 1e-9); }, 0, 2 * tau, 240), 'good', null, true)];
+    legend = [{ label: '\\(x\\)', color: 'z' }, { label: '\\(\\dot x/\\omega\\)', color: 'good' }];
+    return done(spec, xGraph({ f: f, T: 2 * tau, extra: extra, legend: legend, readouts: readouts, note: 'Dashed: the velocity divided by \\(\\omega\\), a quarter cycle ahead of the displacement.' }), ans, wrong);
+  }
+
+  /* ---------- 2.3 Spring–mass system and natural frequency (Lesson 3) ---------- */
+  function genNat(rng) {
+    var kind = pickW(rng, [['freq', 3], ['period', 2], ['stiff', 2], ['mass', 2], ['ratio', 2]]), spec, ans, wrong;
+    var k = rng.pick([100, 150, 200, 250, 300, 400, 500, 600, 800, 900, 1200, 1500, 2000]), mm = rng.pick([0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8]);
+    var wn = Math.sqrt(k / mm), x0 = rng.pick([0.02, 0.03, 0.05, 0.08, 0.1]);
+    if (kind === 'freq' || kind === 'period') {
+      var ask = kind === 'freq' ? rng.pick(['w', 'f']) : 'tau';
+      ans = ask === 'w' ? wn : ask === 'f' ? wn / (2 * PI) : 2 * PI / wn;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block on a smooth surface is attached to a spring with ' + m('k = ' + nn(k) + NM) + '. Find its ' + (ask === 'w' ? 'natural frequency \\(\\omega_n\\)' : ask === 'f' ? 'frequency in hertz' : 'period') + '.',
+        label: ask === 'w' ? '\\(\\omega_n =\\)' : ask === 'f' ? '\\(f_n =\\)' : '\\(\\tau =\\)', answer: ans, unit: ask === 'w' ? 'rad/s' : ask === 'f' ? 'Hz' : 's',
+        hints: ['\\(\\omega_n = \\sqrt{k/m} = ' + n4(wn) + '\\ \\text{rad/s}\\).', ask === 'w' ? 'That is the answer.' : ask === 'f' ? '\\(f_n = \\omega_n/2\\pi\\).' : '\\(\\tau = 2\\pi/\\omega_n\\).'],
+        explain: '\\(\\omega_n = \\sqrt{k/m}\\).', solution: M('\\omega_n = \\sqrt{\\frac{' + nn(k) + '}{' + nn(mm) + '}} = ' + n4(wn) + RS + (ask === 'f' ? '\\qquad f_n = \\frac{\\omega_n}{2\\pi} = ' + n4(ans) + HZ : ask === 'tau' ? '\\qquad \\tau = \\frac{2\\pi}{\\omega_n} = ' + n4(ans) + SU : '')) };
+      wrong = wrongOf(ans, [k / mm, Math.sqrt(mm / k), ask === 'f' ? wn : wn / (2 * PI), Math.sqrt(k * mm)]);
+    } else if (kind === 'stiff') {
+      var fz = rng.pick([1, 1.5, 2, 2.5, 3, 4, 5]);
+      wn = 2 * PI * fz; k = mm * wn * wn; ans = k;
+      spec = { type: 'numeric', prompt: 'What spring stiffness makes a ' + m(nn(mm) + KG) + ' block vibrate at ' + m(nn(fz) + HZ) + '?', label: '\\(k =\\)', answer: ans, unit: 'N/m',
+        hints: ['\\(\\omega_n = 2\\pi f_n\\).', '\\(k = m\\omega_n^2\\).'], explain: '\\(k = m(2\\pi f_n)^2\\).',
+        solution: M('\\omega_n = 2\\pi(' + nn(fz) + ') = ' + n4(wn) + RS + '\\qquad k = ' + nn(mm) + '(' + n4(wn) + ')^2 = ' + n4(ans) + NM) };
+      wrong = wrongOf(ans, [mm * fz * fz, mm * wn, mm * 2 * PI * fz * fz]);
+    } else if (kind === 'mass') {
+      var Tp = rng.pick([0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1]);
+      wn = 2 * PI / Tp; mm = k / (wn * wn); ans = mm;
+      spec = { type: 'numeric', prompt: 'A block on a spring with ' + m('k = ' + nn(k) + NM) + ' vibrates with a period of ' + m(nn(Tp) + SU) + '. Find the block\u2019s mass.', label: '\\(m =\\)', answer: ans, unit: 'kg',
+        hints: ['\\(\\omega_n = 2\\pi/\\tau\\).', '\\(\\omega_n^2 = k/m\\), so \\(m = k/\\omega_n^2\\).'], explain: '\\(m = k/\\omega_n^2\\).',
+        solution: M('\\omega_n = \\frac{2\\pi}{' + nn(Tp) + '} = ' + n4(wn) + RS + '\\qquad m = \\frac{k}{\\omega_n^2} = ' + n4(ans) + KG) };
+      wrong = wrongOf(ans, [k * Tp / (2 * PI), k / wn, k * Tp * Tp]);
+    } else {
+      var r = rng.pick([2, 3, 4, 9]), what = rng.pick(['mass', 'stiff']), T1 = rng.pick([0.4, 0.5, 0.6, 0.8, 1.2]);
+      ans = what === 'mass' ? T1 * Math.sqrt(r) : T1 / Math.sqrt(r);
+      spec = { type: 'numeric', prompt: 'A block on a spring vibrates with a period of ' + m(nn(T1) + SU) + '. Find the new period if the ' + (what === 'mass' ? 'mass is multiplied by ' + r : 'spring is replaced by one ' + r + ' times as stiff') + '.',
+        label: '\\(\\tau =\\)', answer: ans, unit: 's', hints: ['\\(\\tau = 2\\pi\\sqrt{m/k}\\).', what === 'mass' ? 'The period grows with \\(\\sqrt m\\).' : 'The period shrinks with \\(\\sqrt k\\).'],
+        explain: 'Scale by \\(\\sqrt{' + r + '}\\).', solution: M('\\tau\' = ' + nn(T1) + (what === 'mass' ? '\\sqrt{' + r + '}' : '/\\sqrt{' + r + '}') + ' = ' + n4(ans) + SU) };
+      wrong = wrongOf(ans, [what === 'mass' ? T1 * r : T1 / r, what === 'mass' ? T1 / Math.sqrt(r) : T1 * Math.sqrt(r), T1]);
+      var wa = 2 * PI / T1, wb = 2 * PI / ans;
+      return done(spec, graph({ title: 'Before and after', aria: 'The displacement against time before the change and after it, both released from the same displacement.', x: { label: '\\(t\\) (s)', min: 0, max: 2.5 * Math.max(T1, ans) }, y: { label: '\\(x\\) (m)' },
+        curves: [curve(sample(resp(wa, 0.05, 0), 0, 2.5 * Math.max(T1, ans), 240), 'z', null, true), curve(sample(resp(wb, 0.05, 0), 0, 2.5 * Math.max(T1, ans), 240), 'z')],
+        readouts: [ro('Before', nn(T1) + SU), ro('After', n4(ans) + SU)], legend: [{ label: 'before', color: 'z', dashed: true }, { label: 'after', color: 'z' }], note: 'The amplitude does not change the period; only \\(m\\) and \\(k\\) do.' }), ans, wrong);
+    }
+    return done(spec, xGraph({ f: resp(wn, x0, 0), T: 3 * 2 * PI / wn, readouts: [ro('\\(\\omega_n\\)', n4(wn) + RS), ro('\\(\\tau\\)', n4(2 * PI / wn) + SU)], note: 'Released from rest at \\(x_0 = ' + nn(x0) + '\\ \\text{m}\\): \\(x = x_0\\cos\\omega_n t\\).' }), ans, wrong);
+  }
+
+  /* ---------- 2.4 Initial conditions and the time response (Lesson 4) ---------- */
+  function genIc(rng) {
+    var kind = pickW(rng, [['amp', 3], ['phase', 2], ['xat', 3], ['vat', 2]]), spec, ans, wrong;
+    var wn = rng.pick([4, 5, 6, 8, 10, 12, 15, 20]), x0 = rng.pick([-0.05, -0.04, -0.03, -0.02, 0.02, 0.03, 0.04, 0.05, 0.06]), v0 = rng.pick([-0.8, -0.6, -0.4, -0.3, 0.3, 0.4, 0.5, 0.6, 0.8, 1]);
+    var A = v0 / wn, B = x0, C = Math.sqrt(A * A + B * B), phi = Math.atan2(B, A), f = resp(wn, x0, v0), tau = 2 * PI / wn;
+    var given = 'A block on a spring has \\(\\omega_n = ' + nn(wn) + '\\ \\text{rad/s}\\). At \\(t = 0\\) it is at ' + m('x_0 = ' + nn(x0) + MU) + ' with ' + m('\\dot x_0 = ' + nn(v0) + MS) + '.';
+    var sol0 = M('A = \\frac{\\dot x_0}{\\omega_n} = \\frac{' + nn(v0) + '}{' + nn(wn) + '} = ' + n4(A) + MU + '\\qquad B = x_0 = ' + nn(x0) + MU);
+    if (kind === 'amp') {
+      ans = C;
+      spec = { type: 'numeric', prompt: given + ' Find the amplitude of the vibration.', label: '\\(C =\\)', answer: ans, unit: 'm',
+        hints: ['\\(A = \\dot x_0/\\omega_n\\) and \\(B = x_0\\).', '\\(C = \\sqrt{A^2 + B^2}\\).'], explain: '\\(C = \\sqrt{x_0^2 + (\\dot x_0/\\omega_n)^2}\\).',
+        solution: sol0 + M('C = \\sqrt{(' + n4(A) + ')^2 + (' + nn(x0) + ')^2} = ' + n4(C) + MU) };
+      wrong = wrongOf(ans, [Math.abs(x0) + Math.abs(A), Math.sqrt(x0 * x0 + v0 * v0), Math.abs(x0)]);
+    } else if (kind === 'phase') {
+      ans = phi / DEG;
+      if (Math.abs(ans) < 8) { x0 = x0 < 0 ? x0 - 0.02 : x0 + 0.02; B = x0; C = Math.sqrt(A * A + B * B); phi = Math.atan2(B, A); ans = phi / DEG; f = resp(wn, x0, v0); given = 'A block on a spring has \\(\\omega_n = ' + nn(wn) + '\\ \\text{rad/s}\\). At \\(t = 0\\) it is at ' + m('x_0 = ' + nn(x0) + MU) + ' with ' + m('\\dot x_0 = ' + nn(v0) + MS) + '.'; sol0 = M('A = \\frac{' + nn(v0) + '}{' + nn(wn) + '} = ' + n4(A) + MU + '\\qquad B = ' + nn(x0) + MU); }
+      spec = { type: 'numeric', prompt: given + ' Writing the motion as \\(x = C\\sin(\\omega_n t + \\phi)\\), find the phase angle \\(\\phi\\) in degrees, between \\(-180^\\circ\\) and \\(180^\\circ\\).', label: '\\(\\phi =\\)', answer: ans, unit: '°',
+        hints: ['\\(\\sin\\phi = B/C\\) and \\(\\cos\\phi = A/C\\), with \\(A = ' + n4(A) + '\\) and \\(B = ' + nn(x0) + '\\).', A < 0 ? '\\(A \\lt 0\\): add or subtract \\(180^\\circ\\) from the calculator\u2019s \\(\\tan^{-1}(B/A)\\).' : '\\(A \\gt 0\\): \\(\\phi = \\tan^{-1}(B/A)\\).'],
+        explain: 'Use the signs of \\(A\\) and \\(B\\) for the quadrant.', solution: sol0 + M('\\phi = ' + n4(ans) + '^\\circ') + '<p>' + (A < 0 ? '\\(A \\lt 0\\): the calculator\u2019s \\(\\tan^{-1}(B/A) = ' + n4(Math.atan(B / A) / DEG) + '^\\circ\\) is off by \\(180^\\circ\\).' : '\\(A \\gt 0\\), so \\(\\tan^{-1}(B/A)\\) is in the right quadrant.') + '</p>' };
+      wrong = Math.atan(B / A) / DEG; if (!far(wrong, ans)) wrong = ans + 90;
+    } else if (kind === 'xat' || kind === 'vat') {
+      var t0 = rng.pick([0.05, 0.1, 0.15, 0.2, 0.25, 0.3]);
+      var v = function (t) { return -x0 * wn * Math.sin(wn * t) + v0 * Math.cos(wn * t); };
+      ans = kind === 'xat' ? f(t0) : v(t0);
+      if (Math.abs(ans) < 0.05 * (kind === 'xat' ? C : C * wn)) { t0 += 0.03; ans = kind === 'xat' ? f(t0) : v(t0); }
+      spec = { type: 'numeric', prompt: given + ' Find its ' + (kind === 'xat' ? 'displacement' : 'velocity') + ' at ' + m('t = ' + nn(t0) + SU) + '.', label: kind === 'xat' ? '\\(x =\\)' : '\\(\\dot x =\\)', answer: ans, unit: kind === 'xat' ? 'm' : 'm/s',
+        hints: ['\\(x = (\\dot x_0/\\omega_n)\\sin\\omega_n t + x_0\\cos\\omega_n t\\).', kind === 'xat' ? 'Substitute \\(\\omega_n t = ' + n4(wn * t0) + '\\ \\text{rad}\\).' : 'Differentiate: \\(\\dot x = \\dot x_0\\cos\\omega_n t - x_0\\omega_n\\sin\\omega_n t\\).'],
+        explain: 'Use the response from the initial conditions.',
+        solution: M((kind === 'xat' ? 'x = ' + n4(A) + '\\sin ' + n4(wn * t0) + ' + (' + nn(x0) + ')\\cos ' + n4(wn * t0) : '\\dot x = ' + nn(v0) + '\\cos ' + n4(wn * t0) + ' - (' + nn(x0) + ')(' + nn(wn) + ')\\sin ' + n4(wn * t0)) + ' = ' + n4(ans) + (kind === 'xat' ? MU : MS)) };
+      wrong = wrongOf(ans, [kind === 'xat' ? v0 * Math.sin(wn * t0) + x0 * Math.cos(wn * t0) : v0 * Math.cos(wn * t0), kind === 'xat' ? x0 * Math.cos(wn * t0) : -v(t0), -ans]);
+      return done(spec, xGraph({ f: f, T: 2 * tau, marks: kind === 'xat' ? [{ x: t0, y: ans, color: 'z' }] : [], vlines: [{ x: t0 }],
+        readouts: [ro('\\(C\\)', n4(C) + MU, 'z'), ro('\\(\\phi\\)', n4(phi / DEG) + '^\\circ'), ro(kind === 'xat' ? '\\(x\\)' : '\\(\\dot x\\)', n4(ans) + (kind === 'xat' ? MU : MS), kind === 'xat' ? 'z' : 'good')], note: 'Starts at \\(x_0\\) with slope \\(\\dot x_0\\).' }), ans, wrong);
+    } else { ans = C; }
+    return done(spec, xGraph({ f: f, T: 2 * tau, marks: [{ x: 0, y: x0, color: 'z' }], readouts: [ro('\\(A\\)', n4(A) + MU), ro('\\(B\\)', nn(x0) + MU), ro('\\(C\\)', n4(C) + MU, 'z'), ro('\\(\\phi\\)', n4(phi / DEG) + '^\\circ')],
+      extra: [curve([[0, C], [2 * tau, C]], 'muted', null, true), curve([[0, -C], [2 * tau, -C]], 'muted', null, true)], note: 'The dashed lines are \\(\\pm C\\).' }), ans, wrong);
+  }
+
+  /* ---------- 2.5 Vertical springs (Lesson 5) ---------- */
+  function genStatic(rng) {
+    var kind = pickW(rng, [['fromdst', 3], ['dst', 2], ['force', 2], ['dstfor', 2]]), spec, ans, wrong;
+    var mm = rng.pick([0.5, 1, 1.5, 2, 3, 4, 5, 8, 10]), k = rng.pick([200, 300, 400, 500, 800, 1000, 1500, 2000, 2500, 4000]), dst = mm * G / k, wn = Math.sqrt(k / mm), y0 = 0.02;
+    if (kind === 'fromdst') {
+      var d = rng.pick([2, 5, 8, 10, 15, 20, 25, 40, 50, 80, 120]), ask = rng.pick(['w', 'f']);
+      dst = d / 1000; wn = Math.sqrt(G / dst); ans = ask === 'w' ? wn : wn / (2 * PI);
+      spec = { type: 'numeric', prompt: 'A machine on springs sags ' + m(nn(d) + MM) + ' under its own weight. Find its natural ' + (ask === 'w' ? 'frequency \\(\\omega_n\\)' : 'frequency in hertz') + '.', label: ask === 'w' ? '\\(\\omega_n =\\)' : '\\(f_n =\\)', answer: ans, unit: ask === 'w' ? 'rad/s' : 'Hz',
+        hints: ['\\(\\omega_n = \\sqrt{g/\\delta_{st}}\\), with \\(\\delta_{st}\\) in meters.', ask === 'f' ? 'Then \\(f_n = \\omega_n/2\\pi\\).' : 'No mass or stiffness is needed.'], explain: '\\(\\omega_n = \\sqrt{g/\\delta_{st}}\\).',
+        solution: M('\\omega_n = \\sqrt{\\frac{9.81}{' + nn(dst) + '}} = ' + n4(wn) + RS + (ask === 'f' ? '\\qquad f_n = ' + n4(ans) + HZ : '')) };
+      wrong = wrongOf(ans, [Math.sqrt(G / d), ask === 'w' ? wn / (2 * PI) : wn, Math.sqrt(dst / G)]);
+    } else if (kind === 'dst') {
+      ans = dst;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block hangs at rest from a spring with ' + m('k = ' + nn(k) + NM) + '. Find the static deflection.', label: '\\(\\delta_{st} =\\)', answer: ans, unit: 'm',
+        hints: ['At rest the spring holds the weight: \\(k\\,\\delta_{st} = mg\\).', 'Use \\(g = 9.81\\ \\text{m/s}^2\\).'], explain: '\\(\\delta_{st} = mg/k\\).', solution: M('\\delta_{st} = \\frac{' + nn(mm) + '(9.81)}{' + nn(k) + '} = ' + n4(ans) + MU) };
+      wrong = wrongOf(ans, [mm / k, k / (mm * G), mm * G * k / 1e6]);
+    } else if (kind === 'force') {
+      var C = rng.pick([0.005, 0.01, 0.015, 0.02]), hi = rng.next() < 0.6;
+      if (C >= dst) C = +(dst * 0.6).toFixed(4);
+      ans = k * (dst + (hi ? C : -C)); y0 = C;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block hangs from a spring with ' + m('k = ' + nn(k) + NM) + ' and vibrates vertically with an amplitude of ' + m(nn(C * 1000) + MM) + '. Find the ' + (hi ? 'largest' : 'smallest') + ' force in the spring.', label: hi ? '\\(F_{\\max} =\\)' : '\\(F_{\\min} =\\)', answer: ans, unit: 'N',
+        hints: ['\\(\\delta_{st} = mg/k = ' + n4(dst) + '\\ \\text{m}\\).', 'The spring force is \\(k(\\delta_{st} + y)\\), with \\(y\\) between \\(-C\\) and \\(+C\\).'], explain: '\\(F = k(\\delta_{st} ' + (hi ? '+' : '-') + ' C)\\).',
+        solution: M('\\delta_{st} = ' + n4(dst) + MU + '\\qquad F = ' + nn(k) + '(' + n4(dst) + (hi ? ' + ' : ' - ') + nn(C) + ') = ' + n4(ans) + NU) };
+      wrong = wrongOf(ans, [k * C, mm * G, k * (dst + (hi ? -C : C))]);
+    } else {
+      var fz = rng.pick([1, 1.5, 2, 3, 4, 5, 8]);
+      wn = 2 * PI * fz; dst = G / (wn * wn); ans = dst * 1000;
+      spec = { type: 'numeric', prompt: 'How far must a support sag under its load for the load to vibrate at ' + m(nn(fz) + HZ) + '? Give the static deflection in millimeters.', label: '\\(\\delta_{st} =\\)', answer: ans, unit: 'mm',
+        hints: ['\\(\\omega_n = 2\\pi f_n\\).', '\\(\\delta_{st} = g/\\omega_n^2\\).'], explain: '\\(\\delta_{st} = g/(2\\pi f_n)^2\\).',
+        solution: M('\\omega_n = ' + n4(wn) + RS + '\\qquad \\delta_{st} = \\frac{9.81}{' + n4(wn) + '^2} = ' + n4(dst) + MU + ' = ' + n4(ans) + MM) };
+      wrong = wrongOf(ans, [G / (fz * fz) * 1000, G / wn * 1000, dst]);
+    }
+    return done(spec, xGraph({ f: resp(wn, y0, 0), T: 3 * 2 * PI / wn, ylabel: '\\(y\\) (m)', readouts: [ro('\\(\\delta_{st}\\)', n4(dst) + MU), ro('\\(\\omega_n = \\sqrt{g/\\delta_{st}}\\)', n4(wn) + RS)], note: 'Measured from the static equilibrium position, the weight drops out of the equation of motion.' }), ans, wrong);
+  }
+
+  /* ---------- 2.6 Springs in parallel and in series (Lesson 6) ---------- */
+  function genSprings(rng) {
+    var kind = pickW(rng, [['par', 2], ['ser', 3], ['opp', 2], ['combo', 2], ['freq', 2]]), spec, ans, wrong;
+    var KS = [100, 150, 200, 240, 300, 400, 500, 600, 800, 1200], k1 = rng.pick(KS), k2 = rng.pick(KS), mm = rng.pick([0.5, 1, 1.5, 2, 3, 4]);
+    var kp = k1 + k2, ks = k1 * k2 / (k1 + k2), keq;
+    if (kind === 'par' || kind === 'ser' || kind === 'opp') {
+      keq = kind === 'ser' ? ks : kp; ans = keq;
+      var desc = kind === 'par' ? 'side by side, both attached to the block and to the wall' : kind === 'ser' ? 'end to end, the block at the far end' : 'on opposite sides of the block, each attached to its own wall';
+      spec = { type: 'numeric', prompt: 'Springs of ' + m(nn(k1) + NM) + ' and ' + m(nn(k2) + NM) + ' hold a block, ' + desc + '. Find their equivalent stiffness.', label: '\\(k_{eq} =\\)', answer: ans, unit: 'N/m',
+        hints: [kind === 'ser' ? 'Same force in both springs: series.' : 'Same displacement for both springs: parallel.', kind === 'ser' ? '\\(k_{eq} = k_1k_2/(k_1 + k_2)\\).' : '\\(k_{eq} = k_1 + k_2\\).'],
+        explain: kind === 'ser' ? 'Series.' : 'Parallel' + (kind === 'opp' ? ', though the springs are on opposite sides.' : '.'),
+        solution: M('k_{eq} = ' + (kind === 'ser' ? '\\frac{' + nn(k1) + '(' + nn(k2) + ')}{' + nn(k1) + ' + ' + nn(k2) + '}' : nn(k1) + ' + ' + nn(k2)) + ' = ' + n4(ans) + NM) };
+      wrong = wrongOf(ans, [kind === 'ser' ? kp : ks, Math.abs(k1 - k2), (k1 + k2) / 2]);
+    } else if (kind === 'combo') {
+      var k3 = rng.pick(KS), par = rng.next() < 0.5;
+      keq = par ? (kp * k3) / (kp + k3) : ks + k3; ans = keq;
+      spec = { type: 'numeric', prompt: par ? 'Springs of ' + m(nn(k1) + NM) + ' and ' + m(nn(k2) + NM) + ' side by side hold a light bar, which hangs from a third spring of ' + m(nn(k3) + NM) + '. A block hangs from the bar. Find the equivalent stiffness.'
+          : 'A block is held by a spring of ' + m(nn(k3) + NM) + ' and, side by side with it, by two springs of ' + m(nn(k1) + NM) + ' and ' + m(nn(k2) + NM) + ' joined end to end. Find the equivalent stiffness.', label: '\\(k_{eq} =\\)', answer: ans, unit: 'N/m',
+        hints: [par ? 'The first two springs are in parallel: \\(' + nn(kp) + '\\ \\text{N/m}\\).' : 'The two springs end to end are in series: \\(' + n4(ks) + '\\ \\text{N/m}\\).', par ? 'That pair is in series with the third spring.' : 'That pair is in parallel with the third spring.'],
+        explain: 'Reduce from the inside out.', solution: M(par ? 'k_p = ' + nn(kp) + NM + '\\qquad k_{eq} = \\frac{' + nn(kp) + '(' + nn(k3) + ')}{' + nn(kp) + ' + ' + nn(k3) + '} = ' + n4(ans) + NM : 'k_s = ' + n4(ks) + NM + '\\qquad k_{eq} = ' + n4(ks) + ' + ' + nn(k3) + ' = ' + n4(ans) + NM) };
+      wrong = wrongOf(ans, [kp + k3, 1 / (1 / k1 + 1 / k2 + 1 / k3), par ? ks + k3 : kp * k3 / (kp + k3)]);
+    } else {
+      var ser = rng.next() < 0.5;
+      keq = ser ? ks : kp; ans = Math.sqrt(keq / mm);
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block is held by springs of ' + m(nn(k1) + NM) + ' and ' + m(nn(k2) + NM) + ' ' + (ser ? 'joined end to end' : 'side by side') + '. Find its natural frequency \\(\\omega_n\\).', label: '\\(\\omega_n =\\)', answer: ans, unit: 'rad/s',
+        hints: [ser ? 'Series: \\(k_{eq} = ' + n4(ks) + '\\ \\text{N/m}\\).' : 'Parallel: \\(k_{eq} = ' + nn(kp) + '\\ \\text{N/m}\\).', '\\(\\omega_n = \\sqrt{k_{eq}/m}\\).'], explain: 'Equivalent spring, then \\(\\sqrt{k/m}\\).',
+        solution: M('k_{eq} = ' + n4(keq) + NM + '\\qquad \\omega_n = \\sqrt{\\frac{' + n4(keq) + '}{' + nn(mm) + '}} = ' + n4(ans) + RS) };
+      wrong = wrongOf(ans, [Math.sqrt((ser ? kp : ks) / mm), Math.sqrt(k1 / mm) + Math.sqrt(k2 / mm), keq / mm]);
+    }
+    var wq = Math.sqrt((keq || ks) / mm), wp = Math.sqrt(kp / mm), wsr = Math.sqrt(ks / mm), Tg = 2.5 * 2 * PI / wsr;
+    return done(spec, graph({ title: 'The same block, parallel and series', aria: 'Displacement against time for the block on the two springs in parallel and in series, released from the same displacement.', x: { label: '\\(t\\) (s)', min: 0, max: Tg }, y: { label: '\\(x\\) (m)' },
+      curves: [curve(sample(resp(wp, 0.05, 0), 0, Tg, 240), 'z'), curve(sample(resp(wsr, 0.05, 0), 0, Tg, 240), 't', null, true)],
+      readouts: [ro('Parallel \\(k_1 + k_2\\)', nn(kp) + NM), ro('Series \\(k_1k_2/(k_1 + k_2)\\)', n4(ks) + NM, 't'), ro('\\(k_{eq}\\) here', n4(keq || ks) + NM)], legend: [{ label: 'parallel', color: 'z' }, { label: 'series', color: 't', dashed: true }],
+      note: 'Series springs are softer than either spring, so the block vibrates more slowly. (Block mass ' + nn(mm) + ' kg; \\(\\omega_n = ' + n4(wq) + '\\ \\text{rad/s}\\) here.)' }), ans, wrong);
+  }
+
+  /* ---------- 2.7 The simple pendulum (Lesson 7) ---------- */
+  function genPend(rng) {
+    var kind = pickW(rng, [['period', 3], ['length', 2], ['g', 2], ['theta', 2], ['tension', 1]]), spec, ans, wrong;
+    var L = rng.pick([0.25, 0.4, 0.5, 0.6, 0.75, 0.8, 1, 1.2, 1.5, 2, 2.5, 3]), wn = Math.sqrt(G / L), tau = 2 * PI / wn, th0 = rng.pick([5, 6, 8, 10, 12, 15]);
+    if (kind === 'period') {
+      ans = tau;
+      spec = { type: 'numeric', prompt: 'Find the period of a simple pendulum ' + m(nn(L) + MU) + ' long, swinging through small angles.', label: '\\(\\tau =\\)', answer: ans, unit: 's',
+        hints: ['For small swings \\(\\omega_n = \\sqrt{g/l}\\).', '\\(\\tau = 2\\pi\\sqrt{l/g}\\).'], explain: 'The mass does not matter.', solution: M('\\tau = 2\\pi\\sqrt{\\frac{' + nn(L) + '}{9.81}} = ' + n4(ans) + SU) };
+      wrong = wrongOf(ans, [2 * PI * Math.sqrt(G / L), Math.sqrt(L / G), PI * Math.sqrt(L / G)]);
+    } else if (kind === 'length') {
+      var Tp = rng.pick([0.8, 1, 1.2, 1.5, 2, 2.5, 3]), useF = rng.next() < 0.3;
+      L = G * Math.pow(Tp / (2 * PI), 2); ans = L; wn = 2 * PI / Tp; tau = Tp;
+      spec = { type: 'numeric', prompt: 'How long must a simple pendulum be to have a period of ' + (useF ? m(nn(1 / Tp) + HZ) + ' frequency' : m(nn(Tp) + SU)) + ' for small swings?', label: '\\(l =\\)', answer: ans, unit: 'm',
+        hints: [useF ? '\\(\\tau = 1/f = ' + nn(Tp) + '\\ \\text{s}\\).' : '\\(\\tau = 2\\pi\\sqrt{l/g}\\).', '\\(l = g(\\tau/2\\pi)^2\\).'], explain: '\\(l = g\\tau^2/4\\pi^2\\).',
+        solution: M('l = 9.81\\left(\\frac{' + nn(Tp) + '}{2\\pi}\\right)^2 = ' + n4(ans) + MU) };
+      if (useF) spec.prompt = 'How long must a simple pendulum be to swing at ' + m(nn(1 / Tp) + HZ) + ' (small swings)?';
+      wrong = wrongOf(ans, [G * Tp / (2 * PI), G * Tp * Tp, Math.sqrt(G) * Tp / (2 * PI)]);
+    } else if (kind === 'g') {
+      var n = rng.pick([10, 15, 20, 25, 30]), gg = rng.pick([9.78, 9.8, 9.81, 9.83]);
+      tau = 2 * PI * Math.sqrt(L / gg); var tt = +(n * tau).toFixed(1); tau = tt / n; ans = 4 * PI * PI * L / (tau * tau); wn = 2 * PI / tau;
+      spec = { type: 'numeric', prompt: 'A pendulum ' + m(nn(L) + MU) + ' long completes ' + n + ' small swings (cycles) in ' + m(nn(tt) + SU) + '. What value of \\(g\\) does this give?', label: '\\(g =\\)', answer: ans, unit: 'm/s²',
+        hints: ['\\(\\tau = ' + nn(tt) + '/' + n + '\\).', '\\(g = 4\\pi^2 l/\\tau^2\\).'], explain: '\\(g = 4\\pi^2 l/\\tau^2\\).',
+        solution: M('\\tau = ' + n4(tau) + SU + '\\qquad g = \\frac{4\\pi^2(' + nn(L) + ')}{' + n4(tau) + '^2} = ' + n4(ans) + AU) };
+      wrong = wrongOf(ans, [4 * PI * PI * L / (tt * tt), 2 * PI * L / tau, 4 * PI * PI * L / tau]);
+    } else if (kind === 'theta') {
+      var t0 = rng.pick([0.2, 0.3, 0.4, 0.5, 0.6, 0.8]);
+      ans = th0 * Math.cos(wn * t0);
+      if (Math.abs(ans) < 0.3) { t0 += 0.1; ans = th0 * Math.cos(wn * t0); }
+      spec = { type: 'numeric', prompt: 'A pendulum ' + m(nn(L) + MU) + ' long is released from rest at ' + m(nn(th0) + '^\\circ') + '. With the small-angle model, find its angle at ' + m('t = ' + nn(t0) + SU) + ', in degrees.', label: '\\(\\theta =\\)', answer: ans, unit: '°',
+        hints: ['\\(\\theta = \\theta_0\\cos\\omega_n t\\) with \\(\\omega_n = \\sqrt{g/l} = ' + n4(wn) + '\\ \\text{rad/s}\\).', '\\(\\omega_n t\\) is in radians; \\(\\theta_0\\) can stay in degrees.'], explain: 'Released from rest: a cosine.',
+        solution: M('\\theta = ' + nn(th0) + '^\\circ\\cos(' + n4(wn) + '\\times' + nn(t0) + ') = ' + n4(ans) + '^\\circ') };
+      wrong = wrongOf(ans, [th0 * Math.cos(wn * t0 * DEG), th0 * Math.sin(wn * t0), -ans]);
+      return done(spec, xGraph({ f: function (t) { return th0 * Math.cos(wn * t); }, T: 2 * tau, ylabel: '\\(\\theta\\) (°)', marks: [{ x: t0, y: ans, color: 'z' }], vlines: [{ x: t0 }],
+        readouts: [ro('\\(\\omega_n\\)', n4(wn) + RS), ro('\\(\\tau\\)', n4(tau) + SU), ro('\\(\\theta\\)', n4(ans) + '^\\circ', 'z')], note: 'For small angles the pendulum moves in simple harmonic motion.', aria: 'The pendulum angle against time, with the asked instant marked.' }), ans, wrong);
+    } else {
+      var mm = rng.pick([0.2, 0.5, 1, 2]), thr = th0 * DEG, wmax = thr * wn;
+      ans = mm * G + mm * L * wmax * wmax;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' bob on a cord ' + m(nn(L) + MU) + ' long is released from rest at ' + m(nn(th0) + '^\\circ') + '. With the small-angle model for \\(\\dot\\theta_{\\max}\\), find the cord tension as the bob passes the bottom.', label: '\\(T =\\)', answer: ans, unit: 'N',
+        hints: ['\\(\\dot\\theta_{\\max} = \\theta_0\\,\\omega_n\\), with \\(\\theta_0\\) in radians.', 'At the bottom: \\(T - mg = ml\\dot\\theta^2\\).'], explain: 'Normal equation at \\(\\theta = 0\\).',
+        solution: M('\\dot\\theta_{\\max} = ' + n4(thr) + '(' + n4(wn) + ') = ' + n4(wmax) + RS + '\\qquad T = ' + nn(mm) + '(9.81) + ' + nn(mm) + '(' + nn(L) + ')(' + n4(wmax) + ')^2 = ' + n4(ans) + NU) };
+      wrong = wrongOf(ans, [mm * G, mm * G - mm * L * wmax * wmax, mm * G + mm * L * wmax]);
+    }
+    return done(spec, xGraph({ f: function (t) { return th0 * Math.cos(wn * t); }, T: 2 * tau, ylabel: '\\(\\theta\\) (°)', readouts: [ro('\\(\\omega_n = \\sqrt{g/l}\\)', n4(wn) + RS), ro('\\(\\tau = 2\\pi\\sqrt{l/g}\\)', n4(tau) + SU)],
+      note: 'A swing from ' + nn(th0) + '° shown; for small angles the period does not depend on the amplitude or the mass.', aria: 'The pendulum angle against time for small swings.' }), ans, wrong);
+  }
+
+  /* ---------- 2.8 Energy (Lesson 8) ---------- */
+  function genEnergy(rng) {
+    var kind = pickW(rng, [['vmax', 3], ['amp', 3], ['vx', 2], ['pend', 2], ['method', 2]]), spec, ans, wrong;
+    var mm = rng.pick([0.5, 1, 1.5, 2, 2.5, 4]), k = rng.pick([200, 250, 400, 500, 800, 1000, 1250, 2000]), wn = Math.sqrt(k / mm), C = rng.pick([0.02, 0.03, 0.04, 0.05, 0.06, 0.08]);
+    var x0 = C, v0 = 0;
+    if (kind === 'vmax') {
+      ans = C * wn;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block on a spring with ' + m('k = ' + nn(k) + NM) + ' is released from rest ' + m(nn(C * 1000) + MM) + ' from equilibrium. Use energy to find its largest speed.', label: '\\(v_{\\max} =\\)', answer: ans, unit: 'm/s',
+        hints: ['Released from rest, all the energy starts in the spring: \\(\\tfrac12 kC^2\\).', 'At equilibrium it is all kinetic: \\(\\tfrac12 m v_{\\max}^2 = \\tfrac12 kC^2\\).'], explain: '\\(v_{\\max} = C\\sqrt{k/m}\\).', solution: M('\\tfrac12(' + nn(mm) + ')v_{\\max}^2 = \\tfrac12(' + nn(k) + ')(' + nn(C) + ')^2 = ' + n4(0.5 * k * C * C) + JU + '\\;\\Rightarrow\\; v_{\\max} = ' + n4(ans) + MS) };
+      wrong = wrongOf(ans, [C * k / mm, Math.sqrt(k * C * C), 0.5 * k * C * C]);
+    } else if (kind === 'amp') {
+      x0 = rng.pick([0.01, 0.02, 0.03, 0.04]); v0 = rng.pick([0.2, 0.3, 0.4, 0.5, 0.6, 0.8]);
+      var E = 0.5 * mm * v0 * v0 + 0.5 * k * x0 * x0; C = Math.sqrt(2 * E / k); ans = C;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block on a spring with ' + m('k = ' + nn(k) + NM) + ' is ' + m(nn(x0 * 1000) + MM) + ' from equilibrium and moving at ' + m(nn(v0) + MS) + '. Use energy to find the amplitude.', label: '\\(C =\\)', answer: ans, unit: 'm',
+        hints: ['\\(E = \\tfrac12 m\\dot x^2 + \\tfrac12 kx^2\\).', 'At the extremes the energy is all in the spring: \\(\\tfrac12 kC^2 = E\\).'], explain: '\\(C = \\sqrt{2E/k}\\).',
+        solution: M('E = \\tfrac12(' + nn(mm) + ')(' + nn(v0) + ')^2 + \\tfrac12(' + nn(k) + ')(' + nn(x0) + ')^2 = ' + n4(E) + JU + '\\qquad C = \\sqrt{\\frac{2E}{k}} = ' + n4(ans) + MU) };
+      wrong = wrongOf(ans, [x0 + v0 / wn, Math.sqrt(2 * E / mm), Math.sqrt(E / k)]);
+    } else if (kind === 'vx') {
+      var xq = +(C * rng.pick([0.3, 0.5, 0.6, 0.8])).toFixed(4);
+      ans = Math.sqrt(k / mm * (C * C - xq * xq));
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' block on a spring with ' + m('k = ' + nn(k) + NM) + ' vibrates with an amplitude of ' + m(nn(C) + MU) + '. Use energy to find its speed when ' + m('x = ' + nn(xq) + MU) + '.', label: '\\(|\\dot x| =\\)', answer: ans, unit: 'm/s',
+        hints: ['The total energy is \\(\\tfrac12 kC^2\\).', '\\(\\tfrac12 m\\dot x^2 + \\tfrac12 kx^2 = \\tfrac12 kC^2\\).'], explain: '\\(\\dot x^2 = (k/m)(C^2 - x^2)\\).', solution: M('\\dot x^2 = \\frac{' + nn(k) + '}{' + nn(mm) + '}\\left(' + nn(C) + '^2 - ' + nn(xq) + '^2\\right) \\;\\Rightarrow\\; |\\dot x| = ' + n4(ans) + MS) };
+      wrong = wrongOf(ans, [C * wn, Math.sqrt(k / mm) * (C - xq), (k / mm) * (C * C - xq * xq)]);
+    } else if (kind === 'pend') {
+      var L = rng.pick([0.5, 0.8, 1, 1.2, 1.5, 2]), th = rng.pick([20, 30, 40, 45, 60]);
+      ans = Math.sqrt(2 * G * L * (1 - Math.cos(th * DEG)));
+      spec = { type: 'numeric', prompt: 'A pendulum ' + m(nn(L) + MU) + ' long is released from rest at ' + m(nn(th) + '^\\circ') + '. Find the bob\u2019s speed at the bottom.', label: '\\(v =\\)', answer: ans, unit: 'm/s',
+        hints: ['The bob drops \\(l(1 - \\cos\\theta_0)\\).', '\\(\\tfrac12 mv^2 = mgl(1 - \\cos\\theta_0)\\): the mass cancels.'], explain: 'Energy, valid at any amplitude.',
+        solution: M('v = \\sqrt{2(9.81)(' + nn(L) + ')(1 - \\cos ' + nn(th) + '^\\circ)} = ' + n4(ans) + MS) };
+      wrong = wrongOf(ans, [Math.sqrt(2 * G * L), Math.sqrt(2 * G * L * Math.cos(th * DEG)), th * DEG * Math.sqrt(G * L) * 1.3]);
+      var wp = Math.sqrt(G / L), thr = th * DEG, Tp = 2 * 2 * PI / wp;
+      return done(spec, graph({ title: 'Energy of the pendulum', aria: 'Kinetic and potential energy per unit mass of the pendulum against time: they trade places while their sum stays constant.', x: { label: '\\(t\\) (s)', min: 0, max: Tp }, y: { label: 'energy per kg (J/kg)', incl0: true },
+        curves: [curve(sample(function (t) { return G * L * (1 - Math.cos(thr * Math.cos(wp * t))); }, 0, Tp, 240), 'z'), curve(sample(function (t) { return G * L * (Math.cos(thr * Math.cos(wp * t)) - Math.cos(thr)); }, 0, Tp, 240), 'good'), curve([[0, G * L * (1 - Math.cos(thr))], [Tp, G * L * (1 - Math.cos(thr))]], 'muted', null, true)],
+        legend: [{ label: '\\(V_g/m\\)', color: 'z' }, { label: '\\(T/m\\)', color: 'good' }], readouts: [ro('Drop', n4(L * (1 - Math.cos(thr))) + MU), ro('\\(v\\) at the bottom', n4(ans) + MS, 'good')], note: 'Plotted with the small-angle timing; the energy balance itself is exact.' }), ans, wrong);
+    } else {
+      var k1 = rng.pick([100, 150, 200, 300, 400]), k2 = rng.pick([100, 200, 250, 300, 500]);
+      ans = Math.sqrt((k1 + k2) / mm); wn = ans;
+      spec = { type: 'numeric', prompt: 'A ' + m(nn(mm) + KG) + ' collar slides on a smooth horizontal rod between two springs, ' + m(nn(k1) + NM) + ' and ' + m(nn(k2) + NM) + ', attached to the ends of the rod. Use \\(d(T + V)/dt = 0\\) to find its natural frequency.', label: '\\(\\omega_n =\\)', answer: ans, unit: 'rad/s',
+        hints: ['\\(T + V = \\tfrac12 m\\dot x^2 + \\tfrac12 k_1x^2 + \\tfrac12 k_2x^2\\).', 'Differentiating gives \\(m\\ddot x + (k_1 + k_2)x = 0\\).'], explain: '\\(\\omega_n = \\sqrt{(k_1 + k_2)/m}\\).',
+        solution: M('\\dot x\\left[m\\ddot x + (k_1 + k_2)x\\right] = 0 \\;\\Rightarrow\\; \\omega_n = \\sqrt{\\frac{' + nn(k1 + k2) + '}{' + nn(mm) + '}} = ' + n4(ans) + RS) };
+      wrong = wrongOf(ans, [Math.sqrt(k1 * k2 / (k1 + k2) / mm), Math.sqrt(Math.abs(k1 - k2) / mm), (k1 + k2) / mm]);
+      k = k1 + k2;
+    }
+    var W = Math.sqrt(k / mm), xs = resp(W, x0, v0), Tg = 2 * 2 * PI / W, Ek = 0.5 * mm * v0 * v0 + 0.5 * k * x0 * x0;
+    return done(spec, graph({ title: 'Energy against time', aria: 'Kinetic and spring energy of the block against time: they trade places while the total stays constant.', x: { label: '\\(t\\) (s)', min: 0, max: Tg }, y: { label: 'energy (J)', incl0: true },
+      curves: [curve(sample(function (t) { var x = xs(t); return 0.5 * k * x * x; }, 0, Tg, 240), 't'), curve(sample(function (t) { var x = xs(t); return Ek - 0.5 * k * x * x; }, 0, Tg, 240), 'good'), curve([[0, Ek], [Tg, Ek]], 'muted', null, true)],
+      legend: [{ label: '\\(V_e\\)', color: 't' }, { label: '\\(T\\)', color: 'good' }, { label: 'total', color: 'muted', dashed: true }], readouts: [ro('Total energy', n4(Ek) + JU), ro('\\(\\omega_n\\)', n4(W) + RS)], note: 'Twice per cycle the energy is all kinetic, and twice all potential.' }), ans, wrong);
+  }
+
+  /* ================================================================ 5. Registry */
+  var L = function (n, file, title) { return { href: '../lessons/' + file, text: 'Lesson ' + n + ': ' + title }; };
+  var LES = {
+    l01: L(1, '01-simple-harmonic-motion.html', 'Oscillations and Simple Harmonic Motion'), l02: L(2, '02-position-velocity-acceleration.html', 'Position, Velocity and Acceleration in Harmonic Motion'),
+    l03: L(3, '03-spring-mass-system.html', 'The Spring\u2013Mass System and Its Natural Frequency'), l04: L(4, '04-time-response.html', 'Initial Conditions and the Time Response'),
+    l05: L(5, '05-vertical-springs.html', 'Vertical Springs and Static Deflection'), l06: L(6, '06-springs-parallel-series.html', 'Springs in Parallel and in Series'),
+    l07: L(7, '07-simple-pendulum.html', 'The Simple Pendulum'), l08: L(8, '08-energy.html', 'Energy in Free Vibration')
+  };
+  var CATS = [
+    { id: 'shm', label: 'Harmonic motion', gen: genShm, lessons: [LES.l01] },
+    { id: 'xva', label: 'Velocity and acceleration', gen: genXva, lessons: [LES.l02] },
+    { id: 'nat', label: 'Natural frequency', gen: genNat, lessons: [LES.l03] },
+    { id: 'ic', label: 'Initial conditions', gen: genIc, lessons: [LES.l04] },
+    { id: 'static', label: 'Vertical springs', gen: genStatic, lessons: [LES.l05] },
+    { id: 'springs', label: 'Springs in parallel and series', gen: genSprings, lessons: [LES.l06] },
+    { id: 'pend', label: 'Pendulum', gen: genPend, lessons: [LES.l07] },
+    { id: 'energy', label: 'Energy', gen: genEnergy, lessons: [LES.l08] }
+  ];
+  var CAT = {};
+  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var SEED_MAX = 99999;
+  function generate(catId, seed) {
+    var c = CAT[catId];
+    if (!c) throw new Error('unknown topic ' + catId);
+    var p = c.gen(CYLQuiz.rng('practice-lab:' + catId + ':' + seed));
+    p.cat = catId; p.seed = seed; p.code = catId + '-' + seed;
+    return p;
+  }
+  function parseCode(s) {
+    var mt = /^\s*([a-z0-9]+)\s*[-:]\s*(\d{1,9})\s*$/i.exec(String(s || ''));
+    if (!mt || !CAT[mt[1].toLowerCase()]) return null;
+    var seed = parseInt(mt[2], 10);
+    return seed >= 1 ? { cat: mt[1].toLowerCase(), seed: seed } : null;
+  }
+
+  /* ================================================================ 6. Self-test */
+  var KATEX_STRICT = {
+    throwOnError: true,
+    trust: function (ctx) { return !!ctx && ctx.command === '\\htmlClass'; },
+    strict: function (code) { return code === 'htmlExtension' ? 'ignore' : 'error'; }
+  };
+  function htmlStrings(p) {
+    var s = p.spec, out = [['prompt', s.prompt], ['solution', s.solution], ['explain', s.explain]];
+    (s.hints || []).forEach(function (h, i) { out.push(['hint ' + (i + 1), h]); });
+    (s.choices || []).forEach(function (c, i) { out.push(['choice ' + i, c.html]); if (c.feedback) out.push(['feedback ' + i, c.feedback]); });
+    (s.fields || []).forEach(function (f) { out.push(['field label', f.label]); });
+    if (s.label) out.push(['label', s.label]);
+    var at = CYLQuiz.answerTex(s);
+    if (at) out.push(['answer TeX', '\\(' + at + '\\)']);
+    var v = p.view;
+    if (v) {
+      if (v.note) out.push(['view note', v.note]);
+      (v.readouts || []).forEach(function (r) { out.push(['readout label', r.label]); out.push(['readout', '\\(' + r.tex + '\\)']); });
+      out.push(['x label', v.x.label]); out.push(['y label', v.y.label]);
+      (v.legend || []).forEach(function (lg) { out.push(['legend', lg.label]); });
+    }
+    return out;
+  }
+  function checkHtml(where, h, fail) {
+    var n = 0;
+    if (typeof h !== 'string' || !h.trim()) { fail(where + ': empty'); return 0; }
+    var re = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g, mt, rest = '', last = 0;
+    while ((mt = re.exec(h))) {
+      rest += h.slice(last, mt.index);
+      last = re.lastIndex;
+      var tex = mt[1] != null ? mt[1] : mt[2];
+      if (/</.test(tex)) fail(where + ': "<" inside math: ' + tex.slice(0, 80));
+      // a command whose backslash was lost in a plain JS string ('\approx' is "approx") still renders, as italic letters
+      var bare = tex.replace(/\\(?:text|mathrm|operatorname)\{[^{}]*\}/g, ' ')
+        .match(/(^|[^\\a-zA-Z])(approx|cdot|times|theta|alpha|pi|sqrt|t?frac|dfrac|infty|circ|le|ge|lt|gt|ne|sin|cos|tan|sec|csc|arctan|left|right|Longrightarrow|quad|dot|ddot|ihat|jhat|khat|er|et|ez|Fvec|vvec|avec|int|iiint|begin|end)(?![a-zA-Z])/);
+      if (bare) fail(where + ': TeX command name without its backslash ("' + bare[2] + '"): ' + tex.slice(0, 80));
+      try {
+        window.katex.renderToString(tex, Object.assign({ displayMode: mt[2] != null, macros: Object.assign({}, CYL.MACROS) }, KATEX_STRICT));
+        n++;
+      } catch (e) { fail(where + ': KaTeX: ' + (e && e.message ? e.message : e) + ' in ' + tex.slice(0, 120)); }
+    }
+    rest += h.slice(last);
+    if (/\\\(|\\\)|\\\[|\\\]/.test(rest)) fail(where + ': unbalanced math delimiters');
+    var text = rest.replace(/<[^>]*>/g, ' ');
+    if (/\\[a-zA-Z]+/.test(text)) fail(where + ': TeX outside math: ' + (text.match(/\\[a-zA-Z]+/) || [''])[0]);
+    if (/\$/.test(text)) fail(where + ': dollar sign');
+    if (/\b(undefined|NaN|null|Infinity)\b/.test(h)) fail(where + ': contains undefined/NaN/null/Infinity');
+    var tpl = document.createElement('template');
+    tpl.innerHTML = h;
+    if (/<[a-z]/i.test(tpl.content.textContent || '')) fail(where + ': stray tag text');
+    return n;
+  }
+  function answersFinite(spec) {
+    if (spec.type === 'point') return spec.answerPoint.every(isFinite);
+    if (spec.type === 'numeric') return spec.expr ? [].concat(spec.answer).every(function (a) { return typeof a === 'string' || typeof a === 'function'; }) : [].concat(spec.answer).every(isFinite);
+    if (spec.type === 'fields') return spec.fields.every(function (f) { return [].concat(f.answer).every(isFinite); });
+    return true;
+  }
+  window.__practiceLab = {                                   // for QA scripts
+    generate: function (code) { var pc = parseCode(code); return pc ? generate(pc.cat, pc.seed) : null; },
+    get view() { return VIEW; },
+    current: function () { return null; }                    // replaced once the lab is running
+  };
+  window.__practiceSelfTest = function (opts) {
+    opts = opts || {};
+    var N = opts.n || 200, domN = opts.dom == null ? 10 : opts.dom, cats = opts.cats || CATS.map(function (c) { return c.id; });
+    var t0 = Date.now(), failures = [], per = {}, texCount = 0, graded = 0, domChecked = 0;
+    var host = document.createElement('div');
+    host.hidden = true;
+    document.body.appendChild(host);
+    cats.forEach(function (cat) {
+      var st = { problems: 0, distinctPrompts: 0, failures: 0, gradedRight: 0, gradedWrong: 0 }, prompts = {}, kinds = {};
+      function fail(seed, msg) { st.failures++; if (failures.length < 40) failures.push(cat + '-' + seed + ': ' + msg); }
+      for (var i = 1; i <= N; i++) {
+        var seed = 10000 + i * 97;
+        var p, f = function (msg) { fail(seed, msg); };
+        try { p = generate(cat, seed); } catch (e) { fail(seed, 'generator threw: ' + (e && e.message)); continue; }
+        st.problems++;
+        prompts[p.spec.prompt] = 1;
+        kinds[p.view && p.view.kind] = 1;
+        try {
+          var again = generate(cat, seed);
+          if (JSON.stringify(again.spec) !== JSON.stringify(p.spec)) f('not deterministic');
+          var s = p.spec;
+          if (['mc', 'numeric', 'fields', 'point'].indexOf(s.type) < 0) f('bad type ' + s.type);
+          if (!s.hints || s.hints.length < 2) f('fewer than 2 hints');
+          if (!answersFinite(s)) f('answer not finite');
+          if (s.type === 'mc') {
+            if (s.choices.length < 4) f('fewer than 4 choices');
+            if (s.choices.filter(function (c) { return c.correct; }).length !== 1) f('not exactly one correct choice');
+            var hs = s.choices.map(function (c) { return c.html; });
+            if (hs.some(function (h, j) { return hs.indexOf(h) !== j; })) f('duplicate choices');
+            if (s.choices.some(function (c) { return !c.correct && !c.feedback; })) f('distractor without feedback');
+          }
+          (p.test.check ? p.test.check() : []).forEach(f);
+          p.test.right.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || !g.correct) f('correct answer not accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedRight++;
+          });
+          if (!p.test.wrong.length) f('no wrong answer to test');
+          p.test.wrong.forEach(function (resp) {
+            var g = CYLQuiz.grade(s, resp); graded++;
+            if (g.status !== 'graded' || g.correct) f('wrong answer accepted (' + g.status + '): ' + JSON.stringify(resp)); else st.gradedWrong++;
+          });
+          if (i <= domN) {                                   // the full card path: render, fill in, press Check
+            [[p.test.right[0], true], [p.test.wrong[0], false]].forEach(function (pair) {
+              host.innerHTML = '';
+              var q = CYLQuiz.question(host, Object.assign({}, s, { id: 'pl-test-' + p.code, mode: 'practice', persist: false }));
+              q.setResponse(pair[0]);
+              var res = q.check();
+              if (res !== pair[1] || q.isCorrect() !== pair[1]) f('card check() returned ' + res + ' for ' + (pair[1] ? 'correct' : 'wrong') + ' answer ' + JSON.stringify(pair[0]));
+              if (host.querySelector('.katex-error')) f('KaTeX error rendered in the card');
+              domChecked++;
+            });
+          }
+          htmlStrings(p).forEach(function (pair) { texCount += checkHtml(pair[0], pair[1], f); });
+          var vw = p.view;
+          if (!vw || vw.kind !== 'graph') f('bad view');
+          else if (!vw.aria || !vw.title || !(vw.readouts && vw.readouts.length)) f('view missing aria/title/readouts');
+          else {
+            var okv = function (q) { return isFinite(q[0]) && isFinite(q[1]); };
+            if (!vw.curves.every(function (c) { return c.pts.length && c.pts.every(okv); }) || (vw.shade && !vw.shade.pts.every(okv)) || !vw.marks.every(function (mk) { return isFinite(mk.x) && isFinite(mk.y); })) f('graph view not finite');
+            if (!(vw.x.max > vw.x.min) || !(vw.y.max > vw.y.min)) f('graph view has an empty range');
+            if (!vw.curves.length && !vw.marks.length) f('graph view is empty');
+          }
+        } catch (e) { f('threw: ' + (e && e.stack ? e.stack.split('\n').slice(0, 2).join(' | ') : e)); }
+      }
+      st.distinctPrompts = Object.keys(prompts).length;
+      st.viewKinds = Object.keys(kinds);
+      if (st.distinctPrompts < Math.min(N, 40)) fail('-', 'too little variety: ' + st.distinctPrompts + ' distinct prompts');
+      per[cat] = st;
+    });
+    host.remove();
+    var sample = null;
+    if (opts.sample) { var pc = parseCode(opts.sample), sp = pc && generate(pc.cat, pc.seed); if (sp) sample = { code: sp.code, spec: sp.spec, view: sp.view }; }
+    return {
+      ok: failures.length === 0, perCategory: per, problems: cats.length * N, gradedResponses: graded, cardChecks: domChecked,
+      texRendered: texCount, failures: failures, ms: Date.now() - t0, sample: sample
+    };
+  };
+
+  /* ================================================================ 7. The shared view (a graph of the motion) */
+  var VIEW = { show: function () {}, reveal: function () {} };
+  function interp(pts) {
+    return function (x) {
+      if (x <= pts[0][0]) return pts[0][1];
+      for (var i = 1; i < pts.length; i++) {
+        if (x <= pts[i][0]) { var a = pts[i - 1], b = pts[i], u = (x - a[0]) / ((b[0] - a[0]) || 1); return a[1] + u * (b[1] - a[1]); }
+      }
+      return pts[pts.length - 1][1];
+    };
+  }
+  CYL.ready(function () {
+    var stage = document.getElementById('lab-stage'), panel = document.getElementById('lab-controls');
+    var host = CYL.el('div', { class: 'pl-viewhost' });
+    stage.appendChild(host);
+    var veil = CYL.el('div', { class: 'pl-veil' }, [CYL.el('p', { text: 'Solve the problem, or open its worked solution, to see its picture here.' })]);
+    stage.appendChild(veil);
+    var cur = null, revealed = false;
+    function hint(text) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'The picture' }));
+      panel.appendChild(CYL.el('p', { class: 'pl-panel-note', text: text }));
+    }
+    function idle() {                                      // a neutral placeholder the same size as a real view
+      host.innerHTML = '';
+      var g = CYL.el('div', { class: 'pl-ghost', 'aria-hidden': 'true' });
+      [62, 38, 80, 24, 54].forEach(function (w, i) {
+        var r = CYL.el('div', { class: 'pl-ghost-row' }), b = CYL.el('span');
+        b.style.marginLeft = (i % 2 ? 18 : 6) + '%'; b.style.width = w * 0.7 + '%';
+        r.appendChild(b); g.appendChild(r);
+      });
+      host.appendChild(g);
+      host.setAttribute('role', 'img');
+      host.setAttribute('aria-label', 'Placeholder: the picture for the current problem appears here after you solve it or open its solution.');
+    }
+    function build(vw) {
+      host.innerHTML = '';
+      host.removeAttribute('role'); host.removeAttribute('aria-label');
+      host.appendChild(CYL.el('p', { class: 'viz-title', text: vw.title }));
+      var ch = ENERGY.chart(host, { x: vw.x, y: vw.y, height: 280, ariaLabel: vw.aria, legend: vw.legend || null });
+      if (vw.shade) {
+        var f = interp(vw.shade.pts), a = Math.min(vw.shade.from, vw.shade.to), b = Math.max(vw.shade.from, vw.shade.to);
+        if (vw.shade.signed) {
+          ch.area(function (x) { return Math.max(0, f(x)); }, { domain: [a, b], color: 'good', fillOpacity: 0.28 });
+          ch.area(function (x) { return Math.min(0, f(x)); }, { domain: [a, b], color: 'bad', fillOpacity: 0.28 });
+        } else ch.area(f, { domain: [a, b], color: vw.shade.color || 'accent', fillOpacity: 0.28 });
+      }
+      if (vw.y.min < 0 && vw.y.max > 0) ch.hline(0, { color: 'ink', dashed: false, width: 1 });
+      (vw.vlines || []).forEach(function (vl) { ch.vline(vl.x, { color: 'warn', width: 1.2, label: vl.label || null }); });
+      vw.curves.forEach(function (c) { ch.polyline(c.pts, { color: c.color, width: 2.6, dashed: c.dashed }); });
+      (vw.marks || []).forEach(function (mk) { ch.marker([mk.x, mk.y], { color: mk.color || 'accent', r: 5, label: mk.label || null }); });
+    }
+    function fillPanel(vw) {
+      panel.innerHTML = '';
+      panel.appendChild(CYL.el('p', { class: 'viz-title', text: 'Numbers' }));
+      var grid = CYL.el('div', { class: 'readout-grid', 'aria-live': 'off' });
+      (vw.readouts || []).forEach(function (ro) {
+        var R = CYL.readout(ro.label, { color: ro.color || null });
+        R.set(ro.tex, { tex: true });
+        grid.appendChild(R.el);
+      });
+      panel.appendChild(grid);
+      if (vw.note) { var n = CYL.el('p', { class: 'pl-panel-note', html: vw.note }); panel.appendChild(n); CYL.renderMath(n); }
+      CYL.renderMath(panel);
+    }
+    VIEW.show = function (problem) {
+      cur = problem.view; revealed = false;
+      idle();
+      veil.hidden = false;
+      hint('Hidden until you solve the problem (or open its solution), so it does not give the answer away.');
+    };
+    VIEW.reveal = function () {
+      if (!cur || revealed) return;
+      revealed = true;
+      build(cur);
+      veil.hidden = true;
+      fillPanel(cur);
+    };
+    VIEW.isRevealed = function () { return revealed; };
+  });
+
+  /* ================================================================ 8. The lab: topics, problems, streak and stats */
+  CYL.ready(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var topicsEl = $('lab-topics'), cardHost = $('lab-card'), codeEl = $('lab-code'), lessonEl = $('lab-lesson');
+    var nextRow = $('lab-next'), nextMsg = $('lab-next-msg');
+    var MODES = [{ id: 'mixed', label: 'Mixed' }].concat(CATS.map(function (c) { return { id: c.id, label: c.label }; }));
+    var mode = CYL.store.get('practice:mode', 'mixed');
+    if (mode !== 'mixed' && !CAT[mode]) mode = 'mixed';
+    var state = { problem: null, ctrl: null, n: 0, cur: null };
+
+    /* ----- stats (CYL.store) ----- */
+    var STATS_KEY = 'practice:stats';
+    function blankStats() { var s = { v: 1, streak: 0, best: 0, cats: {} }; CATS.forEach(function (c) { s.cats[c.id] = { tried: 0, first: 0, solved: 0 }; }); return s; }
+    function loadStats() {
+      var s = CYL.store.get(STATS_KEY, null), b = blankStats();
+      if (!s || typeof s !== 'object' || s.v !== 1) return b;
+      b.streak = Math.max(0, s.streak | 0); b.best = Math.max(b.streak, s.best | 0);
+      CATS.forEach(function (c) { var x = s.cats && s.cats[c.id]; if (x) b.cats[c.id] = { tried: Math.max(0, x.tried | 0), first: Math.max(0, x.first | 0), solved: Math.max(0, x.solved | 0) }; });
+      return b;
+    }
+    var stats = loadStats();
+    function saveStats() { CYL.store.set(STATS_KEY, stats); renderStats(); }
+    var totals = {};
+    [['streak', 'Current streak'], ['best', 'Best streak'], ['solved', 'Problems solved'], ['rate', 'First-try rate']].forEach(function (d) {
+      var val = CYL.el('p', { class: 'pl-tile-value', text: '0' });
+      $('progress-totals').appendChild(CYL.el('div', { class: 'pl-tile' }, [CYL.el('p', { class: 'pl-tile-label', text: d[1] }), val]));
+      totals[d[0]] = { set: function (t) { val.textContent = t; } };
+    });
+    function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '—'; }
+    function renderStats() {
+      var T0 = { tried: 0, first: 0, solved: 0 };
+      var rows = CATS.map(function (c) {
+        var x = stats.cats[c.id];
+        T0.tried += x.tried; T0.first += x.first; T0.solved += x.solved;
+        return '<tr><th scope="row">' + CYL.escapeHtml(c.label) + '</th><td>' + x.tried + '</td><td>' + x.first + '</td><td>' + x.solved + '</td><td>' + pct(x.first, x.tried) + '</td></tr>';
+      });
+      $('progress-table').tBodies[0].innerHTML = rows.join('');
+      $('progress-table').tFoot.innerHTML = '<tr><th scope="row">All topics</th><td>' + T0.tried + '</td><td>' + T0.first + '</td><td>' + T0.solved + '</td><td>' + pct(T0.first, T0.tried) + '</td></tr>';
+      $('lab-streak').textContent = stats.streak;
+      $('lab-best').textContent = stats.best;
+      $('lab-solved').textContent = T0.solved;
+      $('lab-streak-pill').classList.toggle('is-hot', stats.streak >= 3);
+      totals.streak.set(String(stats.streak));
+      totals.best.set(String(stats.best));
+      totals.solved.set(String(T0.solved));
+      totals.rate.set(pct(T0.first, T0.tried));
+    }
+    $('progress-note').textContent = CYL.store.available()
+      ? 'Stats are saved in this browser only, on this device.'
+      : 'This browser is not saving data (for example in a private window), so your stats last only until you close this page.';
+    $('progress-reset').addEventListener('click', function () { $('progress-confirm').hidden = false; $('progress-reset-yes').focus(); });
+    $('progress-reset-no').addEventListener('click', function () { $('progress-confirm').hidden = true; $('progress-reset').focus(); });
+    $('progress-reset-yes').addEventListener('click', function () {
+      stats = blankStats(); saveStats();
+      $('progress-confirm').hidden = true; $('progress-reset').focus();
+    });
+
+    /* ----- topic chips ----- */
+    var chips = {};
+    function setMode(id) {                               // the topic (or 'mixed') for the next random problems
+      mode = id;
+      CYL.store.set('practice:mode', mode);
+      Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === mode)); });
+    }
+    MODES.forEach(function (md) {
+      var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': String(md.id === mode), 'data-topic': md.id, text: md.label });
+      b.addEventListener('click', function () {
+        if (mode === md.id) return;
+        setMode(md.id);
+        newProblem({});
+      });
+      chips[md.id] = b;
+      topicsEl.appendChild(b);
+    });
+
+    /* ----- problems ----- */
+    function randomSeed() { return 1 + Math.floor(Math.random() * SEED_MAX); }
+    function pickCat() {
+      if (mode !== 'mixed') return mode;
+      var prev = state.problem && state.problem.cat, pool = CATS.map(function (c) { return c.id; }).filter(function (id) { return id !== prev; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    function writeHash(p) {
+      var h = '#p=' + p.code + (mode === 'mixed' ? '&mode=mixed' : '');
+      try { if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* file:// in some browsers: fine without */ }
+    }
+    function readHash() {
+      var mt = /(?:^#|&)p=([a-z0-9]+-\d+)/i.exec(location.hash || '');
+      var pc = mt ? parseCode(mt[1]) : null;
+      if (pc) pc.mixed = /(?:^#|&)mode=mixed\b/.test(location.hash);
+      return pc;
+    }
+    function onResult(correct) {
+      var cur = state.cur, c = stats.cats[state.problem.cat];
+      if (!cur.checked) {
+        cur.checked = true;
+        c.tried++;
+        if (correct && !cur.peeked) { c.first++; stats.streak++; stats.best = Math.max(stats.best, stats.streak); }
+        else stats.streak = 0;
+      }
+      if (correct && !cur.solved) {
+        cur.solved = true;
+        c.solved++;
+        VIEW.reveal();
+        showNext(cur.peeked ? 'Solved with the solution open.' : state.ctrl.attempts === 1 ? 'Solved on the first try.' : 'Solved.');
+      }
+      saveStats();
+    }
+    function onPeek() {
+      var cur = state.cur;
+      if (!cur.solved && !cur.checked && !cur.peeked) {
+        cur.peeked = true;
+        if (stats.streak) { stats.streak = 0; saveStats(); }
+      }
+      VIEW.reveal();
+      if (!cur.solved) showNext('');
+    }
+    function showNext(msg) { nextRow.hidden = false; nextMsg.textContent = msg; }
+    cardHost.addEventListener('click', function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest('.q-solution-btn') : null;
+      if (!btn) return;
+      var sol = cardHost.querySelector('.q-solution');
+      if (sol && !sol.hidden) onPeek();
+    });
+    var recent = [];                                     // prompts shown lately: a random draw skips repeats
+    function newProblem(o) {
+      var cat = o.cat || pickCat(), seed = o.seed || randomSeed();
+      var p;
+      try {
+        p = generate(cat, seed);
+        for (var tries = 0; !o.seed && tries < 12 && recent.indexOf(p.spec.prompt) >= 0; tries++) p = generate(cat, seed = randomSeed());
+      } catch (e) { CYL.error('Practice Lab: could not generate ' + cat + '-' + seed + ': ' + (e && e.message)); return; }
+      recent.push(p.spec.prompt);
+      if (recent.length > 20) recent.shift();
+      state.problem = p;
+      state.n++;
+      state.cur = { checked: false, solved: false, peeked: false };
+      cardHost.innerHTML = '';
+      var spec = Object.assign({}, p.spec, {
+        id: 'pl-' + p.code, mode: 'practice', persist: false,
+        title: 'Problem ' + state.n + ' · ' + CAT[cat].label,
+        onResult: onResult
+      });
+      state.ctrl = CYLQuiz.question(cardHost, spec);
+      codeEl.textContent = p.code;
+      lessonEl.innerHTML = ' · Review: ' + CAT[cat].lessons.map(function (l) { return '<a href="' + l.href + '">' + CYL.escapeHtml(l.text) + '</a>'; }).join(' and ');
+      nextRow.hidden = true;
+      writeHash(p);
+      VIEW.show(p);
+      if (o.focus) {
+        state.ctrl.focus();
+        var r = state.ctrl.el.getBoundingClientRect();
+        if (r.top < 0) state.ctrl.el.scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+      }
+    }
+    $('lab-new').addEventListener('click', function () { newProblem({ focus: true }); });
+    $('lab-next-btn').addEventListener('click', function () { newProblem({ focus: true }); });
+
+    /* ----- load by code ----- */
+    function loadCode() {
+      var msg = $('lab-load-msg'), pc = parseCode($('lab-load-input').value);
+      if (!pc) {
+        msg.className = 'pl-loadmsg is-bad';
+        msg.textContent = 'That is not a problem code. Codes look like incline-40718: a topic (' + CATS.map(function (c) { return c.id; }).join(', ') + '), a dash and a number.';
+        return;
+      }
+      msg.className = 'pl-loadmsg';
+      msg.textContent = 'Loaded ' + pc.cat + '-' + pc.seed + '.';
+      if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);
+      newProblem({ cat: pc.cat, seed: pc.seed, focus: true });
+    }
+    $('lab-load-btn').addEventListener('click', loadCode);
+    $('lab-load-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); loadCode(); } });
+    window.addEventListener('hashchange', function () {  // e.g. a shared link opened in a tab that shows the page
+      var pc = readHash();
+      if (!pc || (state.problem && pc.cat + '-' + pc.seed === state.problem.code)) return;
+      if (pc.mixed) { if (mode !== 'mixed') setMode('mixed'); }
+      else if (mode !== 'mixed' && mode !== pc.cat) setMode(pc.cat);   // as "Load a problem by its code" does
+      newProblem({ cat: pc.cat, seed: pc.seed });
+    });
+
+    window.__practiceLab.current = function () { return state.problem; };
+
+    // Work-around for cyl-quiz.js (noticeHtml): an unreadable-input message that already ends in "?" (CYLExpr's
+    // "did you mean 'abs'?") gets a "." appended anyway. Drop that stray period from the card's feedback.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        cardHost.querySelectorAll('.q-feedback p').forEach(function (p) {
+          for (var t = p.firstChild; t; t = t.nextSibling) if (t.nodeType === 3 && /'\?\./.test(t.data)) t.data = t.data.replace(/'\?\./g, "'?");
+        });
+      }).observe(cardHost, { childList: true, subtree: true });
+    }
+
+    /* ----- start ----- */
+    renderStats();
+    var start = readHash();
+    if (start) {
+      setMode(start.mixed ? 'mixed' : start.cat);
+      newProblem({ cat: start.cat, seed: start.seed });
+    } else newProblem({});
+  });
+})();
+</script>
+</body>
+</html>

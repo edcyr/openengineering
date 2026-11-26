@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibration Lab · Free Vibration</title>
+<meta name="description" content="Pick a system: a block on a spring, two springs in parallel or in series, a block hanging from a vertical spring, a pendulum, the reference circle, or the guess-and-check test, start it any way you like, and watch it vibrate with its graphs and energy.">
+<link rel="stylesheet" href="../assets/vendor/katex/katex.inline-fonts.min.css">
+<link rel="stylesheet" href="../assets/css/module.css">
+<style>
+  /* ---- Vibration Lab: page-specific layout (tokens from module.css only) ---- */
+  .ex-setup { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px 24px; padding: 16px 18px; }
+  .ex-setup > * { min-width: 0; }
+  .ex-setup .chip { --c: var(--accent); }   /* .card sets --c to the line color, which would wash out a pressed chip */
+  .ex-label { margin: 0 0 6px; color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .ex-desc { margin: 10px 0 0; color: var(--ink-muted); font-size: 0.92rem; line-height: 1.5; }
+  .ex-events { margin: 10px 0 0; font-size: 0.9rem; line-height: 1.5; }
+  .ex-events p { margin: 0 0 0.4em; }
+  .ex-bad { color: var(--c-bad); }
+  .ex-try li { margin: 0 0 0.6em; }
+  .ex-try .btn { margin-left: 4px; }
+  .ex-head, .ex-figpanel { display: grid; gap: 14px; min-width: 0; }
+  .ex-formula-row { display: flex; gap: 8px; align-items: center; }
+  .ex-formula-row .q-input { flex: 1 1 auto; min-width: 0; font-family: var(--font-mono, ui-monospace, monospace); }
+  .ex-formula-msg { margin: 4px 0 0; min-height: 1.4em; color: var(--ink-muted); font-size: 0.88rem; overflow-x: auto; }
+  .ex-formula-msg.is-bad { color: var(--c-bad); }
+</style>
+<script src="../assets/vendor/katex/katex.min.js"></script>
+<script src="../assets/vendor/katex/auto-render.min.js"></script>
+<script src="../assets/js/cyl-core.js"></script>
+<script src="../assets/js/cyl-2d.js"></script>
+<script src="../assets/js/cyl-expr.js"></script>
+<script src="../assets/js/cyl-quiz.js"></script>
+<script src="../assets/js/energy.js"></script>
+<script src="../assets/js/momentum.js"></script>
+<script src="../assets/js/vib.js"></script>
+</head>
+<body data-page="explorer" data-root="..">
+<!-- Shown only when module.css cannot load (module.css hides it): for example, a sandboxed browser that may open this page but not its assets folder -->
+<div class="cyl-nocss" role="alert" style="max-width: 760px; margin: 16px auto; padding: 14px 18px; border: 2px solid #b45309; border-radius: 8px; background: #fff7ed; color: #1f2937; font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;">
+  <p style="margin: 0 0 6px; font-weight: 700;">This page could not load its styles and scripts.</p>
+  <p style="margin: 0;">Your browser was not allowed to open the module's other files (the <code>assets</code> folder next to this page), so the figures, math and questions will not work. To fix it, unzip the download first and keep the folder in one piece, then open <code>index.html</code> in Google Chrome, Microsoft Edge, Firefox or Safari: right-click the file and choose Open With. Browsers installed from the Mac App Store, such as DuckDuckGo, are often not allowed to read folders like Documents. README.txt in the module folder has more help.</p>
+</div>
+<main id="main" class="page">
+
+  <header class="lesson-header">
+    <p class="eyebrow">Tools · Free play</p>
+    <h1>Vibration Lab</h1>
+    <p class="lede">Pick a system, set its stiffness, mass or length, start it any way you like, and watch it vibrate with its graphs and its energy. Compare a block on one spring with two springs in parallel or in series, hang it from a vertical spring, swing a pendulum through small or large angles, or go back to the reference circle and the guess-and-check test.</p>
+  </header>
+
+  <section id="setup">
+    <h2>Choose a system</h2>
+    <div class="card ex-setup">
+      <div>
+        <p class="ex-label" id="ex-scene-label">System</p>
+        <div class="chip-row" id="ex-scene" role="group" aria-labelledby="ex-scene-label"></div>
+        <p class="ex-desc" id="ex-desc"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="explore">
+    <h2>Explore</h2>
+    <figure class="figure wide" aria-labelledby="ex-cap">
+      <div class="viz" id="ex-viz">
+        <div class="viz-stage" id="ex-stage"></div>
+        <div class="viz-controls" id="ex-controls"></div>
+      </div>
+      <figcaption id="ex-cap"><strong>Figure V.1</strong> The chosen system. Press <em>Play</em> or drag the time slider, and change the numbers in the panel; the motion is recomputed at once. Colors follow the lessons: displacement blue, velocity green, acceleration red, springs and their forces violet, the weight blue.</figcaption>
+    </figure>
+    <div class="ex-events" id="ex-events" aria-live="polite"></div>
+  </section>
+
+  <section id="try" class="ex-try">
+    <h2>Things to try</h2>
+    <ol>
+      <li><strong>Amplitude does not matter.</strong> Release the block from \(20\ \text{mm}\), then from \(150\ \text{mm}\): the period readout does not move. <button type="button" class="btn small" data-load="h" data-set='{"x0": 0.02, "v0": 0}'>Load</button></li>
+      <li><strong>Struck, not pulled.</strong> Start the block at equilibrium with a velocity of \(1\ \text{m/s}\): the response is a sine, and \(C = \dot x_0/\omega_n\). <button type="button" class="btn small" data-load="h" data-set='{"x0": 0, "v0": 1}'>Load</button></li>
+      <li><strong>Series versus parallel.</strong> Two equal springs end to end give a quarter of the stiffness, and twice the period, of the same springs side by side. <button type="button" class="btn small" data-load="springs" data-set='{"arr": "series", "k1": 400, "k2": 400}'>Load</button></li>
+      <li><strong>A soft hanging spring.</strong> A large static deflection means a slow vibration: \(\omega_n = \sqrt{g/\delta_{st}}\). <button type="button" class="btn small" data-load="v" data-set='{"k": 200, "m": 2.5, "x0": 0.04}'>Load</button></li>
+      <li><strong>A big swing.</strong> Release the pendulum from \(150^\circ\): it lingers near the top, and its period is 76% longer than \(2\pi\sqrt{l/g}\). <button type="button" class="btn small" data-load="pend" data-set='{"th0": 150, "L": 1}'>Load</button></li>
+      <li><strong>Over the top.</strong> Give the pendulum enough speed at the bottom and it goes all the way round: no longer a vibration. <button type="button" class="btn small" data-load="pend" data-set='{"th0": 0, "w0": 7, "L": 1}'>Load</button></li>
+      <li><strong>A phase angle in the second quadrant.</strong> Start with a positive displacement and a negative velocity: \(\phi\) is between \(90^\circ\) and \(180^\circ\). <button type="button" class="btn small" data-load="circle" data-set='{"x0": 0.05, "v0": -0.3, "wn": 5}'>Load</button></li>
+    </ol>
+  </section>
+
+  <section id="how">
+    <h2>How the lab works</h2>
+    <p>The spring systems are solved exactly: \(x = (\dot x_0/\omega_n)\sin\omega_n t + x_0\cos\omega_n t\), with \(\omega_n = \sqrt{k_{eq}/m}\) (<a href="../lessons/04-time-response.html">Lesson 4</a>). The pendulum follows the full equation \(\ddot\theta + (g/l)\sin\theta = 0\), integrated in thousands of small time steps with the fourth-order Runge–Kutta method; its dashed twin follows the small-angle model (<a href="../lessons/07-simple-pendulum.html">Lesson 7</a>). The energy bars use \(T = \tfrac12 m\dot x^2\) with \(V = \tfrac12 k_{eq}x^2\), or \(V = mgl(1 - \cos\theta)\) for the pendulum (<a href="../lessons/08-energy.html">Lesson 8</a>).</p>
+  </section>
+</main>
+
+<script>
+/* ---------- Vibration Lab: each system is a VIB figure ---------- */
+CYL.ready(function () {
+  'use strict';
+  var stage = document.getElementById('ex-stage'), panel = document.getElementById('ex-controls');
+  var eventsEl = document.getElementById('ex-events'), descEl = document.getElementById('ex-desc');
+  function S(key, label, min, max, step, value, unit, color) { return { key: key, label: label, min: min, max: max, step: step, value: value, unit: unit, color: color }; }
+  var K = S('k', 'Stiffness \\(k\\)', 50, 1500, 10, 200, 'N/m', 't'), M = S('m', 'Mass \\(m\\)', 0.5, 8, 0.1, 2, 'kg');
+  var X0 = S('x0', 'Initial displacement \\(x_0\\)', -0.15, 0.15, 0.005, 0.1, 'm', 'z'), V0 = S('v0', 'Initial velocity \\(\\dot x_0\\)', -2, 2, 0.05, 0, 'm/s', 'good');
+  function merge(list, set) { return list.map(function (s) { return set && s.key in set ? Object.assign({}, s, { value: set[s.key] }) : s; }); }
+  function params(list, set) { var p = {}; list.forEach(function (s) { p[s.key] = s.value; }); return Object.assign(p, set || {}); }
+  var SCENES = [
+    { id: 'h', label: 'Block on a spring', desc: 'A block on a smooth floor, held by one spring. Set the stiffness, the mass and the start.',
+      look: 'the period depends on \\(k\\) and \\(m\\) only; the spring force always points toward \\(x = 0\\).',
+      mount: function (o, set) {
+        var sl = merge([K, M, X0, V0], set);
+        return VIB.figure({ stage: o.stage, controls: o.controls, scene: 'h', view: { amp: 0.15 }, aria: 'A block on a spring vibrating on a smooth floor, with its displacement, velocity and acceleration graphs and energy bars.',
+          params: params(sl, set), sliders: sl, graphs: ['x', 'v', 'a'], show: { v: true, a: true, F: true }, toggles: ['v', 'a', 'F'], bars: true,
+          readouts: ['t', 'x', 'v', 'a', 'wn', 'tau', 'C', 'phi'], periods: 3, maxT: 12 });
+      } },
+    { id: 'springs', label: 'Two springs', desc: 'The same block held by two springs: side by side, end to end, or on opposite sides.',
+      look: 'side by side and on opposite sides give \\(k_1 + k_2\\); end to end gives less than either spring.',
+      mount: function (o, set) {
+        var sl = merge([S('k1', 'Stiffness \\(k_1\\)', 50, 800, 10, 200, 'N/m', 't'), S('k2', 'Stiffness \\(k_2\\)', 50, 800, 10, 300, 'N/m', 't'), M, X0], set);
+        return VIB.figure({ stage: o.stage, controls: o.controls, scene: 'springs', view: { amp: 0.12 }, aria: 'A block held by two springs in a chosen arrangement, with its displacement graph and energy bars.',
+          params: params(sl, Object.assign({ arr: 'parallel', v0: 0 }, set)), sliders: sl, graphs: ['x'], show: { F: true }, toggles: ['v', 'a', 'F'], bars: true,
+          select: { key: 'arr', label: 'Arrangement', options: [{ value: 'parallel', label: 'Side by side (parallel)' }, { value: 'series', label: 'End to end (series)' }, { value: 'opposed', label: 'Opposite sides (parallel)' }] },
+          readouts: ['t', 'x', 'keq', 'wn', 'tau'], periods: 3, maxT: 12 });
+      } },
+    { id: 'v', label: 'Hanging block', desc: 'A block hanging from a vertical spring, vibrating about its static equilibrium position.',
+      look: 'the weight is balanced by the static stretch; \\(\\omega_n = \\sqrt{g/\\delta_{st}}\\).',
+      mount: function (o, set) {
+        var sl = merge([S('k', 'Stiffness \\(k\\)', 200, 800, 10, 400, 'N/m', 't'), S('m', 'Mass \\(m\\)', 0.5, 2.5, 0.1, 2, 'kg'), S('x0', 'Initial displacement \\(y_0\\)', -0.06, 0.06, 0.005, 0.04, 'm', 'z'), S('v0', 'Initial velocity \\(\\dot y_0\\)', -0.8, 0.8, 0.05, 0, 'm/s', 'good')], set);
+        return VIB.figure({ stage: o.stage, controls: o.controls, scene: 'v', view: { amp: 0.08, L0: 0.18, dstMax: 0.125 }, aria: 'A block on a vertical spring with its free-body diagram and its displacement graph.',
+          params: params(sl, set), sliders: sl, graphs: ['x', 'v'], show: { fbd: true }, toggles: ['v', 'a', 'fbd'],
+          readouts: ['t', 'x', 'Fs', 'dst', 'wn', 'tau'], periods: 3, maxT: 10 });
+      } },
+    { id: 'pend', label: 'Pendulum', desc: 'A simple pendulum following the full equation, with a dashed twin that follows the small-angle model.',
+      look: 'the two agree for small swings; larger swings take longer, and the mass never matters.',
+      mount: function (o, set) {
+        var sl = merge([S('L', 'Length \\(l\\)', 0.3, 2, 0.05, 1.2, 'm'), S('th0', 'Initial angle \\(\\theta_0\\)', -170, 170, 1, 30, '°', 'z'), S('w0', 'Initial angular velocity \\(\\dot\\theta_0\\)', -8, 8, 0.1, 0, 'rad/s', 'good'), S('m', 'Mass \\(m\\)', 0.1, 5, 0.1, 1, 'kg')], set);
+        return VIB.figure({ stage: o.stage, controls: o.controls, scene: 'pend', view: { Lmax: 2 }, aria: 'A pendulum and its small-angle twin, with the angle graph for both and energy bars.',
+          params: params(sl, set), sliders: sl, graphs: ['x', 'v'], show: { v: true, ghost: true }, toggles: ['v', 'a', 'ghost'], bars: true,
+          readouts: ['t', 'x', 'tauLin', 'tauEx', 'C'], periods: 3, maxT: 14 });
+      } },
+    { id: 'circle', label: 'Reference circle', desc: 'The response \\(x = A\\sin\\omega_n t + B\\cos\\omega_n t\\) as two turning vectors that add up to one of length \\(C\\).',
+      look: 'the initial displacement sets \\(B\\), the initial velocity sets \\(A\\); their sum sets the amplitude and the phase.',
+      mount: function (o, set) {
+        var sl = [S('x0', 'Initial displacement \\(x_0\\)', -0.08, 0.08, 0.005, 0.06, 'm', 't'), S('v0', 'Initial velocity \\(\\dot x_0\\)', -0.4, 0.4, 0.01, 0.3, 'm/s', 'accent'), S('wn', 'Natural frequency \\(\\omega_n\\)', 4, 10, 0.1, 5, 'rad/s')];
+        return VIB.circle({ stage: o.stage, controls: o.controls, mode: 'ic', window: 3, view: { amp: 0.13 }, aria: 'Two vectors turning together and adding up to a vector of length C, with their projections plotted against time.',
+          params: Object.assign(params(sl), set || {}), sliders: merge(sl, set) });
+      } },
+    { id: 'guess', label: 'Guess and check', desc: 'Put a trial function into \\(m\\ddot x = -kx\\) and see whether the two sides agree at every instant.',
+      look: 'only a sine or cosine with \\(p = \\sqrt{k/m}\\) makes the two curves coincide.',
+      mount: function (o, set) { return VIB.guess(Object.assign({ stage: o.stage, controls: o.controls, aria: 'Two curves against time, m times the acceleration of a trial function and minus k times the function, and the trial function below.' }, { params: set || {} })); } }
+  ];
+  var SCENE = {};
+  SCENES.forEach(function (s) { SCENE[s.id] = s; });
+  var cur = null, widget = null, chips = {};
+
+  function clear() {
+    if (widget && widget.destroy) widget.destroy();
+    else if (widget && widget.player) widget.player.destroy();
+    widget = null;
+    stage.innerHTML = ''; panel.innerHTML = '';
+    stage.className = 'viz-stage';
+    var main = stage.parentNode;
+    if (main && main.classList.contains('mf-main')) Array.prototype.forEach.call(main.querySelectorAll(':scope > .mf-transport'), function (nd) { nd.remove(); });
+  }
+  function choose(id, set) {
+    cur = SCENE[id] || SCENES[0];
+    clear();
+    eventsEl.innerHTML = '';
+    widget = cur.mount({ stage: stage, controls: panel }, set);
+    Object.keys(chips).forEach(function (k) { chips[k].setAttribute('aria-pressed', String(k === cur.id)); });
+    descEl.innerHTML = cur.desc; CYL.renderMath(descEl);
+    var look = CYL.el('p', { class: 'ex-look', html: '<strong>Look for:</strong> ' + cur.look });
+    eventsEl.appendChild(look); CYL.renderMath(look);
+    try { CYL.store.set('explorer:scene', cur.id); } catch (e) { /* fine without */ }
+  }
+
+  var sceneRow = document.getElementById('ex-scene');
+  SCENES.forEach(function (sc) {
+    var b = CYL.el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', text: sc.label });
+    b.addEventListener('click', function () { if (!cur || cur.id !== sc.id) choose(sc.id); });
+    chips[sc.id] = b; sceneRow.appendChild(b);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-load]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var set = null;
+      try { set = btn.getAttribute('data-set') ? JSON.parse(btn.getAttribute('data-set')) : null; } catch (e) { set = null; }
+      choose(btn.getAttribute('data-load'), set);
+      document.getElementById('explore').scrollIntoView({ block: 'start', behavior: CYL.prefersReducedMotion() ? 'auto' : 'smooth' });
+    });
+  });
+
+  choose(CYL.store.get('explorer:scene', 'h'));
+  window.__explorer = { choose: choose, state: function () { return { scene: cur.id, widget: widget }; }, scenes: SCENES.map(function (s) { return s.id; }) };   // for QA scripts
+});
+</script>
+</body>
+</html>
